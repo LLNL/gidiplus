@@ -1,0 +1,24 @@
+# <<BEGIN-copyright>>
+# Copyright 2019, Lawrence Livermore National Security, LLC.
+# See the top-level COPYRIGHT file for details.
+# 
+# SPDX-License-Identifier: MIT
+# <<END-copyright>>
+
+PYTHON = python
+
+.PHONY: default check clean realclean
+
+default:
+
+check:
+	$(PYTHON) groupTestAll1.py
+	$(PYTHON) integrationXY.py
+	$(PYTHON) integrationWithWeight_x.py
+	$(PYTHON) integrationWithWeight_sqrt_x.py
+	$(PYTHON) integration2.py
+	$(PYTHON) runningIntegration.py
+
+clean:
+
+realclean: clean

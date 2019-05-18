@@ -1,0 +1,5 @@
+<map library="level3" format="0.1">
+<protare evaluation="ENDF/BVII.1" projectile="n" target="O16" path="neutrons/n-008_O_016.xml"/>
+<import path="all.map"/>
+<protare evaluation="ENDF/BVII.1" projectile="n" target="O17" path="neutrons/n-008_O_017.xml"/>
+</map>

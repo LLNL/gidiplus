@@ -1,0 +1,22 @@
+SHELL = /bin/bash
+
+# <<BEGIN-copyright>>
+# <<END-copyright>>
+
+.PHONY: default headers clean realclean
+
+DIRS = statusMessageReporting PoPsCpp numericalFunctions pugixml
+
+default: libs
+
+libs:
+	rm -f *.a *.o
+	for DIR in $(DIRS); do cp ../$$DIR/lib/*.a* .; done
+	archives=`/bin/ls *.a`; for archive in $$archives; do $(AR) -x $$archive; done
+	$(AR) -cr libpopskit.a *.o
+	rm -rf *.o
+
+clean:
+	rm -f *.a *.o
+
+realclean: clean

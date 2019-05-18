@@ -1,0 +1,17 @@
+<map library="neutrons2" format="0.1">
+<protare evaluation="ENDF/BVIII.1" projectile="n" target="H1" path="neutrons/n-001_H_001.xml"/>
+<protare evaluation="ENDF/BVIII.1" projectile="n" target="O17" path="neutrons/n-008_O_017.xml"/>
+<protare evaluation="ENDF/BVIII.1" projectile="n" target="Ar36" path="neutrons/n-018_Ar_036.xml"/>
+<protare evaluation="ENDF/BVIII.1" projectile="n" target="Ni61" path="neutrons/n-028_Ni_061.xml"/>
+<protare evaluation="ENDF/BVIII.1" projectile="n" target="Br79" path="neutrons/n-035_Br_079.xml"/>
+<protare evaluation="ENDF/BVIII.1" projectile="n" target="Mo98" path="neutrons/n-042_Mo_098.xml"/>
+<protare evaluation="ENDF/BVIII.1" projectile="n" target="In113" path="neutrons/n-049_In_113.xml"/>
+<protare evaluation="ENDF/BVIII.1" projectile="n" target="I135" path="neutrons/n-053_I_135.xml"/>
+<protare evaluation="ENDF/BVIII.1" projectile="n" target="Nd145" path="neutrons/n-060_Nd_145.xml"/>
+<protare evaluation="ENDF/BVIII.1" projectile="n" target="Dy156" path="neutrons/n-066_Dy_156.xml"/>
+<protare evaluation="ENDF/BVIII.1" projectile="n" target="Ta181" path="neutrons/n-073_Ta_181.xml"/>
+<protare evaluation="ENDF/BVIII.1" projectile="n" target="Th230" path="neutrons/n-090_Th_230.xml"/>
+<protare evaluation="ENDF/BVIII.1" projectile="n" target="U236" path="neutrons/n-092_U_236.xml"/>
+<protare evaluation="ENDF/BVIII.1" projectile="n" target="U239" path="neutrons/n-092_U_239.xml"/>
+<protare evaluation="ENDF/BVIII.1" projectile="n" target="Am244" path="neutrons/n-095_Am_244.xml"/>
+</map>

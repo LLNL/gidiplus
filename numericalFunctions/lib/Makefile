@@ -1,0 +1,26 @@
+# <<BEGIN-copyright>>
+# Copyright 2019, Lawrence Livermore National Security, LLC.
+# See the top-level COPYRIGHT file for details.
+# 
+# SPDX-License-Identifier: MIT
+# <<END-copyright>>
+
+.PHONY: default libnumericalfunctions.a check clean realclean
+
+default: libnumericalfunctions.a
+
+libnumericalfunctions.a: $(objects)
+	rm -f *.o
+	$(AR) -x $(NFUPDATING_PATH)/lib/*.a
+	ARFLAGS=-cr; \
+	if [ -e libnumericalfunctions.a ]; then ARFLAGS=-r; fi; \
+	$(AR) $$ARFLAGS libnumericalfunctions.a *.o;
+	rm -f *.o
+
+check:
+
+clean:
+	rm -f *.o *.a *.so
+
+realclean: clean
+	rm -fr *.pyc __.SYMDEF* __pycache__

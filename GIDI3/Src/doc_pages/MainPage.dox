@@ -1,0 +1,27 @@
+/** 
+\mainpage GIDI Library API Documentation
+
+\tableofcontents
+ 
+This is a level 1 header
+========================
+
+This is a level 2 header
+------------------------
+
+  \section intro_sec Introduction
+ 
+  This is the introduction.
+ 
+  \section install_sec Installation
+
+  Install GIDI by ...
+ 
+  \section sec_policy Sofware Development Policies
+
+  - \subpage FileOrganization 
+
+  - \subpage SrcNamingConventions 
+ 
+  etc...
+ */

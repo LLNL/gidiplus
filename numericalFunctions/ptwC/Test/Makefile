@@ -1,0 +1,33 @@
+# <<BEGIN-copyright>>
+# Copyright 2019, Lawrence Livermore National Security, LLC.
+# See the top-level COPYRIGHT file for details.
+# 
+# SPDX-License-Identifier: MIT
+# <<END-copyright>>
+
+SHELL = /bin/ksh
+
+subDirectories = Utilities UnitTesting
+
+.PHONY: default utilities check checke clean realclean doTarget
+
+default:
+	$(MAKE) doTarget MODE=''
+
+utilities:
+	cd Utilities; $(MAKE) utilities
+
+check: default
+	$(MAKE) doTarget MODE=check
+
+checke:
+	$(MAKE) doTarget MODE=check CHECKOPTIONS=-e
+
+clean:
+	$(MAKE) doTarget MODE=clean
+
+realclean: clean
+	$(MAKE) doTarget MODE=realclean
+
+doTarget:
+	for directory in $(subDirectories); do cd $$directory; $(MAKE) $(MODE); cd ../; done

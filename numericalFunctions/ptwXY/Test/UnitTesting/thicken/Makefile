@@ -1,0 +1,32 @@
+# <<BEGIN-copyright>>
+# Copyright 2019, Lawrence Livermore National Security, LLC.
+# See the top-level COPYRIGHT file for details.
+# 
+# SPDX-License-Identifier: MIT
+# <<END-copyright>>
+
+SMR_PATH = ../../../../../statusMessageReporting
+NUMERICALFUNCTIONS_PATH = ../../../..
+
+ptwXYCFLAGS = -lnfut_utilities -lptwXY_utilities \
+			  -I$(NUMERICALFUNCTIONS_PATH)/include -L$(NUMERICALFUNCTIONS_PATH)/lib -lnumericalfunctions \
+			  -I$(SMR_PATH)/include -L$(SMR_PATH)/lib -lstatusMessageReporting
+localCFLAGS = $(CFLAGS) $(ptwXYCFLAGS)
+
+TARGETS = thicken
+
+.PHONY: default check clean realclean $(TARGETS)
+
+default: $(TARGETS)
+
+check: default
+	./thicken $(CHECKOPTIONS)
+
+thicken: thicken.c
+	$(CC) -o thicken thicken.c $(localCFLAGS) -lm
+
+clean:
+	rm -f $(TARGETS) v
+
+realclean: clean
+	rm -fr *.dSYM

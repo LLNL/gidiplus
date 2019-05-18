@@ -1,0 +1,134 @@
+SHELL = /bin/bash
+
+# <<BEGIN-copyright>>
+# <<END-copyright>>
+
+# These must be set by hand when we do a release.
+popskit_major=3
+popskit_minor=17
+
+# #############################################################################
+# 
+# Makefile.popskit is used to 
+# 
+#   1) Build and install the library libpopskit.a and associated header files
+#      This consist of the libraries named in DIRS below.
+#
+#   2) Build a tarfile (popskit.svnxx.tar) suitable for distribution and use
+#      by others.
+#
+# General Usage.
+#
+#   1) make -f Makefile.popskit install
+#
+#      This will build and install in PREFIX. If PREFIX is not set it will
+#      install in this space : `pwd`/install
+#
+#   2) make -f Makefile.popskit tar 
+#
+#      This latter command will create a versioned tarfile in the '..' 
+#      directory one directory up from here.
+#   
+#      It will look like so: popskit.svn55.tar
+#
+#      The resultant tarfile, when unzipped, may be used with 
+#      regular 'make' without the need for the '-f Makefile.popskit' 
+#      argument.
+#
+# #############################################################################
+
+DIRS = pugixml statusMessageReporting PoPsCpp numericalFunctions include lib
+
+PREFIX = `pwd`/install
+
+.PHONY: default include lib pugixml pugixml_dummy install clean realclean tar doDIRS
+
+default: pugixml popskit_version.h 
+	@echo "Info CXX      = $(CXX)"
+	@echo "Info CXXFLAGS = $(CXXFLAGS)"
+	@echo "Info CC       = $(CC)"
+	@echo "Info CFLAGS   = $(CFLAGS)"
+	@echo "Info PREFIX   = $(PREFIX)"
+	@echo "Info DIRS     = $(DIRS)"
+	$(MAKE) -f Makefile.popskit doDIRS _DIRS="$(DIRS)" _TARGET=default
+
+info:
+	@echo "Info CXX      = $(CXX)"
+	@echo "Info CXXFLAGS = $(CXXFLAGS)"
+	@echo "Info CC       = $(CC)"
+	@echo "Info CFLAGS   = $(CFLAGS)"
+	@echo "Info PREFIX   = $(PREFIX)"
+	@echo "Info DIRS     = $(DIRS)"
+
+include:
+	cd include; $(MAKE) -f Makefile.popskit
+
+lib:
+	cd lib; $(MAKE) -f Makefile.popskit
+
+pugixml:
+	rm -rf pugixml pugixml-1.8
+	unzip -q Misc/pugixml-1.8.zip
+	ln -s pugixml-1.8 pugixml
+	cd pugixml; tar -xf ../Misc/pugixml.addon.tar
+
+pugixml_dummy:
+	rm -rf pugixml-1.8 pugixml
+	mkdir pugixml
+	cp Misc/Makefile_dummy pugixml/Makefile
+
+popskit_version.h: FORCE
+	@if test -d "./.svn"; then \
+		echo "#define POPSKIT_MAJOR ${popskit_major}"  > popskit_version.h; \
+		echo "#define POPSKIT_MINOR ${popskit_minor}" >> popskit_version.h; \
+		svnversion .                      | awk 'BEGIN{FS="/+| +"} {printf("#define POPSKIT_PATCHLEVEL %d\n" , $$1)}'          >> popskit_version.h; \
+		svnversion .                      | awk 'BEGIN{FS="/+| +"} {printf("#define POPSKIT_SVN %d\n" , $$1)}'                 >> popskit_version.h; \
+		svnversion statusMessageReporting | awk 'BEGIN{FS="/+| +"} {printf("#define STATUS_MESSAGE_REPORTING_SVN %d\n" , $$1)}' >> popskit_version.h; \
+		svnversion numericalFunctions     | awk 'BEGIN{FS="/+| +"} {printf("#define NUMERICAL_FUNCTIONS_SVN  %d\n" , $$1)}'     >> popskit_version.h; \
+		svnversion PoPsCpp                | awk 'BEGIN{FS="/+| +"} {printf("#define POPSCPP_SVN  %d\n" , $$1)}'                 >> popskit_version.h; \
+	fi
+	cat popskit_version.h
+
+install: default
+	mkdir -p $(PREFIX)/include
+	cp -p include/* $(PREFIX)/include
+	mkdir -p $(PREFIX)/lib
+	cp -p lib/libpopskit.a $(PREFIX)/lib
+
+clean: FORCE
+	if [ ! -e pugixml ]; then $(MAKE) -f Makefile.popskit pugixml_dummy; fi
+	$(MAKE) -f Makefile.popskit doDIRS _DIRS="$(DIRS)" _TARGET=clean
+
+realclean: pugixml_dummy
+	$(MAKE) -f Makefile.popskit doDIRS _DIRS="$(DIRS)" _TARGET=realclean
+	rm -rvf pugixml test_istall 
+
+tar: popskit_version.h
+	$(MAKE) -f Makefile.popskit -s realclean
+	$(MAKE) -f Makefile.popskit popskit_version.h
+	fileName=`svn info | grep Revision  | awk -F " " '{print "popskit-${popskit_major}.${popskit_minor}.svn"$$2}'`; rm -rf ../$$fileName; svn export -q . ../$$fileName; cp popskit_version.h ../$$fileName/; rm -rf ../$$fileName/GIDI3; rm -rf ../$$fileName/MCGIDI3; cp -f ../$$fileName/Makefile.popskit ../$$fileName/Makefile; cp -f ../$$fileName/include/Makefile.popskit ../$$fileName/include/Makefile; cp -f ../$$fileName/lib/Makefile.popskit ../$$fileName/lib/Makefile; cd ../; tar -cf $$fileName.tar $$fileName
+
+
+#tar:
+#	$(MAKE) -f Makefile.popskit -s realclean
+#	rm -f popskit_version.h Misc/include/popskit_version.h
+#	$(MAKE) -f Makefile.popskit popskit_version.h
+#	fileName=`svn info | grep Revision  | awk -F " " '{print "popskit.svn"$$2}'`; \
+#	rm -rf ../$$fileName; \
+#	svn export -q . ../$$fileName; \
+#	rm -rf ../$$fileName/GIDI3 ../$$fileName/MCGIDI3; \
+#	rm -rf ../$$fileName/Makefile.gidikit ../$$fileName/include/Makefile.gidikit; \
+#	rm -rf ../$$fileName/lib/Makefile.gidikit; \
+#	cp popskit_version.h ../$$fileName/Misc/include; \
+#	cp -f Makefile.popskit ../$$fileName/Makefile; \
+#	cp -f include/Makefile.popskit ../$$fileName/include/Makefile; \
+#	cp -f lib/Makefile.popskit ../$$fileName/lib/Makefile; \
+#	cd ../; \
+#	tar -cf $$fileName.tar $$fileName; \
+#	rm -rf $$fileName;
+
+doDIRS:
+	SAVED_PWD=`pwd`; \
+	for DIR in $(_DIRS); do cd $$DIR; $(MAKE) $(_TARGET); cd $$SAVED_PWD; done
+
+FORCE:
