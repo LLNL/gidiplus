@@ -31,7 +31,13 @@ include:
 lib:
 	cd lib; $(MAKE)
 
-pugixml:
+pugixml-1.8/.dirstamp:
+	curl -SL http://github.com/zeux/pugixml/releases/download/v1.8/pugixml-1.8.tar.gz --output pugixml-1.8.tar.gz
+	tar -xf pugixml-1.8.tar.gz
+	ln -s pugixml-1.8 pugixml
+	touch pugixml-1.8/.dirstamp
+
+pugixml: pugixml-1.8/.dirstamp
 	cd pugixml; tar -xf ../Misc/pugixml.addon.tar
 
 pugixml_dummy:

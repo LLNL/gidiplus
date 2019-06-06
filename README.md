@@ -5,11 +5,7 @@ C++ libraries for accessing nuclear data from the Generalized Nuclear Database S
 pugixml version 1.8, available from https://pugixml.org/2016/11/24/pugixml-1.8-release.html
 
 # Installation
-After downloading pugixml, create a symbolic link to the source directory inside gidiplus:
-
-    `ln -s /path/to/pugixml-1.8 pugixml`
-
-Then use make to build the project. Important targets in the Makefile are:
+Use make to build the project (pugixml will be downloaded automatically if not present). Important targets in the Makefile are:
 
 | Target     | Description
 |------------|------------
