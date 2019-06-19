@@ -35,16 +35,13 @@ LIBS = -lGIDI -lPoPs -lstatusMessageReporting -lnumericalfunctions -lpugixml
 
 default: averageEnergy averageMomentum
 
-testFiles:
-	gunzip *.out.gz
-
 averageEnergy: averageEnergy.cpp
 	$(CXX) $(local_CXXFLAGS) -o averageEnergy averageEnergy.cpp $(LIBS)
 
 averageMomentum: averageMomentum.cpp
 	$(CXX) $(local_CXXFLAGS) -o averageMomentum averageMomentum.cpp $(LIBS)
 
-check: testFiles averageEnergy averageMomentum
+check: averageEnergy averageMomentum
 	./averageEnergy O16 > o
 	python ../Utilities/diff.py "averageProductData/averageEnergy O16" O16.energy.out o
 	./averageEnergy Th227 > o

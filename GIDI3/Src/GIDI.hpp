@@ -61,7 +61,7 @@ class Suite;
 typedef Form *(*parseSuite)( Construction::Settings const &a_construction, Suite *a_parent, pugi::xml_node const &a_node, 
         PoPs::Database const &a_pop, PoPs::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles );
 
-enum formType { f_generic, f_group, f_transportable, f_flux, f_style,
+enum formType { f_generic, f_group, f_groups, f_transportable, f_flux, f_fluxes, f_style,
                 f_reaction, f_product, f_delayedNeutron, f_fissionFragmentData, f_rate,
                 f_physicalQuantity, f_axisDomain, f_axis, f_grid, f_axes,
                 f_flattenedArrayData, f_array3d,
@@ -142,6 +142,10 @@ enum transportMode { multiGroup, SnElasticUpScatter, MonteCarlo };
 #define fissionEnergyReleasesMoniker "fissionEnergyReleases"
 #define fissionEnergyReleaseMoniker "fissionEnergyRelease"
 #define rateMoniker "rate"
+
+#define groupsMoniker "groups"
+#define groupMoniker "group"
+#define fluxesMoniker "fluxes"
 
 #define evaluatedStyleMoniker "evaluated"
 #define crossSectionReconstructedStyleMoniker "crossSectionReconstructed"
@@ -272,7 +276,7 @@ class Settings {
         int m_useSystem_strtod;                                     /**< Flag passed to the function nfu_stringToListOfDoubles of the numericalFunctions library. */
 
     public:
-        Settings( ParseMode a_parseMode, PhotoMode a_photoMode = e_nuclearOnly );
+        Settings( ParseMode a_parseMode, PhotoMode a_photoMode );
 
         ParseMode parseMode( ) const { return( m_parseMode ); }     /**< Returns the value of the **m_parseMode** member. */
 
@@ -2579,6 +2583,7 @@ class MultiGroup {
         MultiGroup( );
         MultiGroup( std::string const &a_label, int a_length, double const *a_values );
         MultiGroup( std::string const &a_label, std::vector<double> const &a_boundaries );
+        MultiGroup( Group const &a_group );
         MultiGroup( MultiGroup const &a_multiGroup );
         ~MultiGroup( );
 
@@ -3842,6 +3847,28 @@ class FissionEnergyRelease : public Function1dForm {
         Function1dForm const *totalEnergy( ) const { return( m_totalEnergy ); }                     /**< Returns the value of the **m_totalEnergy** member. */
 
         void toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent = "" ) const ;
+};
+
+/*
+============================================================
+========================== Groups ==========================
+============================================================
+*/
+class Groups : public Suite {
+
+    public:
+        Groups( std::string const &a_fileName );
+};
+
+/*
+============================================================
+========================== Groups ==========================
+============================================================
+*/
+class Fluxes : public Suite {
+
+    public:
+        Fluxes( std::string const &a_fileName );
 };
 
 /*

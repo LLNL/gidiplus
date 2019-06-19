@@ -37,13 +37,10 @@ LIBS = -lGIDI -lPoPs -lstatusMessageReporting -lnumericalfunctions -lpugixml
 
 default: TNSL
 
-testFiles:
-	gunzip *.out.gz
-
 TNSL: TNSL.cpp
 	$(CXX) $(local_CXXFLAGS) -o TNSL TNSL.cpp $(LIBS)
 
-check: testFiles TNSL
+check: TNSL
 	./TNSL HinCH2 > o
 	python ../Utilities/diff.py TNSL/TNSL HinCH2.out o
 	./TNSL tnsl-Al27 > o

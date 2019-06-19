@@ -52,6 +52,17 @@ MultiGroup::MultiGroup( std::string const &a_label, std::vector<double> const &a
 }
 
 /* *********************************************************************************************************//**
+ * @param a_label           [in]    The label for the MultiGroup.
+ * @param a_boundaries      [in]    The list of boundaries.
+ ***********************************************************************************************************/
+
+MultiGroup::MultiGroup( Group const &a_group ) :
+        m_label( a_group.label( ) ),
+        m_boundaries( a_group.data( ) ) {
+
+}
+
+/* *********************************************************************************************************//**
  * @param a_multiGroup      [in]    The MultiGroup instance to copy.
  ***********************************************************************************************************/
 

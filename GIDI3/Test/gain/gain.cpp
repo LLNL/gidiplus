@@ -48,7 +48,7 @@ void main2( int argc, char **argv ) {
 
     if( argc > 1 ) targetID = argv[1];
 
-    GIDI::Construction::Settings construction( GIDI::Construction::e_all );
+    GIDI::Construction::Settings construction( GIDI::Construction::e_all, GIDI::Construction::e_nuclearAndAtomic );
     protare = map.protare( construction, pops, projectileID, targetID );
 
     std::cout << protare->fileName( ) << std::endl;

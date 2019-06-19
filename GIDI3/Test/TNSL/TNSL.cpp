@@ -49,7 +49,7 @@ int main2( int argc, char **argv ) {
     GIDI::Protare *protare;
 
     try {
-        GIDI::Construction::Settings construction( GIDI::Construction::e_all );
+        GIDI::Construction::Settings construction( GIDI::Construction::e_all, GIDI::Construction::e_nuclearAndAtomic );
         protare = map.protare( construction, pops, PoPs::IDs::neutron, targetID ); }
     catch (char const *str) {
         std::cout << str << std::endl;

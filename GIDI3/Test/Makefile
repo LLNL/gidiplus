@@ -9,7 +9,8 @@ SHELL = /bin/ksh
 
 DIRS = Utilities matrix VectorAndMatrixReverse map parseXML groupBoundaries inverseSpeed productIDs crossSections productMatrix \
 	transportCorrection availableEnergy multiplicity Q averageProductData depositionData \
-	settingsProcess multiGroup temperatures splitString ancestry readAll photoAtomicScattering photoScattering TNSL gain
+	settingsProcess multiGroup temperatures splitString ancestry readAll photoAtomicScattering photoScattering TNSL gain \
+	multiGroups fluxes
 
 .PHONY: default check clean realclean
 
@@ -20,7 +21,6 @@ compile:
 	$(MAKE) doDirs TARGET=default CXX=$(CXX) CXXFLAGS="$(CXXFLAGS)"
 
 check:
-	gunzip pops.xml.gz
 	$(MAKE) doDirs TARGET=check CXX=$(CXX) CXXFLAGS="$(CXXFLAGS)"
 
 clean:

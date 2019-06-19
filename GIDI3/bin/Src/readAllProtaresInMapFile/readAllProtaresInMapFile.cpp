@@ -93,7 +93,7 @@ void subMain( int argc, char **argv ) {
     else if( mode == 4 ) {
         parseMode = GIDI::Construction::e_outline;
     }
-    GIDI::Construction::Settings construction( parseMode );
+    GIDI::Construction::Settings construction( parseMode, GIDI::Construction::e_nuclearAndAtomic );
     construction.useSystem_strtod( useSystem_strtod );
     constructionPtr = &construction;
 

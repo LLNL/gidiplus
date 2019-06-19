@@ -7,7 +7,7 @@ SHELL = /bin/ksh
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
-.PHONY: default productMatrix clean realclean
+.PHONY: default fluxes clean realclean
 
 PUGIXML_PATH = ../../../pugixml
 PUGIXML_INCLUDE = $(PUGIXML_PATH)/include
@@ -33,21 +33,17 @@ local_CXXFLAGS = $(CXXFLAGS) -I../../include -L../../lib \
 
 LIBS = -lGIDI -lPoPs -lstatusMessageReporting -lnumericalfunctions -lpugixml
 
-default: productMatrix
+default: fluxes
 
-productMatrix: productMatrix.cpp
-	$(CXX) $(local_CXXFLAGS) -o productMatrix productMatrix.cpp $(LIBS)
+fluxes: fluxes.cpp
+	$(CXX) $(local_CXXFLAGS) -o fluxes fluxes.cpp $(LIBS)
 
-check: productMatrix
-	./productMatrix O16 > o
-	python ../Utilities/diff.py "productMatrix/productMatrix O16" O16.out o
-	./productMatrix Th227 > o
-	python ../Utilities/diff.py "productMatrix/productMatrix Th227" Th227.noDelayed.out o
-	./productMatrix Th227 1 > o
-	python ../Utilities/diff.py "productMatrix/productMatrix Th227" Th227.delayed.out o
+check: fluxes
+	./fluxes > o
+	python ../Utilities/diff.py fluxes/fluxes fluxes.out o
 
 clean:
-	rm -f productMatrix o file1 file2
+	rm -f fluxes o file1 file2
 
 realclean: clean
 	rm -rf *.dSYM

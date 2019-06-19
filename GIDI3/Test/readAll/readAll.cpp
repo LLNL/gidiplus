@@ -69,7 +69,7 @@ void readProtare( std::string const &protareFilename, PoPs::Database const &pops
 
     GIDI::Protare *protare;
     try {
-        GIDI::Construction::Settings construction( GIDI::Construction::e_all );
+        GIDI::Construction::Settings construction( GIDI::Construction::e_all, GIDI::Construction::e_nuclearAndAtomic );
         std::vector<std::string> libraries;
 
         protare = new GIDI::ProtareSingleton( construction, protareFilename, GIDI::XML, pops, libraries );

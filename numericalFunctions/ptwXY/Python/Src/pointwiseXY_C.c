@@ -243,7 +243,7 @@ static int pointwiseXY_C_Get_pointwiseXY_CAsSelf( PyObject *self, PyObject *othe
     pointwiseXY_CPy **self3, pointwiseXY_CPy **other3 );
 static int pointwiseXY_C_addedItemToPythonList( PyObject *list, PyObject *item );
 static int isOkayAndHasData( pointwiseXY_CPy *self );
-static int pointwiseXY_C_checkInterpolationString( char *interpolationStr, ptwXY_interpolation *interpolation, int allowOther );
+static int pointwiseXY_C_checkInterpolationString( char const *interpolationStr, ptwXY_interpolation *interpolation, int allowOther );
 static PyObject *pointwiseXY_C_GetNone( void );
 static void pointwiseXY_C_SetPyErrorExceptionFromSMR( PyObject *type, statusMessageReporting *smr );
 static PyObject *pointwiseXY_C_SetPyErrorExceptionReturnNull( const char *s, ... );
@@ -1322,7 +1322,7 @@ static PyObject *pointwiseXY_C_changeInterpolationIfNeeded( pointwiseXY_CPy *sel
 
     int status, length = 0, i1;
     double accuracy = self->ptwXY->accuracy, lowerEps = 0., upperEps = 0.;
-    char *interpolationStr;
+    char const *interpolationStr;
     static char *kwlist[] = { "interpolation", "accuracy", "lowerEps", "upperEps", NULL };
     PyObject *allowedInterpolations, *iterator, *interpolationItem = NULL;
     ptwXY_interpolation interpolation = ptwXY_interpolationLinLin, firstInterpolation = ptwXY_interpolationLinLin;
@@ -2039,7 +2039,7 @@ static PyObject *pointwiseXY_C_groupFunctionsCommon( pointwiseXY_CPy *f1, PyObje
     pointwiseXY_CPy *f2 = (pointwiseXY_CPy *) of2, *f3 = (pointwiseXY_CPy *) of3;
     PyObject *newPy = NULL;
     ptwXY_group_normType norm = ptwXY_group_normType_none;
-    char *normChars;
+    char const *normChars;
     int status;
     statusMessageReporting *smr = &(f1->smr);
 
@@ -3588,7 +3588,7 @@ static int isOkayAndHasData( pointwiseXY_CPy *self ) {
 /*
 ************************************************************
 */
-static int pointwiseXY_C_checkInterpolationString( char *interpolationStr, ptwXY_interpolation *interpolation, int allowOther ) {
+static int pointwiseXY_C_checkInterpolationString( char const *interpolationStr, ptwXY_interpolation *interpolation, int allowOther ) {
 
     if( interpolationStr == NULL ) interpolationStr = "lin-lin";
     if( strcmp( interpolationStr, "lin-lin" ) == 0 ) {

@@ -156,6 +156,10 @@ static PyObject *nf_Legendre_C__getitem__( nf_Legendre_CPy *self, Py_ssize_t l )
     nf_Legendre_maxOrder( NULL, self->nfL, &maxOrder );
 
     if( l < 0 ) l += maxOrder + 1;
+    if( ( l < 0 ) || ( l > maxOrder ) ) {
+        PyErr_SetString( PyExc_IndexError, "index out of range" );
+        return( NULL );
+    }
     if( nf_Legendre_getCl( smr, self->nfL, (int) l, &Cl ) != nfu_Okay ) {
         nf_Legendre_C_SetPyErrorExceptionFromSMR( PyExc_Exception, smr );
         return( NULL );

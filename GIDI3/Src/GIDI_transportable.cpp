@@ -25,7 +25,7 @@ namespace GIDI {
 Transportable::Transportable( Construction::Settings const &a_construction, pugi::xml_node const &a_node, PoPs::Database const &a_pops, Suite *a_parent ) :
         Form( a_node, f_transportable, a_parent ),
         m_conserve( a_node.attribute( "conserve" ).value( ) ),
-        m_group( a_construction, a_node.child( "group" ), a_pops ) {
+        m_group( a_construction, a_node.child( groupMoniker ), a_pops ) {
 }
 
 /* *********************************************************************************************************//**

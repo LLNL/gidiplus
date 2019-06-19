@@ -9,7 +9,7 @@ SHELL = /bin/bash
 
 .PHONY: default include clean realclean
 
-DIRS = statusMessageReporting GIDI3 MCGIDI3 RCGIDI PoPsCpp numericalFunctions pugixml
+DIRS = statusMessageReporting GIDI3 PoPsCpp numericalFunctions pugixml
 
 default: include
 

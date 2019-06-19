@@ -36,7 +36,7 @@ int main( int argc, char **argv ) {
 
 
     try {
-        GIDI::Construction::Settings construction( GIDI::Construction::e_all );
+        GIDI::Construction::Settings construction( GIDI::Construction::e_all, GIDI::Construction::e_nuclearAndAtomic );
         protare = map.protare( construction, pops, projectileID, targetID ); }
     catch (char const *str) {
         std::cout << str << std::endl;

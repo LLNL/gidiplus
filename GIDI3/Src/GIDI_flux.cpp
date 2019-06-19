@@ -48,4 +48,32 @@ void Flux::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) cons
     a_writeInfo.addNodeEnder( moniker( ) );
 }
 
+/*! \class Fluxes
+ * Class for the GNDS <**fluxes**> node that contains a list of flux nodes each as a 3d function.
+ */
+
+/* *********************************************************************************************************//**
+ * @param a_fileName            [in]    File containing a fluxes node to be parsed.
+ ***********************************************************************************************************/
+
+Fluxes::Fluxes( std::string const &a_fileName ) :
+        Suite( fluxesMoniker ) {
+
+    pugi::xml_document doc;
+    pugi::xml_parse_result result = doc.load_file( a_fileName.c_str( ) );
+    if( result.status != pugi::status_ok ) throw std::runtime_error( result.description( ) );
+
+    pugi::xml_node fluxes = doc.first_child( );
+
+    std::string name( fluxes.name( ) );
+    Construction::Settings construction( Construction::e_all, GIDI::Construction::e_atomicOnly );
+    PoPs::Database pops;
+
+    for( pugi::xml_node child = fluxes.first_child( ); child; child = child.next_sibling( ) ) {
+        Function3dForm *function3d = data3dParse( construction, child, NULL );
+
+        add( function3d );
+    }
+}
+
 }

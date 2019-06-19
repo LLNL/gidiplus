@@ -35,9 +35,6 @@ local_CXXFLAGS = $(CXXFLAGS) \
 
 default: settingsProcess productMatrixCollapse productMatrixCollapse_photoAtomic
 
-testFiles:
-	gunzip *.out.gz
-
 settingsProcess: settingsProcess.cpp
 	$(CXX) $(local_CXXFLAGS) -o settingsProcess settingsProcess.cpp -lGIDI -lPoPs -lstatusMessageReporting -lnumericalfunctions -lpugixml
 
@@ -47,7 +44,7 @@ productMatrixCollapse: productMatrixCollapse.cpp
 productMatrixCollapse_photoAtomic: productMatrixCollapse_photoAtomic.cpp
 	$(CXX) $(local_CXXFLAGS) -o productMatrixCollapse_photoAtomic productMatrixCollapse_photoAtomic.cpp -lGIDI -lPoPs -lstatusMessageReporting -lnumericalfunctions -lpugixml
 
-check: testFiles settingsProcess productMatrixCollapse productMatrixCollapse_photoAtomic
+check: settingsProcess productMatrixCollapse productMatrixCollapse_photoAtomic
 	./settingsProcess O16 > o
 	python ../Utilities/diff.py settingsProcess/settingsProcess O16.out o
 	./settingsProcess Th227 > o

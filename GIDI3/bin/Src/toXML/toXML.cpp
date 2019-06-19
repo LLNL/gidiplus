@@ -27,7 +27,7 @@ void printUsage( );
 int main( int argc, char **argv ) {
 
     PoPs::Database pops( argv[1] );
-    GIDI::Construction::Settings construction( GIDI::Construction::e_all );
+    GIDI::Construction::Settings construction( GIDI::Construction::e_all, GIDI::Construction::e_nuclearAndAtomic );
     std::vector<std::string> libraries;
     GIDI::ProtareSingleton *protare;
 

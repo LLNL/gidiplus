@@ -72,7 +72,10 @@ std::string realPath( char const *a_path ) {
 
     char *p1 = realpath( a_path, NULL );
 
-    if( p1 == NULL ) throw std::runtime_error( "realPath: file does not exist." );
+    if( p1 == NULL ) {
+        std::string errMsg( "realPath: file does not exist: " );
+        throw std::runtime_error( errMsg + a_path );
+    } 
     std::string basePath( p1 );
     free( p1 );
     return( basePath );
