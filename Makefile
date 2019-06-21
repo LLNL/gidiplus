@@ -31,10 +31,13 @@ include:
 lib:
 	cd lib; $(MAKE)
 
-pugixml:
-	rm -rf pugixml pugixml-1.8
-	unzip -q Misc/pugixml-1.8.zip
+pugixml-1.8/.dirstamp:
+	curl -SL http://github.com/zeux/pugixml/releases/download/v1.8/pugixml-1.8.tar.gz --output pugixml-1.8.tar.gz
+	tar -xf pugixml-1.8.tar.gz
 	ln -s pugixml-1.8 pugixml
+	touch pugixml-1.8/.dirstamp
+
+pugixml: pugixml-1.8/.dirstamp
 	cd pugixml; tar -xf ../Misc/pugixml.addon.tar
 
 pugixml_dummy:
@@ -52,7 +55,7 @@ gidiplus_version.h: FORCE
 		svnversion statusMessageReporting | awk 'BEGIN{FS="/+| +"} {printf("#define STATUS_MESSAGE_REPORTING_SVN %d\n" , $$1)}' >> gidiplus_version.h; \
 		svnversion numericalFunctions     | awk 'BEGIN{FS="/+| +"} {printf("#define NUMERICAL_FUNCTIONS_SVN  %d\n" , $$1)}'     >> gidiplus_version.h; \
 		svnversion PoPsCpp                | awk 'BEGIN{FS="/+| +"} {printf("#define POPSCPP_SVN  %d\n" , $$1)}'                 >> gidiplus_version.h; \
-		svnversion RCGIDI                 | awk 'BEGIN{FS="/+| +"} {printf("#define RCGIDI_SVN  %d\n" , $$1)}'                  >> gidiplus_version.h; \
+		svnversion GIDI3                  | awk 'BEGIN{FS="/+| +"} {printf("#define GIDI3_SVN  %d\n" , $$1)}'                   >> gidiplus_version.h; \
 	fi
 	cat gidiplus_version.h
 

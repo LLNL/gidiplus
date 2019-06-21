@@ -32,11 +32,11 @@ See LICENSE, COPYRIGHT and NOTICE for details.
 
 SPDX-License-Identifier: MIT
 
-This package includes several components:
+This package includes several components: \
 LLNL-CODE-778320	(GIDIplus)
 
-LLNL-CODE-770917	(GIDI3)
-LLNL-CODE-771182	(statusMessageReporting)
-LLNL-CODE-770377	(PoPsCpp)
+LLNL-CODE-770917	(GIDI3) \
+LLNL-CODE-771182	(statusMessageReporting) \
+LLNL-CODE-770377	(PoPsCpp) \
 LLNL-CODE-770134	(numericalFunctions)
 

@@ -24,3 +24,4 @@ clean:
 	rm -f *.a *.o
 
 realclean: clean
+	rm -f __.SYMDEF*
