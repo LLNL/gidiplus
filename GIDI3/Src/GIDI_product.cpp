@@ -67,7 +67,7 @@ Product::Product( Construction::Settings const &a_construction, pugi::xml_node c
     m_averageMomentum.setAncestor( this );
 
     pugi::xml_node const _outputChannel = a_node.child( "outputChannel" );
-    if( _outputChannel.type( ) != pugi::node_null ) m_outputChannel = new OutputChannel( a_construction, _outputChannel, a_pops, a_internalPoPs, a_styles );
+    if( _outputChannel.type( ) != pugi::node_null ) m_outputChannel = new OutputChannel( a_construction, _outputChannel, a_pops, a_internalPoPs, a_styles, false );
 
     if( m_outputChannel == NULL ) {
         if( m_multiplicity.size( ) > 0 ) {

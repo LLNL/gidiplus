@@ -64,7 +64,7 @@ Reaction::Reaction( Construction::Settings const &a_construction, pugi::xml_node
 
     ENDL_CFromENDF_MT( m_ENDF_MT, &m_ENDL_C, &m_ENDL_S );
 
-    m_outputChannel = new OutputChannel( a_construction, a_node.child( outputChannelMoniker ), a_pops, a_internalPoPs, a_styles );
+    m_outputChannel = new OutputChannel( a_construction, a_node.child( outputChannelMoniker ), a_pops, a_internalPoPs, a_styles, hasFission( ) );
     m_outputChannel->setAncestor( this );
 
     if( ( a_construction.parseMode( ) != Construction::e_outline ) && ( a_construction.parseMode( ) != Construction::e_readOnly ) ) {

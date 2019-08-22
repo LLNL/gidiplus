@@ -367,10 +367,15 @@ AngularEnergyMC::~AngularEnergyMC( ) {
 void AngularEnergyMC::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
     
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
+    std::string indent3 = a_writeInfo.incrementalIndent( indent2 );
 
     toXMLNodeStarter( a_writeInfo, a_indent );
-    m_angular->toXMLList( a_writeInfo, indent2 );
-    m_angularEnergy->toXMLList( a_writeInfo, indent2 );
+    a_writeInfo.addNodeStarter( indent2, angularMoniker );
+    m_angular->toXMLList( a_writeInfo, indent3 );
+    a_writeInfo.addNodeEnder( angularMoniker );
+    a_writeInfo.addNodeStarter( indent2, angularEnergyMoniker );
+    m_angularEnergy->toXMLList( a_writeInfo, indent3 );
+    a_writeInfo.addNodeEnder( angularEnergyMoniker );
     a_writeInfo.addNodeEnder( moniker( ) );
 }
 
@@ -463,10 +468,15 @@ LLNLAngularEnergy::~LLNLAngularEnergy( ) {
 void LLNLAngularEnergy::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
     
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
+    std::string indent3 = a_writeInfo.incrementalIndent( indent2 );
 
     toXMLNodeStarter( a_writeInfo, a_indent );
-    m_angular->toXMLList( a_writeInfo, indent2 );
-    m_angularEnergy->toXMLList( a_writeInfo, indent2 );
+    a_writeInfo.addNodeStarter( indent2, LLNLAngularOfAngularEnergyMoniker );
+    m_angular->toXMLList( a_writeInfo, indent3 );
+    a_writeInfo.addNodeEnder( LLNLAngularOfAngularEnergyMoniker );
+    a_writeInfo.addNodeStarter( indent2, LLNLAngularEnergyOfAngularEnergyMoniker );
+    m_angularEnergy->toXMLList( a_writeInfo, indent3 );
+    a_writeInfo.addNodeEnder( LLNLAngularEnergyOfAngularEnergyMoniker );
     a_writeInfo.addNodeEnder( moniker( ) );
 }
 
@@ -568,7 +578,6 @@ void Reference3d::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent
     attributes += a_writeInfo.addAttribute( "label", label( ) );
     attributes += a_writeInfo.addAttribute( "href", href( ) );
     a_writeInfo.addNodeStarterEnder( a_indent, moniker( ), attributes );
-    a_writeInfo.addNodeEnder( moniker( ) );
 }
 
 /*! \class Unspecified

@@ -629,24 +629,26 @@ Protare *Map::protare( Construction::Settings const &a_construction, PoPs::Datab
 
     Protare *nuclear = NULL, *atomic = NULL, *protare;
 
-    if( ( a_projectileID == PoPs::IDs::photon ) && ( a_construction.photoMode( ) != Construction::e_nuclearOnly ) ) {
-        PoPs::Base const *popsBase = &a_pops.get<PoPs::Base>( targetID );
-        if( popsBase->Class( ) == PoPs::class_nuclide ) {
-            PoPs::Nuclide const *nuclide = static_cast<PoPs::Nuclide const *>( popsBase );
-            PoPs::Isotope const *isotope = nuclide->isotope( );
-            popsBase = isotope->chemicalElement( );
-            atomicTargetID = popsBase->ID( );
+    if( a_projectileID == PoPs::IDs::photon ) {
+        if( a_construction.photoMode( ) != Construction::e_nuclearOnly ) {
+            PoPs::Base const *popsBase = &a_pops.get<PoPs::Base>( targetID );
+            if( popsBase->Class( ) == PoPs::class_nuclide ) {
+                PoPs::Nuclide const *nuclide = static_cast<PoPs::Nuclide const *>( popsBase );
+                PoPs::Isotope const *isotope = nuclide->isotope( );
+                popsBase = isotope->chemicalElement( );
+                atomicTargetID = popsBase->ID( );
+            }
+            ProtareBaseEntry const *protareEntry = findProtareEntry( a_projectileID, atomicTargetID, a_evaluation );
+            if( protareEntry != NULL ) atomic = protareEntry->protare( a_construction, a_pops );
+        }
+        if( a_construction.photoMode( ) != Construction::e_atomicOnly ) {
+            ProtareBaseEntry const *protareEntry = findProtareEntry( a_projectileID, a_targetID, a_evaluation );
+            if( protareEntry != NULL ) nuclear = protareEntry->protare( a_construction, a_pops );
         }
     }
-
-    if( a_construction.photoMode( ) != Construction::e_atomicOnly ) {
+    else {
         ProtareBaseEntry const *protareEntry = findProtareEntry( a_projectileID, a_targetID, a_evaluation );
         if( protareEntry != NULL ) nuclear = protareEntry->protare( a_construction, a_pops );
-    }
-
-    if( a_construction.photoMode( ) != Construction::e_nuclearOnly ) {
-        ProtareBaseEntry const *protareEntry = findProtareEntry( a_projectileID, atomicTargetID, a_evaluation );
-        if( protareEntry != NULL ) atomic = protareEntry->protare( a_construction, a_pops );
     }
 
     if( nuclear == NULL ) {

@@ -200,12 +200,16 @@ enum transportMode { multiGroup, SnElasticUpScatter, MonteCarlo };
 #define multiGroup3dMoniker "multiGroup3d"
 #define angularTwoBodyMoniker "angularTwoBody"
 #define uncorrelatedMoniker "uncorrelated"
+#define angularMoniker "angular"
+#define energyMoniker "energy"
 #define KalbachMannMoniker "KalbachMann"
 #define energyAngularMoniker "energyAngular"
 #define energyAngularMCMoniker "energyAngularMC"
 #define angularEnergyMoniker "angularEnergy"
 #define angularEnergyMCMoniker "angularEnergyMC"
 #define LLNLAngularEnergyMoniker "LLNLAngularEnergy"
+#define LLNLAngularOfAngularEnergyMoniker "LLNLAngularOfAngularEnergy"
+#define LLNLAngularEnergyOfAngularEnergyMoniker "LLNLAngularEnergyOfAngularEnergy"
 #define coherentPhotonScatteringMoniker "coherentPhotonScattering"
 #define incoherentPhotonScatteringMoniker "incoherentPhotonScattering"
 #define TNSL_coherentElasticMoniker "thermalNeutronScatteringLaw_coherentElastic"
@@ -887,6 +891,7 @@ class Reference1d : public Function1dForm {
 
         std::string const &xlink( ) const { return( m_xlink ); }                /**< Returns the value of the **m_xlink** member. */
         double evaluate( double a_x1 ) const ;
+        void toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const ;
 };
 
 /*
@@ -2969,7 +2974,8 @@ class OutputChannel : public Ancestry {
 
     public:
         OutputChannel( bool a_twoBody, bool a_fissions, std::string a_process );
-        OutputChannel( Construction::Settings const &a_construction, pugi::xml_node const &a_node, PoPs::Database const &a_pops, PoPs::Database const &a_internalPoPs, Styles::Suite const *a_styles );
+        OutputChannel( Construction::Settings const &a_construction, pugi::xml_node const &a_node, PoPs::Database const &a_pops, PoPs::Database const &a_internalPoPs, 
+                Styles::Suite const *a_styles, bool a_isFission );
         ~OutputChannel( );
 
         bool twoBody( ) const { return( m_twoBody ); }                              /**< Returns the value of the **m_twoBody** member. */

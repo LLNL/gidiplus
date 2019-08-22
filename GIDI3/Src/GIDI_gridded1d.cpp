@@ -88,14 +88,17 @@ void Gridded1d::toXMLList_func( WriteInfo &a_writeInfo, std::string const &a_ind
 
     std::vector<double> doubles;
     doubles.reserve( m_data.size( ) );
-    std::size_t i1;
+    std::size_t i1, i2;
     for( i1 = 0; i1 < m_data.size( ); ++i1 ) {
         if( m_data[i1] != 0.0 ) break;
+    }
+    for( i2 = m_data.size( ); i2 > i1; --i2 ) {
+        if( m_data[i2-1] != 0.0 ) break;
     }
     std::size_t start( i1 );
     if( start == m_data.size( ) ) start = 0;
     a_writeInfo.push_back( indent3 + "<values valueType=\"Integer32\" label=\"starts\">" + size_t_ToString( start ) + "</values>" );
-    for( ; i1 < m_data.size( ); ++i1 ) doubles.push_back( m_data[i1] );
+    for( ; i1 < i2; ++i1 ) doubles.push_back( m_data[i1] );
     a_writeInfo.push_back( indent3 + "<values valueType=\"Integer32\" label=\"lengths\">" + size_t_ToString( doubles.size( ) ) + "</values>" );
 
     doublesToXMLList( a_writeInfo, indent3, doubles );

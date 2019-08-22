@@ -41,10 +41,10 @@ OutputChannel::OutputChannel( bool a_twoBody, bool a_fissions, std::string a_pro
  ***********************************************************************************************************/
 
 OutputChannel::OutputChannel( Construction::Settings const &a_construction, pugi::xml_node const &a_node, PoPs::Database const &a_pops, 
-                PoPs::Database const &a_internalPoPs, Styles::Suite const *a_styles ) :
+                PoPs::Database const &a_internalPoPs, Styles::Suite const *a_styles, bool a_isFission ) :
         Ancestry( a_node.name( ) ),
         m_twoBody( std::string( a_node.attribute( "genre" ).value( ) ) == "twoBody" ),
-        m_fissions( false ),                    // BRB: This is not right.
+        m_fissions( a_isFission ),
         m_process( std::string( a_node.attribute( "process" ).value( ) ) ),
         m_Q( a_construction, QMoniker, a_node, a_pops, a_internalPoPs, parseQSuite, a_styles ),
         m_products( a_construction, productsMoniker, a_node, a_pops, a_internalPoPs, parseProductSuite, a_styles ),

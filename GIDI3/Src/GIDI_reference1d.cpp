@@ -71,4 +71,20 @@ double Reference1d::evaluate( double a_x1 ) const {
     throw std::runtime_error( "Reference1d::evaluate: not implemented" );
 }
 
+/* *********************************************************************************************************//**
+ * Fills the argument *a_writeInfo* with the XML lines that represent *this*. Recursively enters each sub-node.
+ *
+ * @param       a_writeInfo         [in/out]    Instance containing incremental indentation and other information and stores the appended lines.
+ * @param       a_indent            [in]        The amount to indent *this* node.
+ ***********************************************************************************************************/
+
+void Reference1d::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+
+    std::string attributes;
+
+    attributes += a_writeInfo.addAttribute( "label", label( ) );
+    attributes += a_writeInfo.addAttribute( "href", m_xlink );
+    a_writeInfo.addNodeStarterEnder( a_indent, moniker( ), attributes );
+}
+
 }
