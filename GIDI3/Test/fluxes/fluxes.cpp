@@ -36,5 +36,9 @@ int main( int argc, char **argv ) {
         GIDI::Function3dForm const *function3d = fluxes.get<GIDI::Function3dForm>( i1 );
 
         std::cout << function3d->label( ) << std::endl;
+
+        std::vector<GIDI::Settings::Flux> setting_fluxes = GIDI::settingsFluxesFromFunction3d( *function3d );
+        for( std::size_t i1 = 0; i1 < setting_fluxes.size( ); ++i1 ) setting_fluxes[i1].print( "" );
     }
+
 }

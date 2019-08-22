@@ -40,7 +40,7 @@ fluxes: fluxes.cpp
 
 check: fluxes
 	./fluxes > o
-	python ../Utilities/diff.py fluxes/fluxes fluxes.out o
+	diff fluxes.out o > /dev/null; if [ $$? -ne 0 ]; then echo "FAILURE: fluxes/fluxes.cpp: difference in output"; fi
 
 clean:
 	rm -f fluxes o file1 file2

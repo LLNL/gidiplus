@@ -839,7 +839,8 @@ class Legendre1d : public Function1dForm {
         double domainMin( ) const { return( -1.0 ); }                               /**< Returns the value of the *domainMin* which is always -1.0. */
         double domainMax( ) const { return( 1.0 ); }                                /**< Returns the value of the *domainMax* which is always 1.0. */
 
-        std::vector<double> const &coefficients( ) { return( m_coefficients ); }    /**< Returns the value of the **m_coefficients** member. */
+        std::vector<double> const &coefficients( ) const { return( m_coefficients ); }    /**< Returns the value of the **m_coefficients** member. */
+        std::vector<double> &coefficients( ) { return( m_coefficients ); }          /**< Returns the value of the **m_coefficients** member. */
 
         double evaluate( double a_x1 ) const ;
         void toXMLList_func( WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const ;
@@ -2745,6 +2746,7 @@ class Particle {
         std::vector<ProcessedFlux> m_processedFluxes;                       /**< One processed flux for each temperature. */
 
     public:
+        Particle( std::string const &m_pid );
         Particle( std::string const &m_pid, MultiGroup const &a_multiGroup );
         Particle( Particle const &a_particle );
         ~Particle( );
@@ -3970,6 +3972,7 @@ std::vector<std::string> sortedListOfStrings( std::vector<std::string> const &a_
 
 void energy2dToXMLList( WriteInfo &a_writeInfo, std::string const &a_moniker, std::string const &a_indent, Function1dForm *a_function );
 
+std::vector<Settings::Flux> settingsFluxesFromFunction3d( Function3dForm const &a_function3d );
 
 }           // End of namespace GIDI.
 

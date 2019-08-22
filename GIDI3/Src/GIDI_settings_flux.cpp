@@ -389,4 +389,64 @@ void Fluxes_from_bdfls::print( bool a_outline, int a_valuesPerLine ) const {
 
 }
 
+/* *********************************************************************************************************//**
+ * Convert a flux in the form of a Function3dForm into those needed by Settings methods. Currently only works for
+ * XYs3d which contains a list of XYs2d which each contain a list of Legendre instances.
+ *
+ * @param a_function3d          [in]    A Function3dForm instance.
+ * @return                              The list of Settings::Flux * instances.
+ ***********************************************************************************************************/
+
+std::vector<Settings::Flux> settingsFluxesFromFunction3d( Function3dForm const &a_function3d ) {
+
+    if( a_function3d.type( ) != f_XYs3d ) throw std::runtime_error( "Currently, only a 3d function of type XYs3d is supported." );
+
+    XYs3d const &xys3d = static_cast<XYs3d const &>( a_function3d );
+    std::vector<Function2dForm *> const function2ds = xys3d.function2ds( );
+    std::vector<Settings::Flux> fluxes;
+
+    for( std::size_t i1 = 0; i1 < function2ds.size( ); ++i1 ) {
+        Function2dForm const &function2d = *function2ds[i1];
+
+        if( function2d.type( ) != f_XYs2d ) throw std::runtime_error( "Currently, only a 2d function of type XYs2d is supported for flux f(E,mu)." );
+
+        XYs2d const &xys2d = static_cast<XYs2d const &>( function2d );
+        std::vector<Function1dForm *> const &function1ds = xys2d.function1ds( );
+
+        Settings::Flux flux( a_function3d.label( ), xys2d.outerDomainValue( ) );
+        std::size_t maxOrder = 0;
+        std::vector<double> energies;
+        std::vector< std::vector<double> > fluxMatrix;
+
+        for( std::size_t i2 = 0; i2 < function1ds.size( ); ++i2 ) {
+            Function1dForm const &function1d = *function1ds[i2];
+
+            if( function1d.type( ) != f_Legendre1d ) throw std::runtime_error( "Currently, only a 1d function of type Legendre1d is supported for flux f(mu)." );
+
+            Legendre1d const &legendre1d = static_cast<Legendre1d const &>( function1d );
+
+            energies.push_back( legendre1d.outerDomainValue( ) );
+            std::vector<double> &coefficients = const_cast< std::vector<double> &>( legendre1d.coefficients( ) );
+            if( maxOrder < coefficients.size( ) ) maxOrder = coefficients.size( );
+            fluxMatrix.push_back( coefficients );
+        }
+
+        for( std::size_t order = 0; order < maxOrder; ++order ) {
+            std::vector<double> energyFluxAtOrder;
+
+            for( std::size_t i2 = 0; i2 < function1ds.size( ); ++i2 ) {
+                energyFluxAtOrder.push_back( 0.0 );
+                if( order < fluxMatrix[i2].size( ) ) energyFluxAtOrder[i2] = fluxMatrix[i2][order];
+            }
+
+            Settings::Flux_order fluxOrder( order, energies, energyFluxAtOrder );
+            flux.addFluxOrder( fluxOrder );
+        }
+
+        fluxes.push_back( flux );
+    }
+
+    return( fluxes );
+}
+
 }

@@ -311,10 +311,10 @@ double XYs1d::evaluate( double a_x1 ) const {
     if( length == 0 ) throw std::runtime_error( "XYs1d::evaluate: XYs1d has no datum." );
 
     ptwXYPoint *point = ptwXY_getPointAtIndex_Unsafely( m_ptwXY, 0 );
-    if( point->x <= a_x1 ) return( point->y );
+    if( point->x >= a_x1 ) return( point->y );
 
     point = ptwXY_getPointAtIndex_Unsafely( m_ptwXY, length - 1 );
-    if( point->x >= a_x1 ) return( point->y );
+    if( point->x <= a_x1 ) return( point->y );
 
     double y;
     nfu_status status = ptwXY_getValueAtX( NULL, m_ptwXY, a_x1, &y );
