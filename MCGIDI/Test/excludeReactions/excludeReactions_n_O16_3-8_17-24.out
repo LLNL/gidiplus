@@ -1,0 +1,89 @@
+
+    projectile = n
+    target = O16
+
+    GIDI::Protare number of reaction = 60
+          0) n + O16
+          1) n + (O16_e1 -> O16)
+          2) n + (O16_e2 -> O16)
+          3) n + (O16_e3 -> O16)
+          4) n + (O16_e4 -> O16)
+          5) n + (O16_e5 -> O16)
+          6) n + (O16_e6 -> O16)
+          7) n + (O16_e7 -> O16)
+          8) n + (O16 -> O16 + photon) [continuum]
+          9) 2n + O15 + photon
+         10) n + H1 + N15 + photon
+         11) n + H2 + N14 + photon
+         12) H1 + N16
+         13) H1 + (N16_e1 -> N16)
+         14) H1 + (N16_e2 -> N16)
+         15) H1 + (N16_e3 -> N16)
+         16) H2 + N15
+         17) H2 + (N15_e1 -> N15)
+         18) H2 + (N15_e2 -> N15)
+         19) H2 + (N15_e3 -> N15)
+         20) H2 + (N15_e4 -> N15)
+         21) H2 + (N15_e5 -> N15)
+         22) H2 + (N15_e6 -> N15)
+         23) H2 + (N15_e7 -> N15)
+         24) H2 + (N15_e8 -> N15)
+         25) H2 + (N15_e9 -> N15)
+         26) H2 + (N15_e10 -> N15)
+         27) H2 + (N15_e11 -> N15)
+         28) H2 + (N15_e12 -> N15)
+         29) H2 + (N15_e13 -> N15)
+         30) H2 + (N15_e14 -> N15)
+         31) H2 + (N15_e15 -> N15)
+         32) H2 + (N15_e16 -> N15)
+         33) H2 + (N15_e17 -> N15)
+         34) H2 + (N15_e18 -> N15)
+         35) H2 + (N15_e19 -> N15)
+         36) H3 + N14
+         37) H3 + (N14_e1 -> N14)
+         38) H3 + (N14_e2 -> N14)
+         39) H3 + (N14_e3 -> N14)
+         40) H3 + (N14_e4 -> N14)
+         41) H3 + (N14_e5 -> N14)
+         42) H3 + (N14_e6 -> N14)
+         43) H3 + (N14_e7 -> N14)
+         44) H3 + (N14_e8 -> N14)
+         45) H3 + (N14_e9 -> N14)
+         46) H3 + (N14 -> N14 + photon) [continuum]
+         47) He4 + C13
+         48) He4 + (C13_e1 -> C13)
+         49) He4 + (C13_e2 -> C13)
+         50) He4 + (C13_e3 -> C13)
+         51) O17 + photon
+         52) n + He4 + C12 + photon
+         53) n + 4He4 + photon
+         54) 2n + H1 + N14 + photon
+         55) n + 2H1 + C14 + photon
+         56) n + H1 + He4 + B11 + photon
+         57) 2He4 + Be9 + photon
+         58) H1 + He4 + B12 + photon
+         59) sumOfRemainingOutputChannels
+
+    MCGIDI::Protare number of reaction = 22
+          0) n + O16
+          1) n + (O16_e1 -> O16)
+          2) n + (O16_e2 -> O16)
+          9) 2n + O15 + photon
+         10) n + H1 + N15 + photon
+         12) H1 + N16
+         13) H1 + (N16_e1 -> N16)
+         14) H1 + (N16_e2 -> N16)
+         15) H1 + (N16_e3 -> N16)
+         16) H2 + N15
+         36) H3 + N14
+         37) H3 + (N14_e1 -> N14)
+         38) H3 + (N14_e2 -> N14)
+         47) He4 + C13
+         48) He4 + (C13_e1 -> C13)
+         49) He4 + (C13_e2 -> C13)
+         50) He4 + (C13_e3 -> C13)
+         51) O17 + photon
+         52) n + He4 + C12 + photon
+         53) n + 4He4 + photon
+         57) 2He4 + Be9 + photon
+         59) sumOfRemainingOutputChannels

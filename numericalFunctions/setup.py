@@ -42,7 +42,7 @@ nf_integration_hDir = os.path.join( 'nf_integration', 'Src' )
 #
 # Stuff to build listOfDoubles.so.
 #
-libs = glob.glob( os.path.join( 'build', 'lib*', 'listOfDoubles_C*.so' ) )
+libs = glob.glob( os.path.join( 'build', 'lib*', 'listOfDoubles_C*' ) )
 for lib in libs : os.remove( lib )
 
 listOfDoubles_C = Extension( 'listOfDoubles_C',
@@ -55,13 +55,13 @@ setup( name = 'listOfDoubles_C',
     description = 'This module contains the listOfDoubles_C class and support routines.',
     ext_modules = [ listOfDoubles_C ] )
 
-libs = glob.glob( os.path.join( 'build', 'lib*', 'listOfDoubles_C*.so' ) )
+libs = glob.glob( os.path.join( 'build', 'lib*', 'listOfDoubles_C*' ) )
 if( len( libs ) > 0 ) : shutil.copy( libs[0], 'lib' )
 
 #
 # Stuff to build pointwiseXY_C.so.
 #
-libs = glob.glob( os.path.join( 'build', 'lib*', 'pointwiseXY_C*.so' ) )
+libs = glob.glob( os.path.join( 'build', 'lib*', 'pointwiseXY_C*' ) )
 for lib in libs : os.remove( lib )
 
 pointwiseXY_C = Extension( 'pointwiseXY_C',
@@ -75,13 +75,13 @@ setup( name = 'pointwiseXY_C',
     description = 'This module contains the pointwiseXY_C class and support routines.',
     ext_modules = [ pointwiseXY_C ] )
 
-libs = glob.glob( os.path.join( 'build', 'lib*', 'pointwiseXY_C*.so' ) )
+libs = glob.glob( os.path.join( 'build', 'lib*', 'pointwiseXY_C*' ) )
 if( len( libs ) > 0 ) : shutil.copy( libs[0], 'lib' )
 
 #
 # Stuff to build Legendre.so.
 #
-libs = glob.glob( os.path.join( 'build', 'lib*', 'Legendre*.so' ) )
+libs = glob.glob( os.path.join( 'build', 'lib*', 'Legendre*' ) )
 for lib in libs : os.remove( lib )
 
 nf_Legendre_C = Extension( 'Legendre',
@@ -95,13 +95,13 @@ setup( name = 'Legendre',
     description = 'This module contains the Legendre class and support routines.',
     ext_modules = [ nf_Legendre_C ] )
 
-libs = glob.glob( os.path.join( 'build', 'lib*', 'Legendre*.so' ) )
+libs = glob.glob( os.path.join( 'build', 'lib*', 'Legendre*' ) )
 if( len( libs ) > 0 ) : shutil.copy( libs[0], 'lib' )
 
 #
 # Stuff to build specialFunctions.so
 #
-libs = glob.glob( os.path.join( 'build', 'lib*', 'specialFunctions*.so' ) )
+libs = glob.glob( os.path.join( 'build', 'lib*', 'specialFunctions*' ) )
 for lib in libs : os.remove( lib )
 
 specialFunctions = Extension( 'specialFunctions',
@@ -114,13 +114,13 @@ setup( name = 'specialFunctions',
     description = 'This module contains some special math functions not in the python math module.',
     ext_modules = [ specialFunctions ] )
 
-libs = glob.glob( os.path.join( 'build', 'lib*', 'specialFunctions*.so' ) )
+libs = glob.glob( os.path.join( 'build', 'lib*', 'specialFunctions*' ) )
 if( len( libs ) > 0 ) : shutil.copy( libs[0], 'lib' )
 
 #
 # Stuff to build angularMomentumCoupling.so
 #
-libs = glob.glob( os.path.join( 'build', 'lib*', 'angularMomentumCoupling*.so' ) )
+libs = glob.glob( os.path.join( 'build', 'lib*', 'angularMomentumCoupling*' ) )
 for lib in libs : os.remove( lib )
 
 angularMomentumCoupling = Extension( 'angularMomentumCoupling',
@@ -133,13 +133,13 @@ setup( name = 'angularMomentumCoupling',
     description = 'This module contains some physics angular momentum coupling functions not in the python math module.',
     ext_modules = [ angularMomentumCoupling ] )
 
-libs = glob.glob( os.path.join( 'build', 'lib*', 'angularMomentumCoupling*.so' ) )
+libs = glob.glob( os.path.join( 'build', 'lib*', 'angularMomentumCoupling*' ) )
 if( len( libs ) > 0 ) : shutil.copy( libs[0], 'lib' )
 
 #
 # Stuff to build integration.so
 #
-libs = glob.glob( os.path.join( 'build', 'lib*', 'integration*.so' ) )
+libs = glob.glob( os.path.join( 'build', 'lib*', 'integration*' ) )
 for lib in libs : os.remove( lib )
 
 integration = Extension( 'integration',
@@ -152,5 +152,5 @@ setup( name = 'integration',
     description = 'This module contains functions for integrating a function representing an integrand.',
     ext_modules = [ integration ] )
 
-libs = glob.glob( os.path.join( 'build', 'lib*', 'integration*.so' ) )
+libs = glob.glob( os.path.join( 'build', 'lib*', 'integration*' ) )
 if( len( libs ) > 0 ) : shutil.copy( libs[0], 'lib' )

@@ -5,9 +5,7 @@
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
-SHELL = /bin/ksh
-
-subDirectories = Utilities UnitTesting
+SHELL = /bin/sh
 
 .PHONY: default utilities check checke clean realclean doTarget
 

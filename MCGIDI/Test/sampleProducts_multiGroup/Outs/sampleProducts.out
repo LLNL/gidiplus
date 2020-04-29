@@ -1,0 +1,848 @@
+label = MultiGroup_000  temperature = 2.586e-08
+label = MultiGroup_001  temperature = 1e-06
+label = MultiGroup_002  temperature = 0.0001
+reaction (  0) = n + O16  threshold = 0
+    energy = 1e-13
+        productIndex    4 KE = 8.11435e-14
+        productIndex  209 KE = 1.88565e-14
+    energy = 2e-13
+        productIndex    4 KE = 1.94387e-13
+        productIndex  209 KE = 5.61302e-15
+    energy = 4e-13
+        productIndex    4 KE = 3.33666e-13
+        productIndex  209 KE = 6.63338e-14
+    energy = 8e-13
+        productIndex    4 KE = 7.7834e-13
+        productIndex  209 KE = 2.16602e-14
+    energy = 1.6e-12
+        productIndex    4 KE = 1.40046e-12
+        productIndex  209 KE = 1.99543e-13
+    energy = 3.2e-12
+        productIndex    4 KE = 2.86795e-12
+        productIndex  209 KE = 3.32047e-13
+    energy = 6.4e-12
+        productIndex    4 KE = 6.31761e-12
+        productIndex  209 KE = 8.23912e-14
+    energy = 1.28e-11
+        productIndex    4 KE = 1.03551e-11
+        productIndex  209 KE = 2.44491e-12
+    energy = 2.56e-11
+        productIndex    4 KE = 2.26193e-11
+        productIndex  209 KE = 2.98071e-12
+    energy = 5.12e-11
+        productIndex    4 KE = 4.20967e-11
+        productIndex  209 KE = 9.10329e-12
+    energy = 1.024e-10
+        productIndex    4 KE = 9.6465e-11
+        productIndex  209 KE = 5.93496e-12
+    energy = 2.048e-10
+        productIndex    4 KE = 1.81936e-10
+        productIndex  209 KE = 2.28635e-11
+    energy = 4.096e-10
+        productIndex    4 KE = 3.39414e-10
+        productIndex  209 KE = 7.0186e-11
+    energy = 8.192e-10
+        productIndex    4 KE = 6.74242e-10
+        productIndex  209 KE = 1.44958e-10
+    energy = 1.6384e-09
+        productIndex    4 KE = 1.57983e-09
+        productIndex  209 KE = 5.85674e-11
+    energy = 3.2768e-09
+        productIndex    4 KE = 2.5643e-09
+        productIndex  209 KE = 7.12501e-10
+    energy = 6.5536e-09
+        productIndex    4 KE = 6.10668e-09
+        productIndex  209 KE = 4.46917e-10
+    energy = 1.31072e-08
+        productIndex    4 KE = 1.19317e-08
+        productIndex  209 KE = 1.1755e-09
+    energy = 2.62144e-08
+        productIndex    4 KE = 2.23661e-08
+        productIndex  209 KE = 3.84825e-09
+    energy = 5.24288e-08
+        productIndex    4 KE = 4.36751e-08
+        productIndex  209 KE = 8.75373e-09
+    energy = 1.04858e-07
+        productIndex    4 KE = 8.84148e-08
+        productIndex  209 KE = 1.64428e-08
+    energy = 2.09715e-07
+        productIndex    4 KE = 1.65083e-07
+        productIndex  209 KE = 4.46324e-08
+    energy = 4.1943e-07
+        productIndex    4 KE = 3.69417e-07
+        productIndex  209 KE = 5.00136e-08
+    energy = 8.38861e-07
+        productIndex    4 KE = 7.71626e-07
+        productIndex  209 KE = 6.72349e-08
+    energy = 1.67772e-06
+        productIndex    4 KE = 1.57664e-06
+        productIndex  209 KE = 1.01086e-07
+    energy = 3.35544e-06
+        productIndex    4 KE = 3.04627e-06
+        productIndex  209 KE = 3.09174e-07
+    energy = 6.71089e-06
+        productIndex    4 KE = 5.68262e-06
+        productIndex  209 KE = 1.02827e-06
+    energy = 1.34218e-05
+        productIndex    4 KE = 1.04481e-05
+        productIndex  209 KE = 2.97366e-06
+    energy = 2.68435e-05
+        productIndex    4 KE = 2.1822e-05
+        productIndex  209 KE = 5.02151e-06
+    energy = 5.36871e-05
+        productIndex    4 KE = 4.54374e-05
+        productIndex  209 KE = 8.24968e-06
+    energy = 0.000107374
+        productIndex    4 KE = 0.000101546
+        productIndex  209 KE = 5.82769e-06
+    energy = 0.000214748
+        productIndex    4 KE = 0.000208588
+        productIndex  209 KE = 6.16005e-06
+    energy = 0.000429497
+        productIndex    4 KE = 0.000359394
+        productIndex  209 KE = 7.01023e-05
+    energy = 0.000858993
+        productIndex    4 KE = 0.000750863
+        productIndex  209 KE = 0.000108131
+    energy = 0.00171799
+        productIndex    4 KE = 0.00165948
+        productIndex  209 KE = 5.85044e-05
+    energy = 0.00343597
+        productIndex    4 KE = 0.00272867
+        productIndex  209 KE = 0.000707304
+    energy = 0.00687195
+        productIndex    4 KE = 0.00649224
+        productIndex  209 KE = 0.000379706
+    energy = 0.0137439
+        productIndex    4 KE = 0.01149
+        productIndex  209 KE = 0.00225388
+    energy = 0.0274878
+        productIndex    4 KE = 0.0247236
+        productIndex  209 KE = 0.00276421
+    energy = 0.0549756
+        productIndex    4 KE = 0.0534769
+        productIndex  209 KE = 0.00149873
+    energy = 0.109951
+        productIndex    4 KE = 0.0955065
+        productIndex  209 KE = 0.0144447
+    energy = 0.219902
+        productIndex    4 KE = 0.190825
+        productIndex  209 KE = 0.0290777
+    energy = 0.439805
+        productIndex    4 KE = 0.374064
+        productIndex  209 KE = 0.0657402
+    energy = 0.879609
+        productIndex    4 KE = 0.74166
+        productIndex  209 KE = 0.137949
+    energy = 1.75922
+        productIndex    4 KE = 1.46346
+        productIndex  209 KE = 0.295757
+    energy = 3.51844
+        productIndex    4 KE = 3.31734
+        productIndex  209 KE = 0.201097
+    energy = 7.03687
+        productIndex    4 KE = 6.43969
+        productIndex  209 KE = 0.597186
+    energy = 14.0737
+        productIndex    4 KE = 11.4091
+        productIndex  209 KE = 2.66465
+    energy = 28.1475
+        productIndex    4 KE = 27.8634
+        productIndex  209 KE = 0.284077
+    energy = 56.295
+        productIndex    4 KE = 56.0668
+        productIndex  209 KE = 0.228156
+reaction (  1) = n + (O16_e1 -> O16)  threshold = 6.43088
+    energy = 6.43088
+        productIndex    4 KE = 0.0226898
+        productIndex  209 unspecified distribution
+    energy = 12.8618
+        productIndex    4 KE = 6.49729
+        productIndex  209 unspecified distribution
+        productIndex    1 KE = 6.12989
+    energy = 25.7235
+        productIndex    4 KE = 19.114
+        productIndex  209 unspecified distribution
+        productIndex    1 KE = 6.12989
+    energy = 51.4471
+        productIndex    4 KE = 38.6032
+        productIndex  209 unspecified distribution
+reaction (  2) = n + (O16_e2 -> O16)  threshold = 6.51646
+    energy = 6.51646
+        productIndex    4 KE = 0.0229925
+        productIndex  209 unspecified distribution
+        productIndex    1 KE = 0.51
+        productIndex    1 KE = 0.51
+    energy = 13.0329
+        productIndex    4 KE = 5.46667
+        productIndex  209 unspecified distribution
+        productIndex    1 KE = 6.12989
+    energy = 26.0658
+        productIndex    4 KE = 19.8427
+        productIndex  209 unspecified distribution
+    energy = 52.1317
+        productIndex    4 KE = 43.9494
+        productIndex  209 unspecified distribution
+reaction (  3) = n + (O16_e3 -> O16)  threshold = 7.3533
+    energy = 7.3533
+        productIndex    4 KE = 0.0259541
+        productIndex  209 unspecified distribution
+    energy = 14.7066
+        productIndex    4 KE = 7.39105
+        productIndex  209 unspecified distribution
+        productIndex    1 KE = 6.12989
+    energy = 29.4132
+        productIndex    4 KE = 20.9032
+        productIndex  209 unspecified distribution
+    energy = 58.8264
+        productIndex    4 KE = 48.4155
+        productIndex  209 unspecified distribution
+reaction (  4) = n + (O16_e4 -> O16)  threshold = 7.5656
+    energy = 7.5656
+        productIndex    4 KE = 0.0267058
+        productIndex  209 unspecified distribution
+        productIndex    1 KE = 6.12989
+    energy = 15.1312
+        productIndex    4 KE = 7.52987
+        productIndex  209 unspecified distribution
+    energy = 30.2624
+        productIndex    4 KE = 22.9425
+        productIndex  209 unspecified distribution
+    energy = 60.5248
+        productIndex    4 KE = 49.4094
+        productIndex  209 unspecified distribution
+reaction (  5) = n + (O16_e5 -> O16)  threshold = 9.43138
+    energy = 9.43138
+        productIndex    4 KE = 0.0333172
+        productIndex  209 unspecified distribution
+        productIndex    1 KE = 6.12989
+    energy = 18.8628
+        productIndex    4 KE = 9.54408
+        productIndex  209 unspecified distribution
+        productIndex    1 KE = 6.12989
+        productIndex    1 KE = 2.74201
+    energy = 37.7255
+        productIndex    4 KE = 22.4819
+        productIndex  209 unspecified distribution
+    energy = 75.451
+        productIndex    4 KE = 66.1734
+        productIndex  209 unspecified distribution
+reaction (  6) = n + (O16_e6 -> O16)  threshold = 11.648
+    energy = 11.648
+        productIndex    4 KE = 0.0411848
+        productIndex  209 unspecified distribution
+    energy = 23.2959
+        productIndex    4 KE = 11.8079
+        productIndex  209 unspecified distribution
+    energy = 46.5919
+        productIndex    4 KE = 26.9007
+        productIndex  209 unspecified distribution
+    energy = 93.1838
+        productIndex    4 KE = 77.5592
+        productIndex  209 unspecified distribution
+reaction (  7) = n + (O16_e7 -> O16)  threshold = 11.7787
+    energy = 11.7787
+        productIndex    4 KE = 0.0416493
+        productIndex  209 unspecified distribution
+        productIndex    1 KE = 6.12989
+    energy = 23.5574
+        productIndex    4 KE = 10.8399
+        productIndex  209 unspecified distribution
+    energy = 47.1149
+        productIndex    4 KE = 29.4102
+        productIndex  209 unspecified distribution
+    energy = 94.2298
+        productIndex    4 KE = 73.1444
+        productIndex  209 unspecified distribution
+reaction (  8) = n + (O16 -> O16 + photon) [continuum]  threshold = 10.1895
+    energy = 10.1895
+        productIndex    4 KE = 0.04569
+        productIndex  209 KE = 0.587031
+        productIndex    1 KE = 0.0861765
+    energy = 20.3789
+        productIndex    4 KE = 6.01414
+        productIndex  209 KE = 0.351287
+        productIndex    1 KE = 4.62424
+        productIndex    1 KE = 4.04568
+        productIndex    1 KE = 6.9171
+        productIndex    1 KE = 4.1629
+    energy = 40.7578
+        productIndex    4 KE = 15.538
+        productIndex  209 KE = 0.520517
+        productIndex    1 KE = 9.87726
+    energy = 81.5156
+        productIndex    4 KE = 19.558
+        productIndex  209 KE = 1.61787
+        productIndex    1 KE = 6.17086
+        productIndex    1 KE = 5.13878
+reaction (  9) = 2n + O15 + photon  threshold = 16.6516
+    energy = 16.6516
+        productIndex    4 KE = 0.0379138
+        productIndex    4 KE = 0.0666078
+        productIndex  207 KE = 0.807871
+    energy = 33.3032
+        productIndex    4 KE = 6.08978
+        productIndex    4 KE = 0.45494
+        productIndex  207 KE = 3.39606
+    energy = 66.6064
+        productIndex    4 KE = 1.6022
+        productIndex    4 KE = 1.3033
+        productIndex  207 KE = 3.6539
+reaction ( 10) = n + H1 + N15 + photon  threshold = 12.8924
+    energy = 12.8924
+        productIndex    4 KE = 0.0443666
+        productIndex   16 KE = 0.0724188
+        productIndex  176 KE = 0.685787
+    energy = 25.7847
+        productIndex    4 KE = 3.58067
+        productIndex   16 KE = 3.22057
+        productIndex  176 KE = 0.947132
+        productIndex    1 KE = 5.16477
+    energy = 51.5694
+        productIndex    4 KE = 8.42963
+        productIndex   16 KE = 4.52404
+        productIndex  176 KE = 2.15984
+        productIndex    1 KE = 5.23543
+reaction ( 11) = H1 + N16  threshold = 10.2445
+    energy = 10.2445
+        productIndex   16 KE = 0.0361714
+        productIndex  178 KE = 0.574467
+    energy = 20.489
+        productIndex   16 KE = 8.01683
+        productIndex  178 KE = 2.83837
+        productIndex    1 KE = 0.297
+    energy = 40.978
+        productIndex   16 KE = 30.5597
+        productIndex  178 KE = 0.784602
+    energy = 81.9561
+        productIndex   16 KE = 66.7199
+        productIndex  178 KE = 5.60269
+reaction ( 12) = H1 + (N16_e1 -> N16)  threshold = 10.3722
+    energy = 10.3722
+        productIndex   16 KE = 0.0366242
+        productIndex  178 unspecified distribution
+    energy = 20.7444
+        productIndex   16 KE = 8.66098
+        productIndex  178 unspecified distribution
+        productIndex    1 KE = 0.297
+        productIndex    1 KE = 0.1201
+    energy = 41.4888
+        productIndex   16 KE = 31.4736
+        productIndex  178 unspecified distribution
+    energy = 82.9775
+        productIndex   16 KE = 56.1856
+        productIndex  178 unspecified distribution
+reaction ( 13) = H1 + (N16_e2 -> N16)  threshold = 10.5602
+    energy = 10.5602
+        productIndex   16 KE = 0.037291
+        productIndex  178 unspecified distribution
+        productIndex    1 KE = 0.1201
+    energy = 21.1205
+        productIndex   16 KE = 7.91119
+        productIndex  178 unspecified distribution
+    energy = 42.241
+        productIndex   16 KE = 27.6749
+        productIndex  178 unspecified distribution
+    energy = 84.4819
+        productIndex   16 KE = 68.9306
+        productIndex  178 unspecified distribution
+reaction ( 14) = H1 + (N16_e3 -> N16)  threshold = 10.6671
+    energy = 10.6671
+        productIndex   16 KE = 0.03767
+        productIndex  178 unspecified distribution
+        productIndex    1 KE = 0.297
+    energy = 21.3342
+        productIndex   16 KE = 10.5214
+        productIndex  178 unspecified distribution
+    energy = 42.6683
+        productIndex   16 KE = 29.3557
+        productIndex  178 unspecified distribution
+    energy = 85.3366
+        productIndex   16 KE = 70.6474
+        productIndex  178 unspecified distribution
+reaction ( 15) = H2 + N15  threshold = 10.5275
+    energy = 10.5275
+        productIndex   18 KE = 0.0742931
+        productIndex  176 KE = 0.553296
+    energy = 21.055
+        productIndex   18 KE = 11.13
+        productIndex  176 KE = 0.025103
+    energy = 42.11
+        productIndex   18 KE = 21.9672
+        productIndex  176 KE = 10.2431
+    energy = 84.22
+        productIndex   18 KE = 53.2556
+        productIndex  176 KE = 21.0649
+reaction ( 16) = H2 + (N15_e1 -> N15)  threshold = 16.13
+    energy = 16.13
+        productIndex   18 KE = 0.114091
+        productIndex  176 unspecified distribution
+    energy = 32.26
+        productIndex   18 KE = 15.6514
+        productIndex  176 unspecified distribution
+    energy = 64.52
+        productIndex   18 KE = 43.347
+        productIndex  176 unspecified distribution
+reaction ( 17) = H2 + (N15_e2 -> N15)  threshold = 16.161
+    energy = 16.161
+        productIndex   18 KE = 0.114311
+        productIndex  176 unspecified distribution
+    energy = 32.322
+        productIndex   18 KE = 14.6578
+        productIndex  176 unspecified distribution
+    energy = 64.644
+        productIndex   18 KE = 44.4778
+        productIndex  176 unspecified distribution
+reaction ( 18) = H2 + (N15_e3 -> N15)  threshold = 17.2502
+    energy = 17.2502
+        productIndex   18 KE = 0.12207
+        productIndex  176 unspecified distribution
+    energy = 34.5004
+        productIndex   18 KE = 13.9471
+        productIndex  176 unspecified distribution
+    energy = 69.0008
+        productIndex   18 KE = 35.947
+        productIndex  176 unspecified distribution
+reaction ( 19) = H2 + (N15_e4 -> N15)  threshold = 18.1338
+    energy = 18.1338
+        productIndex   18 KE = 0.128369
+        productIndex  176 unspecified distribution
+    energy = 36.2676
+        productIndex   18 KE = 14.942
+        productIndex  176 unspecified distribution
+    energy = 72.5352
+        productIndex   18 KE = 44.3798
+        productIndex  176 unspecified distribution
+reaction ( 20) = H2 + (N15_e5 -> N15)  threshold = 18.289
+    energy = 18.289
+        productIndex   18 KE = 0.129476
+        productIndex  176 unspecified distribution
+        productIndex    1 KE = 5.2988
+    energy = 36.578
+        productIndex   18 KE = 18.0953
+        productIndex  176 unspecified distribution
+    energy = 73.1561
+        productIndex   18 KE = 38.5039
+        productIndex  176 unspecified distribution
+reaction ( 21) = H2 + (N15_e6 -> N15)  threshold = 18.5718
+    energy = 18.5718
+        productIndex   18 KE = 0.131493
+        productIndex  176 unspecified distribution
+    energy = 37.1436
+        productIndex   18 KE = 15.7184
+        productIndex  176 unspecified distribution
+    energy = 74.2872
+        productIndex   18 KE = 49.864
+        productIndex  176 unspecified distribution
+reaction ( 22) = H2 + (N15_e7 -> N15)  threshold = 19.3645
+    energy = 19.3645
+        productIndex   18 KE = 0.137149
+        productIndex  176 unspecified distribution
+        productIndex    1 KE = 5.2988
+    energy = 38.729
+        productIndex   18 KE = 17.2763
+        productIndex  176 unspecified distribution
+    energy = 77.4581
+        productIndex   18 KE = 49.4433
+        productIndex  176 unspecified distribution
+reaction ( 23) = H2 + (N15_e8 -> N15)  threshold = 19.6394
+    energy = 19.6394
+        productIndex   18 KE = 0.139112
+        productIndex  176 unspecified distribution
+        productIndex    1 KE = 5.2988
+    energy = 39.2789
+        productIndex   18 KE = 15.0157
+        productIndex  176 unspecified distribution
+    energy = 78.5577
+        productIndex   18 KE = 49.7577
+        productIndex  176 unspecified distribution
+reaction ( 24) = H3 + N14  threshold = 15.3921
+    energy = 15.3921
+        productIndex   20 KE = 0.162982
+        productIndex  174 KE = 0.756701
+    energy = 30.7841
+        productIndex   20 KE = 8.30823
+        productIndex  174 KE = 8.0035
+    energy = 61.5683
+        productIndex   20 KE = 35.1857
+        productIndex  174 KE = 11.9101
+reaction ( 25) = H3 + (N14_e1 -> N14)  threshold = 17.8507
+    energy = 17.8507
+        productIndex   20 KE = 0.189205
+        productIndex  174 unspecified distribution
+    energy = 35.7014
+        productIndex   20 KE = 13.131
+        productIndex  174 unspecified distribution
+    energy = 71.4029
+        productIndex   20 KE = 43.2107
+        productIndex  174 unspecified distribution
+reaction ( 26) = H3 + (N14_e2 -> N14)  threshold = 19.5891
+    energy = 19.5891
+        productIndex   20 KE = 0.207778
+        productIndex  174 unspecified distribution
+        productIndex    1 KE = 2.3128
+    energy = 39.1783
+        productIndex   20 KE = 14.4977
+        productIndex  174 unspecified distribution
+    energy = 78.3566
+        productIndex   20 KE = 50.1009
+        productIndex  174 unspecified distribution
+reaction ( 27) = He4 + C13  threshold = 2.35532
+    energy = 2.35532
+        productIndex   35 KE = 0.0329215
+        productIndex  143 KE = 0.10695
+    energy = 4.71064
+        productIndex   35 KE = 1.54709
+        productIndex  143 KE = 0.948143
+    energy = 9.42128
+        productIndex   35 KE = 4.89979
+        productIndex  143 KE = 2.30617
+    energy = 18.8426
+        productIndex   35 KE = 12.3052
+        productIndex  143 KE = 4.32224
+    energy = 37.6851
+        productIndex   35 KE = 19.2841
+        productIndex  143 KE = 16.1862
+    energy = 75.3702
+        productIndex   35 KE = 45.5923
+        productIndex  143 KE = 27.5638
+reaction ( 28) = He4 + (C13_e1 -> C13)  threshold = 5.63954
+    energy = 5.63954
+        productIndex   35 KE = 0.078933
+        productIndex  143 unspecified distribution
+    energy = 11.2791
+        productIndex   35 KE = 3.56115
+        productIndex  143 unspecified distribution
+    energy = 22.5582
+        productIndex   35 KE = 9.00486
+        productIndex  143 unspecified distribution
+        productIndex    1 KE = 3.6845
+    energy = 45.1163
+        productIndex   35 KE = 33.0793
+        productIndex  143 unspecified distribution
+    energy = 90.2327
+        productIndex   35 KE = 77.2957
+        productIndex  143 unspecified distribution
+reaction ( 29) = He4 + (C13_e2 -> C13)  threshold = 6.27217
+    energy = 6.27217
+        productIndex   35 KE = 0.0878102
+        productIndex  143 unspecified distribution
+    energy = 12.5443
+        productIndex   35 KE = 5.60912
+        productIndex  143 unspecified distribution
+        productIndex    1 KE = 3.6845
+    energy = 25.0887
+        productIndex   35 KE = 15.9661
+        productIndex  143 unspecified distribution
+        productIndex    1 KE = 3.6845
+        productIndex    1 KE = 3.0894
+    energy = 50.1774
+        productIndex   35 KE = 41.3526
+        productIndex  143 unspecified distribution
+reaction ( 30) = He4 + (C13_e3 -> C13)  threshold = 6.45215
+    energy = 6.45215
+        productIndex   35 KE = 0.0903365
+        productIndex  143 unspecified distribution
+    energy = 12.9043
+        productIndex   35 KE = 4.56092
+        productIndex  143 unspecified distribution
+        productIndex    1 KE = 0.1693
+    energy = 25.8086
+        productIndex   35 KE = 11.0851
+        productIndex  143 unspecified distribution
+    energy = 51.6172
+        productIndex   35 KE = 36.1343
+        productIndex  143 unspecified distribution
+reaction ( 31) = O17 + photon  threshold = 0
+    energy = 1e-13
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 2e-13
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 0.8708
+    energy = 4e-13
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 8e-13
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 1.6e-12
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 3.2722
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 3.2e-12
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 6.4e-12
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 1.28e-11
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 2.56e-11
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 5.12e-11
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 1.024e-10
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 2.048e-10
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 4.096e-10
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 8.192e-10
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 1.6384e-09
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 3.2768e-09
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 6.5536e-09
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 1.31072e-08
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 2.62144e-08
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 5.24288e-08
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 3.2722
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 1.04858e-07
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 2.09715e-07
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 4.1943e-07
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 8.38861e-07
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 1.67772e-06
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 3.35544e-06
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 6.71089e-06
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 1.34218e-05
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 2.68435e-05
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 3.2722
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 5.36871e-05
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 0.8708
+    energy = 0.000107374
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 0.000214748
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 0.000429497
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 0.000858993
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 0.8708
+    energy = 0.00171799
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 3.2722
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 0.00343597
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 0.00687195
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 0.8708
+    energy = 0.0137439
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 0.0274878
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 0.0549756
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 0.109951
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 3.2722
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 0.8708
+    energy = 0.219902
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 0.439805
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 0.879609
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 1.75922
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 3.51844
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 7.03687
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 0.8708
+    energy = 14.0737
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 28.1475
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+    energy = 56.295
+        productIndex  211 unspecified distribution
+        productIndex    1 KE = 2.1842
+        productIndex    1 KE = 1.088
+        productIndex    1 KE = 0.8708
+reaction ( 32) = n + He4 + C12 + photon  threshold = 7.61359
+    energy = 7.61359
+        productIndex    4 KE = 0.0415657
+        productIndex   35 KE = 0.540779
+        productIndex  141 KE = 0.310723
+    energy = 15.2272
+        productIndex    4 KE = 2.05164
+        productIndex   35 KE = 3.56936
+        productIndex  141 KE = 1.3487
+    energy = 30.4544
+        productIndex    4 KE = 18.9863
+        productIndex   35 KE = 6.80786
+        productIndex  141 KE = 2.02158
+    energy = 60.9087
+        productIndex    4 KE = 14.2363
+        productIndex   35 KE = 4.99119
+        productIndex  141 KE = 3.59328
+reaction ( 33) = n + 4He4 + photon  threshold = 15.3472
+    energy = 15.3472
+        productIndex    4 KE = 0.110395
+        productIndex   35 KE = 0.267267
+        productIndex   35 KE = 0.128308
+        productIndex   35 KE = 0.812244
+        productIndex   35 KE = 0.112963
+    energy = 30.6943
+        productIndex    4 KE = 6.99214
+        productIndex   35 KE = 0.701115
+        productIndex   35 KE = 2.4792
+        productIndex   35 KE = 0.197629
+        productIndex   35 KE = 0.375052
+    energy = 61.3887
+        productIndex    4 KE = 10.4974
+        productIndex   35 KE = 3.51541
+        productIndex   35 KE = 12.5205
+        productIndex   35 KE = 4.65185
+        productIndex   35 KE = 5.45616
+reaction ( 34) = 2He4 + Be9 + photon  threshold = 13.6743
+    energy = 13.6743
+        productIndex   35 KE = 0.375196
+        productIndex   35 KE = 0.307211
+        productIndex   83 KE = 0.675569
+    energy = 27.3487
+        productIndex   35 KE = 6.94413
+        productIndex   35 KE = 2.03829
+        productIndex   83 KE = 0.188057
+    energy = 54.6974
+        productIndex   35 KE = 4.75345
+        productIndex   35 KE = 4.21339
+        productIndex   83 KE = 3.04153

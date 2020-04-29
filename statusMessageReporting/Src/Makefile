@@ -6,6 +6,7 @@
 # <<END-copyright>>
 
 SHELL = /bin/sh
+
 localCFLAGS = $(CFLAGS) 
 
 .PHONY: clean realclean

@@ -1,0 +1,17 @@
+/.../GIDI/Test/Data/MG_MC3Ts/neutrons/n-008_O_016.xml
+number of temperatures = 3
+i1 = 0:   temperature = 2.586e-08 MeV/k
+    heatedCrossSection = <heated_000>
+    griddedCrossSection = <MonteCarlo_000>
+    heatedMultiGroup = <MultiGroup_000>
+    SnElasticUpScatter = <>
+i1 = 1:   temperature = 1e-06 MeV/k
+    heatedCrossSection = <heated_001>
+    griddedCrossSection = <MonteCarlo_001>
+    heatedMultiGroup = <MultiGroup_001>
+    SnElasticUpScatter = <>
+i1 = 2:   temperature = 0.0001 MeV/k
+    heatedCrossSection = <heated_002>
+    griddedCrossSection = <MonteCarlo_002>
+    heatedMultiGroup = <MultiGroup_002>
+    SnElasticUpScatter = <>

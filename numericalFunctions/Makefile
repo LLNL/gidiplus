@@ -5,6 +5,8 @@
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
+SHELL = /bin/sh
+
 PYTHON = python
 
 SOURCE_DIRS = ptwC ptwX ptwXY nf_Legendre nf_specialFunctions nf_integration

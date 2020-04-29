@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
-SHELL = /bin/ksh
+SHELL = /bin/sh
 
 .PHONY: doc dvi ps pdf clean realclean statusMessageReporting.dvi
 

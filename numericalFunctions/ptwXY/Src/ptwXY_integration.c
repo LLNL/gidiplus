@@ -753,7 +753,7 @@ Err:
     smr_setReportError2p( smr, nfu_SMR_libraryID, nfu_Error, "Via." );
     if( ff != NULL ) ptwXY_free( ff );
     if( gg != NULL ) ptwXY_free( gg );
-    if( f != NULL ) ptwXY_free( ff );
+    if( f != NULL ) ptwXY_free( f );
     if( g != NULL ) ptwXY_free( g );
     if( groupedData != NULL ) ptwX_free( groupedData );
     return( NULL );

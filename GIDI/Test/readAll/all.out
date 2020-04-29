@@ -1,0 +1,30 @@
+    ../all.map
+
+        /.../GIDI/Test/Data/MG_MC/neutrons/n-008_O_016.xml
+        library          = MG_MC
+        resolved library = MG_MC
+
+        /.../GIDI/Test/Data/MG_MC/neutrons/n-026_Fe_056.xml
+        library          = MG_MC
+        resolved library = MG_MC
+
+        /.../GIDI/Test/Data/MG_MC/neutrons/n-090_Th_227.xml
+        library          = MG_MC
+        resolved library = MG_MC
+
+        /.../GIDI/Test/Data/MG_MC/protons/p-003_Li_006.xml
+        library          = MG_MC
+        resolved library = MG_MC
+    label = muCutoff mu = 0.94
+
+        /.../GIDI/Test/Data/MG_MC/photo-nuclear/g-008_O_016.xml
+        library          = MG_MC
+        resolved library = MG_MC
+
+        /.../GIDI/Test/Data/MG_MC/photo-atomic/photoat-008_O_000.xml
+        library          = MG_MC
+        resolved library = MG_MC
+
+        /.../GIDI/Test/Data/MG_MC/photo-atomic/photoat-090_Th_000.xml
+        library          = MG_MC
+        resolved library = MG_MC

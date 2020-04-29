@@ -5,6 +5,8 @@
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
+SHELL = /bin/sh
+
 TARGETS = gammaTest incompleteGammaTest
 
 SMR_PATH = ../../../../../statusMessageReporting

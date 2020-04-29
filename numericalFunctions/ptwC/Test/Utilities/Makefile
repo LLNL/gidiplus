@@ -5,6 +5,8 @@
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
+SHELL = /bin/sh
+
 .PHONY: default libnfut_utilities.a nfut_utilities.o utilities check clean realclean
 
 ARFLAGS = rc

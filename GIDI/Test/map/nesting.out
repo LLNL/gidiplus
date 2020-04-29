@@ -1,0 +1,196 @@
+
+library = neutrons1
+
+    path = /.../GIDI/Test/map/neutrons/n-001_H_001.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1
+    path = /.../GIDI/Test/map/neutrons/n-008_O_016.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1
+    path = /.../GIDI/Test/map/neutrons/n-018_Ar_036.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1
+    path = /.../GIDI/Test/map/neutrons/n-022_Ti_049.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1
+    path = /.../GIDI/Test/map/neutrons/n-028_Ni_061.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1
+    path = /.../GIDI/Test/map/neutrons/n-033_As_074.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1
+    path = /.../GIDI/Test/map/neutrons/n-035_Br_079.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1
+    path = /.../GIDI/Test/map/neutrons/n-039_Y_089.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1
+    path = /.../GIDI/Test/map/neutrons/n-042_Mo_098.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1
+    path = /.../GIDI/Test/map/neutrons/n-046_Pd_105.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1
+    path = /.../GIDI/Test/map/neutrons/n-049_In_113.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1
+    path = /.../GIDI/Test/map/neutrons/n-051_Sb_124.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1
+    path = /.../GIDI/Test/map/neutrons/n-053_I_135.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1
+    path = /.../GIDI/Test/map/neutrons/n-056_Ba_140.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1
+    path = /.../GIDI/Test/map/neutrons/n-060_Nd_145.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1
+    path = /.../GIDI/Test/map/neutrons/n-062_Sm_154.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1
+    path = /.../GIDI/Test/map/neutrons/n-066_Dy_156.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1
+    path = /.../GIDI/Test/map/neutrons/n-071_Lu_175.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1
+    path = /.../GIDI/Test/map/neutrons/n-073_Ta_181.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1
+    path = /.../GIDI/Test/map/neutrons/n-080_Hg_204.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1
+    path = /.../GIDI/Test/map/neutrons/n-090_Th_230.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1
+    path = /.../GIDI/Test/map/neutrons/n-092_U_234.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1
+    path = /.../GIDI/Test/map/neutrons/n-092_U_236.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1
+    path = /.../GIDI/Test/map/neutrons/n-092_U_238.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1
+    path = /.../GIDI/Test/map/neutrons/n-092_U_239.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1
+    path = /.../GIDI/Test/map/neutrons/n-094_Pu_242.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1
+    path = /.../GIDI/Test/map/neutrons/n-095_Am_244.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1
+    path = /.../GIDI/Test/map/neutrons/n-096_Cm_247.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1
+    path = /.../GIDI/Test/map/neutrons/n-100_Fm_255.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1
+
+library = neutrons2
+
+    path = /.../GIDI/Test/map/neutrons/n-001_H_001.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2
+    path = /.../GIDI/Test/map/neutrons/n-008_O_017.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2
+    path = /.../GIDI/Test/map/neutrons/n-018_Ar_036.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2
+    path = /.../GIDI/Test/map/neutrons/n-028_Ni_061.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2
+    path = /.../GIDI/Test/map/neutrons/n-035_Br_079.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2
+    path = /.../GIDI/Test/map/neutrons/n-042_Mo_098.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2
+    path = /.../GIDI/Test/map/neutrons/n-049_In_113.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2
+    path = /.../GIDI/Test/map/neutrons/n-053_I_135.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2
+    path = /.../GIDI/Test/map/neutrons/n-060_Nd_145.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2
+    path = /.../GIDI/Test/map/neutrons/n-066_Dy_156.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2
+    path = /.../GIDI/Test/map/neutrons/n-073_Ta_181.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2
+    path = /.../GIDI/Test/map/neutrons/n-090_Th_230.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2
+    path = /.../GIDI/Test/map/neutrons/n-092_U_236.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2
+    path = /.../GIDI/Test/map/neutrons/n-092_U_239.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2
+    path = /.../GIDI/Test/map/neutrons/n-095_Am_244.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2
+
+library = all
+
+        path = /.../GIDI/Test/map/neutrons/n-001_H_001.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all
+        path = /.../GIDI/Test/map/neutrons/n-008_O_016.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all
+        path = /.../GIDI/Test/map/neutrons/n-018_Ar_036.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all
+        path = /.../GIDI/Test/map/neutrons/n-022_Ti_049.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all
+        path = /.../GIDI/Test/map/neutrons/n-028_Ni_061.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all
+        path = /.../GIDI/Test/map/neutrons/n-033_As_074.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all
+        path = /.../GIDI/Test/map/neutrons/n-035_Br_079.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all
+        path = /.../GIDI/Test/map/neutrons/n-039_Y_089.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all
+        path = /.../GIDI/Test/map/neutrons/n-042_Mo_098.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all
+        path = /.../GIDI/Test/map/neutrons/n-046_Pd_105.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all
+        path = /.../GIDI/Test/map/neutrons/n-049_In_113.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all
+        path = /.../GIDI/Test/map/neutrons/n-051_Sb_124.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all
+        path = /.../GIDI/Test/map/neutrons/n-053_I_135.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all
+        path = /.../GIDI/Test/map/neutrons/n-056_Ba_140.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all
+        path = /.../GIDI/Test/map/neutrons/n-060_Nd_145.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all
+        path = /.../GIDI/Test/map/neutrons/n-062_Sm_154.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all
+        path = /.../GIDI/Test/map/neutrons/n-066_Dy_156.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all
+        path = /.../GIDI/Test/map/neutrons/n-071_Lu_175.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all
+        path = /.../GIDI/Test/map/neutrons/n-073_Ta_181.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all
+        path = /.../GIDI/Test/map/neutrons/n-080_Hg_204.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all
+        path = /.../GIDI/Test/map/neutrons/n-090_Th_230.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all
+        path = /.../GIDI/Test/map/neutrons/n-092_U_234.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all
+        path = /.../GIDI/Test/map/neutrons/n-092_U_236.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all
+        path = /.../GIDI/Test/map/neutrons/n-092_U_238.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all
+        path = /.../GIDI/Test/map/neutrons/n-092_U_239.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all
+        path = /.../GIDI/Test/map/neutrons/n-094_Pu_242.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all
+        path = /.../GIDI/Test/map/neutrons/n-095_Am_244.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all
+        path = /.../GIDI/Test/map/neutrons/n-096_Cm_247.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all
+        path = /.../GIDI/Test/map/neutrons/n-100_Fm_255.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all
+        path = /.../GIDI/Test/map/neutrons/n-001_H_001.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all
+        path = /.../GIDI/Test/map/neutrons/n-008_O_017.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all
+        path = /.../GIDI/Test/map/neutrons/n-018_Ar_036.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all
+        path = /.../GIDI/Test/map/neutrons/n-028_Ni_061.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all
+        path = /.../GIDI/Test/map/neutrons/n-035_Br_079.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all
+        path = /.../GIDI/Test/map/neutrons/n-042_Mo_098.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all
+        path = /.../GIDI/Test/map/neutrons/n-049_In_113.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all
+        path = /.../GIDI/Test/map/neutrons/n-053_I_135.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all
+        path = /.../GIDI/Test/map/neutrons/n-060_Nd_145.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all
+        path = /.../GIDI/Test/map/neutrons/n-066_Dy_156.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all
+        path = /.../GIDI/Test/map/neutrons/n-073_Ta_181.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all
+        path = /.../GIDI/Test/map/neutrons/n-090_Th_230.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all
+        path = /.../GIDI/Test/map/neutrons/n-092_U_236.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all
+        path = /.../GIDI/Test/map/neutrons/n-092_U_239.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all
+        path = /.../GIDI/Test/map/neutrons/n-095_Am_244.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all
+
+library = level3
+
+    path = /.../GIDI/Test/map/neutrons/n-008_O_016.xml:: evaluation = ENDF/BVII.1:: libraries are:  level3
+            path = /.../GIDI/Test/map/neutrons/n-001_H_001.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3
+            path = /.../GIDI/Test/map/neutrons/n-008_O_016.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3
+            path = /.../GIDI/Test/map/neutrons/n-018_Ar_036.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3
+            path = /.../GIDI/Test/map/neutrons/n-022_Ti_049.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3
+            path = /.../GIDI/Test/map/neutrons/n-028_Ni_061.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3
+            path = /.../GIDI/Test/map/neutrons/n-033_As_074.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3
+            path = /.../GIDI/Test/map/neutrons/n-035_Br_079.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3
+            path = /.../GIDI/Test/map/neutrons/n-039_Y_089.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3
+            path = /.../GIDI/Test/map/neutrons/n-042_Mo_098.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3
+            path = /.../GIDI/Test/map/neutrons/n-046_Pd_105.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3
+            path = /.../GIDI/Test/map/neutrons/n-049_In_113.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3
+            path = /.../GIDI/Test/map/neutrons/n-051_Sb_124.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3
+            path = /.../GIDI/Test/map/neutrons/n-053_I_135.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3
+            path = /.../GIDI/Test/map/neutrons/n-056_Ba_140.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3
+            path = /.../GIDI/Test/map/neutrons/n-060_Nd_145.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3
+            path = /.../GIDI/Test/map/neutrons/n-062_Sm_154.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3
+            path = /.../GIDI/Test/map/neutrons/n-066_Dy_156.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3
+            path = /.../GIDI/Test/map/neutrons/n-071_Lu_175.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3
+            path = /.../GIDI/Test/map/neutrons/n-073_Ta_181.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3
+            path = /.../GIDI/Test/map/neutrons/n-080_Hg_204.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3
+            path = /.../GIDI/Test/map/neutrons/n-090_Th_230.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3
+            path = /.../GIDI/Test/map/neutrons/n-092_U_234.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3
+            path = /.../GIDI/Test/map/neutrons/n-092_U_236.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3
+            path = /.../GIDI/Test/map/neutrons/n-092_U_238.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3
+            path = /.../GIDI/Test/map/neutrons/n-092_U_239.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3
+            path = /.../GIDI/Test/map/neutrons/n-094_Pu_242.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3
+            path = /.../GIDI/Test/map/neutrons/n-095_Am_244.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3
+            path = /.../GIDI/Test/map/neutrons/n-096_Cm_247.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3
+            path = /.../GIDI/Test/map/neutrons/n-100_Fm_255.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3
+            path = /.../GIDI/Test/map/neutrons/n-001_H_001.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all level3
+            path = /.../GIDI/Test/map/neutrons/n-008_O_017.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all level3
+            path = /.../GIDI/Test/map/neutrons/n-018_Ar_036.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all level3
+            path = /.../GIDI/Test/map/neutrons/n-028_Ni_061.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all level3
+            path = /.../GIDI/Test/map/neutrons/n-035_Br_079.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all level3
+            path = /.../GIDI/Test/map/neutrons/n-042_Mo_098.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all level3
+            path = /.../GIDI/Test/map/neutrons/n-049_In_113.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all level3
+            path = /.../GIDI/Test/map/neutrons/n-053_I_135.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all level3
+            path = /.../GIDI/Test/map/neutrons/n-060_Nd_145.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all level3
+            path = /.../GIDI/Test/map/neutrons/n-066_Dy_156.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all level3
+            path = /.../GIDI/Test/map/neutrons/n-073_Ta_181.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all level3
+            path = /.../GIDI/Test/map/neutrons/n-090_Th_230.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all level3
+            path = /.../GIDI/Test/map/neutrons/n-092_U_236.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all level3
+            path = /.../GIDI/Test/map/neutrons/n-092_U_239.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all level3
+            path = /.../GIDI/Test/map/neutrons/n-095_Am_244.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all level3
+    path = /.../GIDI/Test/map/neutrons/n-008_O_017.xml:: evaluation = ENDF/BVII.1:: libraries are:  level3
+
+library = level4
+
+    path = /.../GIDI/Test/map/neutrons/n-008_O_017.xml:: evaluation = ENDF/BVII.1:: libraries are:  level4
+        path = /.../GIDI/Test/map/neutrons/n-008_O_016.xml:: evaluation = ENDF/BVII.1:: libraries are:  level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-001_H_001.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-008_O_016.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-018_Ar_036.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-022_Ti_049.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-028_Ni_061.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-033_As_074.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-035_Br_079.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-039_Y_089.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-042_Mo_098.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-046_Pd_105.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-049_In_113.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-051_Sb_124.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-053_I_135.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-056_Ba_140.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-060_Nd_145.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-062_Sm_154.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-066_Dy_156.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-071_Lu_175.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-073_Ta_181.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-080_Hg_204.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-090_Th_230.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-092_U_234.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-092_U_236.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-092_U_238.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-092_U_239.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-094_Pu_242.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-095_Am_244.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-096_Cm_247.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-100_Fm_255.xml:: evaluation = ENDF/BVII.1:: libraries are:  neutrons1 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-001_H_001.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-008_O_017.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-018_Ar_036.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-028_Ni_061.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-035_Br_079.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-042_Mo_098.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-049_In_113.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-053_I_135.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-060_Nd_145.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-066_Dy_156.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-073_Ta_181.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-090_Th_230.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-092_U_236.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-092_U_239.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all level3 level4
+                path = /.../GIDI/Test/map/neutrons/n-095_Am_244.xml:: evaluation = ENDF/BVIII.1:: libraries are:  neutrons2 all level3 level4
+        path = /.../GIDI/Test/map/neutrons/n-008_O_017.xml:: evaluation = ENDF/BVII.1:: libraries are:  level3 level4

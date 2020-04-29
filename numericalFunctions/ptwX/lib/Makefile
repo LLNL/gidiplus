@@ -5,6 +5,8 @@
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
+SHELL = /bin/sh
+
 sourceDir = ../Src
 
 .PHONY: default check clean realclean

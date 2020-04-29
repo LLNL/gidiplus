@@ -1,0 +1,150 @@
+/.../GIDI/Test/Data/MG_MC/photo-atomic/photoat-008_O_000.xml
+/reactionSuite
+    /reactionSuite/styles
+    /reactionSuite/styles/evaluated[@label='eval']
+    /reactionSuite/styles/averageProductData[@label='apd']
+    /reactionSuite/styles/MonteCarlo_cdf[@label='MonteCarlo_cdf']
+    /reactionSuite/styles/multiGroup[@label='MultiGroup']
+    /reactionSuite/styles/heated[@label='heated_000']
+    /reactionSuite/styles/griddedCrossSection[@label='MonteCarlo_000']
+    /reactionSuite/styles/heatedMultiGroup[@label='MultiGroup_000']
+/reactionSuite/reactions/reaction[@label='O + photon [coherent]']
+    /reactionSuite/reactions/reaction[@label='O + photon [coherent]']/doubleDifferentialCrossSection
+    /reactionSuite/reactions/reaction[@label='O + photon [coherent]']/doubleDifferentialCrossSection/coherentPhotonScattering[@label='eval']
+    /reactionSuite/reactions/reaction[@label='O + photon [coherent]']/crossSection
+    /reactionSuite/reactions/reaction[@label='O + photon [coherent]']/crossSection/XYs1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='O + photon [coherent]']/crossSection/Ys1d[@label='MonteCarlo_000']
+    /reactionSuite/reactions/reaction[@label='O + photon [coherent]']/crossSection/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='O + photon [coherent]']/availableEnergy
+    /reactionSuite/reactions/reaction[@label='O + photon [coherent]']/availableEnergy/XYs1d[@label='apd']
+    /reactionSuite/reactions/reaction[@label='O + photon [coherent]']/availableEnergy/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='O + photon [coherent]']/availableMomentum
+    /reactionSuite/reactions/reaction[@label='O + photon [coherent]']/availableMomentum/XYs1d[@label='apd']
+    /reactionSuite/reactions/reaction[@label='O + photon [coherent]']/availableMomentum/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='O + photon [coherent]']/outputChannel
+    /reactionSuite/reactions/reaction[@label='O + photon [coherent]']/outputChannel/Q
+    /reactionSuite/reactions/reaction[@label='O + photon [coherent]']/outputChannel/Q/constant1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='O + photon [coherent]']/outputChannel/Q/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='O + photon [coherent]']/outputChannel/products
+    /reactionSuite/reactions/reaction[@label='O + photon [coherent]']/outputChannel/products/product[@label='photon']
+    /reactionSuite/reactions/reaction[@label='O + photon [coherent]']/outputChannel/products/product[@label='photon']/multiplicity
+    /reactionSuite/reactions/reaction[@label='O + photon [coherent]']/outputChannel/products/product[@label='photon']/multiplicity/constant1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='O + photon [coherent]']/outputChannel/products/product[@label='photon']/multiplicity/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='O + photon [coherent]']/outputChannel/products/product[@label='photon']/distribution
+    /reactionSuite/reactions/reaction[@label='O + photon [coherent]']/outputChannel/products/product[@label='photon']/distribution/coherentPhotonScattering[@label='eval']
+    /reactionSuite/reactions/reaction[@label='O + photon [coherent]']/outputChannel/products/product[@label='photon']/distribution/multiGroup3d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='O + photon [coherent]']/outputChannel/products/product[@label='photon']/averageProductEnergy
+    /reactionSuite/reactions/reaction[@label='O + photon [coherent]']/outputChannel/products/product[@label='photon']/averageProductEnergy/XYs1d[@label='apd']
+    /reactionSuite/reactions/reaction[@label='O + photon [coherent]']/outputChannel/products/product[@label='photon']/averageProductEnergy/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='O + photon [coherent]']/outputChannel/products/product[@label='photon']/averageProductMomentum
+    /reactionSuite/reactions/reaction[@label='O + photon [coherent]']/outputChannel/products/product[@label='photon']/averageProductMomentum/XYs1d[@label='apd']
+    /reactionSuite/reactions/reaction[@label='O + photon [coherent]']/outputChannel/products/product[@label='photon']/averageProductMomentum/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='O + photon [coherent]']/outputChannel/products/product[@label='O']
+    /reactionSuite/reactions/reaction[@label='O + photon [coherent]']/outputChannel/products/product[@label='O']/multiplicity
+    /reactionSuite/reactions/reaction[@label='O + photon [coherent]']/outputChannel/products/product[@label='O']/multiplicity/constant1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='O + photon [coherent]']/outputChannel/products/product[@label='O']/distribution
+    /reactionSuite/reactions/reaction[@label='O + photon [coherent]']/outputChannel/products/product[@label='O']/distribution/unspecified[@label='eval']
+    /reactionSuite/reactions/reaction[@label='O + photon [coherent]']/outputChannel/products/product[@label='O']/averageProductEnergy
+    /reactionSuite/reactions/reaction[@label='O + photon [coherent]']/outputChannel/products/product[@label='O']/averageProductMomentum
+/reactionSuite/reactions/reaction[@label='O + photon [incoherent]']
+    /reactionSuite/reactions/reaction[@label='O + photon [incoherent]']/doubleDifferentialCrossSection
+    /reactionSuite/reactions/reaction[@label='O + photon [incoherent]']/doubleDifferentialCrossSection/incoherentPhotonScattering[@label='eval']
+    /reactionSuite/reactions/reaction[@label='O + photon [incoherent]']/crossSection
+    /reactionSuite/reactions/reaction[@label='O + photon [incoherent]']/crossSection/XYs1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='O + photon [incoherent]']/crossSection/Ys1d[@label='MonteCarlo_000']
+    /reactionSuite/reactions/reaction[@label='O + photon [incoherent]']/crossSection/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='O + photon [incoherent]']/availableEnergy
+    /reactionSuite/reactions/reaction[@label='O + photon [incoherent]']/availableEnergy/XYs1d[@label='apd']
+    /reactionSuite/reactions/reaction[@label='O + photon [incoherent]']/availableEnergy/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='O + photon [incoherent]']/availableMomentum
+    /reactionSuite/reactions/reaction[@label='O + photon [incoherent]']/availableMomentum/XYs1d[@label='apd']
+    /reactionSuite/reactions/reaction[@label='O + photon [incoherent]']/availableMomentum/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='O + photon [incoherent]']/outputChannel
+    /reactionSuite/reactions/reaction[@label='O + photon [incoherent]']/outputChannel/Q
+    /reactionSuite/reactions/reaction[@label='O + photon [incoherent]']/outputChannel/Q/constant1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='O + photon [incoherent]']/outputChannel/Q/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='O + photon [incoherent]']/outputChannel/products
+    /reactionSuite/reactions/reaction[@label='O + photon [incoherent]']/outputChannel/products/product[@label='photon']
+    /reactionSuite/reactions/reaction[@label='O + photon [incoherent]']/outputChannel/products/product[@label='photon']/multiplicity
+    /reactionSuite/reactions/reaction[@label='O + photon [incoherent]']/outputChannel/products/product[@label='photon']/multiplicity/constant1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='O + photon [incoherent]']/outputChannel/products/product[@label='photon']/multiplicity/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='O + photon [incoherent]']/outputChannel/products/product[@label='photon']/distribution
+    /reactionSuite/reactions/reaction[@label='O + photon [incoherent]']/outputChannel/products/product[@label='photon']/distribution/incoherentPhotonScattering[@label='eval']
+    /reactionSuite/reactions/reaction[@label='O + photon [incoherent]']/outputChannel/products/product[@label='photon']/distribution/multiGroup3d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='O + photon [incoherent]']/outputChannel/products/product[@label='photon']/averageProductEnergy
+    /reactionSuite/reactions/reaction[@label='O + photon [incoherent]']/outputChannel/products/product[@label='photon']/averageProductEnergy/XYs1d[@label='apd']
+    /reactionSuite/reactions/reaction[@label='O + photon [incoherent]']/outputChannel/products/product[@label='photon']/averageProductEnergy/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='O + photon [incoherent]']/outputChannel/products/product[@label='photon']/averageProductMomentum
+    /reactionSuite/reactions/reaction[@label='O + photon [incoherent]']/outputChannel/products/product[@label='photon']/averageProductMomentum/XYs1d[@label='apd']
+    /reactionSuite/reactions/reaction[@label='O + photon [incoherent]']/outputChannel/products/product[@label='photon']/averageProductMomentum/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='O + photon [incoherent]']/outputChannel/products/product[@label='O']
+    /reactionSuite/reactions/reaction[@label='O + photon [incoherent]']/outputChannel/products/product[@label='O']/multiplicity
+    /reactionSuite/reactions/reaction[@label='O + photon [incoherent]']/outputChannel/products/product[@label='O']/multiplicity/constant1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='O + photon [incoherent]']/outputChannel/products/product[@label='O']/distribution
+    /reactionSuite/reactions/reaction[@label='O + photon [incoherent]']/outputChannel/products/product[@label='O']/distribution/unspecified[@label='eval']
+    /reactionSuite/reactions/reaction[@label='O + photon [incoherent]']/outputChannel/products/product[@label='O']/averageProductEnergy
+    /reactionSuite/reactions/reaction[@label='O + photon [incoherent]']/outputChannel/products/product[@label='O']/averageProductMomentum
+/reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']
+    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/doubleDifferentialCrossSection
+    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/crossSection
+    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/crossSection/regions1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/crossSection/XYs1d[@label='heated_000']
+    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/crossSection/Ys1d[@label='MonteCarlo_000']
+    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/crossSection/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/availableEnergy
+    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/availableEnergy/XYs1d[@label='apd']
+    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/availableEnergy/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/availableMomentum
+    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/availableMomentum/XYs1d[@label='apd']
+    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/availableMomentum/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/outputChannel
+    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/outputChannel/Q
+    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/outputChannel/Q/constant1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/outputChannel/Q/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/outputChannel/products
+    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/outputChannel/products/product[@label='e-']
+    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/outputChannel/products/product[@label='e-']/multiplicity
+    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/outputChannel/products/product[@label='e-']/multiplicity/constant1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/outputChannel/products/product[@label='e-']/distribution
+    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/outputChannel/products/product[@label='e-']/distribution/unspecified[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/outputChannel/products/product[@label='e-']/averageProductEnergy
+    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/outputChannel/products/product[@label='e-']/averageProductMomentum
+    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/outputChannel/products/product[@label='O']
+    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/outputChannel/products/product[@label='O']/multiplicity
+    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/outputChannel/products/product[@label='O']/multiplicity/constant1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/outputChannel/products/product[@label='O']/distribution
+    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/outputChannel/products/product[@label='O']/distribution/unspecified[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/outputChannel/products/product[@label='O']/averageProductEnergy
+    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/outputChannel/products/product[@label='O']/averageProductMomentum
+/reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']
+    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/doubleDifferentialCrossSection
+    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/crossSection
+    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/crossSection/regions1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/crossSection/XYs1d[@label='heated_000']
+    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/crossSection/Ys1d[@label='MonteCarlo_000']
+    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/crossSection/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/availableEnergy
+    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/availableEnergy/XYs1d[@label='apd']
+    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/availableEnergy/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/availableMomentum
+    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/availableMomentum/XYs1d[@label='apd']
+    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/availableMomentum/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/outputChannel
+    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/outputChannel/Q
+    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/outputChannel/Q/constant1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/outputChannel/Q/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/outputChannel/products
+    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/outputChannel/products/product[@label='photon']
+    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/outputChannel/products/product[@label='photon']/multiplicity
+    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/outputChannel/products/product[@label='photon']/multiplicity/constant1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/outputChannel/products/product[@label='photon']/distribution
+    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/outputChannel/products/product[@label='photon']/distribution/unspecified[@label='eval']
+    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/outputChannel/products/product[@label='photon']/averageProductEnergy
+    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/outputChannel/products/product[@label='photon']/averageProductMomentum
+    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/outputChannel/products/product[@label='O']
+    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/outputChannel/products/product[@label='O']/multiplicity
+    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/outputChannel/products/product[@label='O']/multiplicity/constant1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/outputChannel/products/product[@label='O']/distribution
+    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/outputChannel/products/product[@label='O']/distribution/unspecified[@label='eval']
+    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/outputChannel/products/product[@label='O']/averageProductEnergy
+    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/outputChannel/products/product[@label='O']/averageProductMomentum

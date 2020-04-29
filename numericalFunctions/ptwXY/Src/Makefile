@@ -5,6 +5,8 @@
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
+SHELL = /bin/sh
+
 NUMERICALFUNCTIONS_PATH = ../..
 NUMERICALFUNCTIONS_INCLUDE_PATH = $(NUMERICALFUNCTIONS_PATH)/include
 

@@ -1,0 +1,5 @@
+<map library="upscatterModelB" format="0.1">
+<protare evaluation="ENDF/B-7.1" projectile="n" target="H1" path="neutrons/n-001_H_001.xml"/>
+<protare evaluation="ENDF/B-7.1" projectile="n" target="O16" path="neutrons/n-008_O_016.xml"/>
+<protare evaluation="ENDF/B-7.1" projectile="n" target="U233" path="neutrons/n-092_U_233.xml"/>
+</map>

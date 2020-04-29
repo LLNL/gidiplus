@@ -9,7 +9,7 @@ SHELL = /bin/bash
 
 .PHONY: default headers clean realclean
 
-DIRS = statusMessageReporting GIDI3 PoPsCpp numericalFunctions pugixml
+DIRS = statusMessageReporting GIDI MCGIDI PoPI numericalFunctions pugixml
 
 default: libs
 
@@ -24,4 +24,4 @@ clean:
 	rm -f *.a *.o
 
 realclean: clean
-	rm -f __.SYMDEF*
+	rm -rf __.SYMDEF*

@@ -5,6 +5,8 @@
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
+SHELL = /bin/sh
+
 subDirectories = GaussianQuadrature to_ptwXY normalize
 
 .PHONY: default check clean realclean doTarget

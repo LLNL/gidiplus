@@ -5,6 +5,8 @@
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
+SHELL = /bin/sh
+
 PYTHON = python
 
 subDirectories = initial UnitTesting Flat

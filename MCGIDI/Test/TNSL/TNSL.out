@@ -1,0 +1,694 @@
+GIDI temperatures:
+    label = heated_000  temperature = 2.586e-08
+
+Is ProtareSingle 0
+Is ProtareComposite 0
+Is ProtareTNSL 1
+Is GNDS TNSL protareSingle 0
+
+TNSL
+    maximumEnergy = 2.277e-06
+    maximumTemperature = 2.586e-08
+    temperatures:
+        2.586e-08
+
+
+MCGIDI temperatures:
+    2.586e-08
+
+List of reactions
+    reaction: n [thermalNeutronScatteringLaw coherent-elastic]:  final Q = 0 threshold = 0
+    reaction: n [thermalNeutronScatteringLaw incoherent-inelastic]:  final Q = 0 threshold = 0
+    reaction: n + Al27                                :  final Q = 0 threshold = 0
+    reaction: n + (Al27_e1 -> Al27 + photon)          :  final Q = 0 threshold = 0.875292
+    reaction: n + (Al27_e2 -> Al27 + photon)          :  final Q = 0 threshold = 1.05237
+    reaction: n + (Al27_e3 -> Al27 + photon)          :  final Q = 0 threshold = 2.29376
+    reaction: n + (Al27_e4 -> Al27 + photon)          :  final Q = 0 threshold = 2.83704
+    reaction: n + (Al27_e5 -> Al27 + photon)          :  final Q = 0 threshold = 3.09254
+    reaction: n + (Al27_e6 -> Al27 + photon)          :  final Q = 0 threshold = 3.1163
+    reaction: n + (Al27_e7 -> Al27 + photon)          :  final Q = 0 threshold = 3.81767
+    reaction: n + (Al27_e8 -> Al27 + photon)          :  final Q = 0 threshold = 4.10472
+    reaction: n + (Al27_e9 -> Al27 + photon)          :  final Q = 0 threshold = 4.20586
+    reaction: n + (Al27_e10 -> Al27 + photon)         :  final Q = 0 threshold = 4.57507
+    reaction: n + (Al27_e11 -> Al27 + photon)         :  final Q = 0 threshold = 4.67891
+    reaction: n + (Al27_e12 -> Al27 + photon)         :  final Q = 0 threshold = 4.75122
+    reaction: n + (Al27_e13 -> Al27 + photon)         :  final Q = 0 threshold = 4.99158
+    reaction: n + (Al27_e14 -> Al27 + photon)         :  final Q = 0 threshold = 5.34906
+    reaction: n + (Al27_e15 -> Al27 + photon)         :  final Q = 0 threshold = 5.4444
+    reaction: n + (Al27_e16 -> Al27 + photon)         :  final Q = 0 threshold = 5.62251
+    reaction: n + (Al27_e17 -> Al27 + photon)         :  final Q = 0 threshold = 5.6359
+    reaction: n + (Al27_e18 -> Al27 + photon)         :  final Q = 0 threshold = 5.64171
+    reaction: n + (Al27_e19 -> Al27 + photon)         :  final Q = 0 threshold = 5.7054
+    reaction: n + (Al27_e20 -> Al27 + photon)         :  final Q = 0 threshold = 5.75821
+    reaction: n + (Al27_e21 -> Al27 + photon)         :  final Q = 0 threshold = 5.87885
+    reaction: n + (Al27_e22 -> Al27 + photon)         :  final Q = 0 threshold = 5.9663
+    reaction: n + (Al27_e23 -> Al27 + photon)         :  final Q = 0 threshold = 6.04463
+    reaction: n + (Al27_e24 -> Al27 + photon)         :  final Q = 0 threshold = 6.18239
+    reaction: n + (Al27_e25 -> Al27 + photon)         :  final Q = 0 threshold = 6.30729
+    reaction: n + (Al27_e26 -> Al27 + photon)         :  final Q = 0 threshold = 6.34402
+    reaction: n + (Al27_e27 -> Al27 + photon)         :  final Q = 0 threshold = 6.38945
+    reaction: n + (Al27_e28 -> Al27 + photon)         :  final Q = 0 threshold = 6.52203
+    reaction: n + (Al27_e29 -> Al27 + photon)         :  final Q = 0 threshold = 6.70565
+    reaction: n + (Al27_e30 -> Al27 + photon)         :  final Q = 0 threshold = 6.71945
+    reaction: n + (Al27_e31 -> Al27 + photon)         :  final Q = 0 threshold = 6.75523
+    reaction: n + (Al27_e32 -> Al27 + photon)         :  final Q = 0 threshold = 6.77723
+    reaction: n + (Al27_e33 -> Al27 + photon)         :  final Q = 0 threshold = 6.85223
+    reaction: n + (Al27_e34 -> Al27 + photon)         :  final Q = 0 threshold = 6.90016
+    reaction: n + (Al27_e35 -> Al27 + photon)         :  final Q = 0 threshold = 6.96396
+    reaction: n + (Al27_e36 -> Al27 + photon)         :  final Q = 0 threshold = 7.0179
+    reaction: n + (Al27_e37 -> Al27 + photon)         :  final Q = 0 threshold = 7.02869
+    reaction: n + (Al27_e38 -> Al27 + photon)         :  final Q = 0 threshold = 7.06894
+    reaction: n + (Al27_e39 -> Al27 + photon)         :  final Q = 0 threshold = 7.07496
+    reaction: n + (Al27 -> Al27 + photon) [continuum] :  final Q = 0 threshold = 7.07496
+    reaction: 2n + Al26 + photon                      :  final Q = -13.0582 threshold = 13.5463
+    reaction: n + H1 + Mg26 + photon                  :  final Q = -8.27213 threshold = 8.58137
+    reaction: n + H2 + Mg25 + photon                  :  final Q = -17.1402 threshold = 17.781
+    reaction: n + H3 + Mg24 + photon                  :  final Q = -18.2136 threshold = 18.8945
+    reaction: H1 + Mg27                               :  final Q = -1.82855 threshold = 1.89691
+    reaction: H1 + (Mg27_e1 -> Mg27 + photon)         :  final Q = -1.82855 threshold = 2.91838
+    reaction: H1 + (Mg27_e2 -> Mg27 + photon)         :  final Q = -1.82855 threshold = 3.65838
+    reaction: H1 + (Mg27_e3 -> Mg27 + photon)         :  final Q = -1.82855 threshold = 3.90943
+    reaction: H1 + (Mg27_e4 -> Mg27 + photon)         :  final Q = -1.82855 threshold = 5.12255
+    reaction: H1 + (Mg27_e5 -> Mg27 + photon)         :  final Q = -1.82855 threshold = 5.45192
+    reaction: H1 + (Mg27_e6 -> Mg27 + photon)         :  final Q = -1.82855 threshold = 5.50213
+    reaction: H1 + (Mg27_e7 -> Mg27 + photon)         :  final Q = -1.82855 threshold = 5.5181
+    reaction: H1 + (Mg27_e8 -> Mg27 + photon)         :  final Q = -1.82855 threshold = 5.58916
+    reaction: H1 + (Mg27_e9 -> Mg27 + photon)         :  final Q = -1.82855 threshold = 5.79788
+    reaction: H1 + (Mg27_e10 -> Mg27 + photon)        :  final Q = -1.82855 threshold = 5.82434
+    reaction: H1 + (Mg27_e11 -> Mg27 + photon)        :  final Q = -1.82855 threshold = 5.9261
+    reaction: H1 + (Mg27_e12 -> Mg27 + photon)        :  final Q = -1.82855 threshold = 6.20184
+    reaction: H1 + (Mg27_e13 -> Mg27 + photon)        :  final Q = -1.82855 threshold = 6.45953
+    reaction: H1 + (Mg27_e14 -> Mg27 + photon)        :  final Q = -1.82855 threshold = 6.61991
+    reaction: H1 + (Mg27_e15 -> Mg27 + photon)        :  final Q = -1.82855 threshold = 6.85155
+    reaction: H1 + (Mg27_e16 -> Mg27 + photon)        :  final Q = -1.82855 threshold = 6.90467
+    reaction: H1 + (Mg27_e17 -> Mg27 + photon)        :  final Q = -1.82855 threshold = 7.07584
+    reaction: H1 + (Mg27_e18 -> Mg27 + photon)        :  final Q = -1.82855 threshold = 7.11287
+    reaction: H1 + (Mg27_e19 -> Mg27 + photon)        :  final Q = -1.82855 threshold = 7.26225
+    reaction: H1 + (Mg27 -> Mg27 + photon) [continuum]:  final Q = -1.82855 threshold = 7.26225
+    reaction: H2 + Mg26                               :  final Q = -6.04754 threshold = 6.27362
+    reaction: H2 + (Mg26_e1 -> Mg26 + photon)         :  final Q = -6.04754 threshold = 8.14992
+    reaction: H2 + (Mg26_e2 -> Mg26 + photon)         :  final Q = -6.04754 threshold = 9.32183
+    reaction: H2 + (Mg26_e3 -> Mg26 + photon)         :  final Q = -6.04754 threshold = 9.99607
+    reaction: H2 + (Mg26_e4 -> Mg26 + photon)         :  final Q = -6.04754 threshold = 10.3614
+    reaction: H2 + (Mg26_e5 -> Mg26 + photon)         :  final Q = -6.04754 threshold = 10.7535
+    reaction: H2 + (Mg26_e6 -> Mg26 + photon)         :  final Q = -6.04754 threshold = 10.7675
+    reaction: H2 + (Mg26_e7 -> Mg26 + photon)         :  final Q = -6.04754 threshold = 10.786
+    reaction: H2 + (Mg26_e8 -> Mg26 + photon)         :  final Q = -6.04754 threshold = 11.2886
+    reaction: H2 + (Mg26_e9 -> Mg26 + photon)         :  final Q = -6.04754 threshold = 11.3571
+    reaction: H2 + (Mg26_e10 -> Mg26 + photon)        :  final Q = -6.04754 threshold = 11.4317
+    reaction: H2 + (Mg26_e11 -> Mg26 + photon)        :  final Q = -6.04754 threshold = 11.7622
+    reaction: H2 + (Mg26_e12 -> Mg26 + photon)        :  final Q = -6.04754 threshold = 11.9522
+    reaction: H2 + (Mg26_e13 -> Mg26 + photon)        :  final Q = -6.04754 threshold = 12.1764
+    reaction: H2 + (Mg26_e14 -> Mg26 + photon)        :  final Q = -6.04754 threshold = 12.2028
+    reaction: H2 + (Mg26_e15 -> Mg26 + photon)        :  final Q = -6.04754 threshold = 12.6278
+    reaction: H2 + (Mg26_e16 -> Mg26 + photon)        :  final Q = -6.04754 threshold = 12.7635
+    reaction: H2 + (Mg26_e17 -> Mg26 + photon)        :  final Q = -6.04754 threshold = 13.1421
+    reaction: H2 + (Mg26_e18 -> Mg26 + photon)        :  final Q = -6.04754 threshold = 13.2697
+    reaction: H2 + (Mg26_e19 -> Mg26 + photon)        :  final Q = -6.04754 threshold = 13.4084
+    reaction: H2 + (Mg26 -> Mg26 + photon) [continuum]:  final Q = -6.04754 threshold = 13.4084
+    reaction: H3 + Mg25                               :  final Q = -10.8829 threshold = 11.2898
+    reaction: H3 + (Mg25_e1 -> Mg25 + photon)         :  final Q = -10.8829 threshold = 11.8967
+    reaction: H3 + (Mg25_e2 -> Mg25 + photon)         :  final Q = -10.8829 threshold = 12.301
+    reaction: H3 + (Mg25_e3 -> Mg25 + photon)         :  final Q = -10.8829 threshold = 12.9618
+    reaction: H3 + (Mg25_e4 -> Mg25 + photon)         :  final Q = -10.8829 threshold = 13.3279
+    reaction: H3 + (Mg25_e5 -> Mg25 + photon)         :  final Q = -10.8829 threshold = 13.9494
+    reaction: H3 + (Mg25_e6 -> Mg25 + photon)         :  final Q = -10.8829 threshold = 14.1298
+    reaction: H3 + (Mg25_e7 -> Mg25 + photon)         :  final Q = -10.8829 threshold = 14.1956
+    reaction: H3 + (Mg25_e8 -> Mg25 + photon)         :  final Q = -10.8829 threshold = 14.8223
+    reaction: H3 + (Mg25_e9 -> Mg25 + photon)         :  final Q = -10.8829 threshold = 14.8311
+    reaction: H3 + (Mg25_e10 -> Mg25 + photon)        :  final Q = -10.8829 threshold = 15.3437
+    reaction: H3 + (Mg25 -> Mg25 + photon) [continuum]:  final Q = -10.8829 threshold = 15.3437
+    reaction: He4 + Na24                              :  final Q = -3.13033 threshold = 3.24735
+    reaction: He4 + (Na24_e1 -> Na24 + photon)        :  final Q = -3.13033 threshold = 3.7373
+    reaction: He4 + (Na24_e2 -> Na24 + photon)        :  final Q = -3.13033 threshold = 3.8317
+    reaction: He4 + (Na24_e3 -> Na24 + photon)        :  final Q = -3.13033 threshold = 4.6389
+    reaction: He4 + (Na24_e4 -> Na24 + photon)        :  final Q = -3.13033 threshold = 4.64211
+    reaction: He4 + (Na24_e5 -> Na24 + photon)        :  final Q = -3.13033 threshold = 4.64419
+    reaction: He4 + (Na24_e6 -> Na24 + photon)        :  final Q = -3.13033 threshold = 4.81644
+    reaction: He4 + (Na24_e7 -> Na24 + photon)        :  final Q = -3.13033 threshold = 5.16247
+    reaction: He4 + (Na24_e8 -> Na24 + photon)        :  final Q = -3.13033 threshold = 5.20328
+    reaction: He4 + (Na24_e9 -> Na24 + photon)        :  final Q = -3.13033 threshold = 5.85471
+    reaction: He4 + (Na24_e10 -> Na24 + photon)       :  final Q = -3.13033 threshold = 5.90565
+    reaction: He4 + (Na24_e11 -> Na24 + photon)       :  final Q = -3.13033 threshold = 6.2596
+    reaction: He4 + (Na24_e12 -> Na24 + photon)       :  final Q = -3.13033 threshold = 6.33647
+    reaction: He4 + (Na24_e13 -> Na24 + photon)       :  final Q = -3.13033 threshold = 6.58441
+    reaction: He4 + (Na24_e14 -> Na24 + photon)       :  final Q = -3.13033 threshold = 6.74531
+    reaction: He4 + (Na24_e15 -> Na24 + photon)       :  final Q = -3.13033 threshold = 6.78836
+    reaction: He4 + (Na24_e16 -> Na24 + photon)       :  final Q = -3.13033 threshold = 6.97063
+    reaction: He4 + (Na24_e17 -> Na24 + photon)       :  final Q = -3.13033 threshold = 7.0115
+    reaction: He4 + (Na24_e18 -> Na24 + photon)       :  final Q = -3.13033 threshold = 7.04055
+    reaction: He4 + (Na24_e19 -> Na24 + photon)       :  final Q = -3.13033 threshold = 7.06669
+    reaction: He4 + (Na24 -> Na24 + photon) [continuum]:  final Q = -3.13033 threshold = 7.06669
+    reaction: Al28 + photon                           :  final Q = 7.7252 threshold = 0
+    reaction: n + He4 + Na23 + photon                 :  final Q = -10.0898 threshold = 10.467
+    reaction: n + H1 + He4 + Ne22 + photon            :  final Q = -18.8839 threshold = 19.5899
+    reaction: 2He4 + F20 + photon                     :  final Q = -13.9583 threshold = 14.4801
+    reaction: 2H1 + Na26 + photon                     :  final Q = -16.7999 threshold = 17.4279
+    reaction: H1 + He4 + Ne23 + photon                :  final Q = -13.6838 threshold = 14.1953
+    reaction: H2 + He4 + Ne22 + photon                :  final Q = -16.6594 threshold = 17.2821
+
+temperature = 1.293e-08
+    energy = 1e-12 crossSection = 13.3676
+    energy = 1.2e-12 crossSection = 13.3676
+    energy = 1.44e-12 crossSection = 13.3676
+    energy = 1.728e-12 crossSection = 13.3676
+    energy = 2.0736e-12 crossSection = 13.3676
+    energy = 2.48832e-12 crossSection = 13.3676
+    energy = 2.98598e-12 crossSection = 13.3676
+    energy = 3.58318e-12 crossSection = 13.3676
+    energy = 4.29982e-12 crossSection = 13.3676
+    energy = 5.15978e-12 crossSection = 13.3676
+    energy = 6.19174e-12 crossSection = 13.3676
+    energy = 7.43008e-12 crossSection = 13.3676
+    energy = 8.9161e-12 crossSection = 13.3676
+    energy = 1.06993e-11 crossSection = 12.9298
+    energy = 1.28392e-11 crossSection = 11.8025
+    energy = 1.5407e-11 crossSection = 10.7727
+    energy = 1.84884e-11 crossSection = 9.83481
+    energy = 2.21861e-11 crossSection = 8.98016
+    energy = 2.66233e-11 crossSection = 8.19935
+    energy = 3.1948e-11 crossSection = 7.48585
+    energy = 3.83376e-11 crossSection = 6.83416
+    energy = 4.60051e-11 crossSection = 6.23881
+    energy = 5.52061e-11 crossSection = 5.69518
+    energy = 6.62474e-11 crossSection = 5.19883
+    energy = 7.94968e-11 crossSection = 4.74741
+    energy = 9.53962e-11 crossSection = 4.33584
+    energy = 1.14475e-10 crossSection = 3.95976
+    energy = 1.37371e-10 crossSection = 3.61631
+    energy = 1.64845e-10 crossSection = 3.3026
+    energy = 1.97814e-10 crossSection = 3.01622
+    energy = 2.37376e-10 crossSection = 2.75474
+    energy = 2.84852e-10 crossSection = 2.51614
+    energy = 3.41822e-10 crossSection = 2.29934
+    energy = 4.10186e-10 crossSection = 2.10164
+    energy = 4.92224e-10 crossSection = 1.92118
+    energy = 5.90668e-10 crossSection = 1.75663
+    energy = 7.08802e-10 crossSection = 1.60666
+    energy = 8.50562e-10 crossSection = 1.46995
+    energy = 1.02067e-09 crossSection = 1.34555
+    energy = 1.22481e-09 crossSection = 1.23215
+    energy = 1.46977e-09 crossSection = 1.1295
+    energy = 1.76373e-09 crossSection = 1.03624
+    energy = 2.11647e-09 crossSection = 0.951916
+    energy = 2.53977e-09 crossSection = 0.875268
+    energy = 3.04772e-09 crossSection = 0.805922
+    energy = 3.65726e-09 crossSection = 1.59175
+    energy = 4.38871e-09 crossSection = 1.84884
+    energy = 5.26646e-09 crossSection = 2.21896
+    energy = 6.31975e-09 crossSection = 1.91153
+    energy = 7.5837e-09 crossSection = 1.65416
+    energy = 9.10044e-09 crossSection = 1.43852
+    energy = 1.09205e-08 crossSection = 1.63612
+    energy = 1.31046e-08 crossSection = 1.42574
+    energy = 1.57256e-08 crossSection = 1.79476
+    energy = 1.88707e-08 crossSection = 1.5678
+    energy = 2.26448e-08 crossSection = 1.44207
+    energy = 2.71738e-08 crossSection = 1.58599
+    energy = 3.26085e-08 crossSection = 1.52648
+    energy = 3.91302e-08 crossSection = 1.48815
+    energy = 4.69563e-08 crossSection = 1.5348
+    energy = 5.63475e-08 crossSection = 1.5089
+    energy = 6.7617e-08 crossSection = 1.47598
+    energy = 8.11404e-08 crossSection = 1.46466
+    energy = 9.73685e-08 crossSection = 1.45522
+    energy = 1.16842e-07 crossSection = 1.44048
+    energy = 1.40211e-07 crossSection = 1.4277
+    energy = 1.68253e-07 crossSection = 1.41528
+    energy = 2.01903e-07 crossSection = 1.40399
+    energy = 2.42284e-07 crossSection = 1.39412
+    energy = 2.90741e-07 crossSection = 1.38509
+    energy = 3.48889e-07 crossSection = 1.37628
+    energy = 4.18667e-07 crossSection = 1.36625
+    energy = 5.024e-07 crossSection = 1.35641
+    energy = 6.0288e-07 crossSection = 1.34688
+    energy = 7.23456e-07 crossSection = 1.33724
+    energy = 8.68147e-07 crossSection = 1.32715
+    energy = 1.04178e-06 crossSection = 1.31642
+    energy = 1.25013e-06 crossSection = 1.30467
+    energy = 1.50016e-06 crossSection = 1.29157
+    energy = 1.80019e-06 crossSection = 1.27654
+    energy = 2.16023e-06 crossSection = 1.25972
+    energy = 2.59227e-06 crossSection = 1.44886
+    energy = 3.11073e-06 crossSection = 1.44678
+    energy = 3.73287e-06 crossSection = 1.44487
+    energy = 4.47945e-06 crossSection = 1.4431
+    energy = 5.37534e-06 crossSection = 1.44147
+    energy = 6.45041e-06 crossSection = 1.43994
+    energy = 7.74049e-06 crossSection = 1.43851
+    energy = 9.28859e-06 crossSection = 1.43716
+
+temperature = 2.586e-08
+    energy = 1e-12 crossSection = 13.3676
+    energy = 1.2e-12 crossSection = 13.3676
+    energy = 1.44e-12 crossSection = 13.3676
+    energy = 1.728e-12 crossSection = 13.3676
+    energy = 2.0736e-12 crossSection = 13.3676
+    energy = 2.48832e-12 crossSection = 13.3676
+    energy = 2.98598e-12 crossSection = 13.3676
+    energy = 3.58318e-12 crossSection = 13.3676
+    energy = 4.29982e-12 crossSection = 13.3676
+    energy = 5.15978e-12 crossSection = 13.3676
+    energy = 6.19174e-12 crossSection = 13.3676
+    energy = 7.43008e-12 crossSection = 13.3676
+    energy = 8.9161e-12 crossSection = 13.3676
+    energy = 1.06993e-11 crossSection = 12.9298
+    energy = 1.28392e-11 crossSection = 11.8025
+    energy = 1.5407e-11 crossSection = 10.7727
+    energy = 1.84884e-11 crossSection = 9.83481
+    energy = 2.21861e-11 crossSection = 8.98016
+    energy = 2.66233e-11 crossSection = 8.19935
+    energy = 3.1948e-11 crossSection = 7.48585
+    energy = 3.83376e-11 crossSection = 6.83416
+    energy = 4.60051e-11 crossSection = 6.23881
+    energy = 5.52061e-11 crossSection = 5.69518
+    energy = 6.62474e-11 crossSection = 5.19883
+    energy = 7.94968e-11 crossSection = 4.74741
+    energy = 9.53962e-11 crossSection = 4.33584
+    energy = 1.14475e-10 crossSection = 3.95976
+    energy = 1.37371e-10 crossSection = 3.61631
+    energy = 1.64845e-10 crossSection = 3.3026
+    energy = 1.97814e-10 crossSection = 3.01622
+    energy = 2.37376e-10 crossSection = 2.75474
+    energy = 2.84852e-10 crossSection = 2.51614
+    energy = 3.41822e-10 crossSection = 2.29934
+    energy = 4.10186e-10 crossSection = 2.10164
+    energy = 4.92224e-10 crossSection = 1.92118
+    energy = 5.90668e-10 crossSection = 1.75663
+    energy = 7.08802e-10 crossSection = 1.60666
+    energy = 8.50562e-10 crossSection = 1.46995
+    energy = 1.02067e-09 crossSection = 1.34555
+    energy = 1.22481e-09 crossSection = 1.23215
+    energy = 1.46977e-09 crossSection = 1.1295
+    energy = 1.76373e-09 crossSection = 1.03624
+    energy = 2.11647e-09 crossSection = 0.951916
+    energy = 2.53977e-09 crossSection = 0.875268
+    energy = 3.04772e-09 crossSection = 0.805922
+    energy = 3.65726e-09 crossSection = 1.59175
+    energy = 4.38871e-09 crossSection = 1.84884
+    energy = 5.26646e-09 crossSection = 2.21896
+    energy = 6.31975e-09 crossSection = 1.91153
+    energy = 7.5837e-09 crossSection = 1.65416
+    energy = 9.10044e-09 crossSection = 1.43852
+    energy = 1.09205e-08 crossSection = 1.63612
+    energy = 1.31046e-08 crossSection = 1.42574
+    energy = 1.57256e-08 crossSection = 1.79476
+    energy = 1.88707e-08 crossSection = 1.5678
+    energy = 2.26448e-08 crossSection = 1.44207
+    energy = 2.71738e-08 crossSection = 1.58599
+    energy = 3.26085e-08 crossSection = 1.52648
+    energy = 3.91302e-08 crossSection = 1.48815
+    energy = 4.69563e-08 crossSection = 1.5348
+    energy = 5.63475e-08 crossSection = 1.5089
+    energy = 6.7617e-08 crossSection = 1.47598
+    energy = 8.11404e-08 crossSection = 1.46466
+    energy = 9.73685e-08 crossSection = 1.45522
+    energy = 1.16842e-07 crossSection = 1.44048
+    energy = 1.40211e-07 crossSection = 1.4277
+    energy = 1.68253e-07 crossSection = 1.41528
+    energy = 2.01903e-07 crossSection = 1.40399
+    energy = 2.42284e-07 crossSection = 1.39412
+    energy = 2.90741e-07 crossSection = 1.38509
+    energy = 3.48889e-07 crossSection = 1.37628
+    energy = 4.18667e-07 crossSection = 1.36625
+    energy = 5.024e-07 crossSection = 1.35641
+    energy = 6.0288e-07 crossSection = 1.34688
+    energy = 7.23456e-07 crossSection = 1.33724
+    energy = 8.68147e-07 crossSection = 1.32715
+    energy = 1.04178e-06 crossSection = 1.31642
+    energy = 1.25013e-06 crossSection = 1.30467
+    energy = 1.50016e-06 crossSection = 1.29157
+    energy = 1.80019e-06 crossSection = 1.27654
+    energy = 2.16023e-06 crossSection = 1.25972
+    energy = 2.59227e-06 crossSection = 1.44886
+    energy = 3.11073e-06 crossSection = 1.44678
+    energy = 3.73287e-06 crossSection = 1.44487
+    energy = 4.47945e-06 crossSection = 1.4431
+    energy = 5.37534e-06 crossSection = 1.44147
+    energy = 6.45041e-06 crossSection = 1.43994
+    energy = 7.74049e-06 crossSection = 1.43851
+    energy = 9.28859e-06 crossSection = 1.43716
+
+temperature = 3.879e-08
+    energy = 1e-12 crossSection = 27.6017
+    energy = 1.2e-12 crossSection = 27.6017
+    energy = 1.44e-12 crossSection = 27.6017
+    energy = 1.728e-12 crossSection = 27.6017
+    energy = 2.0736e-12 crossSection = 27.6017
+    energy = 2.48832e-12 crossSection = 27.6017
+    energy = 2.98598e-12 crossSection = 27.6017
+    energy = 3.58318e-12 crossSection = 27.6017
+    energy = 4.29982e-12 crossSection = 27.6017
+    energy = 5.15978e-12 crossSection = 27.6017
+    energy = 6.19174e-12 crossSection = 27.6017
+    energy = 7.43008e-12 crossSection = 27.6017
+    energy = 8.9161e-12 crossSection = 27.6017
+    energy = 1.06993e-11 crossSection = 26.6901
+    energy = 1.28392e-11 crossSection = 24.3757
+    energy = 1.5407e-11 crossSection = 22.2633
+    energy = 1.84884e-11 crossSection = 20.3362
+    energy = 2.21861e-11 crossSection = 18.5777
+    energy = 2.66233e-11 crossSection = 16.9739
+    energy = 3.1948e-11 crossSection = 15.5108
+    energy = 3.83376e-11 crossSection = 14.1769
+    energy = 4.60051e-11 crossSection = 12.9605
+    energy = 5.52061e-11 crossSection = 11.8522
+    energy = 6.62474e-11 crossSection = 10.8425
+    energy = 7.94968e-11 crossSection = 9.92368
+    energy = 9.53962e-11 crossSection = 9.08879
+    energy = 1.14475e-10 crossSection = 8.32592
+    energy = 1.37371e-10 crossSection = 7.63428
+    energy = 1.64845e-10 crossSection = 7.00461
+    energy = 1.97814e-10 crossSection = 6.43337
+    energy = 2.37376e-10 crossSection = 5.91546
+    energy = 2.84852e-10 crossSection = 5.44561
+    energy = 3.41822e-10 crossSection = 5.02164
+    energy = 4.10186e-10 crossSection = 4.63731
+    energy = 4.92224e-10 crossSection = 4.29242
+    energy = 5.90668e-10 crossSection = 3.98042
+    energy = 7.08802e-10 crossSection = 3.70209
+    energy = 8.50562e-10 crossSection = 3.45143
+    energy = 1.02067e-09 crossSection = 3.22811
+    energy = 1.22481e-09 crossSection = 3.02929
+    energy = 1.46977e-09 crossSection = 2.85195
+    energy = 1.76373e-09 crossSection = 2.69417
+    energy = 2.11647e-09 crossSection = 2.55558
+    energy = 2.53977e-09 crossSection = 2.43252
+    energy = 3.04772e-09 crossSection = 2.32379
+    energy = 3.65726e-09 crossSection = 2.22784
+    energy = 4.38871e-09 crossSection = 2.14271
+    energy = 5.26646e-09 crossSection = 2.06821
+    energy = 6.31975e-09 crossSection = 2.00142
+    energy = 7.5837e-09 crossSection = 1.94278
+    energy = 9.10044e-09 crossSection = 1.89043
+    energy = 1.09205e-08 crossSection = 1.84394
+    energy = 1.31046e-08 crossSection = 1.80267
+    energy = 1.57256e-08 crossSection = 1.76538
+    energy = 1.88707e-08 crossSection = 1.73212
+    energy = 2.26448e-08 crossSection = 1.70277
+    energy = 2.71738e-08 crossSection = 1.67603
+    energy = 3.26085e-08 crossSection = 1.65207
+    energy = 3.91302e-08 crossSection = 1.63074
+    energy = 4.69563e-08 crossSection = 1.6113
+    energy = 5.63475e-08 crossSection = 1.59424
+    energy = 6.7617e-08 crossSection = 1.57817
+    energy = 8.11404e-08 crossSection = 1.56445
+    energy = 9.73685e-08 crossSection = 1.55151
+    energy = 1.16842e-07 crossSection = 1.53984
+    energy = 1.40211e-07 crossSection = 1.52955
+    energy = 1.68253e-07 crossSection = 1.51998
+    energy = 2.01903e-07 crossSection = 1.51121
+    energy = 2.42284e-07 crossSection = 1.50361
+    energy = 2.90741e-07 crossSection = 1.49653
+    energy = 3.48889e-07 crossSection = 1.48995
+    energy = 4.18667e-07 crossSection = 1.48419
+    energy = 5.024e-07 crossSection = 1.47895
+    energy = 6.0288e-07 crossSection = 1.47411
+    energy = 7.23456e-07 crossSection = 1.46969
+    energy = 8.68147e-07 crossSection = 1.46585
+    energy = 1.04178e-06 crossSection = 1.46236
+    energy = 1.25013e-06 crossSection = 1.45916
+    energy = 1.50016e-06 crossSection = 1.45623
+    energy = 1.80019e-06 crossSection = 1.45356
+    energy = 2.16023e-06 crossSection = 1.4511
+    energy = 2.59227e-06 crossSection = 1.44886
+    energy = 3.11073e-06 crossSection = 1.44678
+    energy = 3.73287e-06 crossSection = 1.44487
+    energy = 4.47945e-06 crossSection = 1.4431
+    energy = 5.37534e-06 crossSection = 1.44147
+    energy = 6.45041e-06 crossSection = 1.43994
+    energy = 7.74049e-06 crossSection = 1.43851
+    energy = 9.28859e-06 crossSection = 1.43716
+
+temperature = 5.172e-08
+    energy = 1e-12 crossSection = 27.6017
+    energy = 1.2e-12 crossSection = 27.6017
+    energy = 1.44e-12 crossSection = 27.6017
+    energy = 1.728e-12 crossSection = 27.6017
+    energy = 2.0736e-12 crossSection = 27.6017
+    energy = 2.48832e-12 crossSection = 27.6017
+    energy = 2.98598e-12 crossSection = 27.6017
+    energy = 3.58318e-12 crossSection = 27.6017
+    energy = 4.29982e-12 crossSection = 27.6017
+    energy = 5.15978e-12 crossSection = 27.6017
+    energy = 6.19174e-12 crossSection = 27.6017
+    energy = 7.43008e-12 crossSection = 27.6017
+    energy = 8.9161e-12 crossSection = 27.6017
+    energy = 1.06993e-11 crossSection = 26.6901
+    energy = 1.28392e-11 crossSection = 24.3757
+    energy = 1.5407e-11 crossSection = 22.2633
+    energy = 1.84884e-11 crossSection = 20.3362
+    energy = 2.21861e-11 crossSection = 18.5777
+    energy = 2.66233e-11 crossSection = 16.9739
+    energy = 3.1948e-11 crossSection = 15.5108
+    energy = 3.83376e-11 crossSection = 14.1769
+    energy = 4.60051e-11 crossSection = 12.9605
+    energy = 5.52061e-11 crossSection = 11.8522
+    energy = 6.62474e-11 crossSection = 10.8425
+    energy = 7.94968e-11 crossSection = 9.92368
+    energy = 9.53962e-11 crossSection = 9.08879
+    energy = 1.14475e-10 crossSection = 8.32592
+    energy = 1.37371e-10 crossSection = 7.63428
+    energy = 1.64845e-10 crossSection = 7.00461
+    energy = 1.97814e-10 crossSection = 6.43337
+    energy = 2.37376e-10 crossSection = 5.91546
+    energy = 2.84852e-10 crossSection = 5.44561
+    energy = 3.41822e-10 crossSection = 5.02164
+    energy = 4.10186e-10 crossSection = 4.63731
+    energy = 4.92224e-10 crossSection = 4.29242
+    energy = 5.90668e-10 crossSection = 3.98042
+    energy = 7.08802e-10 crossSection = 3.70209
+    energy = 8.50562e-10 crossSection = 3.45143
+    energy = 1.02067e-09 crossSection = 3.22811
+    energy = 1.22481e-09 crossSection = 3.02929
+    energy = 1.46977e-09 crossSection = 2.85195
+    energy = 1.76373e-09 crossSection = 2.69417
+    energy = 2.11647e-09 crossSection = 2.55558
+    energy = 2.53977e-09 crossSection = 2.43252
+    energy = 3.04772e-09 crossSection = 2.32379
+    energy = 3.65726e-09 crossSection = 2.22784
+    energy = 4.38871e-09 crossSection = 2.14271
+    energy = 5.26646e-09 crossSection = 2.06821
+    energy = 6.31975e-09 crossSection = 2.00142
+    energy = 7.5837e-09 crossSection = 1.94278
+    energy = 9.10044e-09 crossSection = 1.89043
+    energy = 1.09205e-08 crossSection = 1.84394
+    energy = 1.31046e-08 crossSection = 1.80267
+    energy = 1.57256e-08 crossSection = 1.76538
+    energy = 1.88707e-08 crossSection = 1.73212
+    energy = 2.26448e-08 crossSection = 1.70277
+    energy = 2.71738e-08 crossSection = 1.67603
+    energy = 3.26085e-08 crossSection = 1.65207
+    energy = 3.91302e-08 crossSection = 1.63074
+    energy = 4.69563e-08 crossSection = 1.6113
+    energy = 5.63475e-08 crossSection = 1.59424
+    energy = 6.7617e-08 crossSection = 1.57817
+    energy = 8.11404e-08 crossSection = 1.56445
+    energy = 9.73685e-08 crossSection = 1.55151
+    energy = 1.16842e-07 crossSection = 1.53984
+    energy = 1.40211e-07 crossSection = 1.52955
+    energy = 1.68253e-07 crossSection = 1.51998
+    energy = 2.01903e-07 crossSection = 1.51121
+    energy = 2.42284e-07 crossSection = 1.50361
+    energy = 2.90741e-07 crossSection = 1.49653
+    energy = 3.48889e-07 crossSection = 1.48995
+    energy = 4.18667e-07 crossSection = 1.48419
+    energy = 5.024e-07 crossSection = 1.47895
+    energy = 6.0288e-07 crossSection = 1.47411
+    energy = 7.23456e-07 crossSection = 1.46969
+    energy = 8.68147e-07 crossSection = 1.46585
+    energy = 1.04178e-06 crossSection = 1.46236
+    energy = 1.25013e-06 crossSection = 1.45916
+    energy = 1.50016e-06 crossSection = 1.45623
+    energy = 1.80019e-06 crossSection = 1.45356
+    energy = 2.16023e-06 crossSection = 1.4511
+    energy = 2.59227e-06 crossSection = 1.44886
+    energy = 3.11073e-06 crossSection = 1.44678
+    energy = 3.73287e-06 crossSection = 1.44487
+    energy = 4.47945e-06 crossSection = 1.4431
+    energy = 5.37534e-06 crossSection = 1.44147
+    energy = 6.45041e-06 crossSection = 1.43994
+    energy = 7.74049e-06 crossSection = 1.43851
+    energy = 9.28859e-06 crossSection = 1.43716
+
+temperature = 7.758e-08
+    energy = 1e-12 crossSection = 27.6017
+    energy = 1.2e-12 crossSection = 27.6017
+    energy = 1.44e-12 crossSection = 27.6017
+    energy = 1.728e-12 crossSection = 27.6017
+    energy = 2.0736e-12 crossSection = 27.6017
+    energy = 2.48832e-12 crossSection = 27.6017
+    energy = 2.98598e-12 crossSection = 27.6017
+    energy = 3.58318e-12 crossSection = 27.6017
+    energy = 4.29982e-12 crossSection = 27.6017
+    energy = 5.15978e-12 crossSection = 27.6017
+    energy = 6.19174e-12 crossSection = 27.6017
+    energy = 7.43008e-12 crossSection = 27.6017
+    energy = 8.9161e-12 crossSection = 27.6017
+    energy = 1.06993e-11 crossSection = 26.6901
+    energy = 1.28392e-11 crossSection = 24.3757
+    energy = 1.5407e-11 crossSection = 22.2633
+    energy = 1.84884e-11 crossSection = 20.3362
+    energy = 2.21861e-11 crossSection = 18.5777
+    energy = 2.66233e-11 crossSection = 16.9739
+    energy = 3.1948e-11 crossSection = 15.5108
+    energy = 3.83376e-11 crossSection = 14.1769
+    energy = 4.60051e-11 crossSection = 12.9605
+    energy = 5.52061e-11 crossSection = 11.8522
+    energy = 6.62474e-11 crossSection = 10.8425
+    energy = 7.94968e-11 crossSection = 9.92368
+    energy = 9.53962e-11 crossSection = 9.08879
+    energy = 1.14475e-10 crossSection = 8.32592
+    energy = 1.37371e-10 crossSection = 7.63428
+    energy = 1.64845e-10 crossSection = 7.00461
+    energy = 1.97814e-10 crossSection = 6.43337
+    energy = 2.37376e-10 crossSection = 5.91546
+    energy = 2.84852e-10 crossSection = 5.44561
+    energy = 3.41822e-10 crossSection = 5.02164
+    energy = 4.10186e-10 crossSection = 4.63731
+    energy = 4.92224e-10 crossSection = 4.29242
+    energy = 5.90668e-10 crossSection = 3.98042
+    energy = 7.08802e-10 crossSection = 3.70209
+    energy = 8.50562e-10 crossSection = 3.45143
+    energy = 1.02067e-09 crossSection = 3.22811
+    energy = 1.22481e-09 crossSection = 3.02929
+    energy = 1.46977e-09 crossSection = 2.85195
+    energy = 1.76373e-09 crossSection = 2.69417
+    energy = 2.11647e-09 crossSection = 2.55558
+    energy = 2.53977e-09 crossSection = 2.43252
+    energy = 3.04772e-09 crossSection = 2.32379
+    energy = 3.65726e-09 crossSection = 2.22784
+    energy = 4.38871e-09 crossSection = 2.14271
+    energy = 5.26646e-09 crossSection = 2.06821
+    energy = 6.31975e-09 crossSection = 2.00142
+    energy = 7.5837e-09 crossSection = 1.94278
+    energy = 9.10044e-09 crossSection = 1.89043
+    energy = 1.09205e-08 crossSection = 1.84394
+    energy = 1.31046e-08 crossSection = 1.80267
+    energy = 1.57256e-08 crossSection = 1.76538
+    energy = 1.88707e-08 crossSection = 1.73212
+    energy = 2.26448e-08 crossSection = 1.70277
+    energy = 2.71738e-08 crossSection = 1.67603
+    energy = 3.26085e-08 crossSection = 1.65207
+    energy = 3.91302e-08 crossSection = 1.63074
+    energy = 4.69563e-08 crossSection = 1.6113
+    energy = 5.63475e-08 crossSection = 1.59424
+    energy = 6.7617e-08 crossSection = 1.57817
+    energy = 8.11404e-08 crossSection = 1.56445
+    energy = 9.73685e-08 crossSection = 1.55151
+    energy = 1.16842e-07 crossSection = 1.53984
+    energy = 1.40211e-07 crossSection = 1.52955
+    energy = 1.68253e-07 crossSection = 1.51998
+    energy = 2.01903e-07 crossSection = 1.51121
+    energy = 2.42284e-07 crossSection = 1.50361
+    energy = 2.90741e-07 crossSection = 1.49653
+    energy = 3.48889e-07 crossSection = 1.48995
+    energy = 4.18667e-07 crossSection = 1.48419
+    energy = 5.024e-07 crossSection = 1.47895
+    energy = 6.0288e-07 crossSection = 1.47411
+    energy = 7.23456e-07 crossSection = 1.46969
+    energy = 8.68147e-07 crossSection = 1.46585
+    energy = 1.04178e-06 crossSection = 1.46236
+    energy = 1.25013e-06 crossSection = 1.45916
+    energy = 1.50016e-06 crossSection = 1.45623
+    energy = 1.80019e-06 crossSection = 1.45356
+    energy = 2.16023e-06 crossSection = 1.4511
+    energy = 2.59227e-06 crossSection = 1.44886
+    energy = 3.11073e-06 crossSection = 1.44678
+    energy = 3.73287e-06 crossSection = 1.44487
+    energy = 4.47945e-06 crossSection = 1.4431
+    energy = 5.37534e-06 crossSection = 1.44147
+    energy = 6.45041e-06 crossSection = 1.43994
+    energy = 7.74049e-06 crossSection = 1.43851
+    energy = 9.28859e-06 crossSection = 1.43716
+
+temperature = 1.0344e-07
+    energy = 1e-12 crossSection = 27.6017
+    energy = 1.2e-12 crossSection = 27.6017
+    energy = 1.44e-12 crossSection = 27.6017
+    energy = 1.728e-12 crossSection = 27.6017
+    energy = 2.0736e-12 crossSection = 27.6017
+    energy = 2.48832e-12 crossSection = 27.6017
+    energy = 2.98598e-12 crossSection = 27.6017
+    energy = 3.58318e-12 crossSection = 27.6017
+    energy = 4.29982e-12 crossSection = 27.6017
+    energy = 5.15978e-12 crossSection = 27.6017
+    energy = 6.19174e-12 crossSection = 27.6017
+    energy = 7.43008e-12 crossSection = 27.6017
+    energy = 8.9161e-12 crossSection = 27.6017
+    energy = 1.06993e-11 crossSection = 26.6901
+    energy = 1.28392e-11 crossSection = 24.3757
+    energy = 1.5407e-11 crossSection = 22.2633
+    energy = 1.84884e-11 crossSection = 20.3362
+    energy = 2.21861e-11 crossSection = 18.5777
+    energy = 2.66233e-11 crossSection = 16.9739
+    energy = 3.1948e-11 crossSection = 15.5108
+    energy = 3.83376e-11 crossSection = 14.1769
+    energy = 4.60051e-11 crossSection = 12.9605
+    energy = 5.52061e-11 crossSection = 11.8522
+    energy = 6.62474e-11 crossSection = 10.8425
+    energy = 7.94968e-11 crossSection = 9.92368
+    energy = 9.53962e-11 crossSection = 9.08879
+    energy = 1.14475e-10 crossSection = 8.32592
+    energy = 1.37371e-10 crossSection = 7.63428
+    energy = 1.64845e-10 crossSection = 7.00461
+    energy = 1.97814e-10 crossSection = 6.43337
+    energy = 2.37376e-10 crossSection = 5.91546
+    energy = 2.84852e-10 crossSection = 5.44561
+    energy = 3.41822e-10 crossSection = 5.02164
+    energy = 4.10186e-10 crossSection = 4.63731
+    energy = 4.92224e-10 crossSection = 4.29242
+    energy = 5.90668e-10 crossSection = 3.98042
+    energy = 7.08802e-10 crossSection = 3.70209
+    energy = 8.50562e-10 crossSection = 3.45143
+    energy = 1.02067e-09 crossSection = 3.22811
+    energy = 1.22481e-09 crossSection = 3.02929
+    energy = 1.46977e-09 crossSection = 2.85195
+    energy = 1.76373e-09 crossSection = 2.69417
+    energy = 2.11647e-09 crossSection = 2.55558
+    energy = 2.53977e-09 crossSection = 2.43252
+    energy = 3.04772e-09 crossSection = 2.32379
+    energy = 3.65726e-09 crossSection = 2.22784
+    energy = 4.38871e-09 crossSection = 2.14271
+    energy = 5.26646e-09 crossSection = 2.06821
+    energy = 6.31975e-09 crossSection = 2.00142
+    energy = 7.5837e-09 crossSection = 1.94278
+    energy = 9.10044e-09 crossSection = 1.89043
+    energy = 1.09205e-08 crossSection = 1.84394
+    energy = 1.31046e-08 crossSection = 1.80267
+    energy = 1.57256e-08 crossSection = 1.76538
+    energy = 1.88707e-08 crossSection = 1.73212
+    energy = 2.26448e-08 crossSection = 1.70277
+    energy = 2.71738e-08 crossSection = 1.67603
+    energy = 3.26085e-08 crossSection = 1.65207
+    energy = 3.91302e-08 crossSection = 1.63074
+    energy = 4.69563e-08 crossSection = 1.6113
+    energy = 5.63475e-08 crossSection = 1.59424
+    energy = 6.7617e-08 crossSection = 1.57817
+    energy = 8.11404e-08 crossSection = 1.56445
+    energy = 9.73685e-08 crossSection = 1.55151
+    energy = 1.16842e-07 crossSection = 1.53984
+    energy = 1.40211e-07 crossSection = 1.52955
+    energy = 1.68253e-07 crossSection = 1.51998
+    energy = 2.01903e-07 crossSection = 1.51121
+    energy = 2.42284e-07 crossSection = 1.50361
+    energy = 2.90741e-07 crossSection = 1.49653
+    energy = 3.48889e-07 crossSection = 1.48995
+    energy = 4.18667e-07 crossSection = 1.48419
+    energy = 5.024e-07 crossSection = 1.47895
+    energy = 6.0288e-07 crossSection = 1.47411
+    energy = 7.23456e-07 crossSection = 1.46969
+    energy = 8.68147e-07 crossSection = 1.46585
+    energy = 1.04178e-06 crossSection = 1.46236
+    energy = 1.25013e-06 crossSection = 1.45916
+    energy = 1.50016e-06 crossSection = 1.45623
+    energy = 1.80019e-06 crossSection = 1.45356
+    energy = 2.16023e-06 crossSection = 1.4511
+    energy = 2.59227e-06 crossSection = 1.44886
+    energy = 3.11073e-06 crossSection = 1.44678
+    energy = 3.73287e-06 crossSection = 1.44487
+    energy = 4.47945e-06 crossSection = 1.4431
+    energy = 5.37534e-06 crossSection = 1.44147
+    energy = 6.45041e-06 crossSection = 1.43994
+    energy = 7.74049e-06 crossSection = 1.43851
+    energy = 9.28859e-06 crossSection = 1.43716

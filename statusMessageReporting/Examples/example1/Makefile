@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
-SHELL = /bin/ksh
+SHELL = /bin/sh
 
 STATUSMESSAGEREPORTING_CXXFLAGS = -g -O0
 local_CXXFLAGS = $(CXXFLAGS) -I./ -I../../Src $(STATUSMESSAGEREPORTING_CXXFLAGS)

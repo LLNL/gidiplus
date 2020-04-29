@@ -5,6 +5,8 @@
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
+SHELL = /bin/sh
+
 TARGETS = exponentialIntegralTest
 
 SMR_PATH = ../../../../../statusMessageReporting

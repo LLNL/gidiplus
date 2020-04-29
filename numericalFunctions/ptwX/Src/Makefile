@@ -5,6 +5,8 @@
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
+SHELL = /bin/sh
+
 PTWC_PATH = ../../ptwC
 PTWC_INCLUDE_PATH = $(PTWC_PATH)/include
 

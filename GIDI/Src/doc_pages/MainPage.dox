@@ -1,0 +1,357 @@
+/** 
+
+\mainpage GIDI Library API Documentation
+
+\tableofcontents
+
+\section introductionSection Introduction
+
+GIDI (General Interaction Data Interface) is a C++ library for reading and writing nuclear reaction data stored 
+in the **GNDS** (Generalized Nuclear Data Structure) format.
+The main goal in the design of GIDI is to provide access to **GNDS** data for use in transport codes (e.g., LLNL's 
+Monte Carlo transport code *Mercury* and deterministic code *Ardra*) with minimal effort by the transport code
+developers. To this end GIDI allows access to all data in a **GNDS** structure (almost all, as some stuff still not implemented). In addition, GIDI provides
+methods to easily access multi-group data.
+GIDI has support, albeit minimal, for 1d-functions and matrix operations (mainly addition and substraction): see the classes
+GIDI::Vector and GIDI::Matrix that support multi-group addition and subtraction operations, and 
+the classes GIDI::Functions::XYs1d and GIDI::Functions::Ys1d that support calculations needed by **MCGIDI**
+(a C++ library that samples from the **GNDS** data as needed by Monte Carlo transport codes).
+
+GIDI is not a stand-alone library.
+To use GIDI, one must also have the **statusMessageReporting**, **numericalFunctions** and **PoPI** libraries as well as
+the **pugixml** library. GIDI and the first three libraries (and **MCGIDI**) are developed by *Lawrance Livermore National Laboratory*  (LLNL) 
+and are available at /github.com/LLNL/gidiplus as one download. The **pugixml** must be downloaded by the user and placed in the
+appropriate location.
+
+For the most part, GIDI classes follow the structure of **GNDS**. From the developers standpoint, an important difference between **GNDS** and
+GIDI is the name of the top level Node. In **GNDS** this node is dubbed *reactionSuite* while the GIDI class for this node is the GIDI::Protare class.
+
+\section installationSection Installation
+
+Currently, GIDI and its supporting libraries only use Makefiles to build. To build GIDI and its supporting libraries its is 
+best to download gidiplus from /github.com/LLNL/gidiplus. The rest of the installation instructions will assume a build at the top gidiplus directory.
+
+Since none of these libraries have 'tricky' coding, all that is needed to build them is to specify the macros CXX, CXXFLAGS, CC and CFLAGS to make
+(and the macro PREFIX if installing). An example is
+
+    make CC=g++ CXX=g++ CXXFLAGS="-g -O0" CCFLAGS="-g -O0"
+
+After the build, all relevant C and C++ header files will be placed in the *include* directory of gidiplus and 
+all relevant libraries will be in the *lib* directory. If the *install* target is specified, all header files will be places in the 
+*\$(PREFIX)/include* directory and all relevant libraries will be in the *\$(PREFIX)/lib* directory.
+
+An install example is
+
+    make install CC=gcc CXX=g++ CXXFLAGS="-g -O3" CCFLAGS="-g -O3" PREFIX=/path/to/my/builds
+
+To remove all stuff build by make, type
+
+    make -s realclean
+
+\section nomenclatureSection Nomenclature
+
+All of the variables, functions and classes in the GIDI library reside in the GIDI namepace.
+All enums are scoped enums.
+Namespace, enum and class names start with a capital letter (e.g., GIDI::Map, GIDI::Map::Map, GIDI::Protare, GIDI::Reaction).
+
+Class member variables use a camelcase name that is prefixed with *m_*, and almost always they are private. For example, 
+the start of the GIDI::Construction::Settings class is
+
+    class Settings {
+
+    private:
+        ParseMode m_parseMode;
+        PhotoMode m_photoMode;
+        int m_useSystem_strtod;
+
+    public:
+        Settings( ParseMode a_parseMode, PhotoMode a_photoMode );
+
+        ParseMode parseMode( ) const ;
+
+        PhotoMode photoMode( ) const ;
+        void setPhotoMode( PhotoMode a_photoMode );
+
+        int useSystem_strtod( ) const ;
+        void setUseSystem_strtod( bool a_useSystem_strtod );
+    };
+
+Access to a member varible, if allowed, is via a *get* and sometimes a *set* class function. The name of the *get* function will be the variable
+name without the *m_* prefix. For example, the *get* function for the *m_photoMode* member is the above example is defined as
+
+    PhotoMode photoMode( ) const ;
+
+The *set* function, if it exist and many class variables do not have a *set* function, has the same name as the *get* function but with the 
+first letter of the *get* function capitalized and the prefix *set* added. For example, 
+
+    void setPhotoMode( PhotoMode a_photoMode );
+
+\section GNDS_overviewSection GNDS overview related to GIDI
+
+This section presents a very briefly overview of **GNDS** with a main focus on how GIDI implements features of **GNDS**. Each
+node in **GNDS** can be classified into 1 of 4 groups. Two of these node groups are list like. However, because GIDI is based on
+nuclear infrastructure code **FUDGE** (also developed at LLNL) that is mainly written in python, and since python has the builtin classes
+list, tuple, map and set, the each list-like node group in **GNDS** is called suite in **FUDGE** and GIDI. These suite node groups are 
+implemented with the GIDI::Suite class as a base class.  In this document, the four **GNDS** node groups are dubbed function nodes, component-suite nodes, 
+alike-suite nodes and disparate nodes.
+
+A component-suite node represents a physical quantity. In this document a physical quantity has a more general meaning then is typically used. Here
+it includes any physics quantity that is described by a mathematical function. Examples for **GNDS** include
+cross section, Q-value, multiplicity and a distribution. A component-suite node is a suite because **GNDS** allows for 
+multiple representations of a physical quantity stored simulateously. For example, a cross section may contain a 
+resonance-with-background, a pointwise and a multi-group representation simulateously. The later two representations, pointwise 
+and a multi-group, are drived from the resonance-with-background representation, and, to within their accuracy, represent the same curve
+(i.e., function).
+
+The function node contain the mathematical function that expresses one representation of a physical quantity. For example,
+it could be a pointwise or multi-group representation. In **GNDS** these include **XYs1d**, **gridded1d** and **angularTwoBody** nodes
+which are repressented by the GIDI classes GIDI::Functions::XYs1d, GIDI::Functions::Gridded1d and GIDI::Distributions::AngularTwoBody respectively.
+The following XML shows a schematic of an elastic scattering cross section for 'n + H1' which contains the cross section representation as specified
+by the evaluator (denoted with 'label="eval"'), two heated representations of the cross section (denoted with labels "heated_000" and "heated_001") and
+each heated cross section multi-group (denoted with labels "MultiGroup_000" and "MultiGroup_001").
+
+    <crossSection>
+        <XYs1d label="eval"> ... </XYs1d>
+        <XYs1d label="heated_000"> ... </XYs1d>
+        <gridded1d label="MultiGroup_000"> ... </gridded1d>
+        <XYs1d label="heated_001"> ... </XYs1d>
+        <gridded1d label="MultiGroup_001"> ... </gridded1d></crossSection>
+
+An alike-suite node contains a suite (list) of items of like type objects but each object is different.
+An Example is the *reactions* node.
+This node contains a list of all the exclusive reactions for the specified protare. Exclusive means that the sum of the cross section
+for each reaction listed will be the total cross section for the protare.
+Other alike-suite nodes include the *styles*, *orphanProducts* and *products* nodes. The following is an example of a **reactions** node
+
+    <reactions>
+        <reaction label="n + H1" ENDF_MT="2"> ... </reaction>
+        <reaction label="H2 + photon" ENDF_MT="102"> ... </reaction></reactions>
+
+A important alike-suite node is the *styles* node. This node describes the how the various data with a component node are to be interpreted.
+An example *styles* node for the cross section example above is
+
+    <styles>
+        <evaluated label="eval" library="ENDF/B" version="7.1.5" ...> ... </evaluated>
+        <averageProductData label="apd" derivedFrom="eval" .../>
+        <MonteCarlo_cdf label="MonteCarlo_cdf" derivedFrom="apd" .../>
+        <heated label="heated_000" derivedFrom="MonteCarlo_cdf" ...>
+            <temperature value="2.586e-08" unit="MeV/k"/></heated>
+        <heatedMultiGroup label="MultiGroup_000" derivedFrom="heated_000" ...> ... </heatedMultiGroup>
+        <heated label="heated_001" derivedFrom="MonteCarlo_cdf" ...>
+            <temperature value="1e-06" unit="MeV/k"/></heated>
+        <heatedMultiGroup label="MultiGroup_001" derivedFrom="heated_001" ...> ... </heatedMultiGroup></styles>
+
+The first *style* under this *styles* node is the *evaluated* style. The *evaluated* style indicates data that comes
+from an evaluator. Data within a component node with the label *eval* is from the evaluator. Each component can have at most
+one child node labelled as *eval*. The style *heatedMultiGroup* indicates data that have been multi-grouped.
+The one labelled *MultiGroup_001* derived from the *heated* style labled *heated_001* which defines the temperature of
+the data all data with label *heated_001* and *MultiGroup_001*.
+
+A disparate nodes contains a list of child nodes that are either/or different objects types or represent different data.
+For example, the *reactionSuite* node has child nodes *externalFiles*, *styles*, *reactions*, *orphanProducts*, etc.
+
+\section typesOfProtaresSection Types of protares.
+
+GIDI defines 3 types of protares which are GIDI::ProtareSingle, GIDI::ProtareComposite and GIDI::ProtareTNSL. All these inherit the pure-virtual 
+GIDI::Protare class.  In GIDI each **GNDS** file is represented by a GIDI::ProtareSingle; 
+however, there are two (and maybe more in the future) situations where GIDI supports combining two or more **GNDS** files (i.e., GIDI::ProtareSingle's)
+into an object that acts like a single **GNDS** file (i.e., a projectile hitting a target).
+
+One situation is photo-atomic and photo-nuclear data. These data are stored in two separate **GNDS** files and most likely evaluated by difference
+groups (atomic vs. nuclear scientists). A user, however, may want to treat them as a single protare (e.g., photon + O16). 
+The GIDI::Map::Map class (see mapClassSection) along with the GIDI::ProtareComposite provides a way to treat them as one protare. For example,
+if a user ask a GIDI::Map::Map instance for photon + O16 with both photo-atomic and photo-nuclear available, a GIDI::ProtareComposite instance
+will be return by the GIDI::Map::Map::protare function. Calling the GIDI::Protare::multiGroupCrossSection function of the returned protare will return the
+sum of the total cross section for the photo-atomic and photo-nuclear data.
+
+The other situation is thermal neutron scattering law (TNSL) reaction data. TNSL reaction data only represent the reaction data 
+for a low energy (typically less than a few eV) projectile (i.e., neutron) and for a low temperature (typically less than 
+a few thousand Kelvin) target. For higher enegy projectiles and/or 
+higher temperature targets, the reaction data from a *standard* protare must be used. For example, for a low energy projectile and
+low temperature target for H1 in H2O, one can use the HinH2O TNSL GNDS file, but at other projectile energies and target temperatures, the
+GNDS file for "n + H1" must be used. The GIDI::Map::Map class (see mapClassSection) along with the GIDI::ProtareTNSL provides a way to treat them as one protare.
+Since the map file specifies the *standard* protare to use for each TNSL protare, the user only needs to specify the neutron as projectile and
+the TNSL target (e.g., HinH2O), and the map instance will return the GIDI::ProtareTNSL instance with the proper
+TNSL GNDS file (as a GIDI::ProtareSingle instance) and stardard GNDS file (as a GIDI::ProtareSingle instance).
+
+As a note, in general a user should not instantiate one of the protare classes directly. Instead, the GIDI::Map::Map::protare function should be used to
+return a protare instance.
+
+\section mapClassSection GIDI::Map::Map class and file.
+
+In general, a transport code needs access to many protares (e.g., neutron hitting H1, H2, H3, U235, U237, U238). 
+For most projects, a recommend list of protares are dubbed a nuclear data library release. Examples include *ENDF/B-VIII.0*
+and *JEFF3.3*. A structure for how a nuclear data library are assembled and referenced is not defined in the current **GNDS** specifications, 
+only the protare (i.e., **reactionSuite**) and **PoPs** structures are defined. The GIDI developers have defined a *map* 
+file that assembles a list of protares into a library. GIDI provices the GIDI::Map::Map class within the GIDI namespce to read
+a *map* file. Examples of map files can be found in the sub-directory *Test/Data/MG_MC* of the GIDI package with the
+file extension \*.map (e.g., *Test/Data/MG_MC/all_maps.map* and *Test/Data/MG_MC/all.map*). Currently, the GIDI::Map::Map class
+only reads an XML map file.
+
+A map file has the following structure. The top node has the name *map* and attribures *library* and *format*. The *library*
+attribute specfies the name of the library. The *format* attribute specfies the structure definition of the map file.
+Currently, the only formats supported "0.1" and "0.2" (i.e., this attribure must currently be 'format="0.1"' or 'format="0.2"'). For example,
+a project using the "ENDF/B-VIII.0" may define the *map* node as
+
+\verbatim
+    <map library="ENDF/B-VIII.0" format="0.2">
+\endverbatim
+
+A map file can contain any combination of the following child nodes: *protare*, *TNSL* and *import*.
+The *protare* node associates *projectile-id*, *target-id* and *evaluation* strings with a *protare* (i.e., **GNDS** *reactionSuite*) file.
+The attributes for the *protare* node are *projectile*, *target*, *evaluation*, *path* and *interaction*. The *projectile* attribute specifies
+the *projectile-id*, the *target* attribute specifies the *target-id*, the *evaluation* attribute specifies the evaluation string,
+the *path* specifies the location of the *protare* file and the *interaction* attribute specifies the type of data in the protare.
+Valid values for the *evaluation* attribute are *nuclear* or *atomic* to distinquish between nuclear and photo-atomic data. 
+The path location can be either absolute or relative. If the path is a relative path, then it is relative to the location
+of the current map file (see *import*). For example, a *protare* child node for "n + O16" for "Joe Smith"'s evaluation may look like,
+\verbatim
+    <protare projectile="n" target="O16" evaluation="Joe Smith" 
+                path="neutrons/n-008_O_016.xml" interaction="nuclear"/>
+\endverbatim
+
+For TNSL data, in addition to specifying the projectile-id, target-id, evaluation and path, the *standard* protare to use for projectile energies and
+target temperatures outside the domain of the TNSL is needed. These are specified via the *standardTarget* and *standardEvaluation* attributes.
+For example, a *TNSL* child node for "n + tnsl-Al27" from the "ENDF/B-8.0" evaluation may look like,
+\verbatim
+    <TNSL projectile="n" target="tnsl-Al27" evaluation="ENDF/B-8.0" 
+                path="tsl-013_Al_027.xml"
+                standardTarget="Al27" standardEvaluation="ENDF/B-8.0"/>
+\endverbatim
+
+Finally, a map file can import another map file via the *import* child node which only needs to specify the path to the imported map file.
+For example, an *import* child node may look like,
+\verbatim
+    <import path="neutrons/all.map"/>
+\endverbatim
+
+How do we handle unix verses windows file names? 
+
+\subsection mapUsageSection Using the Map class
+
+This section presents a simple example of using the GIDI::Map::Map class to instantial a protare. Firstly,
+create a GIDI::Map::Map instance as, for example,
+\code{.cpp}
+    PoPI::Database pops( "path/to/pops.xml" );
+    GIDI::Map::Map map( "path/to/mapfile.map", pops )
+\endcode
+
+Next, use the GIDI::Map::Map::protare function to return the desired protare. For example, reading the "photon + O16" protare as,
+\code{.cpp}
+    GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, 
+                                               GIDI::Construction::PhotoMode::nuclearAndAtomic );
+    GIDI::Protare *protare = map.protare( construction, pops, "photon", "O16" );
+\endcode
+Since, in this example, the evaluation is not specified, the first protare matching the projectile-id and target-id will be returned (it is possible
+that there are multiple protares in a map file that match the projectile-id and target-id but have different evaluation strings).
+The GIDI::Construction::Settings instance provides information to the GIDI::Map::Map::protare function needed to construct
+the protare. In this example, if the map file contains photo-atomic and photo-nuclear data for "O16" (note, the photo-atomic target-id
+will probably be "O" but GIDI recognizes "O" as matching "O16" since the "O" implies any Oxygen isotope), GIDI will return a
+GIDI::ProtareComposite instance which will contain two GIDI::ProtareSingle's (one for the photo-atomic protare and one for the photo-nuclear protare).
+If no match is found, a *nullptr* is returned.
+
+\section multiGroupSectionSection Multi-group data access
+    The classes *Protare*, *Reaction*, *OutputChannel* and *Product*, (as do the classes *FissionFragmentData*, *DelayedNeutron* and *FissionEnergyRelease*)
+    contain functions to retrieve multi-group data. The table \ref multi_group_functions "multi-group functions" list the function names and what they return.
+
+<table>
+<caption id="multi_group_functions">A list of multi-group functions provided by GIDI. All values are flux-weighted and multi-grouped.
+All values except those returned by *multiGroupInverseSpeed* and *multiGroupCrossSection* are cross section weighted.</caption>
+<tr><th> Function                               <th> Comment </tr>
+<tr><td> multiGroupInverseSpeed                 <td> This is the inverse of the projectile's speed (1/v). </tr>
+<tr><td> multiGroupCrossSection                 <td> This is the cross-section. </tr>
+<tr><td> multiGroupQ                            <td> This is the Q-value. </tr>
+<tr><td> multiGroupAvailableEnergy              <td> This is the total energy available to all outgoing particles. It includes the energy of the projectile and the Q-value. </tr>
+<tr><td> multiGroupAvailableMomentum            <td> This is the total momentum in the direction of the projectile available to all outgoing particles. </tr>
+<tr><td> multiGroupMultiplicity                 <td> This is the multiplicity for the specified outgoing particle. </tr>
+<tr><td> multiGroupAverageEnergy                <td> This is the average energy, integrated over all mu, of the specified outgoing particle. </tr>
+<tr><td> multiGroupAverageMomentum              <td> This is the average momentum in the direction of the projectile and integrated over all mu of the specified outgoing particle. </tr>
+<tr><td> multiGroupGain                         <td> This is the gain for the specified particle. Gain is the difference between the number of outgoing particles minus ingoing particles for the specified particle (weighted by a reaction cross section). </tr>
+<tr><td> multiGroupFissionNeutronMultiplicity   <td> This is the neutron multiplicity for all fission reactions. </tr>
+<tr><td> multiGroupTransportCorrection          <td> This is the transport correction. Valid transport correction flags are GIDI::TransportCorrectionType::None and GIDI::TransportCorrectionType::Pendlebury. </tr>
+<tr><td> multiGroupDepositionEnergy             <td> This is the energy available to all outgoing particles that are not being transported. </tr>
+<tr><td> multiGroupDepositionMomentum           <td> This is the momentum in the direction of the projectile available to all outgoing particles that are not being transported. </tr>
+<tr><td> multiGroupProductMatrix                <td> This is the transfer matrix for the specified outgoing particle and Legendre order. </tr>
+<tr><td> multiGroupFissionMatrix                <td> This is like *multiGroupProductMatrix* except only for neutrons for fission reactions. </tr>
+</table>
+
+
+\subsection accessingDataExample Accessing data in a GIDI::ProtareSingle instance.
+
+This section describes how to use GIDI to access data in a **GNDS** reactionSuite (i.e., protare).  The following **GNDS** outline will be used
+to aid in this discussion.
+
+    reactionSuite projectile="n" target="H1" evaluation="ENDF/B-8.0" format="1.10" projectileFrame="lab">
+        <externalFiles> ... </externalFiles>
+        <styles> ... </styles>
+        <PoPs name="protare_internal" version="1.0" format="0.1"> ... </PoPs>
+        <resonances> ... </resonances>
+        <reactions>
+            <reaction label="n + O16" ENDF_MT="2"> ... </reaction>
+            <reaction label="n + (O16_e1 -> O16)" ENDF_MT="51">
+                <crossSection>
+                    <XYs1d label="eval"> ... </XYs1d>
+                    <XYs1d label="heated_000"> ... </XYs1d>
+                        ... </crossSection>
+                <outputChannel genre="twoBody">
+                    <Q> ... </Q>
+                    <products>
+                        <product pid="n" label="n">
+                            <multiplicity> ... <multiplicity>
+                            <distribution>
+                                <angularTwoBody label="eval" productFrame="centerOfMass"> ... </angularTwoBody>
+                                    ... </distribution>
+                        <product pid="O16_e1" label="O16_e1">
+                            ...
+                            <outputChannel genre="NBody">
+                                <Q> ... </Q>
+                                <products>
+                                    <product pid="O16" label="O16"> 
+                                        ... </product></products></outputChannel></product><products></outputChannel></reaction>
+            <reaction label="n + (O16_e2 -> O16)" ENDF_MT="52"> ... </reaction>
+            ... </reactions>
+        <orphanProducts> ... </orphanProducts>
+        <sums> ... </sums>
+            ... </reactionSuite>
+
+Firstly, it is essential to note how the GIDI structure mimics **GNDS**. This can be seen, in part, by how a child node is accessed
+given a parent node. Accessing a child node depends on which of the 4 groups the parent node belongs to. 
+For a disparate node, use the child node's name as the name of a function with no argument. For example, 
+a protare has a *reactions* child node. To access the *reactions* node with a *protare* pointer use the following
+
+    protare->reactions( )
+
+To access a child node when the parent is a component or alike suite node, use the GIDI::Suite class 
+*get* functions which take a single argument.  The argument can either
+be a C++ *std::string* instance or a C++ *int*. If the argument is a *std::string* instance then the child node with the label matching
+the argument is returned. If the argument is a C++ *int* instance then the (n-1)th child node is returned. The follow example show how to get a cross section
+from the 2th (index = 1) reaction of the "n + O16" protare. This code is from the *Examples/example1.cpp* file. 
+
+\snippet{lineno} example1.cpp snippet
+
+This code produces the following output
+
+    Reaction label is 'n + (O16_e1 -> O16)'
+    cross section at 7.1 MeV is 0.00170176
+
+    List of products for this reaction is
+        product id = 'n' label = 'n'
+        product id = 'O16_e1' label = 'O16_e1'
+
+    List of distribution forms for product with id = n' label = 'n' is
+            angularTwoBody  eval
+            angularTwoBody  MonteCarlo_cdf
+            multiGroup3d  MultiGroup_000
+
+Lines 39 and 40 create PoPI::Database and GIDI::Map::Map instances. Lines 42 creates a GIDI::Construction::Settings instance and then
+line 44 calls the GIDI::Map::Map::protare function which returned the requested protare. Line 46 gets access to the protare's reactions
+node and then, since this is an alike node, the GIDI::Suite::get function is called to get the second reaction. Since a reaction
+is a disparate node with child node *crossSection*, line 49 get a reference to the reaction's crossSection node.
+Line 50 gets the form of the cross section with label *heated_000*. In GIDI, all 1d-functions have a GIDI::Functions::Function1dForm::evaluate function
+(currently, not all work properly) since they inherit from the GIDI::Functions::Function1dForm class. Line 51 prints the
+cross section at 7.1 MeV as the energy unit for these data is MeV. Like a reaction node, a reaction's outputChannel is a
+disparate node. Line 54 gets the reaction's outputChannel and line 55 gets a reference to the outputChannel's prodcuts (products
+is an alike node). Lines 57 to 61 loop over each product of the outputChannel and prints each products PoPs id and label.
+Note, the second product (id = *O16_e1*) has an outputChannel. The products in the *O16_e1* outputChannel are not printed.
+Line 63 to 70 print the different forms for the first product's distribution.
+ */

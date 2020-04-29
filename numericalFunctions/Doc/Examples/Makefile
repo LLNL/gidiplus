@@ -5,6 +5,8 @@
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
+SHELL = /bin/sh
+
 SMR_PATH = ../../../statusMessageReporting
 NUMERICALFUNCTIONS_PATH = ../..
 

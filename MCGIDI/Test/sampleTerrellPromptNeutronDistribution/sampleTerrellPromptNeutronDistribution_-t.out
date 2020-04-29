@@ -1,0 +1,18 @@
+
+reaction ( 19) = m(E)*n + photon [total fission]  threshold = 1e-13
+    energy = 1e-13 total neutrons = 205466 (2.0547) delayed neutrons = 0 (0.000e+00) 6994 23704 36046 24570 7552 1052 82 0 0 0 0 0 0 0 0 0
+    energy = 1e-12 total neutrons = 205514 (2.0551) delayed neutrons = 0 (0.000e+00) 6977 23734 35890 24760 7541 1034 62 2 0 0 0 0 0 0 0 0
+    energy = 1e-11 total neutrons = 205759 (2.0576) delayed neutrons = 0 (0.000e+00) 6979 23362 36351 24719 7459 1081 46 3 0 0 0 0 0 0 0 0
+    energy = 1e-10 total neutrons = 205630 (2.0563) delayed neutrons = 0 (0.000e+00) 7027 23543 36156 24522 7626 1053 71 2 0 0 0 0 0 0 0 0
+    energy = 1e-09 total neutrons = 206193 (2.0619) delayed neutrons = 0 (0.000e+00) 6867 23558 35969 24904 7598 1033 69 2 0 0 0 0 0 0 0 0
+    energy = 1e-08 total neutrons = 205907 (2.0591) delayed neutrons = 0 (0.000e+00) 6907 23571 36015 24853 7588 1003 61 2 0 0 0 0 0 0 0 0
+    energy = 1e-07 total neutrons = 205406 (2.0541) delayed neutrons = 0 (0.000e+00) 7020 23700 35882 24819 7488 1017 70 4 0 0 0 0 0 0 0 0
+    energy = 1e-06 total neutrons = 205081 (2.0508) delayed neutrons = 0 (0.000e+00) 7091 23644 36095 24598 7481 1018 72 1 0 0 0 0 0 0 0 0
+    energy = 1e-05 total neutrons = 205172 (2.0517) delayed neutrons = 0 (0.000e+00) 7023 23857 35879 24587 7559 1012 81 2 0 0 0 0 0 0 0 0
+    energy = 0.0001 total neutrons = 205942 (2.0594) delayed neutrons = 0 (0.000e+00) 6863 23766 35807 24855 7598 1062 48 1 0 0 0 0 0 0 0 0
+    energy = 0.001 total neutrons = 205579 (2.0558) delayed neutrons = 0 (0.000e+00) 6934 23801 35834 24776 7567 1018 66 4 0 0 0 0 0 0 0 0
+    energy = 0.01 total neutrons = 205928 (2.0593) delayed neutrons = 0 (0.000e+00) 7044 23570 35785 24815 7662 1050 73 1 0 0 0 0 0 0 0 0
+    energy = 0.1 total neutrons = 207058 (2.0706) delayed neutrons = 0 (0.000e+00) 6721 23533 35879 24947 7739 1119 59 3 0 0 0 0 0 0 0 0
+    energy = 1 total neutrons = 214288 (2.1429) delayed neutrons = 0 (0.000e+00) 5890 21878 35793 26374 8705 1279 80 1 0 0 0 0 0 0 0 0
+    energy = 10 total neutrons = 287278 (2.8728) delayed neutrons = 0 (0.000e+00) 1336 8910 26362 35299 21454 5934 674 31 0 0 0 0 0 0 0 0
+    energy = 100 total neutrons = 370090 (3.7009) delayed neutrons = 0 (0.000e+00) 147 1912 11253 29487 34264 18015 4398 500 24 0 0 0 0 0 0 0

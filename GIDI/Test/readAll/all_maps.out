@@ -1,0 +1,59 @@
+    ../Data/MG_MC/all_maps.map
+    /.../GIDI/Test/Data/MG_MC/neutrons/all.map
+
+        /.../GIDI/Test/Data/MG_MC/neutrons/n-001_H_001.xml
+        library          = neutrons
+        resolved library = neutrons
+
+        /.../GIDI/Test/Data/MG_MC/neutrons/tsl-HinCH2.xml
+        library          = neutrons
+        resolved library = neutrons
+
+        /.../GIDI/Test/Data/MG_MC/neutrons/n-008_O_016.xml
+        library          = neutrons
+        resolved library = neutrons
+
+        /.../GIDI/Test/Data/MG_MC/neutrons/n-013_Al_027.xml
+        library          = neutrons
+        resolved library = neutrons
+
+        /.../GIDI/Test/Data/MG_MC/neutrons/tsl-013_Al_027.xml
+        library          = neutrons
+        resolved library = neutrons
+
+        /.../GIDI/Test/Data/MG_MC/neutrons/n-026_Fe_056.xml
+        library          = neutrons
+        resolved library = neutrons
+
+        /.../GIDI/Test/Data/MG_MC/neutrons/n-090_Th_227.xml
+        library          = neutrons
+        resolved library = neutrons
+    /.../GIDI/Test/Data/MG_MC/protons/all.map
+
+        /.../GIDI/Test/Data/MG_MC/protons/p-001_H_001.xml
+        library          = protons
+        resolved library = protons
+    label = muCutoff mu = 0.94
+
+        /.../GIDI/Test/Data/MG_MC/protons/p-003_Li_006.xml
+        library          = protons
+        resolved library = protons
+    label = muCutoff mu = 0.94
+    /.../GIDI/Test/Data/MG_MC/photo-nuclear/all.map
+
+        /.../GIDI/Test/Data/MG_MC/photo-nuclear/g-008_O_016.xml
+        library          = photo-nuclear
+        resolved library = photo-nuclear
+    /.../GIDI/Test/Data/MG_MC/photo-atomic/all.map
+
+        /.../GIDI/Test/Data/MG_MC/photo-atomic/photoat-001_H_000.xml
+        library          = photo-atomic
+        resolved library = photo-atomic
+
+        /.../GIDI/Test/Data/MG_MC/photo-atomic/photoat-008_O_000.xml
+        library          = photo-atomic
+        resolved library = photo-atomic
+
+        /.../GIDI/Test/Data/MG_MC/photo-atomic/photoat-090_Th_000.xml
+        library          = photo-atomic
+        resolved library = photo-atomic

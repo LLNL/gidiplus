@@ -5,6 +5,8 @@
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
+SHELL = /bin/sh
+
 subDirectories = Utilities initial UnitTesting Flat
 
 .PHONY: default utilities check checke clean realclean doTarget

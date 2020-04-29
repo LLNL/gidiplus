@@ -5,6 +5,8 @@
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
+SHELL = /bin/sh
+
 .PHONY: default headers utilities check checkPython clean realclean doTarget
 
 subDirectories = Python Src Test lib include

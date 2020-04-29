@@ -1,0 +1,14 @@
+/.../GIDI/Test/Data/MG_MC/photo-nuclear/g-008_O_016.xml
+      0  11 n + O15
+      1  40 H1 + N15
+      2  -5 sumOfRemainingOutputChannels
+      3  71 O + photon [coherent]
+      4  72 O + photon [incoherent]
+      5  73 e- + O [photo-electric]
+      6  74 O + photon [pair production: electron field]
+
+    C values = -5 40
+
+    Matching indices are:
+        1
+        2

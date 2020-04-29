@@ -5,6 +5,8 @@
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
+SHELL = /bin/sh
+
 .PHONY: default check checke clean realclean doTarget
 
 subDirectories = thicken integrate Others convolution thinning binaryMath interpolation toFunction inverse

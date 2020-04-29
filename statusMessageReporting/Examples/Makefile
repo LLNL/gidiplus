@@ -5,13 +5,13 @@
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
-SHELL = /bin/ksh
+SHELL = /bin/sh
 
 SUB_DIRS = example1 example2
 
 .PHONY: default check clean realclean
 
-default: 
+default:
 	$(MAKE) MODE=default doSubDirs
 
 check:

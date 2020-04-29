@@ -1,0 +1,10 @@
+label = heated_000  temperature = 0
+reaction (  0) = n + O15  threshold = 15.6638
+    energy = 15.6638
+    energy = 31.3276
+    energy = 62.6552
+reaction (  1) = H1 + N15  threshold = 12.1275
+    energy = 12.1275
+    energy = 24.255
+    energy = 48.51
+    energy = 97.02

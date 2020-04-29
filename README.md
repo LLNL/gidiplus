@@ -15,11 +15,11 @@ Use make to build the project (pugixml will be downloaded automatically if not p
 
 In general, one should specify the CC and CXX compilers and their flags when building. For example,
 
-    `make default CC=g++ CXX=g++ CXXFLAGS="-g -O3" CCFLAGS="-g -O3"`
+    `make default CC=g++ CXX=g++ CXXFLAGS="-std=c++11 -g -O3" CFLAGS="-std=gnu11 -g -O3"`
 
 To put the results into the path '/path/to/my/builds', execute
 
-    `make install CC=gcc CXX=g++ CXXFLAGS="-g -O3" CCFLAGS="-g -O3" PREFIX=/path/to/my/builds`
+    `make install CC=gcc CXX=g++ CXXFLAGS="-std=c++11 -g -O3" CFLAGS="-std=gnu11 -g -O3" PREFIX=/path/to/my/builds`
 
 TOSS-3 build scripts for various compilers are available in the 'Scripts' directory.
 
@@ -35,8 +35,9 @@ SPDX-License-Identifier: MIT
 This package includes several components: \
 LLNL-CODE-778320	(GIDIplus)
 
-LLNL-CODE-770917	(GIDI3) \
+LLNL-CODE-770917	(GIDI) \
+LLNL-CODE-790397	(MCGIDI) \
 LLNL-CODE-771182	(statusMessageReporting) \
-LLNL-CODE-770377	(PoPsCpp) \
+LLNL-CODE-770377	(PoPI) \
 LLNL-CODE-770134	(numericalFunctions)
 

@@ -1,0 +1,7 @@
+    isProtareAvailable( PoPI::IDs::neutron, H1 ) 1
+    Printing all libraries that contain 'n + H1'.
+        neutrons  1
+        neutrons1  1
+        neutrons2  1
+    Printing a libraries that does not contain 'n + H1'.
+        junk  0

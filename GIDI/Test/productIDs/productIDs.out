@@ -1,0 +1,129 @@
+/.../GIDI/Test/Data/MG_MC/neutrons/n-008_O_016.xml
+
+All particle IDs in protare:  n photon B10 B11 B12 Be10 Be7 Be9 C11 C12 C13 C14 C15 H1 H2 H3 He4 Li6 Li7 N13 N14 N15 N16 O14 O15 O16 O17
+
+Transportable particle IDs in protare:  n photon
+
+All particle IDs by reaction:
+    n + O16:  n O16
+    n + (O16_e1 -> O16):  n O16
+    n + (O16_e2 -> O16):  n O16
+    n + (O16_e3 -> O16):  n O16
+    n + (O16_e4 -> O16):  n O16
+    n + (O16_e5 -> O16):  n O16
+    n + (O16_e6 -> O16):  n O16
+    n + (O16_e7 -> O16):  n O16
+    n + (O16 -> O16 + photon) [continuum]:  n photon O16
+    2n + O15 + photon:  n photon O15
+    n + H1 + N15 + photon:  n photon H1 N15
+    n + H2 + N14 + photon:  n photon H2 N14
+    H1 + N16:  H1 N16
+    H1 + (N16_e1 -> N16):  H1 N16
+    H1 + (N16_e2 -> N16):  H1 N16
+    H1 + (N16_e3 -> N16):  H1 N16
+    H2 + N15:  H2 N15
+    H2 + (N15_e1 -> N15):  H2 N15
+    H2 + (N15_e2 -> N15):  H2 N15
+    H2 + (N15_e3 -> N15):  H2 N15
+    H2 + (N15_e4 -> N15):  H2 N15
+    H2 + (N15_e5 -> N15):  H2 N15
+    H2 + (N15_e6 -> N15):  H2 N15
+    H2 + (N15_e7 -> N15):  H2 N15
+    H2 + (N15_e8 -> N15):  H2 N15
+    H2 + (N15_e9 -> N15):  H2 N15
+    H2 + (N15_e10 -> N15):  H2 N15
+    H2 + (N15_e11 -> N15):  H2 N15
+    H2 + (N15_e12 -> N15):  H2 N15
+    H2 + (N15_e13 -> N15):  H2 N15
+    H2 + (N15_e14 -> N15):  H2 N15
+    H2 + (N15_e15 -> N15):  H2 N15
+    H2 + (N15_e16 -> N15):  H2 N15
+    H2 + (N15_e17 -> N15):  H2 N15
+    H2 + (N15_e18 -> N15):  H2 N15
+    H2 + (N15_e19 -> N15):  H2 N15
+    H3 + N14:  H3 N14
+    H3 + (N14_e1 -> N14):  H3 N14
+    H3 + (N14_e2 -> N14):  H3 N14
+    H3 + (N14_e3 -> N14):  H3 N14
+    H3 + (N14_e4 -> N14):  H3 N14
+    H3 + (N14_e5 -> N14):  H3 N14
+    H3 + (N14_e6 -> N14):  H3 N14
+    H3 + (N14_e7 -> N14):  H3 N14
+    H3 + (N14_e8 -> N14):  H3 N14
+    H3 + (N14_e9 -> N14):  H3 N14
+    H3 + (N14 -> N14 + photon) [continuum]:  photon H3 N14
+    He4 + C13:  C13 He4
+    He4 + (C13_e1 -> C13):  C13 He4
+    He4 + (C13_e2 -> C13):  C13 He4
+    He4 + (C13_e3 -> C13):  C13 He4
+    O17 + photon:  photon O17
+    n + He4 + C12 + photon:  n photon C12 He4
+    n + 4He4 + photon:  n photon He4
+    2n + H1 + N14 + photon:  n photon H1 N14
+    n + 2H1 + C14 + photon:  n photon C14 H1
+    n + H1 + He4 + B11 + photon:  n photon B11 H1 He4
+    2He4 + Be9 + photon:  photon Be9 He4
+    H1 + He4 + B12 + photon:  photon B12 H1 He4
+    sumOfRemainingOutputChannels:  n photon B10 B11 B12 Be10 Be7 Be9 C11 C12 C13 C14 C15 H1 H2 H3 He4 Li6 Li7 N13 N14 N15 N16 O14 O15 O16
+
+Transportable particle IDs by reaction:
+    n + O16:  n
+    n + (O16_e1 -> O16):  n
+    n + (O16_e2 -> O16):  n
+    n + (O16_e3 -> O16):  n
+    n + (O16_e4 -> O16):  n
+    n + (O16_e5 -> O16):  n
+    n + (O16_e6 -> O16):  n
+    n + (O16_e7 -> O16):  n
+    n + (O16 -> O16 + photon) [continuum]:  n photon
+    2n + O15 + photon:  n photon
+    n + H1 + N15 + photon:  n photon
+    n + H2 + N14 + photon:  n photon
+    H1 + N16: 
+    H1 + (N16_e1 -> N16): 
+    H1 + (N16_e2 -> N16): 
+    H1 + (N16_e3 -> N16): 
+    H2 + N15: 
+    H2 + (N15_e1 -> N15): 
+    H2 + (N15_e2 -> N15): 
+    H2 + (N15_e3 -> N15): 
+    H2 + (N15_e4 -> N15): 
+    H2 + (N15_e5 -> N15): 
+    H2 + (N15_e6 -> N15): 
+    H2 + (N15_e7 -> N15): 
+    H2 + (N15_e8 -> N15): 
+    H2 + (N15_e9 -> N15): 
+    H2 + (N15_e10 -> N15): 
+    H2 + (N15_e11 -> N15): 
+    H2 + (N15_e12 -> N15): 
+    H2 + (N15_e13 -> N15): 
+    H2 + (N15_e14 -> N15): 
+    H2 + (N15_e15 -> N15): 
+    H2 + (N15_e16 -> N15): 
+    H2 + (N15_e17 -> N15): 
+    H2 + (N15_e18 -> N15): 
+    H2 + (N15_e19 -> N15): 
+    H3 + N14: 
+    H3 + (N14_e1 -> N14): 
+    H3 + (N14_e2 -> N14): 
+    H3 + (N14_e3 -> N14): 
+    H3 + (N14_e4 -> N14): 
+    H3 + (N14_e5 -> N14): 
+    H3 + (N14_e6 -> N14): 
+    H3 + (N14_e7 -> N14): 
+    H3 + (N14_e8 -> N14): 
+    H3 + (N14_e9 -> N14): 
+    H3 + (N14 -> N14 + photon) [continuum]:  photon
+    He4 + C13: 
+    He4 + (C13_e1 -> C13): 
+    He4 + (C13_e2 -> C13): 
+    He4 + (C13_e3 -> C13): 
+    O17 + photon:  photon
+    n + He4 + C12 + photon:  n photon
+    n + 4He4 + photon:  n photon
+    2n + H1 + N14 + photon:  n photon
+    n + 2H1 + C14 + photon:  n photon
+    n + H1 + He4 + B11 + photon:  n photon
+    2He4 + Be9 + photon:  photon
+    H1 + He4 + B12 + photon:  photon
+    sumOfRemainingOutputChannels:  n photon

@@ -5,6 +5,8 @@
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
+SHELL = /bin/sh
+
 subDirectories = UnitTesting
 
 .PHONY: check checke clean realclean doTarget

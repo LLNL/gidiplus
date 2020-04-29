@@ -9,9 +9,11 @@ SHELL = /bin/bash
 
 # These must be set by hand when we do a release.
 gidiplus_major=3
-gidiplus_minor=17
+gidiplus_minor=18
 
-DIRS = pugixml statusMessageReporting PoPsCpp numericalFunctions GIDI3 include lib
+CXXFLAGS := -std=c++11
+
+DIRS = pugixml statusMessageReporting PoPI numericalFunctions GIDI MCGIDI include lib
 
 PREFIX = `pwd`/install
 
@@ -31,13 +33,10 @@ include:
 lib:
 	cd lib; $(MAKE)
 
-pugixml-1.8/.dirstamp:
-	curl -SL http://github.com/zeux/pugixml/releases/download/v1.8/pugixml-1.8.tar.gz --output pugixml-1.8.tar.gz
-	tar -xf pugixml-1.8.tar.gz
+pugixml:
+	rm -rf pugixml pugixml-1.8
+	unzip -q Misc/pugixml-1.8.zip
 	ln -s pugixml-1.8 pugixml
-	touch pugixml-1.8/.dirstamp
-
-pugixml: pugixml-1.8/.dirstamp
 	cd pugixml; tar -xf ../Misc/pugixml.addon.tar
 
 pugixml_dummy:
@@ -54,8 +53,9 @@ gidiplus_version.h: FORCE
 		svnversion .                      | awk 'BEGIN{FS="/+| +"} {printf("#define GIDIPLUS_SVN %d\n" , $$1)}'                 >> gidiplus_version.h; \
 		svnversion statusMessageReporting | awk 'BEGIN{FS="/+| +"} {printf("#define STATUS_MESSAGE_REPORTING_SVN %d\n" , $$1)}' >> gidiplus_version.h; \
 		svnversion numericalFunctions     | awk 'BEGIN{FS="/+| +"} {printf("#define NUMERICAL_FUNCTIONS_SVN  %d\n" , $$1)}'     >> gidiplus_version.h; \
-		svnversion PoPsCpp                | awk 'BEGIN{FS="/+| +"} {printf("#define POPSCPP_SVN  %d\n" , $$1)}'                 >> gidiplus_version.h; \
-		svnversion GIDI3                  | awk 'BEGIN{FS="/+| +"} {printf("#define GIDI3_SVN  %d\n" , $$1)}'                   >> gidiplus_version.h; \
+		svnversion PoPI                   | awk 'BEGIN{FS="/+| +"} {printf("#define POPI_SVN  %d\n" , $$1)}'                    >> gidiplus_version.h; \
+		svnversion GIDI                   | awk 'BEGIN{FS="/+| +"} {printf("#define GIDI_SVN  %d\n" , $$1)}'                    >> gidiplus_version.h; \
+		svnversion MCGIDI                 | awk 'BEGIN{FS="/+| +"} {printf("#define MCGIDI_SVN  %d\n" , $$1)}'                  >> gidiplus_version.h; \
 	fi
 	cat gidiplus_version.h
 
@@ -79,6 +79,6 @@ tar: gidiplus_version.h
 
 doDIRS:
 	SAVED_PWD=`pwd`; \
-	for DIR in $(_DIRS); do cd $$DIR; $(MAKE) $(_TARGET); cd $$SAVED_PWD; done
+	for DIR in $(_DIRS); do cd $$DIR; $(MAKE) $(_TARGET) CXXFLAGS=$(CXXFLAGS); cd $$SAVED_PWD; done
 
 FORCE:

@@ -5,6 +5,8 @@
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
+SHELL = /bin/sh
+
 NUMERICALFUNCTIONS_PATH = ../..
 
 localCFLAGS = $(CFLAGS) -I$(SMR_PATH)/include

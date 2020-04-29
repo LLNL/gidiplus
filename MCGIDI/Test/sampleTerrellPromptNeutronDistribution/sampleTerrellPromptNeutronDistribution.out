@@ -1,0 +1,18 @@
+
+reaction ( 19) = m(E)*n + photon [total fission]  threshold = 1e-13
+    energy = 1e-13 total neutrons = 205660 (2.0566) delayed neutrons = 0 (0.000e+00) 0 0 94340 5660 0 0 0 0 0 0 0 0 0 0 0 0
+    energy = 1e-12 total neutrons = 205657 (2.0566) delayed neutrons = 0 (0.000e+00) 0 0 94343 5657 0 0 0 0 0 0 0 0 0 0 0 0
+    energy = 1e-11 total neutrons = 205581 (2.0558) delayed neutrons = 0 (0.000e+00) 0 0 94419 5581 0 0 0 0 0 0 0 0 0 0 0 0
+    energy = 1e-10 total neutrons = 205643 (2.0564) delayed neutrons = 0 (0.000e+00) 0 0 94357 5643 0 0 0 0 0 0 0 0 0 0 0 0
+    energy = 1e-09 total neutrons = 205736 (2.0574) delayed neutrons = 0 (0.000e+00) 0 0 94264 5736 0 0 0 0 0 0 0 0 0 0 0 0
+    energy = 1e-08 total neutrons = 205716 (2.0572) delayed neutrons = 0 (0.000e+00) 0 0 94284 5716 0 0 0 0 0 0 0 0 0 0 0 0
+    energy = 1e-07 total neutrons = 205750 (2.0575) delayed neutrons = 0 (0.000e+00) 0 0 94250 5750 0 0 0 0 0 0 0 0 0 0 0 0
+    energy = 1e-06 total neutrons = 205630 (2.0563) delayed neutrons = 0 (0.000e+00) 0 0 94370 5630 0 0 0 0 0 0 0 0 0 0 0 0
+    energy = 1e-05 total neutrons = 205692 (2.0569) delayed neutrons = 0 (0.000e+00) 0 0 94308 5692 0 0 0 0 0 0 0 0 0 0 0 0
+    energy = 0.0001 total neutrons = 205674 (2.0567) delayed neutrons = 0 (0.000e+00) 0 0 94326 5674 0 0 0 0 0 0 0 0 0 0 0 0
+    energy = 0.001 total neutrons = 205688 (2.0569) delayed neutrons = 0 (0.000e+00) 0 0 94312 5688 0 0 0 0 0 0 0 0 0 0 0 0
+    energy = 0.01 total neutrons = 205763 (2.0576) delayed neutrons = 0 (0.000e+00) 0 0 94237 5763 0 0 0 0 0 0 0 0 0 0 0 0
+    energy = 0.1 total neutrons = 206465 (2.0646) delayed neutrons = 0 (0.000e+00) 0 0 93535 6465 0 0 0 0 0 0 0 0 0 0 0 0
+    energy = 1 total neutrons = 213911 (2.1391) delayed neutrons = 0 (0.000e+00) 0 0 86089 13911 0 0 0 0 0 0 0 0 0 0 0 0
+    energy = 10 total neutrons = 287661 (2.8766) delayed neutrons = 0 (0.000e+00) 0 0 12339 87661 0 0 0 0 0 0 0 0 0 0 0 0
+    energy = 100 total neutrons = 369908 (3.6991) delayed neutrons = 0 (0.000e+00) 0 0 0 30092 69908 0 0 0 0 0 0 0 0 0 0 0

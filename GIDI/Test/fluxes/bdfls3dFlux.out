@@ -1,0 +1,13 @@
+        fid = 1
+            LLNL_fid_1
+<XYs3d label="LLNL_fid_1">
+  <axes>
+    <axis index="3" label="temperature" unit="MeV/k"/>
+    <axis index="2" label="energy_in" unit="MeV"/>
+    <axis index="1" label="mu" unit=""/>
+    <axis index="0" label="flux" unit="1/s"/></axes>
+  <XYs2d outerDomainValue="0">
+    <Legendre outerDomainValue="0">
+      <values>85</values></Legendre>
+    <Legendre outerDomainValue="21">
+      <values>85</values></Legendre></XYs2d></XYs3d>
