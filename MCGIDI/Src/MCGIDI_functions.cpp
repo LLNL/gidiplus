@@ -7,9 +7,9 @@
 # <<END-copyright>>
 */
 
-#include "MCGIDI.hpp"
-#include "MCGIDI_functions.hpp"
 #include <typeinfo>
+
+#include "MCGIDI.hpp"
 
 namespace MCGIDI {
 
@@ -75,7 +75,7 @@ HOST_DEVICE void FunctionBase::serialize( DataBuffer &a_buffer, DataBuffer::Mode
     DATA_MEMBER_FLOAT( m_domainMax, a_buffer, a_mode );
 
     int interpolation = 0;
-    if( a_mode == DataBuffer::Mode::Pack ) {
+    if( a_mode != DataBuffer::Mode::Unpack ) {
         switch( m_interpolation ) {
         case Interpolation::FLAT :
             break;
@@ -172,7 +172,7 @@ HOST_DEVICE void Function1d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a
     FunctionBase::serialize( a_buffer, a_mode ); 
 
     int type = 0;
-    if( a_mode == DataBuffer::Mode::Pack ) {
+    if( a_mode != DataBuffer::Mode::Unpack ) {
         switch( m_type ) {
         case Function1dType::none :
             break;
@@ -251,9 +251,9 @@ HOST_DEVICE Constant1d::Constant1d( double a_domainMin, double a_domainMax, doub
 /*
 ============================================================
 */
-HOST Constant1d::Constant1d( GIDI::Functions::Constant1d const &form1d ) :
-        Function1d( form1d.domainMin( ), form1d.domainMax( ), Interpolation::FLAT, form1d.outerDomainValue( ) ),
-        m_value( form1d.value( ) ) {
+HOST Constant1d::Constant1d( GIDI::Functions::Constant1d const &a_form1d ) :
+        Function1d( a_form1d.domainMin( ), a_form1d.domainMax( ), Interpolation::FLAT, a_form1d.outerDomainValue( ) ),
+        m_value( a_form1d.value( ) ) {
 
     m_type = Function1dType::constant;
 }
@@ -494,8 +494,7 @@ HOST_DEVICE Gridded1d::~Gridded1d( ) {
 */
 HOST_DEVICE double Gridded1d::evaluate( double a_x1 ) const {
 
-// BRB not correct.
-    return( 0. );
+    return( m_data[binarySearchVector( a_x1, m_grid, true )] );
 }
 
 /* *********************************************************************************************************//**
@@ -589,24 +588,10 @@ HOST_DEVICE void Regions1d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_
     DATA_MEMBER_INT( vectorSizeInt, a_buffer, a_mode );
     vectorSize = (MCGIDI_VectorSizeType) vectorSizeInt;
     if( a_mode == DataBuffer::Mode::Unpack ) m_functions1d.resize( vectorSize, &a_buffer.m_placement );
+    if( a_mode == DataBuffer::Mode::Memory ) a_buffer.m_placement += m_functions1d.internalSize();
     for( MCGIDI_VectorSizeType vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
         m_functions1d[vectorIndex] = serializeFunction1d( a_buffer, a_mode, m_functions1d[vectorIndex] );
     }
-}
-
-/* *********************************************************************************************************//**
- * This method counts the number of bytes of memory allocated by *this*. That is the member needed by *this* that is greater than
- * sizeof( *this );
- ***********************************************************************************************************/
-
-HOST_DEVICE long Regions1d::internalSize( ) const {
-
-    long size = (long) m_Xs.internalSize() + (long) m_functions1d.internalSize();
-
-    for( MCGIDI_VectorSizeType functionIndex = 0; functionIndex < m_functions1d.size( ); ++functionIndex)  {
-        size += m_functions1d[functionIndex]->sizeOf() + m_functions1d[functionIndex]->internalSize();
-    }
-    return( size );
 }
 
 /*
@@ -617,16 +602,26 @@ HOST_DEVICE long Regions1d::internalSize( ) const {
 HOST_DEVICE Branching1d::Branching1d( ) {
 
 }
+
+/* *********************************************************************************************************//**
+ * Function that parses a node one-d function node. Called from a Suite::parse instance.
+ *
+ * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
+ * @param a_form1d          [in]    The GIDI::Functions::Branching1d instance whose data is to be used to construct *this*.
+ *
+ * @return                          The parsed and constructed resonanceBackground region instance.
+ ***********************************************************************************************************/
+
 /*
 ============================================================
 */
-HOST Branching1d::Branching1d( SetupInfo &a_setupInfo, GIDI::Functions::Branching1d const &form1d ) :
-        Function1d( form1d.domainMin( ), form1d.domainMax( ), Interpolation::FLAT, 0.0 ),
+HOST Branching1d::Branching1d( SetupInfo &a_setupInfo, GIDI::Functions::Branching1d const &a_form1d ) :
+        Function1d( a_form1d.domainMin( ), a_form1d.domainMax( ), Interpolation::FLAT, 0.0 ),
         m_initialStateIndex( -1 ) {
 
     m_type = Function1dType::branching;
 
-    GIDI::Functions::Branching1dPids const &pids = form1d.pids( );
+    GIDI::Functions::Branching1dPids const &pids = a_form1d.pids( );
 
     std::map<std::string,int>::iterator iter = a_setupInfo.m_stateNamesToIndices.find( pids.initial( ) );
     if( iter == a_setupInfo.m_stateNamesToIndices.end( ) ) THROW( "Branching1d: initial state not found." );
@@ -790,7 +785,7 @@ HOST_DEVICE void Function2d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a
     FunctionBase::serialize( a_buffer, a_mode ); 
 
     int type = 0;
-    if( a_mode == DataBuffer::Mode::Pack ) {
+    if( a_mode != DataBuffer::Mode::Unpack ) {
         switch( m_type ) {
         case Function2dType::none :
             break;
@@ -907,23 +902,10 @@ HOST_DEVICE void XYs2d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode
     DATA_MEMBER_INT( vectorSizeInt, a_buffer, a_mode );
     vectorSize = (MCGIDI_VectorSizeType) vectorSizeInt;
     if( a_mode == DataBuffer::Mode::Unpack ) m_functions1d.resize( vectorSize, &a_buffer.m_placement );
+    if( a_mode == DataBuffer::Mode::Memory ) a_buffer.m_placement += m_functions1d.internalSize();
     for( MCGIDI_VectorSizeType vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
         m_functions1d[vectorIndex] = serializeFunction1d( a_buffer, a_mode, m_functions1d[vectorIndex] );
     }
-}
-
-/* *********************************************************************************************************//**
- * This method counts the number of bytes of memory allocated by *this*. That is the member needed by *this* that is greater than
- * sizeof( *this );
- ***********************************************************************************************************/
-
-HOST_DEVICE long XYs2d::internalSize( ) const {
-
-    long size = (long) ( m_Xs.internalSize() + m_functions1d.internalSize() );
-    for( MCGIDI_VectorSizeType functionIndex = 0; functionIndex < m_functions1d.size( ); ++functionIndex ) {
-        size += m_functions1d[functionIndex]->sizeOf() + m_functions1d[functionIndex]->internalSize();
-    }
-    return( size );
 }
 
 
@@ -944,32 +926,21 @@ HOST Function1d *parseMultiplicityFunction1d( SetupInfo &a_setupInfo, Transporti
 /*
 ============================================================
 */
-HOST Function1d *parseFunction1d( Transporting::MC const &a_settings, GIDI::Suite const &a_suite ) {
+HOST Function1d *parseFunction1d( GIDI::Functions::Function1dForm const *a_form1d ) {
 
-// BRB6
-    std::string const *label = a_settings.styles( )->findLabelInLineage( a_suite, a_settings.label( ) );
-    GIDI::Functions::Function1dForm const *form1d = a_suite.get<GIDI::Functions::Function1dForm>( *label );
-
-    return( parseFunction1d( form1d ) );
-}
-/*
-============================================================
-*/
-HOST Function1d *parseFunction1d( GIDI::Functions::Function1dForm const *form1d ) {
-
-    GIDI::FormType type = form1d->type( );
+    GIDI::FormType type = a_form1d->type( );
 
     switch( type ) {
     case GIDI::FormType::constant1d :
-        return( new Constant1d( *static_cast<GIDI::Functions::Constant1d const *>( form1d ) ) );
+        return( new Constant1d( *static_cast<GIDI::Functions::Constant1d const *>( a_form1d ) ) );
     case GIDI::FormType::XYs1d :
-        return( new XYs1d( *static_cast<GIDI::Functions::XYs1d const *>( form1d ) ) );
+        return( new XYs1d( *static_cast<GIDI::Functions::XYs1d const *>( a_form1d ) ) );
     case GIDI::FormType::polynomial1d :
-        return( new Polynomial1d( *static_cast<GIDI::Functions::Polynomial1d const *>( form1d ) ) );
+        return( new Polynomial1d( *static_cast<GIDI::Functions::Polynomial1d const *>( a_form1d ) ) );
     case GIDI::FormType::gridded1d :
-        return( new Gridded1d( *static_cast<GIDI::Functions::Gridded1d const *>( form1d ) ) );
+        return( new Gridded1d( *static_cast<GIDI::Functions::Gridded1d const *>( a_form1d ) ) );
     case GIDI::FormType::regions1d :
-        return( new Regions1d( *static_cast<GIDI::Functions::Regions1d const *>( form1d ) ) );
+        return( new Regions1d( *static_cast<GIDI::Functions::Regions1d const *>( a_form1d ) ) );
     case GIDI::FormType::reference1d :
         std::cout << "parseFunction1d: Unsupported Function1d reference1d.";
     default :
@@ -978,17 +949,6 @@ HOST Function1d *parseFunction1d( GIDI::Functions::Function1dForm const *form1d 
 
     return( nullptr );
 // FormType::Legendre1d, FormType::reference1d, FormType::xs_pdFormType::cdf1d, FormType::resonancesWithBackground1d
-}
-/*
-============================================================
-*/
-HOST Function2d *parseFunction2d( Transporting::MC const &a_settings, GIDI::Suite const &a_suite ) {
-
-// BRB6
-    std::string const *label = a_settings.styles( )->findLabelInLineage( a_suite, a_settings.label( ) );
-    GIDI::Functions::Function2dForm const *form2d = a_suite.get<GIDI::Functions::Function2dForm>( *label );
-
-    return( parseFunction2d( form2d ) );
 }
 /*
 ============================================================
@@ -1106,7 +1066,7 @@ HOST_DEVICE void ProbabilityBase1d::serialize( DataBuffer &a_buffer, DataBuffer:
 
     int type = 0;
 
-    if( a_mode == DataBuffer::Mode::Pack ) {
+    if( a_mode != DataBuffer::Mode::Unpack ) {
         switch( m_type ) {
         case ProbabilityBase1dType::none :
             break;
@@ -1265,6 +1225,24 @@ HOST_DEVICE ProbabilityBase2d::~ProbabilityBase2d( ) {
 }
 
 /* *********************************************************************************************************//**
+ * This method returns two x1 values for use with ProbabilityBase3d functions.
+ *
+ * @param a_x2                  [in]        The value of x2.
+ * @param a_rngValue            [in]        The value of the cumulative value used to determine the x1 value.
+ * @param a_userrng             [in]        The random number generator function the uses *a_rngState* to generator a double in the range [0, 1.0).
+ * @param a_rngState            [in/out]    The random number generator state.
+ * @param a_x1_1                [in]        The lower value of the x1 value.
+ * @param a_x1_2                [in]        The upper value of the x1 value.
+ ***********************************************************************************************************/
+
+HOST_DEVICE double ProbabilityBase2d::sample2dOf3d( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState, double *a_x1_1, double *a_x1_2 ) const {
+
+    THROW( "ProbabilityBase2d::sample2dOf3d: not implemented." );
+
+    return( 0.0 );
+}
+
+/* *********************************************************************************************************//**
  * This method serializes *this* for broadcasting as needed for MPI and GPUs. The method can count the number of required
  * bytes, pack *this* or unpack *this* depending on *a_mode*.
  *
@@ -1362,7 +1340,59 @@ C    determine x1.
             else {                                                              // This should never happen.
                 THROW( "XYs2d::sample: unsupported interpolation." );
             }
+        }
+    }
+    return( sampledValue );
+}
 
+/* *********************************************************************************************************//**
+ * This method returns two x1 values for use with ProbabilityBase3d functions.
+ *
+ * @param a_x2                  [in]        The value of x2.
+ * @param a_rngValue            [in]        The value of the cumulative value used to determine the x1 value.
+ * @param a_userrng             [in]        The random number generator function the uses *a_rngState* to generator a double in the range [0, 1.0).
+ * @param a_rngState            [in/out]    The random number generator state.
+ * @param a_x1_1                [in]        The lower value of the x1 value.
+ * @param a_x1_2                [in]        The upper value of the x1 value.
+ ***********************************************************************************************************/
+
+HOST_DEVICE double XYs2d::sample2dOf3d( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState, double *a_x1_1, double *a_x1_2 ) const {
+/*
+C   Samples from a pdf(x1|x2). First determine which pdf(s) to sample from given x2. Then use rngValue to sample from pdf1(x1) 
+C   and maybe pdf2(x1) and interpolate to determine x1.
+*/
+    double sampledValue;
+    MCGIDI_VectorSizeType lower = binarySearchVector( a_x2, m_Xs );
+
+    if( lower == -2 ) {
+        sampledValue = m_probabilities[0]->sample( a_rngValue, a_userrng, a_rngState );
+        *a_x1_2 = *a_x1_1 = sampledValue; }
+    else if( lower == -1 ) {
+        sampledValue = m_probabilities.back( )->sample( a_rngValue, a_userrng, a_rngState );
+        *a_x1_2 = *a_x1_1 = sampledValue; }
+    else {
+        *a_x1_1 = m_probabilities[lower]->sample( a_rngValue, a_userrng, a_rngState );
+
+        if( interpolation( ) == Interpolation::FLAT ) {
+            sampledValue = *a_x1_2 = *a_x1_1; }
+        else {
+            *a_x1_2 = m_probabilities[lower+1]->sample( a_rngValue, a_userrng, a_rngState );
+
+            if( interpolation( ) == Interpolation::LINLIN ) {
+                double fraction = ( m_Xs[lower+1] - a_x2 ) / ( m_Xs[lower+1] - m_Xs[lower] );
+                sampledValue = fraction * *a_x1_1 + ( 1 - fraction ) * *a_x1_2; }
+            else if( interpolation( ) == Interpolation::LOGLIN ) {
+                double fraction = ( m_Xs[lower+1] - a_x2 ) / ( m_Xs[lower+1] - m_Xs[lower] );
+                sampledValue = *a_x1_2 * pow( *a_x1_2 / *a_x1_1, fraction ); }
+            else if( interpolation( ) == Interpolation::LINLOG ) {
+                double fraction = log( m_Xs[lower+1] / a_x2 ) / log( m_Xs[lower+1] / m_Xs[lower] );
+                sampledValue = fraction * *a_x1_1 + ( 1 - fraction ) * *a_x1_2; }
+            else if( interpolation( ) == Interpolation::LOGLOG ) {
+                double fraction = log( m_Xs[lower+1] / a_x2 ) / log( m_Xs[lower+1] / m_Xs[lower] );
+                sampledValue = *a_x1_2 * pow( *a_x1_2 / *a_x1_1 , fraction ); }
+            else {                                                              // This should never happen.
+                THROW( "XYs2d::sample: unsupported interpolation." );
+            }
         }
     }
     return( sampledValue );
@@ -1386,11 +1416,12 @@ HOST_DEVICE void XYs2d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode
     vectorSize = (MCGIDI_VectorSizeType) vectorSizeInt;
 
     if( a_mode == DataBuffer::Mode::Unpack ) m_probabilities.resize( vectorSize, &a_buffer.m_placement );
+    if( a_mode == DataBuffer::Mode::Memory ) a_buffer.m_placement += m_probabilities.internalSize();
 
     for( MCGIDI_VectorSizeType vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
         int type = 0;
 
-        if( a_mode == DataBuffer::Mode::Pack ) {
+        if( a_mode != DataBuffer::Mode::Unpack ) {
             ProbabilityBase1dType pType = ProbabilityBase1dClass( m_probabilities[vectorIndex] );
 
             switch( pType ) {
@@ -1419,24 +1450,19 @@ HOST_DEVICE void XYs2d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode
                 break;
             }
         }
+        if( a_mode == DataBuffer::Mode::Memory ) {
+            switch( type ) {
+            case 0 :
+                break;
+            case 1 :
+                a_buffer.incrementPlacement( sizeof( Probabilities::Xs_pdf_cdf1d ) );
+                break;
+            }
+        }
     }
     for( MCGIDI_VectorSizeType vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
         if( m_probabilities[vectorIndex] != nullptr ) m_probabilities[vectorIndex]->serialize( a_buffer, a_mode );
     }
-}
-
-/* *********************************************************************************************************//**
- * This method counts the number of bytes of memory allocated by *this*. That is the member needed by *this* that is greater than
- * sizeof( *this );
- ***********************************************************************************************************/
-
-HOST_DEVICE long XYs2d::internalSize( ) const {
-
-    long size = (long) ( ProbabilityBase::internalSize() + m_probabilities.internalSize() );
-    for( MCGIDI_VectorSizeType probIndex = 0; probIndex < m_probabilities.size(); ++probIndex ) {
-        size += m_probabilities[probIndex]->sizeOf() + m_probabilities[probIndex]->internalSize();
-    }
-    return( size );
 }
 
 /*
@@ -1457,9 +1483,9 @@ HOST Regions2d::Regions2d( GIDI::Functions::Regions2d const &a_regions2d ) :
 
     m_type = ProbabilityBase2dType::regions;
 
-    Vector<GIDI::Functions::Function2dForm *> const &functions2d = a_regions2d.functions2d( );
-    m_probabilities.resize( functions2d.size( ) );
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < functions2d.size( ); ++i1 ) m_probabilities[i1] = parseProbability2d( functions2d[i1], nullptr );
+    Vector<GIDI::Functions::Function2dForm *> const &function2ds = a_regions2d.function2ds( );
+    m_probabilities.resize( function2ds.size( ) );
+    for( MCGIDI_VectorSizeType i1 = 0; i1 < function2ds.size( ); ++i1 ) m_probabilities[i1] = parseProbability2d( function2ds[i1], nullptr );
 }
 
 /* *********************************************************************************************************//**
@@ -1519,25 +1545,13 @@ HOST_DEVICE void Regions2d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_
     DATA_MEMBER_INT( vectorSizeInt, a_buffer, a_mode );
     vectorSize = (MCGIDI_VectorSizeType) vectorSizeInt;
 
-    if( a_mode == DataBuffer::Mode::Unpack ) m_probabilities.resize( vectorSize );
+    if( a_mode == DataBuffer::Mode::Unpack ) m_probabilities.resize( vectorSize, &a_buffer.m_placement );
+    if( a_mode == DataBuffer::Mode::Memory ) a_buffer.m_placement += m_probabilities.internalSize();
     for( MCGIDI_VectorSizeType vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
         m_probabilities[vectorIndex] = serializeProbability2d( a_buffer, a_mode, m_probabilities[vectorIndex] );
     }
 }
 
-/* *********************************************************************************************************//**
- * This method counts the number of bytes of memory allocated by *this*. That is the member needed by *this* that is greater than
- * sizeof( *this );
- ***********************************************************************************************************/
-
-HOST_DEVICE long Regions2d::internalSize( ) const {
-
-    long size = (long) ( ProbabilityBase::internalSize() + m_probabilities.internalSize() );
-    for( MCGIDI_VectorSizeType probIndex = 0; probIndex < m_probabilities.size(); ++probIndex ) {
-        size += m_probabilities[probIndex]->sizeOf() + m_probabilities[probIndex]->internalSize();
-    }
-    return( size );
-}
 
 /*
 ============================================================
@@ -2230,6 +2244,7 @@ HOST_DEVICE void WeightedFunctionals2d::serialize( DataBuffer &a_buffer, DataBuf
     DATA_MEMBER_INT( vectorSizeInt, a_buffer, a_mode );
     vectorSize = (MCGIDI_VectorSizeType) vectorSizeInt;
     if( a_mode == DataBuffer::Mode::Unpack ) m_weight.resize( vectorSize, &a_buffer.m_placement );
+    if( a_mode == DataBuffer::Mode::Memory ) a_buffer.m_placement += m_weight.internalSize();
     for( MCGIDI_VectorSizeType vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
         m_weight[vectorIndex] = serializeFunction1d( a_buffer, a_mode, m_weight[vectorIndex] );
     }
@@ -2239,26 +2254,10 @@ HOST_DEVICE void WeightedFunctionals2d::serialize( DataBuffer &a_buffer, DataBuf
     DATA_MEMBER_INT( vectorSizeInt, a_buffer, a_mode );
     vectorSize = (MCGIDI_VectorSizeType) vectorSizeInt;
     if( a_mode == DataBuffer::Mode::Unpack ) m_energy.resize( vectorSize, &a_buffer.m_placement );
+    if( a_mode == DataBuffer::Mode::Memory ) a_buffer.m_placement += m_energy.internalSize();
     for( MCGIDI_VectorSizeType vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
         m_energy[vectorIndex] = serializeProbability2d( a_buffer, a_mode, m_energy[vectorIndex] );
     }
-}
-
-/* *********************************************************************************************************//**
- * This method counts the number of bytes of memory allocated by *this*. That is the member needed by *this* that is greater than
- * sizeof( *this );
- ***********************************************************************************************************/
-
-HOST_DEVICE long WeightedFunctionals2d::internalSize( ) const {
-
-    long size = (long) ( ProbabilityBase::internalSize() + m_weight.internalSize() + m_energy.internalSize() );
-    for( MCGIDI_VectorSizeType functIndex = 0; functIndex < m_weight.size(); ++functIndex ) {
-        size += m_weight[functIndex]->sizeOf() + m_weight[functIndex]->internalSize();
-    }
-    for( MCGIDI_VectorSizeType probIndex = 0; probIndex < m_energy.size(); ++probIndex ) {
-        size += m_energy[probIndex]->sizeOf() + m_energy[probIndex]->internalSize();
-    }
-    return( size );
 }
 
 
@@ -2300,7 +2299,7 @@ HOST_DEVICE void ProbabilityBase3d::serialize( DataBuffer &a_buffer, DataBuffer:
     ProbabilityBase::serialize( a_buffer, a_mode ); 
 
     int type = 0;
-    if( a_mode == DataBuffer::Mode::Pack ) {
+    if( a_mode != DataBuffer::Mode::Unpack ) {
         switch( m_type ) {
         case ProbabilityBase3dType::none :
             break;
@@ -2395,7 +2394,7 @@ HOST_DEVICE double XYs3d::evaluate( double a_x3, double a_x2, double a_x1 ) cons
 /*
 ============================================================
 */
-HOST_DEVICE double XYs3d::sample( double a_x3, double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const {
+HOST_DEVICE double XYs3d::sample( double a_x3, double a_x2_1, double a_x2_2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const {
 /*
 C    Samples from a pdf(x1|x3,x2). First determine which pdf(s) to sample from given x3
 C    Then use rngValue to sample from pdf2_1(x2) and maybe pdf2_2(x2) and interpolate to
@@ -2405,16 +2404,16 @@ C    determine x1.
     MCGIDI_VectorSizeType lower = binarySearchVector( a_x3, m_Xs );
 
     if( lower == -2 ) {                         // x3 < first value of Xs.
-        sampledValue = m_probabilities[0]->sample( a_x2, a_rngValue, a_userrng, a_rngState ); }
+        sampledValue = m_probabilities[0]->sample( a_x2_1, a_rngValue, a_userrng, a_rngState ); }
     else if( lower == -1 ) {                    // x3 > last value of Xs.
-        sampledValue = m_probabilities.back( )->sample( a_x2, a_rngValue, a_userrng, a_rngState ); }
+        sampledValue = m_probabilities.back( )->sample( a_x2_1, a_rngValue, a_userrng, a_rngState ); }
     else {
-        double sampled1 = m_probabilities[lower]->sample( a_x2, a_rngValue, a_userrng, a_rngState );
+        double sampled1 = m_probabilities[lower]->sample( a_x2_1, a_rngValue, a_userrng, a_rngState );
 
         if( interpolation( ) == Interpolation::FLAT ) {
             sampledValue = sampled1; }
         else {
-            double sampled2 = m_probabilities[lower+1]->sample( a_x2, a_rngValue, a_userrng, a_rngState );
+            double sampled2 = m_probabilities[lower+1]->sample( a_x2_2, a_rngValue, a_userrng, a_rngState );
 
             if( interpolation( ) == Interpolation::LINLIN ) {
                 double fraction = ( m_Xs[lower+1] - a_x3 ) / ( m_Xs[lower+1] - m_Xs[lower] );
@@ -2455,64 +2454,33 @@ HOST_DEVICE void XYs3d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode
     vectorSize = (MCGIDI_VectorSizeType) vectorSizeInt;
 
     if( a_mode == DataBuffer::Mode::Unpack ) m_probabilities.resize( vectorSize, &a_buffer.m_placement );
+    if( a_mode == DataBuffer::Mode::Memory ) a_buffer.m_placement += m_probabilities.internalSize();
     for( MCGIDI_VectorSizeType vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
         m_probabilities[vectorIndex] = serializeProbability2d( a_buffer, a_mode, m_probabilities[vectorIndex] );
     }
 }
 
-/* *********************************************************************************************************//**
- * This method counts the number of bytes of memory allocated by *this*. That is the member needed by *this* that is greater than
- * sizeof( *this );
- ***********************************************************************************************************/
-
-HOST_DEVICE long XYs3d::internalSize( ) const {
-
-    long size = (long) ( ProbabilityBase::internalSize() + m_probabilities.internalSize() );
-    for( MCGIDI_VectorSizeType probIndex = 0; probIndex < m_probabilities.size(); ++probIndex ) {
-        size += m_probabilities[probIndex]->sizeOf() + m_probabilities[probIndex]->internalSize();
-    }
-    return( size );
-}
 
 /*
 ============================================================
 ========================== others ==========================
 ============================================================
 */
-HOST ProbabilityBase1d *parseProbability1d( Transporting::MC const &a_settings, GIDI::Suite const &a_suite ) {
-
-// BRB6
-    std::string const *label = a_settings.styles( )->findLabelInLineage( a_suite, a_settings.label( ) );
-    GIDI::Functions::Function1dForm const *form1d = a_suite.get<GIDI::Functions::Function1dForm>( *label );
-
-    return( parseProbability1d( form1d ) );
-}
 /*
 ============================================================
 */
-HOST ProbabilityBase1d *parseProbability1d( GIDI::Functions::Function1dForm const *form1d ) {
+HOST ProbabilityBase1d *parseProbability1d( GIDI::Functions::Function1dForm const *a_form1d ) {
 
-    GIDI::FormType type = form1d->type( );
+    GIDI::FormType type = a_form1d->type( );
 
     switch( type ) {
     case GIDI::FormType::xs_pdf_cdf1d :
-        return( new Xs_pdf_cdf1d( *static_cast<GIDI::Functions::Xs_pdf_cdf1d const *>( form1d ) ) );
+        return( new Xs_pdf_cdf1d( *static_cast<GIDI::Functions::Xs_pdf_cdf1d const *>( a_form1d ) ) );
     default :
         THROW( "Probabilities::parseProbability1d: Unsupported Function1d" );
     }
 
     return( nullptr );
-}
-/*
-============================================================
-*/
-HOST ProbabilityBase2d *parseProbability2d( Transporting::MC const &a_settings, GIDI::Suite const &a_suite, SetupInfo *a_setupInfo ) {
-
-// BRB6
-    std::string const *label = a_settings.styles( )->findLabelInLineage( a_suite, a_settings.label( ) );
-    GIDI::Functions::Function2dForm const *form2d = a_suite.get<GIDI::Functions::Function2dForm>( *label );
-
-    return( parseProbability2d( form2d, a_setupInfo ) );
 }
 /*
 ============================================================
@@ -2551,17 +2519,6 @@ HOST ProbabilityBase2d *parseProbability2d( GIDI::Functions::Function2dForm cons
     }
 
     return( nullptr );
-}
-/*
-============================================================
-*/
-HOST ProbabilityBase3d *parseProbability3d( Transporting::MC const &a_settings, GIDI::Suite const &a_suite ) {
-
-// BRB6
-    std::string const *label = a_settings.styles( )->findLabelInLineage( a_suite, a_settings.label( ) );
-    GIDI::Functions::Function3dForm const *form3d = a_suite.get<GIDI::Functions::Function3dForm>( *label );
-
-    return( parseProbability3d( form3d ) );
 }
 /*
 ============================================================
@@ -2643,7 +2600,7 @@ HOST_DEVICE Functions::Function1d *serializeFunction1d( DataBuffer &a_buffer, Da
 
     int type = 0;
 
-    if( a_mode == DataBuffer::Mode::Pack ) {
+    if( a_mode != DataBuffer::Mode::Unpack ) {
         Function1dType fType = Function1dClass( a_function1d );
 
         switch( fType ) {
@@ -2738,6 +2695,33 @@ HOST_DEVICE Functions::Function1d *serializeFunction1d( DataBuffer &a_buffer, Da
             break;
         }
     }
+    if( a_mode == DataBuffer::Mode::Memory ) {
+        switch( type ) {
+        case 0 :
+            break;
+        case 1 :
+            a_buffer.incrementPlacement( sizeof( Functions::Constant1d ) );
+            break;
+        case 2 :
+            a_buffer.incrementPlacement( sizeof( Functions::XYs1d ) );
+            break;
+        case 3 :
+            a_buffer.incrementPlacement( sizeof( Functions::Polynomial1d ) );
+            break;
+        case 4 :
+            a_buffer.incrementPlacement( sizeof( Functions::Gridded1d ) );
+            break;
+        case 5 :
+            a_buffer.incrementPlacement( sizeof( Functions::Regions1d ) );
+            break;
+        case 6 :
+            a_buffer.incrementPlacement( sizeof( Functions::Branching1d ) );
+            break;
+        case 7 :
+            a_buffer.incrementPlacement( sizeof( Functions::TerrellFissionNeutronMultiplicityModel ) );
+            break;
+        }
+    }
 
     if( a_function1d != nullptr ) a_function1d->serialize( a_buffer, a_mode );
 
@@ -2760,7 +2744,7 @@ HOST_DEVICE Functions::Function2d *serializeFunction2d( DataBuffer &a_buffer, Da
 
     int type = 0;
 
-    if( a_mode == DataBuffer::Mode::Pack ) {
+    if( a_mode != DataBuffer::Mode::Unpack ) {
         Function2dType fType = Function2dClass( a_function2d );
 
         switch( fType ) {
@@ -2789,6 +2773,15 @@ HOST_DEVICE Functions::Function2d *serializeFunction2d( DataBuffer &a_buffer, Da
             break;
         }
     }
+    if( a_mode == DataBuffer::Mode::Memory ) {
+        switch( type ) {
+        case 0 :
+            break;
+        case 1 :
+                a_buffer.incrementPlacement( sizeof( Functions::XYs2d ) );
+            break;
+        }
+    }
 
     if( a_function2d != nullptr ) a_function2d->serialize( a_buffer, a_mode );
 
@@ -2811,7 +2804,7 @@ HOST_DEVICE Probabilities::ProbabilityBase1d *serializeProbability1d( DataBuffer
 
     int type = 0;
 
-    if( a_mode == DataBuffer::Mode::Pack ) {
+    if( a_mode != DataBuffer::Mode::Unpack ) {
         ProbabilityBase1dType pType = ProbabilityBase1dClass( a_probability1d );
 
         switch( pType ) {
@@ -2840,6 +2833,15 @@ HOST_DEVICE Probabilities::ProbabilityBase1d *serializeProbability1d( DataBuffer
             break;
         }
     }
+    if( a_mode == DataBuffer::Mode::Memory ) {
+        switch( type ) {
+        case 0 :
+            break;
+        case 1 :
+            a_buffer.incrementPlacement( sizeof( Probabilities::Xs_pdf_cdf1d ) );
+            break;
+        }
+    }
 
     if( a_probability1d != nullptr ) a_probability1d->serialize( a_buffer, a_mode );
 
@@ -2861,7 +2863,7 @@ HOST_DEVICE Probabilities::ProbabilityBase2d *serializeProbability2d( DataBuffer
 
     int type = 0;
 
-    if( a_mode == DataBuffer::Mode::Pack ) {
+    if( a_mode != DataBuffer::Mode::Unpack ) {
         ProbabilityBase2dType pType = ProbabilityBase2dClass( a_probability2d );
 
         switch( pType ) {
@@ -3011,6 +3013,48 @@ HOST_DEVICE Probabilities::ProbabilityBase2d *serializeProbability2d( DataBuffer
             break;
         }
     }
+    if( a_mode == DataBuffer::Mode::Memory ) {
+        switch( type ) {
+        case 0 :
+            break;
+        case 1 :
+            a_buffer.incrementPlacement( sizeof( Probabilities::XYs2d ) );
+            break;
+        case 2 :
+            a_buffer.incrementPlacement( sizeof( Probabilities::Regions2d ) );
+            break;
+        case 3 :
+            a_buffer.incrementPlacement( sizeof( Probabilities::Isotropic2d ) );
+            break;
+        case 4 :
+            a_buffer.incrementPlacement( sizeof( Probabilities::DiscreteGamma2d ) );
+            break;
+        case 5 :
+            a_buffer.incrementPlacement( sizeof( Probabilities::PrimaryGamma2d ) );
+            break;
+        case 6 :
+            a_buffer.incrementPlacement( sizeof( Probabilities::Recoil2d ) );
+            break;
+        case 7 :
+            a_buffer.incrementPlacement( sizeof( Probabilities::NBodyPhaseSpace2d ) );
+            break;
+        case 8 :
+            a_buffer.incrementPlacement( sizeof( Probabilities::Evaporation2d ) );
+            break;
+        case 9 :
+            a_buffer.incrementPlacement( sizeof( Probabilities::GeneralEvaporation2d ) );
+            break;
+        case 10 :
+            a_buffer.incrementPlacement( sizeof( Probabilities::SimpleMaxwellianFission2d ) );
+            break;
+        case 11 :
+            a_buffer.incrementPlacement( sizeof( Probabilities::Watt2d ) );
+            break;
+        case 12 :
+            a_buffer.incrementPlacement( sizeof( Probabilities::WeightedFunctionals2d ) );
+            break;
+        }
+    }
 
     if( a_probability2d != nullptr ) a_probability2d->serialize( a_buffer, a_mode );
 
@@ -3033,7 +3077,7 @@ HOST_DEVICE Probabilities::ProbabilityBase3d *serializeProbability3d( DataBuffer
 
     int type = 0;
 
-    if( a_mode == DataBuffer::Mode::Pack ) {
+    if( a_mode != DataBuffer::Mode::Unpack ) {
         ProbabilityBase3dType pType = ProbabilityBase3dClass( a_probability3d );
 
         switch( pType ) {
@@ -3059,6 +3103,15 @@ HOST_DEVICE Probabilities::ProbabilityBase3d *serializeProbability3d( DataBuffer
             else {
                 a_probability3d = new Probabilities::XYs3d;
             }
+            break;
+        }
+    }
+    if( a_mode == DataBuffer::Mode::Memory ) {
+        switch( type ) {
+        case 0 :
+            break;
+        case 1 :
+            a_buffer.incrementPlacement( sizeof( Probabilities::XYs3d ) );
             break;
         }
     }

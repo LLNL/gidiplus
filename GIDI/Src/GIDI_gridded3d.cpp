@@ -22,11 +22,12 @@ namespace Functions {
  *
  * @param a_construction    [in]    Used to pass user options to the constructor.
  * @param a_node            [in]    The **pugi::xml_node** to be parsed and used to construct the Gridded3d.
+ * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  ***********************************************************************************************************/
 
-Gridded3d::Gridded3d( Construction::Settings const &a_construction, pugi::xml_node const &a_node ) :
-        Function3dForm( a_construction, a_node, FormType::gridded3d ),
-        m_data( a_node.child( "array" ), a_construction.useSystem_strtod( ) ) {
+Gridded3d::Gridded3d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo ) :
+        Function3dForm( a_construction, a_node, a_setupInfo, FormType::gridded3d ),
+        m_data( a_node.child( GIDI_arrayChars ), a_setupInfo, a_construction.useSystem_strtod( ) ) {
 
     m_domain3Unit = axes( )[3]->unit( );
     m_domain2Unit = axes( )[2]->unit( );
@@ -38,6 +39,17 @@ Gridded3d::Gridded3d( Construction::Settings const &a_construction, pugi::xml_no
  ***********************************************************************************************************/
 
 Gridded3d::~Gridded3d( ) {
+
+}
+
+/* *********************************************************************************************************//**
+ * Only for internal use. Called by ProtareTNSL instance to zero the lower energy multi-group data covered by the ProtareSingle that
+ * contains the TNSL data covers the lower energy multi-group data.
+ *
+ * @param a_maxTNSL_index           [in]    All elements up to *a_maxTNSL_index* exclusive are zero-ed.
+ ***********************************************************************************************************/
+
+void Gridded3d::modifiedMultiGroupElasticForTNSL( int a_maxTNSL_index ) {
 
 }
 

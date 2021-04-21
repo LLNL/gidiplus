@@ -101,7 +101,7 @@ class MC : public GIDI::Transporting::Settings {
         double energyDomainMax( ) const { return( m_energyDomainMax ); }                /**< Returns the value of the **m_energyDomainMax**. */
 
         bool ignoreENDF_MT5( ) const { return( m_ignoreENDF_MT5 ); }                    /**< Returns the value of the **m_ignoreENDF_MT5**. */
-        void ignoreENDF_MT5( bool a_ignoreENDF_MT5 ) { m_ignoreENDF_MT5 = a_ignoreENDF_MT5; }
+        void setIgnoreENDF_MT5( bool a_ignoreENDF_MT5 ) { m_ignoreENDF_MT5 = a_ignoreENDF_MT5; }
 
         bool sampleNonTransportingParticles( ) const { return( m_sampleNonTransportingParticles); }
         void sampleNonTransportingParticles( bool a_sampleNonTransportingParticles ) { m_sampleNonTransportingParticles = a_sampleNonTransportingParticles; }
@@ -146,6 +146,7 @@ class SetupInfo {
 
     public:
         Protare &m_protare;
+        GIDI::FormatVersion m_formatVersion;
         double m_Q;
         double m_product1Mass;
         double m_product2Mass;
@@ -301,12 +302,11 @@ class MultiGroupHash {
     private:
         Vector<double> m_boundaries;                                    /**< The list of multi-group boundaries. */
 
-        void initialize( GIDI::Protare const &a_protare, std::string const &a_label, std::string a_particleID );
+        void initialize( GIDI::Protare const &a_protare, GIDI::Styles::TemperatureInfo const &a_temperatureInfo, std::string a_particleID );
 
     public:
         MultiGroupHash( std::vector<double> a_boundaries );
-        MultiGroupHash( GIDI::Protare const &a_protare, std::string const &a_label, std::string const &a_particleID = "" );
-        MultiGroupHash( GIDI::Protare const &a_protare, std::string const &a_particleID = "" );
+        MultiGroupHash( GIDI::Protare const &a_protare, GIDI::Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_particleID = "" );
 
         HOST_DEVICE Vector<double> const &boundaries( ) const { return( m_boundaries ); }   /**< Returns a reference to **m_styles**. */
         HOST_DEVICE int index( double a_domain ) const {
@@ -387,13 +387,12 @@ class HeatedReactionCrossSectionContinuousEnergy {
         HOST_DEVICE Probabilities::ProbabilityBase2d *URR_probabilityTables( ) const { return( m_URR_probabilityTables ); }             /**< Returns the value of the **m_URR_probabilityTables**. */
         HOST_DEVICE double crossSection( std::size_t a_index ) const {
             int index = static_cast<int>( a_index ) - m_offset;
-            if( index < 0 ) return( 0 );
+            if( index < 0 ) return( 0.0 );
             if( index >= static_cast<int>( m_crossSection.size( ) ) ) return( 0.0 );
 
             return( m_crossSection[index] );
         }
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long sizeOf( ) const ;
 };
 
 /*
@@ -422,7 +421,6 @@ class ContinuousEnergyGain {
         HOST_DEVICE double gain( int a_energy_index, double a_energy_fraction ) const ;
 
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long sizeOf( ) const ;
 };
 
 /*
@@ -447,7 +445,7 @@ class HeatedCrossSectionContinuousEnergy {
         HOST_DEVICE HeatedCrossSectionContinuousEnergy( );
         HOST HeatedCrossSectionContinuousEnergy( SetupInfo &a_setupInfo, Transporting::MC const &a_settings, GIDI::Transporting::Particles const &a_particles,
                 DomainHash const &a_domainHash, GIDI::Styles::TemperatureInfo const &a_temperatureInfo, std::vector<GIDI::Reaction const *> const &a_reactions,
-                bool a_fixedGrid );
+                std::vector<GIDI::Reaction const *> const &a_orphanProducts, bool a_fixedGrid );
         HOST_DEVICE ~HeatedCrossSectionContinuousEnergy( );
 
         HOST_DEVICE int evaluationInfo( int a_hashIndex, double a_energy, double *a_energyFraction ) const ;
@@ -466,6 +464,7 @@ class HeatedCrossSectionContinuousEnergy {
         HOST_DEVICE double URR_domainMax( ) const ;
         HOST_DEVICE bool reactionHasURR_probabilityTables( int a_index ) const { return( m_reactionCrossSections[a_index]->hasURR_probabilityTables( ) ); }
 
+        HOST_DEVICE Vector<double> &totalCrossSection( ) { return( m_totalCrossSection ); }     /**< Returns a reference to member *m_totalCrossSection*. */
         HOST_DEVICE double crossSection(                               URR_protareInfos const &a_URR_protareInfos, int a_URR_index, int a_hashIndex, double a_energy, bool a_sampling = false ) const ;
         HOST_DEVICE double reactionCrossSection(  int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, int a_URR_index, int a_hashIndex, double a_energy, bool a_sampling = false ) const ;
         HOST_DEVICE double reactionCrossSection2( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, int a_URR_index, double a_energy, int a_energyIndex, double a_energyFraction, bool a_sampling = false ) const ;
@@ -478,7 +477,6 @@ class HeatedCrossSectionContinuousEnergy {
 
         HOST void setUserParticleIndex( int a_particleIndex, int a_userParticleIndex );
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long sizeOf( ) const ;
 
         HOST_DEVICE Vector<double> const &energies( ) const { return( m_energies ); }       /**< Returns a reference to **m_styles**. */
 };
@@ -517,6 +515,7 @@ class HeatedCrossSectionsContinuousEnergy {
 
         HOST_DEVICE double crossSection(                              URR_protareInfos const &a_URR_protareInfos, int a_URR_index, int a_hashIndex, 
                 double a_temperature, double a_energy, bool a_sampling = false ) const ;
+        HOST_DEVICE void crossSectionVector( double a_temperature, double a_userFactor, int a_numberAllocated, double *a_crossSectionVector ) const ;
         HOST_DEVICE double reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, int a_URR_index, int a_hashIndex, 
                 double a_temperature, double a_energy, bool a_sampling = false ) const ;
         HOST_DEVICE double reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, int a_URR_index, double a_temperature, double a_energy_in ) const ;
@@ -530,7 +529,6 @@ class HeatedCrossSectionsContinuousEnergy {
 
         HOST void setUserParticleIndex( int a_particleIndex, int a_userParticleIndex );
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long internalSize( ) const;
 };
 
 /*
@@ -556,8 +554,9 @@ class MultiGroupGain {
         HOST void setUserParticleIndex( int a_particleIndex, int a_userParticleIndex ) { if( a_particleIndex == m_particleIndex ) m_userParticleIndex = a_userParticleIndex; }
         HOST_DEVICE Vector<double> const &gain( ) const { return( m_gain ); }
         HOST_DEVICE double gain( int a_hashIndex ) const { return( m_gain[a_hashIndex] ); }
+
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long sizeOf( ) const { return( sizeof( *this ) + m_gain.internalSize( ) ); }        /**< Returns the total member in bytes allocated for *this*. */
+        HOST void write( FILE *a_file ) const ;
 };
 
 /*
@@ -595,7 +594,7 @@ class HeatedReactionCrossSectionMultiGroup {
         }
         HOST_DEVICE double augmentedThresholdCrossSection( ) const { return( m_augmentedThresholdCrossSection ); }  /**< Returns the value of the **m_augmentedThresholdCrossSection**. */
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long sizeOf( ) const { return( sizeof( *this ) + m_crossSection.internalSize( ) ); }            /**< Returns the total member in bytes allocated for *this*. */
+        HOST void write( FILE *a_file, int a_reactionIndex ) const ;
 };
 
 /*
@@ -630,6 +629,7 @@ class HeatedCrossSectionMultiGroup {
                                                                                 /**< Returns the offset for the cross section for the reaction with index *a_index*. */
         HOST_DEVICE double threshold(                                 int a_index ) const { return( m_reactionCrossSections[a_index]->threshold( ) ); }
 
+        HOST_DEVICE Vector<double> &totalCrossSection( ) { return( m_totalCrossSection ); }    /**< Returns a reference to member *m_totalCrossSection*. */
         HOST_DEVICE double crossSection(                              int a_hashIndex, bool a_sampling = false ) const ;
         HOST_DEVICE double augmentedCrossSection(                     int a_hashIndex ) const { return( m_augmentedCrossSection[a_hashIndex] ); }
                                                                                 /**< Returns the value of the of the augmented cross section the reaction at index *a_index*. */
@@ -645,7 +645,7 @@ class HeatedCrossSectionMultiGroup {
         HOST void setUserParticleIndex( int a_particleIndex, int a_userParticleIndex );
 
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long sizeOf( ) const ;
+        HOST void write( FILE *a_file ) const ;
 };
 
 /*
@@ -659,15 +659,15 @@ class HeatedCrossSectionsMultiGroup {
         Vector<double> m_temperatures;
         Vector<double> m_thresholds;
         Vector<int> m_multiGroupThresholdIndex;                         /**< This is the group where threshold starts, -1 otherwise. */
-        Vector<double> m_projectileMultiGroupBoundaries;
+        Vector<double> m_projectileMultiGroupBoundariesCollapsed;
         Vector<HeatedCrossSectionMultiGroup *> m_heatedCrossSections;
 
     public:
         HOST_DEVICE HeatedCrossSectionsMultiGroup( );
         HOST_DEVICE ~HeatedCrossSectionsMultiGroup( );
 
-        HOST_DEVICE double minimumEnergy( ) const { return( m_projectileMultiGroupBoundaries[0] ); }
-        HOST_DEVICE double maximumEnergy( ) const { return( m_projectileMultiGroupBoundaries.back( ) ); }
+        HOST_DEVICE double minimumEnergy( ) const { return( m_projectileMultiGroupBoundariesCollapsed[0] ); }
+        HOST_DEVICE double maximumEnergy( ) const { return( m_projectileMultiGroupBoundariesCollapsed.back( ) ); }
         HOST_DEVICE Vector<double> const &temperatures( ) const { return( m_temperatures ); }   /**< Returns the value of the **m_temperatures**. */
 
         HOST void update( GIDI::ProtareSingle const &a_protare, SetupInfo &a_setupInfo, Transporting::MC const &a_settings, GIDI::Transporting::Particles const &a_particles, 
@@ -676,13 +676,14 @@ class HeatedCrossSectionsMultiGroup {
 
         HOST_DEVICE int multiGroupThresholdIndex( MCGIDI_VectorSizeType a_index ) const { return( m_multiGroupThresholdIndex[a_index] ); }
                                                                                                     /**< Returns the threshold for the reaction at index *a_index*. */
-        HOST_DEVICE Vector<double> const &projectileMultiGroupBoundaries( ) const { return( m_projectileMultiGroupBoundaries ); }
-                                                                                                    /**< Returns the value of the **m_projectileMultiGroupBoundaries**. */
+        HOST_DEVICE Vector<double> const &projectileMultiGroupBoundariesCollapsed( ) const { return( m_projectileMultiGroupBoundariesCollapsed ); }
+                                                                                                    /**< Returns the value of the **m_projectileMultiGroupBoundariesCollapsed**. */
         HOST_DEVICE Vector<HeatedCrossSectionMultiGroup *> const &heatedCrossSections( ) const { return( m_heatedCrossSections ); }
 
         HOST_DEVICE double threshold( MCGIDI_VectorSizeType a_index ) const { return( m_thresholds[a_index] ); }     /**< Returns the threshold for the reaction at index *a_index*. */
 
         HOST_DEVICE double crossSection(                              int a_hashIndex, double a_temperature, bool a_sampling = false ) const ;
+        HOST_DEVICE void crossSectionVector( double a_temperature, double a_userFactor, int a_numberAllocated, double *a_crossSectionVector ) const ;
         HOST_DEVICE double reactionCrossSection( int a_reactionIndex, int a_hashIndex, double a_temperature, bool a_sampling = false ) const ;
         HOST_DEVICE double reactionCrossSection( int a_reactionIndex, double a_temperature, double a_energy_in ) const ;
         HOST_DEVICE int sampleReaction(                               int a_hashIndex, double a_temperature, double a_energy_in, double a_crossSection, 
@@ -696,7 +697,7 @@ class HeatedCrossSectionsMultiGroup {
         HOST void setUserParticleIndex( int a_particleIndex, int a_userParticleIndex );
 
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long internalSize( ) const;
+        HOST void write( FILE *a_file, int a_temperatureIndex ) const ;
 };
 
 /*
@@ -722,7 +723,6 @@ class NuclideGammaBranchInfo {
         HOST_DEVICE int residualStateIndex( ) const { return( m_residualStateIndex ); }                     /**< Returns the value of the **m_residualStateIndex**. */
 
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long internalSize( ) const { return( 0 ); }
 };
 
 /*
@@ -746,7 +746,6 @@ class NuclideGammaBranchStateInfo {
         HOST_DEVICE Vector<int> const &branches( ) const { return( m_branches ); }                      /**< Returns the value of the **m_branches**. */
 
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long internalSize( ) const { return( m_branches.internalSize( ) ); }
 };
 
 /*
@@ -768,9 +767,6 @@ class Product {
         Functions::Function1d *m_multiplicity;
         Distributions::Distribution *m_distribution;
 // still need *m_averageEnergy *m_averageMomentum;
-        double m_angleBiasingEnergy;
-        double m_angleBiasingSpeed;
-        double m_angleBiasingPDFValue;
 
         OutputChannel *m_outputChannel;
 
@@ -807,16 +803,6 @@ class Product {
         HOST_DEVICE void angleBiasing( Reaction const *a_reaction, int a_pid, double a_energy_in, double a_mu_lab, double &a_probability, double &a_energy_out,
                 double (*a_userrng)( void * ), void *a_rngState, double &a_cumulative_weight ) const ;
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long internalSize( ) const;
-
-        HOST_DEVICE void evaluate_angular_pdf(double E_in_lab, double mu, double &pdf_val);
-        HOST_DEVICE void evaluate_angular_pdf(double E_in_lab, double E_out, double mu, double &pdf_val);
-        HOST_DEVICE void angleBiasingEnergy( double a_angleBiasingEnergy ) { m_angleBiasingEnergy = a_angleBiasingEnergy; };
-        HOST_DEVICE double angleBiasingEnergy() { return( m_angleBiasingEnergy ); };        /**< Returns the value of the **m_angleBiasingEnergy**. */
-        HOST_DEVICE void angleBiasingSpeed( double a_angleBiasingSpeed ) { m_angleBiasingSpeed = a_angleBiasingSpeed; };
-        HOST_DEVICE double angleBiasingSpeed() { return( m_angleBiasingSpeed ); };          /**< Returns the value of the **m_angleBiasingSpeed**. */
-        HOST_DEVICE void angleBiasingPDFValue( double a_angleBiasingPDFValue ) { m_angleBiasingPDFValue = a_angleBiasingPDFValue; };
-        HOST_DEVICE double angleBiasingPDFValue() { return( m_angleBiasingPDFValue ); };    /**< Returns the value of the **m_angleBiasingPDFValue**. */
 };
 
 /*
@@ -842,7 +828,6 @@ class DelayedNeutron {
         HOST void setUserParticleIndex( int a_particleIndex, int a_userParticleIndex );
 
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long internalSize( ) const;
 };
 
 /*
@@ -857,7 +842,7 @@ class OutputChannel {
         bool m_isFission;
         int m_neutronIndex;
 
-        Functions::Function1d *m_Q;
+        Functions::Function1d *m_Q;             /**< The Q-function for the output channel. Note, this is currently always the *evaluated* form even when running with multi-group data. */
         Vector<Product *> m_products;
 
         Functions::Function1d *m_totalDelayedNeutronMultiplicity;
@@ -890,7 +875,6 @@ class OutputChannel {
         HOST_DEVICE void angleBiasing( Reaction const *a_reaction, int a_pid, double a_energy_in, double a_mu_lab, double &a_probability, double &a_energy_out, 
                 double (*a_userrng)( void * ), void *a_rngState, double &a_cumulative_weight ) const ;
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long internalSize( ) const;
 };
 
 /*
@@ -974,7 +958,6 @@ class Reaction {
         HOST_DEVICE double angleBiasing( int a_pid, double a_energy_in, double a_mu_lab, double &a_energy_out, 
                 double (*a_userrng)( void * ), void *a_rngState, double *a_cumulative_weight = nullptr ) const ;
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long internalSize( ) const;
 };
 
 /*
@@ -1053,6 +1036,7 @@ class Protare {
         virtual HOST_DEVICE Vector<double> temperatures( MCGIDI_VectorSizeType a_index = 0 ) const = 0 ;    /**< Returns the list of temperatures for the requested ProtareSingle. */
 
         virtual HOST Vector<double> const &projectileMultiGroupBoundaries( ) const = 0;
+        virtual HOST Vector<double> const &projectileMultiGroupBoundariesCollapsed( ) const = 0;
         virtual HOST Vector<double> const &projectileFixedGrid( ) const = 0;
 
         virtual HOST_DEVICE std::size_t numberOfReactions( ) const = 0;
@@ -1071,6 +1055,7 @@ class Protare {
         virtual HOST_DEVICE double threshold( MCGIDI_VectorSizeType a_index ) const = 0;
 
         virtual HOST_DEVICE double crossSection(                              URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, bool a_sampling = false ) const = 0;
+        virtual HOST_DEVICE void crossSectionVector( double a_temperature, double a_userFactor, int a_numberAllocated, double *a_crossSectionVector ) const = 0;
         virtual HOST_DEVICE double reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, bool a_sampling = false ) const = 0;
         virtual HOST_DEVICE double reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos,                  double a_temperature, double a_energy ) const = 0;
         virtual HOST_DEVICE int sampleReaction(                               URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, double a_crossSection, double (*a_userrng)( void * ), void *a_rngState ) const = 0;
@@ -1083,7 +1068,8 @@ class Protare {
         virtual HOST_DEVICE Vector<double> const &upscatterModelAGroupVelocities( ) const = 0;
 
         virtual HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        virtual HOST_DEVICE long internalSize( ) const;
+        virtual HOST_DEVICE long sizeOf( ) const { return sizeof(*this); }
+        HOST_DEVICE long memorySize( );
 };
 
 /*
@@ -1096,9 +1082,11 @@ class ProtareSingle : public Protare {
     private:
         int m_URR_index;                                                            /**< The index of the protare in the URR_protareInfos list. If negative, not in list. */
         bool m_hasURR_probabilityTables;                                            /**< *true* if URR probability tables present and *false* otherwise. */
+        String m_interaction;                                                       /**< The protare's interaction string. */
         double m_URR_domainMin;                                                     /**< If URR probability tables present this is the minimum of the projectile energy domain for the tables. */
         double m_URR_domainMax;                                                     /**< If URR probability tables present this is the maximum of the projectile energy domain for the tables. */
         Vector<double> m_projectileMultiGroupBoundaries;                            /**< The multi-group boundaries for the projectile. Only used if m_crossSectionLookupMode and/or m_other1dDataLookupMode is multiGroup. */
+        Vector<double> m_projectileMultiGroupBoundariesCollapsed;                   /**< The collased, multi-group boundaries for the projectile. Only used if m_crossSectionLookupMode and/or m_other1dDataLookupMode is multiGroup. */ 
         Vector<double> m_projectileFixedGrid;                                       /**< The fixed-grid points for the projectile. Only used if m_crossSectionLookupMode is fixedGrid. */
         Vector<double> m_upscatterModelAGroupVelocities;                            /**< The speed of the projectile at each multi-group boundary. Need by upscatter model A. */
 
@@ -1149,7 +1137,10 @@ class ProtareSingle : public Protare {
             return( m_heatedMultigroupCrossSections.maximumEnergy( ) ); }                                   /**< Returns the maximum cross section domain. */
         HOST_DEVICE Vector<double> temperatures( MCGIDI_VectorSizeType a_index = 0 ) const ;
 
-        HOST Vector<double> const &projectileMultiGroupBoundaries( ) const { return( m_projectileMultiGroupBoundaries ); }    /**< Returns the value of the **m_projectileMultiGroupBoundaries** member. */
+        HOST Vector<double> const &projectileMultiGroupBoundaries( ) const { return( m_projectileMultiGroupBoundaries ); }
+                                                                                                            /**< Returns the value of the **m_projectileMultiGroupBoundaries** member. */
+        virtual HOST Vector<double> const &projectileMultiGroupBoundariesCollapsed( ) const { return( m_projectileMultiGroupBoundariesCollapsed ); }
+                                                                                                            /**< Returns the value of the **m_projectileMultiGroupBoundariesCollapsed** member. */
         HOST Vector<double> const &projectileFixedGrid( ) const { return( m_projectileFixedGrid ); }                /**< Returns the value of the **m_projectileFixedGrid** member. */
 
         HOST_DEVICE std::size_t numberOfReactions( ) const { return( m_reactions.size( ) ); }                       /**< Returns the number of reactions of *this*. */
@@ -1158,6 +1149,7 @@ class ProtareSingle : public Protare {
         HOST_DEVICE Reaction const *orphanProduct( int a_index ) const { return( m_orphanProducts[a_index] ); }     /**< Returns the (a_index-1)^th orphan product of *this*. */
 
         HOST_DEVICE bool hasFission( ) const ;
+        HOST_DEVICE String interaction( ) const { return( m_interaction ); }
 
         HOST_DEVICE int URR_index( ) const { return( m_URR_index ); }
         HOST_DEVICE void URR_index( int a_URR_index ) { m_URR_index = a_URR_index; }
@@ -1172,6 +1164,7 @@ class ProtareSingle : public Protare {
             return( m_heatedMultigroupCrossSections.threshold( a_index ) ); }                                       /**< Returns the threshold for the reaction at index *a_index*. */
 
         HOST_DEVICE double crossSection(                              URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, bool a_sampling = false ) const ;
+        HOST_DEVICE void crossSectionVector( double a_temperature, double a_userFactor, int a_numberAllocated, double *a_crossSectionVector ) const ;
         HOST_DEVICE double reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, bool a_sampling = false ) const ;
         HOST_DEVICE double reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos,                  double a_temperature, double a_energy ) const ;
         HOST_DEVICE int sampleReaction(                               URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, double a_crossSection, double (*a_userrng)( void * ), void *a_rngState ) const ;
@@ -1184,7 +1177,7 @@ class ProtareSingle : public Protare {
         HOST_DEVICE Vector<double> const &upscatterModelAGroupVelocities( ) const { return( m_upscatterModelAGroupVelocities ); }   /**< Returns a reference to the **m_upscatterModelAGroupVelocities** member. */
 
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long internalSize( ) const;
+        HOST_DEVICE long sizeOf( ) const { return sizeof(*this); }
 };
 
 /*
@@ -1223,6 +1216,8 @@ class ProtareComposite : public Protare {
 
         HOST Vector<double> const &projectileMultiGroupBoundaries( ) const { return( m_protares[0]->projectileMultiGroupBoundaries( ) ); }    
                                                                             /**< Returns the value of the **m_projectileMultiGroupBoundaries** member. */
+        HOST Vector<double> const &projectileMultiGroupBoundariesCollapsed( ) const { return( m_protares[0]->projectileMultiGroupBoundariesCollapsed( ) ); }
+                                                                            /**< Returns the value of the **m_projectileMultiGroupBoundariesCollapsed** member. */
         HOST Vector<double> const &projectileFixedGrid( ) const { return( m_protares[0]->projectileFixedGrid( ) ); }
                                                                             /**< Returns the value of the **m_projectileFixedGrid** member. */
 
@@ -1244,6 +1239,7 @@ class ProtareComposite : public Protare {
         HOST_DEVICE double threshold( MCGIDI_VectorSizeType a_index ) const ;
 
         HOST_DEVICE double crossSection(                              URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, bool a_sampling = false ) const ;
+        HOST_DEVICE void crossSectionVector( double a_temperature, double a_userFactor, int a_numberAllocated, double *a_crossSectionVector ) const ;
         HOST_DEVICE double reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, bool a_sampling = false ) const ;
         HOST_DEVICE double reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos,                  double a_temperature, double a_energy ) const ;
         HOST_DEVICE int sampleReaction(                               URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, double a_crossSection, double (*a_userrng)( void * ), void *a_rngState ) const ;
@@ -1257,7 +1253,7 @@ class ProtareComposite : public Protare {
                                                                             /**< Returns a reference to the **m_upscatterModelAGroupVelocities** member. */
 
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long internalSize( ) const ;
+        HOST_DEVICE long sizeOf( ) const { return sizeof(*this); }
 };
 
 /*
@@ -1300,8 +1296,10 @@ class ProtareTNSL : public Protare {
         HOST_DEVICE double maximumEnergy( ) const { return( m_protareWithElastic->maximumEnergy( ) ); }   /**< Returns the maximum cross section domain. */
         HOST_DEVICE Vector<double> temperatures( MCGIDI_VectorSizeType a_index = 0 ) const ;
 
-        HOST Vector<double> const &projectileMultiGroupBoundaries( ) const { return( m_protareWithElastic->projectileMultiGroupBoundaries( ) ); }    
+        HOST Vector<double> const &projectileMultiGroupBoundaries( ) const { return( m_protareWithElastic->projectileMultiGroupBoundaries( ) ); }
                                                                             /**< Returns the value of the **m_projectileMultiGroupBoundaries** member. */
+        HOST Vector<double> const &projectileMultiGroupBoundariesCollapsed( ) const { return( m_protareWithElastic->projectileMultiGroupBoundariesCollapsed( ) ); }
+                                                                            /**< Returns the value of the **m_projectileMultiGroupBoundariesCollapsed** member. */
         HOST Vector<double> const &projectileFixedGrid( ) const { return( m_protareWithElastic->projectileFixedGrid( ) ); }
                                                                             /**< Returns the value of the **m_projectileFixedGrid** member. */
 
@@ -1323,6 +1321,7 @@ class ProtareTNSL : public Protare {
         HOST_DEVICE double threshold( MCGIDI_VectorSizeType a_index ) const ;
 
         HOST_DEVICE double crossSection(                              URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, bool a_sampling = false ) const ;
+        HOST_DEVICE void crossSectionVector( double a_temperature, double a_userFactor, int a_numberAllocated, double *a_crossSectionVector ) const ;
         HOST_DEVICE double reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, bool a_sampling = false ) const ;
         HOST_DEVICE double reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos,                  double a_temperature, double a_energy ) const ;
         HOST_DEVICE int sampleReaction(                               URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, double a_crossSection, double (*a_userrng)( void * ), void *a_rngState ) const ;
@@ -1336,7 +1335,7 @@ class ProtareTNSL : public Protare {
                                                                             /**< Returns a reference to the **m_upscatterModelAGroupVelocities** member. */
 
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long internalSize( ) const ;
+        HOST_DEVICE long sizeOf( ) const { return sizeof(*this); }
 };
 
 /*
@@ -1356,21 +1355,6 @@ HOST_DEVICE bool sampleTargetBetaForUpscatterModelA( Protare const *a_protare, d
 HOST_DEVICE void upScatterModelABoostParticle( Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState, Sampling::Product &a_product );
 HOST_DEVICE void MCGIDI_sampleKleinNishina( double a_k1, double (*a_userrng)( void * ), void *a_rngState, double *a_energyOut, double *a_mu );
 
-/*
-============================================================
-======================== Angle Biasing =====================
-============================================================
-*/
-HOST_DEVICE void angleBiasing( int secondary_particle_pops_id,
-                               double wgt_pre_bias,
-                               double mu_p3_lab,
-                               double KE_p1_lab,
-                               const Protare *gidi_interaction_data,
-                               const Reaction *gidi_reaction,
-                               Sampling::ClientCodeRNGData rng_data,
-                               double &wgt_p3,
-                               double &KE_p3_lab,
-                               double &speed );
 }           // End of namespace MCGIDI.
 
 #endif      // End of MCGIDI_hpp_included

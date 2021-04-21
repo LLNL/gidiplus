@@ -73,13 +73,10 @@ void main2( int argc, char **argv ) {
     argv_options.add( argvOption( "-r", true, "Specifies the reaction index for sampling angle biasing. If negative, all reactions are listed and then the code exits." ) );
     argv_options.add( argvOption( "-n", true, "Number of samples. If value is negative, it is multiplied by -1000." ) );
     argv_options.add( argvOption( "--numberOfBins", true, "Number of sample bins. Default is 1000." ) );
-    argv_options.add( argvOption( "-j", false, "If present, use Jon Walsh's angleBias function." ) );
 
     parseTestOptions.parse( );
 
     if( argv_options.m_arguments.size( ) != 2 ) throw "Need projectile energy and outgoing particle angle (in lab frame).";
-
-    bool JonWalshMethod = argv_options.find( "-j" )->present( );
 
     MCGIDI_test_rngSetup( seed );
 
@@ -152,16 +149,7 @@ void main2( int argc, char **argv ) {
         Bins bins( numberOfBins, energyMin, energyMax );
 
         for( long sampleIndex = 0; sampleIndex < numberOfSamples; ++sampleIndex ) {
-
-            if( JonWalshMethod ) {
-                double speed;
-                weight = 0.0;
-
-                angleBiasing( productIndex, 1.0, mu_lab, energy_in, MCProtare, reaction, clientCodeRNGData, weight, energy_out, speed );
-                weight /= 2.0; }
-            else {
-                weight = reaction->angleBiasing( productIndex, energy_in, mu_lab, energy_out, float64RNG64, nullptr );
-            }
+            weight = reaction->angleBiasing( productIndex, energy_in, mu_lab, energy_out, float64RNG64, nullptr );
             bins.accrue( energy_out, weight );
         }
 

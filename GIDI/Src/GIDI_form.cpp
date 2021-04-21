@@ -23,7 +23,7 @@ namespace GIDI {
 
 Form::Form( FormType a_type ) :
         Ancestry( "" ),
-        m_parent( NULL ),
+        m_parent( nullptr ),
         m_type( a_type ),
         m_label( "" ) {
 
@@ -37,7 +37,7 @@ Form::Form( FormType a_type ) :
 
 Form::Form( std::string const &a_moniker, FormType a_type, std::string const &a_label ) :
         Ancestry( a_moniker ),
-        m_parent( NULL ),
+        m_parent( nullptr ),
         m_type( a_type ),
         m_label( a_label ) {
 
@@ -46,15 +46,16 @@ Form::Form( std::string const &a_moniker, FormType a_type, std::string const &a_
 /* *********************************************************************************************************//**
  *
  * @param a_node            [in]    The **pugi::xml_node** to be parsed and used to construct the XYs2d.
+ * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_type            [in]    The *FormType* the class represents.
  * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-Form::Form( pugi::xml_node const &a_node, FormType a_type, Suite *a_parent ) :
+Form::Form( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, FormType a_type, Suite *a_parent ) :
         Ancestry( a_node.name( ) ),
         m_parent( a_parent ),
         m_type( a_type ),
-        m_label( a_node.attribute( "label" ).value( ) ) {
+        m_label( a_node.attribute( GIDI_labelChars ).value( ) ) {
 
 }
 
@@ -64,7 +65,7 @@ Form::Form( pugi::xml_node const &a_node, FormType a_type, Suite *a_parent ) :
 
 Form::Form( Form const &a_form ) :
         Ancestry( a_form.moniker( ), a_form.attribute( ) ),
-        m_parent( NULL ),
+        m_parent( nullptr ),
         m_type( a_form.type( ) ),
         m_label( a_form.label( ) ) {
 
@@ -91,7 +92,7 @@ Form const *Form::sibling( std::string a_label ) const {
     try {
         _form = ((*parent( )).get<Form>( a_label ) ); }
     catch (...) {
-        return( NULL );
+        return( nullptr );
     }
     return( _form );
 }
@@ -147,25 +148,27 @@ FunctionForm::FunctionForm( std::string const &a_moniker, FormType a_type, int a
 /* *********************************************************************************************************//**
  * @param a_construction    [in]    Used to pass user options to the constructor.
  * @param a_node            [in]    The **pugi::xml_node** to be parsed and used to construct the FunctionForm.
+ * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_type            [in]    The *FormType* the class represents.
  * @param a_dimension       [in]    The dimension of the function.
  * @param a_suite           [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-FunctionForm::FunctionForm( Construction::Settings const &a_construction, pugi::xml_node const &a_node, FormType a_type, int a_dimension, Suite *a_suite ) :
-        Form( a_node, a_type, a_suite ),
+FunctionForm::FunctionForm( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,
+                FormType a_type, int a_dimension, Suite *a_suite ) :
+        Form( a_node, a_setupInfo, a_type, a_suite ),
         m_dimension( a_dimension ),
-        m_axes( a_node.child( "axes" ), 0 ),
+        m_axes( a_node.child( GIDI_axesChars ), a_setupInfo, 0 ),
         m_interpolation( ptwXY_interpolationLinLin ),
         m_index( 0 ), 
         m_outerDomainValue( 0.0 ) {
 
-    m_interpolationString = a_node.attribute( "interpolation" ).value( );
+    m_interpolationString = a_node.attribute( GIDI_interpolationChars ).value( );
     m_interpolation = ptwXY_stringToInterpolation( m_interpolationString.c_str( ) );
     if( m_interpolation != ptwXY_interpolationOther ) m_interpolationString = ptwXY_interpolationToString( m_interpolation );
 
-    if( strcmp( a_node.attribute( "index" ).value( ), "" ) != 0 ) m_index = a_node.attribute( "index" ).as_int( );
-    if( strcmp( a_node.attribute( "outerDomainValue" ).value( ), "" ) != 0 ) m_outerDomainValue = a_node.attribute( "outerDomainValue" ).as_double( );
+    if( strcmp( a_node.attribute( GIDI_indexChars ).value( ), "" ) != 0 ) m_index = a_node.attribute( GIDI_indexChars ).as_int( );
+    if( strcmp( a_node.attribute( GIDI_outerDomainValueChars ).value( ), "" ) != 0 ) m_outerDomainValue = a_node.attribute( GIDI_outerDomainValueChars ).as_double( );
 }
 
 /* *********************************************************************************************************//**
@@ -175,7 +178,9 @@ FunctionForm::FunctionForm( Construction::Settings const &a_construction, pugi::
 FunctionForm::FunctionForm( FunctionForm const &a_form ) :
         Form( a_form ),
         m_dimension( a_form.dimension( ) ),
+        m_axes( a_form.axes( ) ),
         m_interpolation( a_form.interpolation( ) ),
+        m_interpolationString( a_form.interpolationString( ) ),
         m_index( a_form.index( ) ),
         m_outerDomainValue( a_form.outerDomainValue( ) ) {
 
@@ -236,12 +241,14 @@ Function1dForm::Function1dForm( std::string const &a_moniker, FormType a_type, A
 /* *********************************************************************************************************//**
  * @param a_construction    [in]    Used to pass user options to the constructor.
  * @param a_node            [in]    The **pugi::xml_node** to be parsed and used to construct the FunctionForm.
+ * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_type            [in]    The *FormType* the class represents.
  * @param a_suite           [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-Function1dForm::Function1dForm( Construction::Settings const &a_construction, pugi::xml_node const &a_node, FormType a_type, Suite *a_suite ) :
-        FunctionForm( a_construction, a_node, a_type, 1, a_suite ) {
+Function1dForm::Function1dForm( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, FormType a_type,
+                Suite *a_suite ) :
+        FunctionForm( a_construction, a_node, a_setupInfo, a_type, 1, a_suite ) {
 
 }
 
@@ -291,12 +298,14 @@ Function2dForm::Function2dForm( std::string const &a_moniker, FormType a_type, A
 /* *********************************************************************************************************//**
  * @param a_construction    [in]    Used to pass user options to the constructor.
  * @param a_node            [in]    The **pugi::xml_node** to be parsed and used to construct the FunctionForm.
+ * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_type            [in]    The *FormType* the class represents.
  * @param a_suite           [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-Function2dForm::Function2dForm( Construction::Settings const &a_construction, pugi::xml_node const &a_node, FormType a_type, Suite *a_suite ) :
-        FunctionForm( a_construction, a_node, a_type, 2, a_suite ) {
+Function2dForm::Function2dForm( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,
+                FormType a_type, Suite *a_suite ) :
+        FunctionForm( a_construction, a_node, a_setupInfo, a_type, 2, a_suite ) {
 
 }
 
@@ -318,12 +327,14 @@ Function2dForm::~Function2dForm( ) {
 /* *********************************************************************************************************//**
  * @param a_construction    [in]    Used to pass user options to the constructor.
  * @param a_node            [in]    The **pugi::xml_node** to be parsed and used to construct the FunctionForm.
+ * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_type            [in]    The *FormType* the class represents.
  * @param a_suite           [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-Function3dForm::Function3dForm( Construction::Settings const &a_construction, pugi::xml_node const &a_node, FormType a_type, Suite *a_suite ) :
-        FunctionForm( a_construction, a_node, a_type, 3, a_suite ) {
+Function3dForm::Function3dForm( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,
+                FormType a_type, Suite *a_suite ) :
+        FunctionForm( a_construction, a_node, a_setupInfo, a_type, 3, a_suite ) {
 
 }
 

@@ -109,7 +109,7 @@ void printSuite( GIDI::Suite &a_suite, GIDI::Ancestry *a_protare, GIDI::Ancestry
                 printSuite( product->averageMomentum( ), a_protare, a_reaction );
 
                 GIDI::OutputChannel *outputChannel = product->outputChannel( );
-                if( outputChannel != NULL ) printOutputChannel( outputChannel, a_protare, a_reaction );
+                if( outputChannel != nullptr ) printOutputChannel( outputChannel, a_protare, a_reaction );
         }
     }
 }
@@ -141,7 +141,7 @@ void checkXLink2( GIDI::Ancestry &a_ancestry, std::string &a_xlink, GIDI::Ancest
 
     GIDI::Ancestry *link = a_from->findInAncestry( a_xlink );
 
-    if( link == NULL ) {
+    if( link == nullptr ) {
         std::cout << " LINK NOT FOUND "; }
     else {
         if( &a_ancestry != link ) {

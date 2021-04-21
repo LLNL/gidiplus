@@ -7,27 +7,19 @@ SHELL = /bin/ksh
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
-DIRS = Src
-
 .PHONY: default bin compile check clean realclean
 
-default: compile
+default: bin
 
 bin:
-	$(MAKE) doDirs TARGET=bin CXX=$(CXX) CXXFLAGS="$(CXXFLAGS)"
+	cd Src; $(MAKE) bin
 
-compile:
-	$(MAKE) doDirs TARGET=default CXX=$(CXX) CXXFLAGS="$(CXXFLAGS)"
+compile: default
 
 check:
 
 clean:
-	$(MAKE) doDirs TARGET=clean CXX=$(CXX) CXXFLAGS="$(CXXFLAGS)"
-	rm -f readAllProtaresInMapFile angleBiasing
+	cd Src; $(MAKE) clean
 
 realclean:
-	$(MAKE) doDirs TARGET=realclean CXX=$(CXX) CXXFLAGS="$(CXXFLAGS)"
-	rm -f readAllProtaresInMapFile angleBiasing
-
-doDirs:
-	for dir in $(DIRS); do cd $$dir; $(MAKE) $(TARGET) CXX=$(CXX) CXXFLAGS="$(CXXFLAGS)"; cd ../; done
+	cd Src; $(MAKE) realclean

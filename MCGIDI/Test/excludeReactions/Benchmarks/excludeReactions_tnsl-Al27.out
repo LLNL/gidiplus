@@ -1,0 +1,267 @@
+
+    projectile = n
+    target = tnsl-Al27
+
+    GIDI::Protare number of reaction = 130
+          0) n [thermalNeutronScatteringLaw coherent-elastic]
+          1) n [thermalNeutronScatteringLaw incoherent-inelastic]
+          2) n + Al27
+          3) n + (Al27_e1 -> Al27 + photon)
+          4) n + (Al27_e2 -> Al27 + photon)
+          5) n + (Al27_e3 -> Al27 + photon)
+          6) n + (Al27_e4 -> Al27 + photon)
+          7) n + (Al27_e5 -> Al27 + photon)
+          8) n + (Al27_e6 -> Al27 + photon)
+          9) n + (Al27_e7 -> Al27 + photon)
+         10) n + (Al27_e8 -> Al27 + photon)
+         11) n + (Al27_e9 -> Al27 + photon)
+         12) n + (Al27_e10 -> Al27 + photon)
+         13) n + (Al27_e11 -> Al27 + photon)
+         14) n + (Al27_e12 -> Al27 + photon)
+         15) n + (Al27_e13 -> Al27 + photon)
+         16) n + (Al27_e14 -> Al27 + photon)
+         17) n + (Al27_e15 -> Al27 + photon)
+         18) n + (Al27_e16 -> Al27 + photon)
+         19) n + (Al27_e17 -> Al27 + photon)
+         20) n + (Al27_e18 -> Al27 + photon)
+         21) n + (Al27_e19 -> Al27 + photon)
+         22) n + (Al27_e20 -> Al27 + photon)
+         23) n + (Al27_e21 -> Al27 + photon)
+         24) n + (Al27_e22 -> Al27 + photon)
+         25) n + (Al27_e23 -> Al27 + photon)
+         26) n + (Al27_e24 -> Al27 + photon)
+         27) n + (Al27_e25 -> Al27 + photon)
+         28) n + (Al27_e26 -> Al27 + photon)
+         29) n + (Al27_e27 -> Al27 + photon)
+         30) n + (Al27_e28 -> Al27 + photon)
+         31) n + (Al27_e29 -> Al27 + photon)
+         32) n + (Al27_e30 -> Al27 + photon)
+         33) n + (Al27_e31 -> Al27 + photon)
+         34) n + (Al27_e32 -> Al27 + photon)
+         35) n + (Al27_e33 -> Al27 + photon)
+         36) n + (Al27_e34 -> Al27 + photon)
+         37) n + (Al27_e35 -> Al27 + photon)
+         38) n + (Al27_e36 -> Al27 + photon)
+         39) n + (Al27_e37 -> Al27 + photon)
+         40) n + (Al27_e38 -> Al27 + photon)
+         41) n + (Al27_e39 -> Al27 + photon)
+         42) n + (Al27 -> Al27 + photon) [continuum]
+         43) 2n + Al26 + photon
+         44) n + H1 + Mg26 + photon
+         45) n + H2 + Mg25 + photon
+         46) n + H3 + Mg24 + photon
+         47) H1 + Mg27
+         48) H1 + (Mg27_e1 -> Mg27 + photon)
+         49) H1 + (Mg27_e2 -> Mg27 + photon)
+         50) H1 + (Mg27_e3 -> Mg27 + photon)
+         51) H1 + (Mg27_e4 -> Mg27 + photon)
+         52) H1 + (Mg27_e5 -> Mg27 + photon)
+         53) H1 + (Mg27_e6 -> Mg27 + photon)
+         54) H1 + (Mg27_e7 -> Mg27 + photon)
+         55) H1 + (Mg27_e8 -> Mg27 + photon)
+         56) H1 + (Mg27_e9 -> Mg27 + photon)
+         57) H1 + (Mg27_e10 -> Mg27 + photon)
+         58) H1 + (Mg27_e11 -> Mg27 + photon)
+         59) H1 + (Mg27_e12 -> Mg27 + photon)
+         60) H1 + (Mg27_e13 -> Mg27 + photon)
+         61) H1 + (Mg27_e14 -> Mg27 + photon)
+         62) H1 + (Mg27_e15 -> Mg27 + photon)
+         63) H1 + (Mg27_e16 -> Mg27 + photon)
+         64) H1 + (Mg27_e17 -> Mg27 + photon)
+         65) H1 + (Mg27_e18 -> Mg27 + photon)
+         66) H1 + (Mg27_e19 -> Mg27 + photon)
+         67) H1 + (Mg27 -> Mg27 + photon) [continuum]
+         68) H2 + Mg26
+         69) H2 + (Mg26_e1 -> Mg26 + photon)
+         70) H2 + (Mg26_e2 -> Mg26 + photon)
+         71) H2 + (Mg26_e3 -> Mg26 + photon)
+         72) H2 + (Mg26_e4 -> Mg26 + photon)
+         73) H2 + (Mg26_e5 -> Mg26 + photon)
+         74) H2 + (Mg26_e6 -> Mg26 + photon)
+         75) H2 + (Mg26_e7 -> Mg26 + photon)
+         76) H2 + (Mg26_e8 -> Mg26 + photon)
+         77) H2 + (Mg26_e9 -> Mg26 + photon)
+         78) H2 + (Mg26_e10 -> Mg26 + photon)
+         79) H2 + (Mg26_e11 -> Mg26 + photon)
+         80) H2 + (Mg26_e12 -> Mg26 + photon)
+         81) H2 + (Mg26_e13 -> Mg26 + photon)
+         82) H2 + (Mg26_e14 -> Mg26 + photon)
+         83) H2 + (Mg26_e15 -> Mg26 + photon)
+         84) H2 + (Mg26_e16 -> Mg26 + photon)
+         85) H2 + (Mg26_e17 -> Mg26 + photon)
+         86) H2 + (Mg26_e18 -> Mg26 + photon)
+         87) H2 + (Mg26_e19 -> Mg26 + photon)
+         88) H2 + (Mg26 -> Mg26 + photon) [continuum]
+         89) H3 + Mg25
+         90) H3 + (Mg25_e1 -> Mg25 + photon)
+         91) H3 + (Mg25_e2 -> Mg25 + photon)
+         92) H3 + (Mg25_e3 -> Mg25 + photon)
+         93) H3 + (Mg25_e4 -> Mg25 + photon)
+         94) H3 + (Mg25_e5 -> Mg25 + photon)
+         95) H3 + (Mg25_e6 -> Mg25 + photon)
+         96) H3 + (Mg25_e7 -> Mg25 + photon)
+         97) H3 + (Mg25_e8 -> Mg25 + photon)
+         98) H3 + (Mg25_e9 -> Mg25 + photon)
+         99) H3 + (Mg25_e10 -> Mg25 + photon)
+        100) H3 + (Mg25 -> Mg25 + photon) [continuum]
+        101) He4 + Na24
+        102) He4 + (Na24_e1 -> Na24 + photon)
+        103) He4 + (Na24_e2 -> Na24 + photon)
+        104) He4 + (Na24_e3 -> Na24 + photon)
+        105) He4 + (Na24_e4 -> Na24 + photon)
+        106) He4 + (Na24_e5 -> Na24 + photon)
+        107) He4 + (Na24_e6 -> Na24 + photon)
+        108) He4 + (Na24_e7 -> Na24 + photon)
+        109) He4 + (Na24_e8 -> Na24 + photon)
+        110) He4 + (Na24_e9 -> Na24 + photon)
+        111) He4 + (Na24_e10 -> Na24 + photon)
+        112) He4 + (Na24_e11 -> Na24 + photon)
+        113) He4 + (Na24_e12 -> Na24 + photon)
+        114) He4 + (Na24_e13 -> Na24 + photon)
+        115) He4 + (Na24_e14 -> Na24 + photon)
+        116) He4 + (Na24_e15 -> Na24 + photon)
+        117) He4 + (Na24_e16 -> Na24 + photon)
+        118) He4 + (Na24_e17 -> Na24 + photon)
+        119) He4 + (Na24_e18 -> Na24 + photon)
+        120) He4 + (Na24_e19 -> Na24 + photon)
+        121) He4 + (Na24 -> Na24 + photon) [continuum]
+        122) Al28 + photon
+        123) n + He4 + Na23 + photon
+        124) n + H1 + He4 + Ne22 + photon
+        125) 2He4 + F20 + photon
+        126) 2H1 + Na26 + photon
+        127) H1 + He4 + Ne23 + photon
+        128) H2 + He4 + Ne22 + photon
+        129) sumOfRemainingOutputChannels
+
+    MCGIDI::Protare number of reaction = 130
+          0) n [thermalNeutronScatteringLaw coherent-elastic]
+          1) n [thermalNeutronScatteringLaw incoherent-inelastic]
+          2) n + Al27
+          3) n + (Al27_e1 -> Al27 + photon)
+          4) n + (Al27_e2 -> Al27 + photon)
+          5) n + (Al27_e3 -> Al27 + photon)
+          6) n + (Al27_e4 -> Al27 + photon)
+          7) n + (Al27_e5 -> Al27 + photon)
+          8) n + (Al27_e6 -> Al27 + photon)
+          9) n + (Al27_e7 -> Al27 + photon)
+         10) n + (Al27_e8 -> Al27 + photon)
+         11) n + (Al27_e9 -> Al27 + photon)
+         12) n + (Al27_e10 -> Al27 + photon)
+         13) n + (Al27_e11 -> Al27 + photon)
+         14) n + (Al27_e12 -> Al27 + photon)
+         15) n + (Al27_e13 -> Al27 + photon)
+         16) n + (Al27_e14 -> Al27 + photon)
+         17) n + (Al27_e15 -> Al27 + photon)
+         18) n + (Al27_e16 -> Al27 + photon)
+         19) n + (Al27_e17 -> Al27 + photon)
+         20) n + (Al27_e18 -> Al27 + photon)
+         21) n + (Al27_e19 -> Al27 + photon)
+         22) n + (Al27_e20 -> Al27 + photon)
+         23) n + (Al27_e21 -> Al27 + photon)
+         24) n + (Al27_e22 -> Al27 + photon)
+         25) n + (Al27_e23 -> Al27 + photon)
+         26) n + (Al27_e24 -> Al27 + photon)
+         27) n + (Al27_e25 -> Al27 + photon)
+         28) n + (Al27_e26 -> Al27 + photon)
+         29) n + (Al27_e27 -> Al27 + photon)
+         30) n + (Al27_e28 -> Al27 + photon)
+         31) n + (Al27_e29 -> Al27 + photon)
+         32) n + (Al27_e30 -> Al27 + photon)
+         33) n + (Al27_e31 -> Al27 + photon)
+         34) n + (Al27_e32 -> Al27 + photon)
+         35) n + (Al27_e33 -> Al27 + photon)
+         36) n + (Al27_e34 -> Al27 + photon)
+         37) n + (Al27_e35 -> Al27 + photon)
+         38) n + (Al27_e36 -> Al27 + photon)
+         39) n + (Al27_e37 -> Al27 + photon)
+         40) n + (Al27_e38 -> Al27 + photon)
+         41) n + (Al27_e39 -> Al27 + photon)
+         42) n + (Al27 -> Al27 + photon) [continuum]
+         43) 2n + Al26 + photon
+         44) n + H1 + Mg26 + photon
+         45) n + H2 + Mg25 + photon
+         46) n + H3 + Mg24 + photon
+         47) H1 + Mg27
+         48) H1 + (Mg27_e1 -> Mg27 + photon)
+         49) H1 + (Mg27_e2 -> Mg27 + photon)
+         50) H1 + (Mg27_e3 -> Mg27 + photon)
+         51) H1 + (Mg27_e4 -> Mg27 + photon)
+         52) H1 + (Mg27_e5 -> Mg27 + photon)
+         53) H1 + (Mg27_e6 -> Mg27 + photon)
+         54) H1 + (Mg27_e7 -> Mg27 + photon)
+         55) H1 + (Mg27_e8 -> Mg27 + photon)
+         56) H1 + (Mg27_e9 -> Mg27 + photon)
+         57) H1 + (Mg27_e10 -> Mg27 + photon)
+         58) H1 + (Mg27_e11 -> Mg27 + photon)
+         59) H1 + (Mg27_e12 -> Mg27 + photon)
+         60) H1 + (Mg27_e13 -> Mg27 + photon)
+         61) H1 + (Mg27_e14 -> Mg27 + photon)
+         62) H1 + (Mg27_e15 -> Mg27 + photon)
+         63) H1 + (Mg27_e16 -> Mg27 + photon)
+         64) H1 + (Mg27_e17 -> Mg27 + photon)
+         65) H1 + (Mg27_e18 -> Mg27 + photon)
+         66) H1 + (Mg27_e19 -> Mg27 + photon)
+         67) H1 + (Mg27 -> Mg27 + photon) [continuum]
+         68) H2 + Mg26
+         69) H2 + (Mg26_e1 -> Mg26 + photon)
+         70) H2 + (Mg26_e2 -> Mg26 + photon)
+         71) H2 + (Mg26_e3 -> Mg26 + photon)
+         72) H2 + (Mg26_e4 -> Mg26 + photon)
+         73) H2 + (Mg26_e5 -> Mg26 + photon)
+         74) H2 + (Mg26_e6 -> Mg26 + photon)
+         75) H2 + (Mg26_e7 -> Mg26 + photon)
+         76) H2 + (Mg26_e8 -> Mg26 + photon)
+         77) H2 + (Mg26_e9 -> Mg26 + photon)
+         78) H2 + (Mg26_e10 -> Mg26 + photon)
+         79) H2 + (Mg26_e11 -> Mg26 + photon)
+         80) H2 + (Mg26_e12 -> Mg26 + photon)
+         81) H2 + (Mg26_e13 -> Mg26 + photon)
+         82) H2 + (Mg26_e14 -> Mg26 + photon)
+         83) H2 + (Mg26_e15 -> Mg26 + photon)
+         84) H2 + (Mg26_e16 -> Mg26 + photon)
+         85) H2 + (Mg26_e17 -> Mg26 + photon)
+         86) H2 + (Mg26_e18 -> Mg26 + photon)
+         87) H2 + (Mg26_e19 -> Mg26 + photon)
+         88) H2 + (Mg26 -> Mg26 + photon) [continuum]
+         89) H3 + Mg25
+         90) H3 + (Mg25_e1 -> Mg25 + photon)
+         91) H3 + (Mg25_e2 -> Mg25 + photon)
+         92) H3 + (Mg25_e3 -> Mg25 + photon)
+         93) H3 + (Mg25_e4 -> Mg25 + photon)
+         94) H3 + (Mg25_e5 -> Mg25 + photon)
+         95) H3 + (Mg25_e6 -> Mg25 + photon)
+         96) H3 + (Mg25_e7 -> Mg25 + photon)
+         97) H3 + (Mg25_e8 -> Mg25 + photon)
+         98) H3 + (Mg25_e9 -> Mg25 + photon)
+         99) H3 + (Mg25_e10 -> Mg25 + photon)
+        100) H3 + (Mg25 -> Mg25 + photon) [continuum]
+        101) He4 + Na24
+        102) He4 + (Na24_e1 -> Na24 + photon)
+        103) He4 + (Na24_e2 -> Na24 + photon)
+        104) He4 + (Na24_e3 -> Na24 + photon)
+        105) He4 + (Na24_e4 -> Na24 + photon)
+        106) He4 + (Na24_e5 -> Na24 + photon)
+        107) He4 + (Na24_e6 -> Na24 + photon)
+        108) He4 + (Na24_e7 -> Na24 + photon)
+        109) He4 + (Na24_e8 -> Na24 + photon)
+        110) He4 + (Na24_e9 -> Na24 + photon)
+        111) He4 + (Na24_e10 -> Na24 + photon)
+        112) He4 + (Na24_e11 -> Na24 + photon)
+        113) He4 + (Na24_e12 -> Na24 + photon)
+        114) He4 + (Na24_e13 -> Na24 + photon)
+        115) He4 + (Na24_e14 -> Na24 + photon)
+        116) He4 + (Na24_e15 -> Na24 + photon)
+        117) He4 + (Na24_e16 -> Na24 + photon)
+        118) He4 + (Na24_e17 -> Na24 + photon)
+        119) He4 + (Na24_e18 -> Na24 + photon)
+        120) He4 + (Na24_e19 -> Na24 + photon)
+        121) He4 + (Na24 -> Na24 + photon) [continuum]
+        122) Al28 + photon
+        123) n + He4 + Na23 + photon
+        124) n + H1 + He4 + Ne22 + photon
+        125) 2He4 + F20 + photon
+        126) 2H1 + Na26 + photon
+        127) H1 + He4 + Ne23 + photon
+        128) H2 + He4 + Ne22 + photon
+        129) sumOfRemainingOutputChannels

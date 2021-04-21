@@ -7,14 +7,18 @@
 # <<END-copyright>>
 */
 
+#include <stdio.h>
 #include <stdlib.h>
 // #include<bits/stdc++.h>
 #include<limits.h>
 #include <iomanip>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #include "GIDI_testUtilities.hpp"
 
-#define PRINT_NAME_WIDTH 20
+#define GIDI_PRINT_NAME_WIDTH 20
 
 /*
 =========================================================
@@ -195,7 +199,7 @@ double argvOption::asDouble( char **a_argv, double a_default ) {
 */
 void argvOption::help( ) {
 
-    std::cout << "    " << std::left << std::setw( PRINT_NAME_WIDTH ) << m_name;
+    std::cout << "    " << std::left << std::setw( GIDI_PRINT_NAME_WIDTH ) << m_name;
     if( m_needsValue ) {
         std::cout << " VALUE  "; }
     else {
@@ -208,7 +212,7 @@ void argvOption::help( ) {
 */
 void argvOption::print( ) {
 
-    std::cout << std::setw( PRINT_NAME_WIDTH ) << m_name;
+    std::cout << std::setw( GIDI_PRINT_NAME_WIDTH ) << m_name;
     for( std::vector<int>::iterator iter = m_indices.begin( ); iter != m_indices.end( ); ++iter ) std::cout << " " << *iter;
     std::cout << std::endl;
 }
@@ -277,7 +281,7 @@ argvOption *argvOptions::find( std::string const &a_name ) {
     for( std::vector<argvOption>::iterator iter = m_options.begin( ); iter != m_options.end( ); ++iter ) {
         if( iter->m_name == a_name ) return( &(*iter) );
     }
-    return( NULL );
+    return( nullptr );
 }
 /*
 =========================================================
@@ -375,18 +379,29 @@ long integerFromArgv( int iarg, int argc, char **argv ) {
 /*
 =========================================================
 */
-void printVector( char const *a_prefix, GIDI::Vector &vector ) {
+void printVector( char const *a_prefix, GIDI::Vector &a_vector ) {
 
     std::string prefix( a_prefix );
 
-    printVector( prefix, vector );
+    printVector( prefix, a_vector );
 }
 /*
 =========================================================
 */
-void printVector( std::string &a_prefix, GIDI::Vector &vector ) {
+void printVector( std::string &a_prefix, GIDI::Vector &a_vector ) {
 
-    vector.print( a_prefix );
+    a_vector.print( a_prefix );
+}
+/*
+=========================================================
+*/
+void writeVector( std::string const &a_fileName, std::string const &a_prefix, GIDI::Vector const &a_vector ) {
+
+    FILE *file = fopen( a_fileName.c_str( ), "w" );
+    if( file == nullptr ) throw( "Could not open file '" + a_fileName + "'." );
+
+    a_vector.write( file, a_prefix );
+    fclose( file );    
 }
 /*
 =========================================================
@@ -427,20 +442,20 @@ void printIDs( std::string &a_prefix, std::set<std::string> const &ids ) {
 /*
 =========================================================
 */
-void printMatrix( char const *a_prefix, int maxOrder, GIDI::Matrix &matrix ) {
+void printMatrix( char const *a_prefix, int maxOrder, GIDI::Matrix &matrix, std::string indent ) {
 
     std::string prefix( a_prefix );
 
-    printMatrix( prefix, maxOrder, matrix );
+    printMatrix( prefix, maxOrder, matrix, indent );
 }
 /*
 =========================================================
 */
-void printMatrix( std::string &prefix, int maxOrder, GIDI::Matrix &matrix ) {
+void printMatrix( std::string &prefix, int maxOrder, GIDI::Matrix &matrix, std::string indent ) {
 
     std::cout << std::endl << prefix << std::endl;
     if( maxOrder > -2 ) std::cout << "    max. Legendre order = " << maxOrder << std::endl;
-    matrix.print( "    ::  " );
+    matrix.print( indent + "::  " );
 }
 /*
 =========================================================
@@ -491,7 +506,8 @@ ParseTestOptions::ParseTestOptions( argvOptions &a_argvOptions, int a_argc, char
         m_askDelayedFissionNeutrons( false ),
         m_askGNDS_File( false ),
         m_askLegendreOrder( false ),
-        m_askTemperature( false ) {
+        m_askTemperature( false ),
+        m_askTracking( false ) {
 
     m_particlesAndGIDs[PoPI::IDs::neutron] = "LLNL_gid_4";
     m_particlesAndGIDs["H1"] = "LLNL_gid_71";
@@ -559,8 +575,10 @@ GIDI::Protare *ParseTestOptions::protare( PoPI::Database &a_pops, std::string co
 
     if( m_askGNDS_File && m_argvOptions.find( "--gnds" )->present( ) ) {
         std::string GNDSFile = m_argvOptions.find( "--gnds" )->zeroOrOneOption( m_argv, "Oops" );
+        GIDI::ParticleSubstitution particleSubstitution;
 
-        protare1 = new GIDI::ProtareSingle( a_construction, GNDSFile, GIDI::FileType::XML, a_pops, libraries, false, false ); }
+        protare1 = new GIDI::ProtareSingle( a_construction, GNDSFile, GIDI::FileType::XML, a_pops, particleSubstitution, libraries, 
+                GIDI_MapInteractionNuclearChars, false, false ); }
     else {
         std::string mapFilename = a_mapFileName;
         if( m_askMap ) mapFilename = m_argvOptions.find( "--map" )->zeroOrOneOption( m_argv, a_mapFileName );

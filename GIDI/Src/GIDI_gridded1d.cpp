@@ -21,16 +21,17 @@ namespace Functions {
  *
  * @param a_construction    [in]    Used to pass user options to the constructor.
  * @param a_node            [in]    The **pugi::xml_node** to be parsed and used to construct the XYs2d.
+ * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-Gridded1d::Gridded1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, Suite *a_parent ) :
-        Function1dForm( a_construction, a_node, FormType::gridded1d, a_parent ) {
+Gridded1d::Gridded1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+        Function1dForm( a_construction, a_node, a_setupInfo, FormType::gridded1d, a_parent ) {
 
     Grid const *axis = dynamic_cast<Grid const *>( axes( )[0] );
     m_grid = axis->data( );
 
-    parseFlattened1d( a_construction, a_node.child( "array" ), m_data );
+    parseFlattened1d( a_construction, a_node.child( GIDI_arrayChars ), a_setupInfo, m_data );
 }
 
 /* *********************************************************************************************************//**
@@ -38,6 +39,18 @@ Gridded1d::Gridded1d( Construction::Settings const &a_construction, pugi::xml_no
 
 Gridded1d::~Gridded1d( ) {
 
+}
+
+/* *********************************************************************************************************//**
+ * Only for internal use. Called by ProtareTNSL instance to zero the lower energy multi-group data covered by the ProtareSingle that
+ * contains the TNSL data covers the lower energy multi-group data.
+ *
+ * @param a_maxTNSL_index           [in]    All elements up to *a_maxTNSL_index* exclusive are zero-ed.
+ ***********************************************************************************************************/
+
+void Gridded1d::modifiedMultiGroupElasticForTNSL( int a_maxTNSL_index ) {
+
+    m_data.setToValueInFlatRange( 0, a_maxTNSL_index, 0.0 );
 }
 
 /* *********************************************************************************************************//**
@@ -71,12 +84,12 @@ void Gridded1d::toXMLList_func( WriteInfo &a_writeInfo, std::string const &a_ind
     std::string attributes;
 
     if( a_embedded ) {
-        attributes += a_writeInfo.addAttribute( "outerDomainValue", doubleToShortestString( outerDomainValue( ) ) ); }
+        attributes += a_writeInfo.addAttribute( GIDI_outerDomainValueChars, doubleToShortestString( outerDomainValue( ) ) ); }
     else {
         if( a_inRegions ) {
-            attributes = a_writeInfo.addAttribute( "index", intToString( index( ) ) ); }
+            attributes = a_writeInfo.addAttribute( GIDI_indexChars, intToString( index( ) ) ); }
         else {
-            if( label( ) != "" ) attributes = a_writeInfo.addAttribute( "label", label( ) );
+            if( label( ) != "" ) attributes = a_writeInfo.addAttribute( GIDI_labelChars, label( ) );
         }
     }
 
@@ -84,9 +97,9 @@ void Gridded1d::toXMLList_func( WriteInfo &a_writeInfo, std::string const &a_ind
 
     axes( ).toXMLList( a_writeInfo, indent2 );
 
-    attributes = a_writeInfo.addAttribute( "shape", size_t_ToString( m_data.size( ) ) );
+    attributes = a_writeInfo.addAttribute( GIDI_shapeChars, size_t_ToString( m_data.size( ) ) );
     attributes += a_writeInfo.addAttribute( "compression", "flattened" );
-    a_writeInfo.addNodeStarter( indent2, "array", attributes );
+    a_writeInfo.addNodeStarter( indent2, GIDI_arrayChars, attributes );
 
     std::vector<double> doubles;
     doubles.reserve( m_data.size( ) );
@@ -104,7 +117,7 @@ void Gridded1d::toXMLList_func( WriteInfo &a_writeInfo, std::string const &a_ind
     a_writeInfo.push_back( indent3 + "<values valueType=\"Integer32\" label=\"lengths\">" + size_t_ToString( doubles.size( ) ) + "</values>" );
 
     doublesToXMLList( a_writeInfo, indent3, doubles );
-    a_writeInfo.addNodeEnder( "array" );
+    a_writeInfo.addNodeEnder( GIDI_arrayChars );
     a_writeInfo.addNodeEnder( moniker( ) );
 }
 

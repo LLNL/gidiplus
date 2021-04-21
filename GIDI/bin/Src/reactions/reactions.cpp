@@ -60,6 +60,7 @@ void main2( int argc, char **argv ) {
 
     GIDI::Construction::PhotoMode photo_mode = parseTestOptions.photonMode( GIDI::Construction::PhotoMode::nuclearAndAtomic );
     GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, photo_mode );
+    GIDI::ParticleSubstitution particleSubstitution;
 
     std::string mapFilename = argv_options.find( "--map" )->zeroOrOneOption( argv, "../../../Test/all.map" );
     GIDI::Map::Map map( mapFilename, pops );
@@ -74,7 +75,7 @@ void main2( int argc, char **argv ) {
 
         printf( "%-8s %-8s %-24s %s\n", protareEntry->projectileID( ).c_str( ), protareEntry->targetID( ).c_str( ), protareEntry->evaluation( ).c_str( ),
             protareEntry->path( ).c_str( ) );
-        GIDI::ProtareSingle protare( construction, path, GIDI::FileType::XML, pops, libraries, false, false );
+        GIDI::ProtareSingle protare( construction, path, GIDI::FileType::XML, pops, particleSubstitution, libraries, GIDI_MapInteractionNuclearChars, false, false );
 
         GIDI::Suite const &reactions = protare.reactions( );
         for( std::size_t reactionIndex = 0; reactionIndex < reactions.size( ); ++reactionIndex ) {

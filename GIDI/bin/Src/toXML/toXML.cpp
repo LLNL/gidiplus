@@ -30,9 +30,10 @@ int main( int argc, char **argv ) {
     GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, GIDI::Construction::PhotoMode::nuclearAndAtomic );
     std::vector<std::string> libraries;
     GIDI::ProtareSingle *protare;
+    GIDI::ParticleSubstitution particleSubstitution;
 
     try {
-        protare = new GIDI::ProtareSingle( construction, argv[2], GIDI::FileType::XML, pops, libraries ); }
+        protare = new GIDI::ProtareSingle( construction, argv[2], GIDI::FileType::XML, pops, particleSubstitution, libraries, GIDI_MapInteractionNuclearChars ); }
     catch (char const *str) {
         std::cerr << str << std::endl;
         exit( EXIT_FAILURE );

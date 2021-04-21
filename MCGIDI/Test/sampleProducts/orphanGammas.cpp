@@ -70,7 +70,7 @@ int main( int argc, char **argv ) {
         std::cout << std::setw( 40 ) << std::left << reaction->label( ).c_str( ) << " | " << reaction->crossSectionThreshold( ) << std::endl;
     }
 
-    MCGIDI::Sampling::Input input( true, MCGIDI::Sampling::Upscatter::None );
+    MCGIDI::Sampling::Input input( true, MCGIDI::Sampling::Upscatter::Model::none );
 
     std::size_t numberOfReactions = MCProtare->reactions( ).size( );
 

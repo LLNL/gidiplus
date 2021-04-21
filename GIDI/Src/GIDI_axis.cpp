@@ -25,7 +25,7 @@ namespace GIDI {
  ***********************************************************************************************************/
 
 Axis::Axis( int a_index, std::string a_label, std::string a_unit, FormType a_type ) :
-        Form( axisMoniker, a_type, a_label ),
+        Form( GIDI_axisChars, a_type, a_label ),
         m_index( a_index ),
         m_unit( a_unit ) {
 
@@ -34,14 +34,15 @@ Axis::Axis( int a_index, std::string a_label, std::string a_unit, FormType a_typ
 /* *********************************************************************************************************//**
  *
  * @param a_node            [in]     The **pugi::xml_node** to be parsed and used to construct the Axis.
+ * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_type            [in]     The **type** is either *"axis"* or *"grid"*.
  ***********************************************************************************************************/
 
-Axis::Axis( pugi::xml_node const &a_node, FormType a_type ) :
-        Form( a_node, a_type ),
-        m_index( a_node.attribute( "index" ).as_int( ) ),
-        m_unit( a_node.attribute( "unit" ).value( ) ),
-        m_href( a_node.attribute( "href" ).value( ) ) {
+Axis::Axis( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, FormType a_type ) :
+        Form( a_node, a_setupInfo, a_type ),
+        m_index( a_node.attribute( GIDI_indexChars ).as_int( ) ),
+        m_unit( a_node.attribute( GIDI_unitChars ).value( ) ),
+        m_href( a_node.attribute( GIDI_hrefChars ).value( ) ) {
 
 }
 
@@ -76,14 +77,14 @@ Axis::~Axis( ) {
 void Axis::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
-    std::string attributes = a_writeInfo.addAttribute( "index", intToString( index( ) ) );
+    std::string attributes = a_writeInfo.addAttribute( GIDI_indexChars, intToString( index( ) ) );
 
     if( m_href == "" ) {
-        attributes += a_writeInfo.addAttribute( "label", label( ) );
-        attributes += a_writeInfo.addAttribute( "unit", unit( ) );
+        attributes += a_writeInfo.addAttribute( GIDI_labelChars, label( ) );
+        attributes += a_writeInfo.addAttribute( GIDI_unitChars, unit( ) );
         a_writeInfo.addNodeStarterEnder( a_indent, moniker( ), attributes ); }
     else {
-        attributes += a_writeInfo.addAttribute( "href", m_href );
+        attributes += a_writeInfo.addAttribute( GIDI_hrefChars, m_href );
         a_writeInfo.addNodeStarterEnder( a_indent, moniker( ), attributes );
     }
 }

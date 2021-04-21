@@ -55,8 +55,6 @@ void main2( int argc, char **argv ) {
 
     std::cout << stripDirectoryBase( protare->fileName( ), "/GIDI/Test/" ) << std::endl;
 
-    GIDI::Styles::TemperatureInfos temperatures = protare->temperatures( );
-    std::string label( temperatures[0].heatedMultiGroup( ) );
     GIDI::Transporting::MG settings( protare->projectile( ).ID( ), GIDI::Transporting::Mode::multiGroup, GIDI::Transporting::DelayedNeutrons::on );
 
     GIDI::Transporting::Groups_from_bdfls groups_from_bdfls( "../bdfls" );
@@ -72,7 +70,11 @@ void main2( int argc, char **argv ) {
     photonParticle.appendFlux( fluxes_from_bdfls.getViaFID( 1 ) );
     particles.add( photonParticle );
 
-    particles.process( *protare, label );
+    GIDI::Styles::TemperatureInfos temperatures = protare->temperatures( );
+    if( temperatures.size( ) > 0 ) {
+        std::string label( temperatures[0].heatedMultiGroup( ) );
+        particles.process( *protare, label );
+    }
 
     std::cout << std::endl;
     std::set<std::string> IDs;

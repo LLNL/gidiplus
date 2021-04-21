@@ -18,13 +18,14 @@ namespace GIDI {
 /* *********************************************************************************************************//**
  *
  * @param a_node            [in]     The **pugi::xml_node** to be parsed and used to construct the AxisDomain.
+ * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  ***********************************************************************************************************/
 
-AxisDomain::AxisDomain( pugi::xml_node const &a_node ) :
-        Form( a_node, FormType::axisDomain ),
-        m_minimum( a_node.attribute( "min" ).as_double( ) ),
-        m_maximum( a_node.attribute( "max" ).as_double( ) ),
-        m_unit( a_node.attribute( "unit" ).value( ) ) {
+AxisDomain::AxisDomain( pugi::xml_node const &a_node, SetupInfo &a_setupInfo ) :
+        Form( a_node, a_setupInfo, FormType::axisDomain ),
+        m_minimum( a_node.attribute( GIDI_minChars ).as_double( ) ),
+        m_maximum( a_node.attribute( GIDI_maxChars ).as_double( ) ),
+        m_unit( a_node.attribute( GIDI_unitChars ).value( ) ) {
 
 }
 
@@ -59,9 +60,9 @@ AxisDomain::~AxisDomain( ) {
 
 void AxisDomain::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
-    std::string attributes = a_writeInfo.addAttribute( "min", doubleToShortestString( minimum( ) ) ) + 
-                             a_writeInfo.addAttribute( "max", doubleToShortestString( maximum( ) ) ) +
-                             a_writeInfo.addAttribute( "unit", unit( ) );
+    std::string attributes = a_writeInfo.addAttribute( GIDI_minChars, doubleToShortestString( minimum( ) ) ) + 
+                             a_writeInfo.addAttribute( GIDI_minChars, doubleToShortestString( maximum( ) ) ) +
+                             a_writeInfo.addAttribute( GIDI_unitChars, unit( ) );
 
     a_writeInfo.addNodeStarterEnder( a_indent, moniker( ), attributes );
 }

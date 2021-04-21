@@ -24,7 +24,7 @@ namespace GIDI {
 
 Vector::Vector( std::size_t a_size ) {
 
-    m_vector.resize( a_size, 0. );
+    m_vector.resize( a_size, 0.0 );
 }
 
 /* *********************************************************************************************************//**
@@ -283,6 +283,19 @@ void Vector::reverse( ) {
 }
 
 /* *********************************************************************************************************//**
+ * Sets all elements in the range [*a_start*,*a_end*) to *a_value*.
+ *
+ * @param a_start       [in]    The starting flat-cell index of *this* to fill with *a_value*.
+ * @param a_end         [in]    One after the last flat-cell index of *this* to fill with *a_value*.
+ * @param a_value       [in]    The value to set each double in the range to.
+ ***********************************************************************************************************/
+
+void Vector::setToValueInFlatRange( std::size_t a_start, std::size_t a_end, double a_value ) {
+
+    a_end = std::min( a_end, m_vector.size( ) );
+    for( ; a_start < a_end; ++a_start ) m_vector[a_start] = a_value;
+}
+/* *********************************************************************************************************//**
  * Returns the sum over the values of *this*.
  ***********************************************************************************************************/
 
@@ -306,6 +319,19 @@ void Vector::print( std::string const &a_prefix ) const {
     std::cout << a_prefix;
     for( std::vector<double>::const_iterator iter = m_vector.begin( ); iter < m_vector.end( ); ++iter ) printf( "%19.11e", *iter );
     std::cout << std::endl;
+}
+
+/* *********************************************************************************************************//**
+ * Writes the contents of *this* to *a_file* as one line prefixed with **a_prefix**.
+ *
+ * @param a_file        [in]    A pointer to an opened C FILE instance where the data are to be written.
+ * @param a_prefix      [in]    Prefix to add to line.
+ ***********************************************************************************************************/
+
+void Vector::write( FILE *a_file, std::string const &a_prefix ) const {
+
+    if( a_prefix.size( ) > 0 ) fprintf( a_file, "# %s\n", a_prefix.c_str( ) );
+    for( std::vector<double>::const_iterator iter = m_vector.begin( ); iter < m_vector.end( ); ++iter ) fprintf( a_file, "%19.11e\n", *iter );
 }
 
 }

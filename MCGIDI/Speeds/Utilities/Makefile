@@ -7,20 +7,22 @@ SHELL = /bin/ksh
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
-.PHONY: default check speeds clean realclean
+GIDI_PLUS_PATH ?= $(abspath ../../..)
+CppSources = $(sort $(wildcard *.cpp))
+CppObjs = $(CppSources:.cpp=.o)
+Archive = libutilities4Speed.a
 
-local_CXXFLAGS = $(CXXFLAGS)
+include ../../Makefile.paths
+include ../Makefile.speeds
 
-default: utilities4Speed.o
+default: $(Archive)
 
-utilities4Speed.o: utilities4Speed.cpp utilities4Speed.hpp
-	$(CXX) $(CXXFLAGS) -c utilities4Speed.cpp
+$(Archive): $(CppObjs)
+	rm -f $@
+	$(AR) -cr $@ $(CppObjs)
+
+speeds: $(Archive)
+
+$(CppSources): utilities4Speed.hpp
 
 check:
-
-speeds: default
-
-clean:
-	rm -f *.o
-
-realclean: clean

@@ -11,21 +11,6 @@
 
 namespace GIDI {
 
-#define dateAttribute "date"
-#define derivedFromAttribute "derivedFrom"
-#define libraryAttribute "library"
-#define versionAttribute "version"
-#define temperatureAttribute "temperature"
-#define projectileEnergyDomainNode "projectileEnergyDomain"
-#define muCutoffAttribute "muCutoff"
-#define lMaxAttribute "lMax"
-#define parametersAttribute "parameters"
-#define upperCalculatedGroupAttribute "upperCalculatedGroup"
-#define fluxNode "flux"
-#define inverseSpeedNode "inverseSpeed"
-#define gridded1dNode "gridded1d"
-#define gridNode "grid"
-
 namespace Styles {
 
 /*! \class Suite
@@ -36,7 +21,7 @@ namespace Styles {
  ***********************************************************************************************************/
 
 Suite::Suite( ) :
-        GIDI::Suite( stylesMoniker ) {
+        GIDI::Suite( GIDI_stylesChars ) {
 
 }
 
@@ -68,34 +53,6 @@ std::string const *Suite::findLabelInLineage( GIDI::Suite const &a_suite, std::s
     return( label );
 }
 
-/* *********************************************************************************************************//**
- * Searches the styles in a GIDI::Styles::Suite instance for a **multiGroup** style. This method starts at the form with label *a_label* 
- * and ascends until a **multiGroup** style is found or no **multiGroup** style exists.
- *
- * @param a_label       [in]    The label for the style to start the search.
- * @return                      Pointer to the **multiGroup** style or NULL if one is not found.
- ***********************************************************************************************************/
-
-MultiGroup const *Suite::multiGroup( std::string const &a_label ) const {
-
-    std::string const *label( &a_label );
-
-    while( true ) {
-        Suite::const_iterator iter = this->find( *label );
-        if( iter == this->end( ) ) return( NULL );
-        Base const *base = static_cast<Base const *>( *iter );
-        if( base->moniker( ) == multiGroupStyleMoniker ) return( static_cast<MultiGroup const *>( base ) );
-        if( base->moniker( ) == SnElasticUpScatterStyleMoniker ) {
-            label = &(base->derivedStyle( )); }
-        else if( base->moniker( ) == heatedMultiGroupStyleMoniker ) {
-            HeatedMultiGroup const *heatedMultiGroup = static_cast<HeatedMultiGroup const *>( base );
-            label = &(heatedMultiGroup->parameters( )); }
-        else {
-            return( NULL );
-        }
-    }
-}
-
 /*! \class Base
  * This is the virtual base class inherited by all **style** classes. It handles the *date* and **derivedFrom** members.
  */
@@ -103,14 +60,15 @@ MultiGroup const *Suite::multiGroup( std::string const &a_label ) const {
 /* *********************************************************************************************************//**
  *
  * @param a_node        [in]    The **pugi::xml_node** to be parsed.
+ * @param a_setupInfo   [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent      [in]    The parent GIDI::Suite.
  * @return
  ***********************************************************************************************************/
 
-Base::Base( pugi::xml_node const &a_node, GIDI::Suite *a_parent ) : 
-        Form( a_node, FormType::style, a_parent ),
-        m_date( a_node.attribute( dateAttribute ).value( ) ),
-        m_derivedStyle( a_node.attribute( derivedFromAttribute ).value( ) ) {
+Base::Base( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent ) : 
+        Form( a_node, a_setupInfo, FormType::style, a_parent ),
+        m_date( a_node.attribute( GIDI_dateChars ).value( ) ),
+        m_derivedStyle( a_node.attribute( GIDI_derivedFromChars ).value( ) ) {
 }
 
 /* *********************************************************************************************************//**
@@ -138,7 +96,7 @@ Base const *Base::getDerivedStyle( std::string const &a_moniker ) const {
     Form const *_form( sibling( m_derivedStyle ) );
     Base const *_style = dynamic_cast<Base const *>( _form );
 
-    if( _style == NULL ) return( _style );
+    if( _style == nullptr ) return( _style );
     if( _style->moniker( ) != a_moniker ) _style = _style->getDerivedStyle( a_moniker );
     return( _style );
 }
@@ -153,10 +111,10 @@ Base const *Base::getDerivedStyle( std::string const &a_moniker ) const {
 
 std::string Base::baseXMLAttributes( WriteInfo &a_writeInfo ) const {
 
-    std::string attributes( a_writeInfo.addAttribute( "label", label( ) ) );
+    std::string attributes( a_writeInfo.addAttribute( GIDI_labelChars, label( ) ) );
 
-    if( m_derivedStyle != "" ) attributes += a_writeInfo.addAttribute( "derivedFrom", m_derivedStyle );
-    attributes += a_writeInfo.addAttribute( "date", m_date );
+    if( m_derivedStyle != "" ) attributes += a_writeInfo.addAttribute( GIDI_derivedFromChars, m_derivedStyle );
+    attributes += a_writeInfo.addAttribute( GIDI_dateChars, m_date );
 
     return( attributes );
 }
@@ -168,15 +126,16 @@ std::string Base::baseXMLAttributes( WriteInfo &a_writeInfo ) const {
 /* *********************************************************************************************************//**
  *
  * @param a_node        [in]    The **pugi::xml_node** to be parsed.
+ * @param a_setupInfo   [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent      [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-Evaluated::Evaluated( pugi::xml_node const &a_node, GIDI::Suite *a_parent ) :
-        Base( a_node, a_parent ),
-        m_library( a_node.attribute( libraryAttribute ).value( ) ),
-        m_version( a_node.attribute( versionAttribute ).value( ) ),
-        m_temperature( a_node.child( temperatureAttribute ) ),
-        m_projectileEnergyDomain( a_node.child( projectileEnergyDomainNode ) ) {
+Evaluated::Evaluated( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent ) :
+        Base( a_node, a_setupInfo, a_parent ),
+        m_library( a_node.attribute( GIDI_libraryChars ).value( ) ),
+        m_version( a_node.attribute( GIDI_versionChars ).value( ) ),
+        m_temperature( a_node.child( GIDI_temperatureChars ), a_setupInfo ),
+        m_projectileEnergyDomain( a_node.child( GIDI_projectileEnergyDomainChars ), a_setupInfo ) {
 
 }
 
@@ -192,8 +151,8 @@ void Evaluated::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent )
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     std::string attributes = baseXMLAttributes( a_writeInfo );
 
-    attributes += a_writeInfo.addAttribute( "library", m_library );
-    attributes += a_writeInfo.addAttribute( "version", m_version );
+    attributes += a_writeInfo.addAttribute( GIDI_libraryChars, m_library );
+    attributes += a_writeInfo.addAttribute( GIDI_versionChars, m_version );
     a_writeInfo.addNodeStarter( a_indent, moniker( ), attributes );
     
     m_temperature.toXMLList( a_writeInfo, indent2 );
@@ -209,11 +168,12 @@ void Evaluated::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent )
 /* *********************************************************************************************************//**
  *
  * @param a_node        [in]    The **pugi::xml_node** to be parsed.
+ * @param a_setupInfo   [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent      [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-CrossSectionReconstructed::CrossSectionReconstructed( pugi::xml_node const &a_node, GIDI::Suite *a_parent ) :
-        Base( a_node, a_parent ) {
+CrossSectionReconstructed::CrossSectionReconstructed( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent ) :
+        Base( a_node, a_setupInfo, a_parent ) {
 }
 
 /* *********************************************************************************************************//**
@@ -239,7 +199,7 @@ PhysicalQuantity const &CrossSectionReconstructed::temperature( ) const {
 
     Base const *style = getDerivedStyle( );
 
-    if( style == NULL ) throw Exception( "No style with temperature." );
+    if( style == nullptr ) throw Exception( "No style with temperature." );
     return( style->temperature( ) );
 }
 
@@ -250,12 +210,13 @@ PhysicalQuantity const &CrossSectionReconstructed::temperature( ) const {
 /* *********************************************************************************************************//**
  *
  * @param a_node        [in]    The **pugi::xml_node** to be parsed.
+ * @param a_setupInfo   [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent      [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-CoulombPlusNuclearElasticMuCutoff::CoulombPlusNuclearElasticMuCutoff( pugi::xml_node const &a_node, GIDI::Suite *a_parent ) :
-        Base( a_node, a_parent ),
-        m_muCutoff( a_node.attribute( muCutoffAttribute ).as_double( ) ) {
+CoulombPlusNuclearElasticMuCutoff::CoulombPlusNuclearElasticMuCutoff( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent ) :
+        Base( a_node, a_setupInfo, a_parent ),
+        m_muCutoff( a_node.attribute( GIDI_muCutoffChars ).as_double( ) ) {
 
 }
 
@@ -269,7 +230,7 @@ PhysicalQuantity const &CoulombPlusNuclearElasticMuCutoff::temperature( ) const 
 
     Base const *style = getDerivedStyle( );
 
-    if( style == NULL ) throw Exception( "No style with temperature." );
+    if( style == nullptr ) throw Exception( "No style with temperature." );
     return( style->temperature( ) );
 }
 
@@ -284,7 +245,52 @@ void CoulombPlusNuclearElasticMuCutoff::toXMLList( WriteInfo &a_writeInfo, std::
 
     std::string attributes = baseXMLAttributes( a_writeInfo );
 
-    attributes += a_writeInfo.addAttribute( "muCutoff", doubleToShortestString( m_muCutoff ) );
+    attributes += a_writeInfo.addAttribute( GIDI_muCutoffChars, doubleToShortestString( m_muCutoff ) );
+    a_writeInfo.addNodeStarter( a_indent, moniker( ), attributes );
+    a_writeInfo.addNodeEnder( moniker( ) );
+}
+
+/*! \class Realization
+ * This is the GNDS **Realization** style class.
+ */
+
+/* *********************************************************************************************************//**
+ *
+ * @param a_node        [in]    The **pugi::xml_node** to be parsed.
+ * @param a_setupInfo   [in]    Information create my the Protare constructor to help in parsing.
+ * @param a_parent      [in]    The parent GIDI::Suite.
+ ***********************************************************************************************************/
+
+Realization::Realization( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent ) :
+        Base( a_node, a_setupInfo, a_parent ) {
+
+}
+
+/* *********************************************************************************************************//**
+ * Ascends the **derivedFrom** styles until a temperature is found.
+ *
+ * @return          Returns the temperature associated with this style.
+ ***********************************************************************************************************/
+
+PhysicalQuantity const &Realization::temperature( ) const {
+
+    Base const *style = getDerivedStyle( );
+
+    if( style == nullptr ) throw Exception( "No style with temperature." );
+    return( style->temperature( ) );
+}
+
+/* *********************************************************************************************************//**
+ * Fills the argument *a_writeInfo* with the XML lines that represent *this*. Recursively enters each sub-node.
+ *
+ * @param       a_writeInfo         [in/out]    Instance containing incremental indentation and other information and stores the appended lines.
+ * @param       a_indent            [in]        The amount to indent *this* node.
+ ***********************************************************************************************************/
+
+void Realization::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+
+    std::string attributes = baseXMLAttributes( a_writeInfo );
+
     a_writeInfo.addNodeStarter( a_indent, moniker( ), attributes );
     a_writeInfo.addNodeEnder( moniker( ) );
 }
@@ -296,11 +302,12 @@ void CoulombPlusNuclearElasticMuCutoff::toXMLList( WriteInfo &a_writeInfo, std::
 /* *********************************************************************************************************//**
  *
  * @param a_node        [in]    The **pugi::xml_node** to be parsed.
+ * @param a_setupInfo   [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent      [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-AverageProductData::AverageProductData( pugi::xml_node const &a_node, GIDI::Suite *a_parent ) :
-        Base( a_node, a_parent ) {
+AverageProductData::AverageProductData( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent ) :
+        Base( a_node, a_setupInfo, a_parent ) {
 
 }
 
@@ -314,7 +321,7 @@ PhysicalQuantity const &AverageProductData::temperature( ) const {
 
     Base const *style = getDerivedStyle( );
 
-    if( style == NULL ) throw Exception( "No style with temperature." );
+    if( style == nullptr ) throw Exception( "No style with temperature." );
     return( style->temperature( ) );
 }
 
@@ -338,12 +345,13 @@ void AverageProductData::toXMLList( WriteInfo &a_writeInfo, std::string const &a
 /* *********************************************************************************************************//**
  *
  * @param a_node        [in]    The **pugi::xml_node** to be parsed.
+ * @param a_setupInfo   [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent      [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-TNSL::TNSL( pugi::xml_node const &a_node, GIDI::Suite *a_parent ) :
-        Base( a_node, a_parent ),
-        m_temperature( a_node.child( temperatureAttribute ) ) {
+TNSL::TNSL( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent ) :
+        Base( a_node, a_setupInfo, a_parent ),
+        m_temperature( a_node.child( GIDI_temperatureChars ), a_setupInfo ) {
 }
 
 /* *********************************************************************************************************//**
@@ -369,12 +377,13 @@ void TNSL::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) cons
 /* *********************************************************************************************************//**
  *
  * @param a_node        [in]    The **pugi::xml_node** to be parsed.
+ * @param a_setupInfo   [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent      [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-Heated::Heated( pugi::xml_node const &a_node, GIDI::Suite *a_parent ) :
-        Base( a_node, a_parent ),
-        m_temperature( a_node.child( temperatureAttribute ) ) {
+Heated::Heated( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent ) :
+        Base( a_node, a_setupInfo, a_parent ),
+        m_temperature( a_node.child( GIDI_temperatureChars ), a_setupInfo ) {
 }
 
 /* *********************************************************************************************************//**
@@ -400,12 +409,13 @@ void Heated::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) co
 /* *********************************************************************************************************//**
  *
  * @param a_node        [in]    The **pugi::xml_node** to be parsed.
+ * @param a_setupInfo   [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent      [in]    The parent GIDI::Suite.
  * @return
  ***********************************************************************************************************/
 
-MonteCarlo_cdf::MonteCarlo_cdf( pugi::xml_node const &a_node, GIDI::Suite *a_parent ) :
-        Base( a_node, a_parent ) {
+MonteCarlo_cdf::MonteCarlo_cdf( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent ) :
+        Base( a_node, a_setupInfo, a_parent ) {
 
 }
 
@@ -419,7 +429,7 @@ PhysicalQuantity const &MonteCarlo_cdf::temperature( ) const {
 
     Base const *style = getDerivedStyle( );
 
-    if( style == NULL ) throw Exception( "No style with temperature." );
+    if( style == nullptr ) throw Exception( "No style with temperature." );
     return( style->temperature( ) );
 }
 
@@ -444,16 +454,18 @@ void MonteCarlo_cdf::toXMLList( WriteInfo &a_writeInfo, std::string const &a_ind
  *
  * @param a_construction    [in]    Used to pass user options to the constructor.
  * @param a_node            [in]    The **pugi::xml_node** to be parsed.
+ * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops            [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs    [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
  *                                  This is the <**PoPs**> node under the <**reactionSuite**> node.
  * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-MultiGroup::MultiGroup( Construction::Settings const &a_construction, pugi::xml_node const &a_node, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, GIDI::Suite *a_parent ) : 
-        Base( a_node, a_parent ),
-        m_maximumLegendreOrder( a_node.attribute( lMaxAttribute ).as_int( ) ),
-        m_transportables( a_construction, transportablesMoniker, a_node, a_pops, a_internalPoPs, parseTransportablesSuite, NULL ) {
+MultiGroup::MultiGroup( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops,
+                PoPI::Database const &a_internalPoPs, GIDI::Suite *a_parent ) : 
+        Base( a_node, a_setupInfo, a_parent ),
+        m_maximumLegendreOrder( a_node.attribute( GIDI_lMaxChars ).as_int( ) ),
+        m_transportables( a_construction, GIDI_transportablesChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseTransportablesSuite, nullptr ) {
 
     m_transportables.setAncestor( this );
 }
@@ -475,7 +487,7 @@ PhysicalQuantity const &MultiGroup::temperature( ) const {
 
     Base const *style = getDerivedStyle( );
 
-    if( style == NULL ) throw Exception( "No style with temperature." );
+    if( style == nullptr ) throw Exception( "No style with temperature." );
     return( style->temperature( ) );
 }
 
@@ -489,10 +501,10 @@ PhysicalQuantity const &MultiGroup::temperature( ) const {
 std::vector<double> const &MultiGroup::groupBoundaries( std::string const &a_productID ) const {
 
     for( std::size_t index = 0; index < m_transportables.size( ); ++index ) {
-        Transportable const &_transportable = *m_transportables.get<Transportable>( index );
+        Transportable const &transportable1 = *m_transportables.get<Transportable>( index );
 
-        if( _transportable.pid( ) == a_productID ) {
-            return( _transportable.groupBoundaries( ) );
+        if( transportable1.pid( ) == a_productID ) {
+            return( transportable1.groupBoundaries( ) );
         }
     }
     throw Exception( "MultiGroup::groupBoundaries: product index not found" );
@@ -510,7 +522,7 @@ void MultiGroup::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     std::string attributes = baseXMLAttributes( a_writeInfo );
 
-    attributes += a_writeInfo.addAttribute( "lMax", intToString( m_maximumLegendreOrder ) );
+    attributes += a_writeInfo.addAttribute( GIDI_lMaxChars, intToString( m_maximumLegendreOrder ) );
     a_writeInfo.addNodeStarter( a_indent, moniker( ), attributes );
     m_transportables.toXMLList( a_writeInfo, indent2 );
     a_writeInfo.addNodeEnder( moniker( ) );
@@ -524,18 +536,35 @@ void MultiGroup::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent 
  *
  * @param a_construction    [in]    Used to pass user options to the constructor.
  * @param a_node            [in]    The **pugi::xml_node** to be parsed.
+ * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops            [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-HeatedMultiGroup::HeatedMultiGroup( Construction::Settings const &a_construction, pugi::xml_node const &a_node, PoPI::Database const &a_pops, GIDI::Suite *a_parent ) : 
-        Base( a_node, a_parent ),
-        m_parameters( a_node.attribute( parametersAttribute ).value( ) ),
-        m_flux( a_construction, a_node.child( fluxNode ) ),
-        m_inverseSpeed( a_construction, a_node.child( inverseSpeedNode ).child( gridded1dNode ), NULL ) {
+HeatedMultiGroup::HeatedMultiGroup( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, 
+                PoPI::Database const &a_pops, GIDI::Suite *a_parent ) : 
+        Base( a_node, a_setupInfo, a_parent ),
+        m_href( "" ),
+        m_transportables( a_construction, GIDI_transportablesChars, a_node, a_setupInfo, a_pops, a_pops, parseTransportablesSuite, nullptr ),
+        m_flux( a_construction, a_node.child( GIDI_fluxNodeChars ), a_setupInfo ),
+        m_inverseSpeed( a_construction, a_node.child( GIDI_inverseSpeedChars ).child( GIDI_gridded1dChars ), a_setupInfo, nullptr ),
+        m_parameters( a_node.attribute( GIDI_parametersChars ).value( ) ) {
 
-        m_flux.setAncestor( this );
-        m_inverseSpeed.setAncestor( this );
+    m_transportables.setAncestor( this );
+    m_flux.setAncestor( this );
+    m_inverseSpeed.setAncestor( this );
+
+    set_href( a_node.attribute( GIDI_hrefChars ).value( ) );
+
+    if( ( m_transportables.size( ) == 0 ) && ( a_setupInfo.m_multiGroup != nullptr ) ) {
+        GIDI::Suite const &transportables1 = a_setupInfo.m_multiGroup->transportables( );
+
+        for( std::size_t index = 0; index < transportables1.size( ); ++index ) {
+            Transportable const &transportable = *transportables1.get<Transportable>( index );
+
+            m_transportables.add( new Transportable( transportable ) );
+        }
+    }
 }
 
 /* *********************************************************************************************************//**
@@ -543,34 +572,6 @@ HeatedMultiGroup::HeatedMultiGroup( Construction::Settings const &a_construction
 
 HeatedMultiGroup::~HeatedMultiGroup( ) {
 
-}
-
-/* *********************************************************************************************************//**
- * Returns the **multiGroup** style for *this* **heatedMultiGroup** style.
- *
- * @return          The **multiGroup** style.
- ***********************************************************************************************************/
-
-MultiGroup const &HeatedMultiGroup::multiGroup( ) const {
-
-    Form const *form( sibling( m_parameters ) );
-    while( form == NULL ) throw Exception( "parameters style not found." );
-
-    MultiGroup const *_multiGroup = dynamic_cast<MultiGroup const *>( form );
-    if( _multiGroup == NULL ) throw Exception( "parameter not a multiGroup style not found." );
-
-    return( *_multiGroup );
-}
-
-/* *********************************************************************************************************//**
- * Returns the maximum Legendre order used to process *this* **heatedMultiGroup** style.
- *
- * @return          The maximum Legendre order used to process.
- ***********************************************************************************************************/
-
-int HeatedMultiGroup::maximumLegendreOrder( ) const {
-
-    return( multiGroup( ).maximumLegendreOrder( ) );
 }
 
 /* *********************************************************************************************************//**
@@ -583,8 +584,31 @@ PhysicalQuantity const &HeatedMultiGroup::temperature( ) const {
 
     Base const *style = getDerivedStyle( );
 
-    if( style == NULL ) throw Exception( "No style with temperature." );
+    if( style == nullptr ) throw Exception( "No style with temperature." );
     return( style->temperature( ) );
+}
+
+/* *********************************************************************************************************//**
+ * Ascends the **derivedFrom** styles until a temperature is found.
+ *
+ * @return          Returns the temperature associated with this style.
+ ***********************************************************************************************************/
+
+void HeatedMultiGroup::set_href( std::string const &a_href ) {
+
+    if( a_href != "" ) {
+        if( m_transportables.size( ) != 0 ) throw Exception( "HeatedMultiGroup has transportable instances; therefore, setting href is not allowed." );
+
+        Suite const &transportables1 = dynamic_cast<Suite const &>( *findInAncestry( a_href ) );
+
+        for( std::size_t index = 0; index < transportables1.size( ); ++index ) {
+            Transportable const &transportable = *transportables1.get<Transportable>( index );
+
+            m_transportables.add( new Transportable( transportable ) );
+        }
+    }
+
+    m_href = a_href;
 }
 
 /* *********************************************************************************************************//**
@@ -596,7 +620,9 @@ PhysicalQuantity const &HeatedMultiGroup::temperature( ) const {
 
 std::vector<double> const &HeatedMultiGroup::groupBoundaries( std::string const &a_productID ) const {
 
-    return( multiGroup( ).groupBoundaries( a_productID ) );
+    Transportable const &transportable = *m_transportables.get<Transportable>( a_productID );
+
+    return( transportable.groupBoundaries( ) );
 }
 
 /* *********************************************************************************************************//**
@@ -612,13 +638,13 @@ void HeatedMultiGroup::toXMLList( WriteInfo &a_writeInfo, std::string const &a_i
     std::string indent3 = a_writeInfo.incrementalIndent( indent2 );
     std::string attributes = baseXMLAttributes( a_writeInfo );
     
-    attributes += a_writeInfo.addAttribute( "parameters", m_parameters );
+    attributes += a_writeInfo.addAttribute( GIDI_parametersChars, m_parameters );
     a_writeInfo.addNodeStarter( a_indent, moniker( ), attributes );
     m_flux.toXMLList( a_writeInfo, indent2 );
 
-    a_writeInfo.addNodeStarter( indent2, "inverseSpeed", "" );
+    a_writeInfo.addNodeStarter( indent2, GIDI_inverseSpeedChars, "" );
     m_inverseSpeed.toXMLList_func( a_writeInfo, indent3, false, false );
-    a_writeInfo.addNodeEnder( "inverseSpeed" );
+    a_writeInfo.addNodeEnder( GIDI_inverseSpeedChars );
     a_writeInfo.addNodeEnder( moniker( ) );
 }
 
@@ -629,13 +655,14 @@ void HeatedMultiGroup::toXMLList( WriteInfo &a_writeInfo, std::string const &a_i
 /* *********************************************************************************************************//**
  *
  * @param a_node        [in]    The **pugi::xml_node** to be parsed.
+ * @param a_setupInfo   [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops        [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_parent      [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-SnElasticUpScatter::SnElasticUpScatter( pugi::xml_node const &a_node, PoPI::Database const &a_pops, GIDI::Suite *a_parent ) :
-        Base( a_node, a_parent ),
-        m_upperCalculatedGroup( a_node.attribute( upperCalculatedGroupAttribute ).as_int( ) ) {
+SnElasticUpScatter::SnElasticUpScatter( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, GIDI::Suite *a_parent ) :
+        Base( a_node, a_setupInfo, a_parent ),
+        m_upperCalculatedGroup( a_node.attribute( GIDI_upperCalculatedGroupChars ).as_int( ) ) {
 
 }
 
@@ -656,7 +683,7 @@ PhysicalQuantity const &SnElasticUpScatter::temperature( ) const {
 
     Base const *style = getDerivedStyle( );
 
-    if( style == NULL ) throw Exception( "No style with temperature." );
+    if( style == nullptr ) throw Exception( "No style with temperature." );
     return( style->temperature( ) );
 }
 
@@ -671,7 +698,7 @@ void SnElasticUpScatter::toXMLList( WriteInfo &a_writeInfo, std::string const &a
     
     std::string attributes = baseXMLAttributes( a_writeInfo );
     
-    attributes += a_writeInfo.addAttribute( "upperCalculatedGroup", intToString( m_upperCalculatedGroup ) );
+    attributes += a_writeInfo.addAttribute( GIDI_upperCalculatedGroupChars, intToString( m_upperCalculatedGroup ) );
     a_writeInfo.addNodeStarter( a_indent, moniker( ), attributes );
     a_writeInfo.addNodeEnder( moniker( ) );
 }
@@ -684,13 +711,14 @@ void SnElasticUpScatter::toXMLList( WriteInfo &a_writeInfo, std::string const &a
  *
  * @param a_construction    [in]    Used to pass user options to the constructor.
  * @param a_node            [in]    The **pugi::xml_node** to be parsed.
+ * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops            [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-GriddedCrossSection::GriddedCrossSection( Construction::Settings const &a_construction, pugi::xml_node const &a_node, PoPI::Database const &a_pops, GIDI::Suite *a_parent ) :
-        Base( a_node, a_parent ),
-        m_grid( a_node.child( gridNode ), a_construction.useSystem_strtod( ) ) {
+GriddedCrossSection::GriddedCrossSection( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, GIDI::Suite *a_parent ) :
+        Base( a_node, a_setupInfo, a_parent ),
+        m_grid( a_node.child( GIDI_gridChars ), a_setupInfo, a_construction.useSystem_strtod( ) ) {
 
 }
 
@@ -711,7 +739,7 @@ PhysicalQuantity const &GriddedCrossSection::temperature( ) const {
 
     Base const *style = getDerivedStyle( );
 
-    if( style == NULL ) throw Exception( "No style with temperature." );
+    if( style == nullptr ) throw Exception( "No style with temperature." );
     return( style->temperature( ) );
 }
 
@@ -739,12 +767,13 @@ void GriddedCrossSection::toXMLList( WriteInfo &a_writeInfo, std::string const &
  *
  * @param a_construction    [in]    Used to pass user options to the constructor.
  * @param a_node            [in]    The **pugi::xml_node** to be parsed.
+ * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops            [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-URR_probabilityTables::URR_probabilityTables( Construction::Settings const &a_construction, pugi::xml_node const &a_node, PoPI::Database const &a_pops, GIDI::Suite *a_parent ) :
-        Base( a_node, a_parent ) {
+URR_probabilityTables::URR_probabilityTables( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, GIDI::Suite *a_parent ) :
+        Base( a_node, a_setupInfo, a_parent ) {
 
 }
 
@@ -765,7 +794,7 @@ PhysicalQuantity const &URR_probabilityTables::temperature( ) const {
 
     Base const *style = getDerivedStyle( );
 
-    if( style == NULL ) throw Exception( "No style with temperature." );
+    if( style == nullptr ) throw Exception( "No style with temperature." );
     return( style->temperature( ) );
 }
 

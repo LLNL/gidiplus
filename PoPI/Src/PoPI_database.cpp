@@ -12,12 +12,11 @@
 
 #include "PoPI.hpp"
 
-#define aliasesString  "aliases"
-#define gaugeBosonsString  "gaugeBosons"
-#define leptonsString  "leptons"
-#define baryonsString  "baryons"
-#define unorthodoxesString  "unorthodoxes"
-#define chemicalElementsString  "chemicalElements"
+#define PoPI_gaugeBosonsChars "gaugeBosons"
+#define PoPI_leptonsChars "leptons"
+#define PoPI_baryonsChars "baryons"
+#define PoPI_unorthodoxesChars "unorthodoxes"
+#define PoPI_chemicalElementsChars "chemicalElements"
 
 #define MsgSize (8 * 1024)
 #ifdef WIN32
@@ -32,22 +31,22 @@ static void parseAliases( pugi::xml_node const &a_node, Database *a_DB );
 =========================================================
 */
 Database::Database( ) : 
-    m_gaugeBosons( gaugeBosonsString ),
-    m_leptons( leptonsString ),
-    m_baryons( baryonsString ),
-    m_chemicalElements( chemicalElementsString ),
-    m_unorthodoxes( unorthodoxesString ) {
+    m_gaugeBosons( PoPI_gaugeBosonsChars ),
+    m_leptons( PoPI_leptonsChars ),
+    m_baryons( PoPI_baryonsChars ),
+    m_chemicalElements( PoPI_chemicalElementsChars ),
+    m_unorthodoxes( PoPI_unorthodoxesChars ) {
 
 }
 /*
 =========================================================
 */
 Database::Database( std::string const &a_fileName ) : 
-    m_gaugeBosons( gaugeBosonsString ),
-    m_leptons( leptonsString ),
-    m_baryons( baryonsString ),
-    m_chemicalElements( chemicalElementsString ),
-    m_unorthodoxes( unorthodoxesString ) {
+    m_gaugeBosons( PoPI_gaugeBosonsChars ),
+    m_leptons( PoPI_leptonsChars ),
+    m_baryons( PoPI_baryonsChars ),
+    m_chemicalElements( PoPI_chemicalElementsChars ),
+    m_unorthodoxes( PoPI_unorthodoxesChars ) {
 
     addFile( a_fileName, false );
 }
@@ -55,11 +54,11 @@ Database::Database( std::string const &a_fileName ) :
 =========================================================
 */
 Database::Database( pugi::xml_node const &a_database ) :
-    m_gaugeBosons( gaugeBosonsString ),
-    m_leptons( leptonsString ),
-    m_baryons( baryonsString ),
-    m_chemicalElements( chemicalElementsString ),
-    m_unorthodoxes( unorthodoxesString ) {
+    m_gaugeBosons( PoPI_gaugeBosonsChars ),
+    m_leptons( PoPI_leptonsChars ),
+    m_baryons( PoPI_baryonsChars ),
+    m_chemicalElements( PoPI_chemicalElementsChars ),
+    m_unorthodoxes( PoPI_unorthodoxesChars ) {
 
     addDatabase( a_database, false );
 }
@@ -110,27 +109,26 @@ void Database::addDatabase( std::string const &a_string, bool a_warnIfDuplicate 
 */
 void Database::addDatabase( pugi::xml_node const &a_database, bool a_warnIfDuplicate ) {
 
-    std::string s_format( a_database.attribute( "format" ).value( ) );
-    if( s_format != FORMAT ) throw Exception( "Unsupported PoPI format" );
-    if( m_format == "" ) m_format = s_format;
+    FormatVersion formatVersion( a_database.attribute( PoPI_formatChars ).value( ) );
+    if( m_formatVersion.format( ) == "" ) m_formatVersion = formatVersion;
 
-    if( m_name == "" ) m_name = a_database.attribute( "name" ).value( );
-    if( m_version == "" ) m_version = a_database.attribute( "version" ).value( );
+    if( m_name == "" ) m_name = a_database.attribute( PoPI_nameChars ).value( );
+    if( m_version == "" ) m_version = a_database.attribute( PoPI_versionChars ).value( );
 
     for( pugi::xml_node child = a_database.first_child( ); child; child = child.next_sibling( ) ) {
         std::string s_name( child.name( ) );
 
-        if(      s_name == gaugeBosonsString ) {
+        if(      s_name == PoPI_gaugeBosonsChars ) {
             m_gaugeBosons.appendFromParentNode( child, this, this ); }
-        else if( s_name == leptonsString ) {
+        else if( s_name == PoPI_leptonsChars ) {
             m_leptons.appendFromParentNode( child, this, this ); }
-        else if( s_name == baryonsString ) {
+        else if( s_name == PoPI_baryonsChars ) {
             m_baryons.appendFromParentNode( child, this, this ); }
-        else if( s_name == chemicalElementsString ) {
+        else if( s_name == PoPI_chemicalElementsChars ) {
             m_chemicalElements.appendFromParentNode( child, this, this ); }
-        else if( s_name == unorthodoxesString ) {
+        else if( s_name == PoPI_unorthodoxesChars ) {
             m_unorthodoxes.appendFromParentNode( child, this, this ); }
-        else if( s_name == aliasesString ) {
+        else if( s_name == PoPI_aliasesChars ) {
             parseAliases( child, this ); }
         else {
         }
@@ -154,11 +152,11 @@ static void parseAliases( pugi::xml_node const &a_node, Database *a_DB ) {
 
     for( pugi::xml_node child = a_node.first_child( ); child; child = child.next_sibling( ) ) {
         std::string name = child.name( );
-        Alias *alias = NULL;
+        Alias *alias = nullptr;
 
-        if( name == "particle" ) {
+        if( name == PoPI_particleChars ) {
             alias = new Alias( child, a_DB ); }
-        else if( name == "metaStable" ) {
+        else if( name == PoPI_metaStableChars ) {
             alias = new MetaStable( child, a_DB );
         }
         a_DB->addAlias( alias );
@@ -293,15 +291,15 @@ void Database::toXMLList( std::vector<std::string> &a_XMLList, std::string const
     std::string indent2 = a_indent1 + "  ";
     std::string indent3 = indent2 + "  ";
 
-    std::string header1 = a_indent1 + "<PoPs name=\"" + m_name + "\" version=\"" + m_version + "\" format=\"" + format( ) + "\">";
+    std::string header1 = a_indent1 + "<PoPs name=\"" + m_name + "\" version=\"" + m_version + "\" format=\"" + m_formatVersion.format( ) + "\">";
     a_XMLList.push_back( header1 );
 
     if( m_aliases.size( ) > 0 ) {
-        std::string header2 = indent2 + "<aliases>";
+        std::string header2 = indent2 + "<" + PoPI_aliasesChars + ">";
         a_XMLList.push_back( header2 );
         for( std::vector<Alias *>::const_iterator iter = m_aliases.begin( ); iter != m_aliases.end( ); ++iter )
             (*iter)->toXMLList( a_XMLList, indent3 );
-        appendXMLEnd( a_XMLList, "aliases" );
+        appendXMLEnd( a_XMLList, PoPI_aliasesChars );
     }
     m_gaugeBosons.toXMLList( a_XMLList, indent2 );
     m_leptons.toXMLList( a_XMLList, indent2 );
@@ -309,7 +307,7 @@ void Database::toXMLList( std::vector<std::string> &a_XMLList, std::string const
     m_unorthodoxes.toXMLList( a_XMLList, indent2 );
     m_chemicalElements.toXMLList( a_XMLList, indent2 );
 
-    appendXMLEnd( a_XMLList, "PoPs" );
+    appendXMLEnd( a_XMLList, PoPI_PoPsChars );
 }
 /*
 =========================================================

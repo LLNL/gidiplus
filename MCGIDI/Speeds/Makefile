@@ -1,4 +1,4 @@
-SHELL = /bin/bash
+SHELL = /bin/ksh
 
 # <<BEGIN-copyright>>
 # Copyright 2019, Lawrence Livermore National Security, LLC.
@@ -7,23 +7,27 @@ SHELL = /bin/bash
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
+.PHONY: default check speeds clean realclean doDirs
+
 DIRS = Utilities crossSection crossSection_multiGroup sampleProducts sampleReactions
 
-.PHONY: default check speeds clean realclean
-
 default:
-	$(MAKE) doDirs TARGET=default CXX=$(CXX) CXXFLAGS="$(CXXFLAGS)"
+	echo ""
+	echo "  -- MCGIDI/Speeds --"
+	$(MAKE) doDirs TARGET=default
 
 check:
 
 speeds:
-	$(MAKE) doDirs TARGET=speeds CXX=$(CXX) CXXFLAGS="$(CXXFLAGS)"
+	echo ""
+	echo "  -- MCGIDI/Speeds --"
+	$(MAKE) doDirs TARGET=speeds
 
 clean:
-	$(MAKE) doDirs TARGET=clean CXX=$(CXX) CXXFLAGS="$(CXXFLAGS)"
+	$(MAKE) doDirs TARGET=clean
 
 realclean:
-	$(MAKE) doDirs TARGET=realclean CXX=$(CXX) CXXFLAGS="$(CXXFLAGS)"
+	$(MAKE) doDirs TARGET=realclean
 
 doDirs:
-	for dir in $(DIRS); do cd $$dir; $(MAKE) $(TARGET) CXX=$(CXX) CXXFLAGS="$(CXXFLAGS)"; cd ../; done
+	for dir in $(DIRS); do cd $$dir; $(MAKE) $(TARGET); cd ../; done

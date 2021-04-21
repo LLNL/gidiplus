@@ -20,6 +20,7 @@ namespace GIDI {
  *
  * @param a_construction    [in]    Used to pass user options to the constructor.
  * @param a_node            [in]    The reaction pugi::xml_node to be parsed and used to construct the reaction.
+ * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops            [in]    The *external* PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs    [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
  *                                  This is the <**PoPs**> node under the <**reactionSuite**> node.
@@ -27,12 +28,12 @@ namespace GIDI {
  * @param a_styles          [in]    The <**styles**> node under the <**reactionSuite**> node.
  ***********************************************************************************************************/
 
-DelayedNeutron::DelayedNeutron( Construction::Settings const &a_construction, pugi::xml_node const &a_node, PoPI::Database const &a_pops, 
-                PoPI::Database const &a_internalPoPs, Suite *a_parent, Styles::Suite const *a_styles ) :
-        Form( a_node, FormType::delayedNeutron, a_parent ),
+DelayedNeutron::DelayedNeutron( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, 
+                PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Suite *a_parent, Styles::Suite const *a_styles ) :
+        Form( a_node, a_setupInfo, FormType::delayedNeutron, a_parent ),
         m_delayedNeutronIndex( 0 ),
-        m_rate( a_construction, rateMoniker, a_node, a_pops, a_internalPoPs, parseRateSuite, a_styles ),
-        m_product( a_construction, a_node.child( productMoniker ), a_pops, a_internalPoPs, NULL, a_styles ) {
+        m_rate( a_construction, GIDI_rateChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parsePhysicalQuantitySuite, a_styles ),
+        m_product( a_construction, a_node.child( GIDI_productChars ), a_setupInfo, a_pops, a_internalPoPs, nullptr, a_styles ) {
 
     m_rate.setAncestor( this );
     m_product.setAncestor( this );
@@ -46,33 +47,33 @@ DelayedNeutron::~DelayedNeutron( ) {
 }
 
 /* *********************************************************************************************************//**
- * Used by Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or NULL if none exists.
+ * Used by Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or nullptr if none exists.
  *
  * @param a_item    [in]    The name of the class member whose pointer is to be return.
- * @return                  The pointer to the class member or NULL if class does not have a member named a_item.
+ * @return                  The pointer to the class member or nullptr if class does not have a member named a_item.
  ***********************************************************************************************************/
 
 Ancestry *DelayedNeutron::findInAncestry3( std::string const &a_item ) {
 
-    if( a_item == rateMoniker ) return( &m_rate );
-    if( a_item == productMoniker ) return( &m_product );
+    if( a_item == GIDI_rateChars ) return( &m_rate );
+    if( a_item == GIDI_productChars ) return( &m_product );
 
-    return( NULL );
+    return( nullptr );
 }
 
 /* *********************************************************************************************************//**
- * Used by Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or NULL if none exists.
+ * Used by Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or nullptr if none exists.
  * 
  * @param a_item    [in]    The name of the class member whose pointer is to be return.
- * @return                  The pointer to the class member or NULL if class does not have a member named a_item.
+ * @return                  The pointer to the class member or nullptr if class does not have a member named a_item.
  ***********************************************************************************************************/
 
 Ancestry const *DelayedNeutron::findInAncestry3( std::string const &a_item ) const {
 
-    if( a_item == rateMoniker ) return( &m_rate );
-    if( a_item == productMoniker ) return( &m_product );
+    if( a_item == GIDI_rateChars ) return( &m_rate );
+    if( a_item == GIDI_productChars ) return( &m_product );
 
-    return( NULL );
+    return( nullptr );
 }
 
 /* *********************************************************************************************************//**
@@ -192,7 +193,7 @@ void DelayedNeutron::toXMLList( WriteInfo &a_writeInfo, std::string const &a_ind
     
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     
-    a_writeInfo.addNodeStarter( a_indent, moniker( ), a_writeInfo.addAttribute( "label", label( ) ) );
+    a_writeInfo.addNodeStarter( a_indent, moniker( ), a_writeInfo.addAttribute( GIDI_labelChars, label( ) ) );
     m_rate.toXMLList( a_writeInfo, indent2 );
     m_product.toXMLList( a_writeInfo, indent2 );
     a_writeInfo.addNodeEnder( moniker( ) );

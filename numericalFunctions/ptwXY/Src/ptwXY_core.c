@@ -529,6 +529,19 @@ char const *ptwXY_getInterpolationString( ptwXYPoints *ptwXY ) {
 /*
 ************************************************************
 */
+nfu_status ptwXY_setInterpolationString( ptwXYPoints *ptwXY, char const *interpolationString ) {
+
+    ptwXY_interpolation interpolation = ptwXY_stringToInterpolation( interpolationString );
+
+    if( interpolation == ptwXY_interpolationOther ) return( nfu_invalidInterpolation );
+
+    ptwXY->interpolation = interpolation;
+    ptwXY->interpolationString = ptwXY_interpolationToString( interpolation );
+    return( nfu_Okay );
+}
+/*
+************************************************************
+*/
 nfu_status ptwXY_getStatus( ptwXYPoints *ptwXY ) {
 
     return( ptwXY->status );

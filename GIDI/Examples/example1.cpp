@@ -66,7 +66,7 @@ void main2( int argc, char **argv ) {
     
     GIDI::Product *product = products.get<GIDI::Product>( "n" );
     std::cout << std::endl;
-    std::cout << "    List of distribution forms for product with id = " <<
+    std::cout << "    List of distribution forms for product with id = '" <<
             product->particle( ).ID( ) << "' label = '" << product->label( ) << "' is" << std::endl;
     GIDI::Suite &distribution = product->distribution( );
     for( auto formIter = distribution.begin( ); formIter != distribution.end( ); ++formIter ) {

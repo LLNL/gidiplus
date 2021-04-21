@@ -170,19 +170,19 @@ ProcessedFlux Flux::process( std::vector<double> const &a_multiGroup ) const {
     int i1 = 0;
     std::vector<double> groupedFlux;
 
-    ptwXPoints *boundaries = ptwX_create( NULL, a_multiGroup.size( ), a_multiGroup.size( ), &(a_multiGroup[0]) );
-    if( boundaries == NULL ) throw Exception( "ptwX_create failted for boundaries." );
+    ptwXPoints *boundaries = ptwX_create( nullptr, a_multiGroup.size( ), a_multiGroup.size( ), &(a_multiGroup[0]) );
+    if( boundaries == nullptr ) throw Exception( "ptwX_create failted for boundaries." );
 
     for( ; i1 < 1; ++i1 ) {     // only do l=0 currenlty hence ' i1 < 1' test.
         Flux_order const *__fluxOrder = &(m_fluxOrders[i1]);
-        ptwXYPoints *__flux = ptwXY_createFrom_Xs_Ys( NULL, ptwXY_interpolationLinLin, "lin-lin", 10, 1e-3, 10, 10,
-                __fluxOrder->size( ), __fluxOrder->energies( ), __fluxOrder->fluxes( ), 0 );
-        if( __flux == NULL ) throw Exception( "ptwXY_createFrom_Xs_Ys failed for __flux." );
+        ptwXYPoints *__flux = ptwXY_createFrom_Xs_Ys( nullptr, ptwXY_interpolationLinLin, ptwXY_interpolationToString( ptwXY_interpolationLinLin ), 
+                10, 1e-3, 10, 10, __fluxOrder->size( ), __fluxOrder->energies( ), __fluxOrder->fluxes( ), 0 );
+        if( __flux == nullptr ) throw Exception( "ptwXY_createFrom_Xs_Ys failed for __flux." );
 
-        ptwXPoints *groupedFluxX = ptwXY_groupOneFunction( NULL, __flux, boundaries, ptwXY_group_normType_none, NULL );
-        if( groupedFluxX == NULL ) throw Exception( "ptwXY_groupOneFunction failed for groupedFluxX." );
+        ptwXPoints *groupedFluxX = ptwXY_groupOneFunction( nullptr, __flux, boundaries, ptwXY_group_normType_none, nullptr );
+        if( groupedFluxX == nullptr ) throw Exception( "ptwXY_groupOneFunction failed for groupedFluxX." );
 
-        for( int i2 = 0; i2 < ptwX_length( NULL, groupedFluxX ); ++i2 ) groupedFlux.push_back( ptwX_getPointAtIndex_Unsafely( groupedFluxX, i2 ) );
+        for( int i2 = 0; i2 < ptwX_length( nullptr, groupedFluxX ); ++i2 ) groupedFlux.push_back( ptwX_getPointAtIndex_Unsafely( groupedFluxX, i2 ) );
 
         ptwX_free( groupedFluxX );
         ptwXY_free( __flux );
@@ -249,10 +249,10 @@ void Fluxes_from_bdfls::initialize( char const *a_fileName, double a_temperature
     char buffer[132], *pEnd, cValue[16];
     long numberOfValuesInOrders[16];
     FILE *fIn = fopen( a_fileName, "r" );
-    if( fIn == NULL ) throw Exception( "Fluxes_from_bdfls::initialize: Could not open bdfls file." );
+    if( fIn == nullptr ) throw Exception( "Fluxes_from_bdfls::initialize: Could not open bdfls file." );
 
     while( true ) {                 // Skip over groups.
-        if( fgets( buffer, 132, fIn ) == NULL ) throw Exception( "Fluxes_from_bdfls::initialize: fgets failed for fid." );
+        if( fgets( buffer, 132, fIn ) == nullptr ) throw Exception( "Fluxes_from_bdfls::initialize: fgets failed for fid." );
         if( strlen( buffer ) > 73 ) {
             if( buffer[72] == '1' ) break;
         }
@@ -260,7 +260,7 @@ void Fluxes_from_bdfls::initialize( char const *a_fileName, double a_temperature
 
     while( true ) {
         int fid( -1 );
-        if( fgets( buffer, 132, fIn ) == NULL ) throw Exception( "Fluxes_from_bdfls::initialize: fgets failed for fid." );
+        if( fgets( buffer, 132, fIn ) == nullptr ) throw Exception( "Fluxes_from_bdfls::initialize: fgets failed for fid." );
         if( strlen( buffer ) > 73 ) {
             if( buffer[72] == '1' ) break;
         }
@@ -270,7 +270,7 @@ void Fluxes_from_bdfls::initialize( char const *a_fileName, double a_temperature
         Flux flux( label, a_temperature_MeV );
 
         long maximumFluxOrder( -1 );
-        if( fgets( buffer, 132, fIn ) == NULL ) throw Exception( "Fluxes_from_bdfls::initialize: fgets failed for maximumFluxOrder." );
+        if( fgets( buffer, 132, fIn ) == nullptr ) throw Exception( "Fluxes_from_bdfls::initialize: fgets failed for maximumFluxOrder." );
         maximumFluxOrder = strtol( buffer, &pEnd, 10 );
         if( maximumFluxOrder == -1 ) throw Exception( "Fluxes_from_bdfls::initialize: converting maximumFluxOrder to long failed." );
         if( maximumFluxOrder >= (long) ( sizeof( numberOfValuesInOrders ) / sizeof( numberOfValuesInOrders[0] ) ) )
@@ -278,7 +278,7 @@ void Fluxes_from_bdfls::initialize( char const *a_fileName, double a_temperature
 
         for( long order = 0; order <= maximumFluxOrder; ++order ) {
             numberOfValuesInOrders[order] = -1;
-            if( fgets( buffer, 132, fIn ) == NULL ) throw Exception( "Fluxes_from_bdfls::initialize: fgets failed for maximumFluxOrders." );
+            if( fgets( buffer, 132, fIn ) == nullptr ) throw Exception( "Fluxes_from_bdfls::initialize: fgets failed for maximumFluxOrders." );
             numberOfValuesInOrders[order] = strtol( buffer, &pEnd, 10 );
             if( numberOfValuesInOrders[order] == -1 ) throw Exception( "Fluxes_from_bdfls::initialize: converting numberOfValuesInOrders[order] to long failed." );
             numberOfValuesInOrders[order] /= 2;
@@ -290,7 +290,7 @@ void Fluxes_from_bdfls::initialize( char const *a_fileName, double a_temperature
             while( numberOfValuesInOrder > 0 ) {
                 long i1, n1 = 6;
                 if( numberOfValuesInOrder < 6 ) n1 = numberOfValuesInOrder;
-                if( fgets( buffer, 132, fIn ) == NULL ) throw Exception( "Fluxes_from_bdfls::initialize: fgets failed for energies/fluxes." );
+                if( fgets( buffer, 132, fIn ) == nullptr ) throw Exception( "Fluxes_from_bdfls::initialize: fgets failed for energies/fluxes." );
                 for( i1 = 0; i1 < n1; ++i1, ++index ) {
                     strncpy( cValue, &buffer[12*i1], 12 );
                     cValue[12] = 0;

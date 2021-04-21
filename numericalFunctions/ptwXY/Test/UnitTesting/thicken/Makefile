@@ -7,7 +7,7 @@
 
 SHELL = /bin/sh
 
-SMR_PATH = ../../../../../statusMessageReporting
+SMR_PATH = ../../../../statusMessageReporting
 NUMERICALFUNCTIONS_PATH = ../../../..
 
 ptwXYCFLAGS = -lnfut_utilities -lptwXY_utilities \

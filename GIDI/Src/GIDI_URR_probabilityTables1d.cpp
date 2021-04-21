@@ -20,14 +20,16 @@ namespace Functions {
 /* *********************************************************************************************************//**
  * @param a_construction    [in]    Used to pass user options to the constructor.
  * @param a_node            [in]    The **pugi::xml_node** to be parsed.
+ * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent          [in]     The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-URR_probabilityTables1d::URR_probabilityTables1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, Suite *a_parent ) :
-        Function1dForm( a_construction, a_node, FormType::URR_probabilityTables1d, a_parent ),
-        m_function2d( data2dParse( a_construction, a_node.first_child( ), NULL ) ) {
+URR_probabilityTables1d::URR_probabilityTables1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, 
+                SetupInfo &a_setupInfo, Suite *a_parent ) :
+        Function1dForm( a_construction, a_node, a_setupInfo, FormType::URR_probabilityTables1d, a_parent ),
+        m_function2d( data2dParse( a_construction, a_node.first_child( ), a_setupInfo, nullptr ) ) {
 
-    if( m_function2d != NULL ) m_function2d->setAncestor( this );
+    if( m_function2d != nullptr ) m_function2d->setAncestor( this );
 }
 
 /* *********************************************************************************************************//**
@@ -81,10 +83,10 @@ void URR_probabilityTables1d::toXMLList_func( WriteInfo &a_writeInfo, std::strin
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     std::string attributes;
 
-    if( label( ) != "" ) attributes = a_writeInfo.addAttribute( "label", label( ) );
+    if( label( ) != "" ) attributes = a_writeInfo.addAttribute( GIDI_labelChars, label( ) );
     a_writeInfo.addNodeStarter( a_indent, moniker( ), attributes );
 
-    if( m_function2d != NULL ) m_function2d->toXMLList_func( a_writeInfo, indent2, false, false );
+    if( m_function2d != nullptr ) m_function2d->toXMLList_func( a_writeInfo, indent2, false, false );
 
     a_writeInfo.addNodeEnder( moniker( ) );
 }

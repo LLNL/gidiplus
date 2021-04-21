@@ -24,6 +24,7 @@ enum class Function2dType { none, XYs };
 enum class ProbabilityBase1dType { none, xs_pdf_cdf };
 enum class ProbabilityBase2dType { none, XYs, regions, isotropic, discreteGamma, primaryGamma, recoil, NBodyPhaseSpace, evaporation, 
         generalEvaporation, simpleMaxwellianFission, Watt, weightedFunctionals };
+
 enum class ProbabilityBase3dType { none, XYs };
 
 namespace Functions {
@@ -53,8 +54,6 @@ class FunctionBase {
         HOST_DEVICE double domainMax( ) const { return( m_domainMax ); }
         HOST_DEVICE double outerDomainValue( ) const { return( m_outerDomainValue ); }
         HOST_DEVICE virtual void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE virtual long internalSize( ) const { return( 0 );}
-        HOST_DEVICE virtual long sizeOf( ) const { return( sizeof( *this ) ); }
 };
 
 /*
@@ -76,7 +75,6 @@ class Function1d : public FunctionBase {
         HOST_DEVICE virtual double evaluate( double a_x1 ) const = 0;
         HOST_DEVICE Function1dType type( ) { return( m_type ); }
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long sizeOf( ) const { return( sizeof( *this ) ); }
 };
 
 /*
@@ -97,7 +95,6 @@ class Constant1d : public Function1d {
 
         HOST_DEVICE double evaluate( double a_x1 ) const { return( m_value ); }
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long sizeOf( ) const { return( sizeof( *this ) ); }
 };
 
 /*
@@ -119,8 +116,6 @@ class XYs1d : public Function1d {
 
         HOST_DEVICE double evaluate( double a_x1 ) const ;
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long internalSize( ) const { return( m_Xs.internalSize( ) + m_Ys.internalSize( ) );}
-        HOST_DEVICE long sizeOf( ) const { return( sizeof( *this ) ) ; }
 };
 
 /*
@@ -143,8 +138,6 @@ class Polynomial1d : public Function1d {
         HOST_DEVICE Vector<double> const &coefficients( ) const { return( m_coefficients ); }
         HOST_DEVICE double evaluate( double a_x1 ) const ;
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long internalSize( ) const { return( m_coefficients.internalSize( ) + m_coefficientsReversed.internalSize( ) ); }
-        HOST_DEVICE long sizeOf( ) const { return( sizeof( *this ) ); }
 };
 
 /*
@@ -165,8 +158,6 @@ class Gridded1d : public Function1d {
 
         HOST_DEVICE double evaluate( double a_x1 ) const ;
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long internalSize( ) const { return m_grid.internalSize() + m_data.internalSize();}
-        HOST_DEVICE long sizeOf( ) const { return sizeof (*this); }
 };
 
 /*
@@ -188,8 +179,6 @@ class Regions1d : public Function1d {
         HOST_DEVICE void append( Function1d *a_function1d );
         HOST_DEVICE double evaluate( double a_x1 ) const ;
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long internalSize( ) const;
-        HOST_DEVICE long sizeOf( ) const { return sizeof (*this); }
 };
 
 /*
@@ -211,8 +200,6 @@ class Branching1d : public Function1d {
 
         HOST_DEVICE double evaluate( double a_x1 ) const ;
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE virtual long internalSize( ) const { return( 0 );}
-        HOST_DEVICE long sizeOf( ) const { return sizeof (*this); }
 };
 
 /*
@@ -234,8 +221,6 @@ class TerrellFissionNeutronMultiplicityModel : public Function1d {
         HOST_DEVICE int sampleBoundingInteger( double a_energy, double (*a_rng)( void * ), void *a_rngState ) const ;
         HOST_DEVICE double evaluate( double a_energy ) const ;
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long sizeOf( ) const { return( sizeof( *this ) ); }
-        HOST_DEVICE long internalSize( ) const { return( m_multiplicity->sizeOf( ) + m_multiplicity->internalSize( ) ); }
 };
 
 /*
@@ -256,7 +241,6 @@ class Function2d : public FunctionBase {
         HOST_DEVICE Function2dType type( ) { return m_type; }
         HOST_DEVICE virtual double evaluate( double a_x2, double a_x1 ) const = 0;
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long sizeOf( ) const { return sizeof (*this); }
 };
 
 /*
@@ -277,8 +261,6 @@ class XYs2d : public Function2d {
 
         HOST_DEVICE double evaluate( double a_x2, double a_x1 ) const ;
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long internalSize( ) const;
-        HOST_DEVICE long sizeOf( ) const { return sizeof (*this); }
 };
 
 /*
@@ -320,8 +302,6 @@ class ProbabilityBase : public Functions::FunctionBase {
         HOST ProbabilityBase( GIDI::Functions::FunctionForm const &a_probabilty, Vector<double> const &a_Xs );
         HOST_DEVICE ~ProbabilityBase( );
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long internalSize( ) const { return m_Xs.internalSize(); }
-        HOST_DEVICE long sizeOf( ) const { return sizeof (*this); }
 };
 
 /*
@@ -343,7 +323,6 @@ class ProbabilityBase1d : public ProbabilityBase {
         HOST_DEVICE virtual double evaluate( double a_x1 ) const = 0;
         HOST_DEVICE virtual double sample( double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const = 0;
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long sizeOf( ) const { return sizeof (*this); }
 };
 
 /*
@@ -365,8 +344,6 @@ class Xs_pdf_cdf1d : public ProbabilityBase1d {
         HOST_DEVICE double evaluate( double a_x1 ) const ;
         HOST_DEVICE double sample( double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const ;
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long internalSize( ) const { return ProbabilityBase::internalSize() + m_pdf.internalSize() + m_cdf.internalSize(); }
-        HOST_DEVICE long sizeOf( ) const { return sizeof (*this); }
 };
 
 /*
@@ -388,8 +365,8 @@ class ProbabilityBase2d : public ProbabilityBase {
         HOST_DEVICE ProbabilityBase2dType type( ) { return m_type; }
         HOST_DEVICE virtual double evaluate( double a_x2, double a_x1 ) const = 0;
         HOST_DEVICE virtual double sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const = 0;
+        HOST_DEVICE virtual double sample2dOf3d( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState, double *a_x1_1, double *a_x1_2 ) const ;
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long sizeOf( ) const { return sizeof (*this); }
 };
 
 /*
@@ -409,9 +386,8 @@ class XYs2d : public ProbabilityBase2d {
 
         HOST_DEVICE double evaluate( double a_x2, double a_x1 ) const ;
         HOST_DEVICE double sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const ;
+        HOST_DEVICE double sample2dOf3d( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState, double *a_x1_1, double *a_x1_2 ) const ;
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long internalSize( ) const;
-        HOST_DEVICE long sizeOf( ) const { return sizeof (*this); }
 };
 
 /*
@@ -432,8 +408,6 @@ class Regions2d : public ProbabilityBase2d {
         HOST_DEVICE double evaluate( double a_x2, double a_x1 ) const ;
         HOST_DEVICE double sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const ;
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long internalSize( ) const;
-        HOST_DEVICE long sizeOf( ) const { return sizeof (*this); }
 };
 
 /*
@@ -451,7 +425,6 @@ class Isotropic2d : public ProbabilityBase2d {
         HOST_DEVICE double evaluate( double a_x2, double a_x1 ) const { return( 0.5 ); }
         HOST_DEVICE double sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const { return( 1. - 2. * a_rngValue ); }
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) { ProbabilityBase2d::serialize( a_buffer, a_mode ); }
-        HOST_DEVICE long sizeOf( ) const { return sizeof (*this); }
 };
 
 /*
@@ -472,7 +445,6 @@ class DiscreteGamma2d : public ProbabilityBase2d {
         HOST_DEVICE double evaluate( double a_x2, double a_x1 ) const { return( m_value ); }        // FIXME This is wrong, should be something like 1 when domainMin <= a_x1 <= domainMax ), I think. I.e., should be a probability.
         HOST_DEVICE double sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const { return( m_value ); }
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long sizeOf( ) const { return sizeof (*this); }
 };
 
 /*
@@ -494,7 +466,6 @@ class PrimaryGamma2d : public ProbabilityBase2d {
         HOST_DEVICE double evaluate( double a_x2, double a_x1 ) const ;
         HOST_DEVICE double sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const { return( m_primaryEnergy + a_x2 * m_massFactor ); }
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long sizeOf( ) const { return sizeof (*this); }
 };
 
 /*
@@ -515,8 +486,6 @@ class Recoil2d: public ProbabilityBase2d {
         HOST_DEVICE double evaluate( double a_x2, double a_x1 ) const ;
         HOST_DEVICE double sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const ;
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long internalSize( ) const { return ProbabilityBase::internalSize() + m_xlink.internalSize(); }
-        HOST_DEVICE long sizeOf( ) const { return sizeof (*this); }
 };
 
 /*
@@ -542,8 +511,6 @@ class NBodyPhaseSpace2d : public ProbabilityBase2d {
         HOST_DEVICE double evaluate( double a_x2, double a_x1 ) const ;
         HOST_DEVICE double sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const ;
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long internalSize( ) const { return ProbabilityBase::internalSize() + m_dist == nullptr ? 0 : m_dist->sizeOf() + m_dist->internalSize(); }
-        HOST_DEVICE long sizeOf( ) const { return sizeof (*this); }
 };
 
 /*
@@ -565,8 +532,6 @@ class Evaporation2d: public ProbabilityBase2d {
         HOST_DEVICE double evaluate( double a_x2, double a_x1 ) const ;
         HOST_DEVICE double sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const ;
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long internalSize( ) const { return ProbabilityBase::internalSize() + m_theta == nullptr ? 0 : m_theta->sizeOf() + m_theta->internalSize(); }
-        HOST_DEVICE long sizeOf( ) const { return sizeof (*this); }
 };
 
 /*
@@ -588,8 +553,6 @@ class GeneralEvaporation2d: public ProbabilityBase2d {
         HOST_DEVICE double evaluate( double a_x2, double a_x1 ) const ;
         HOST_DEVICE double sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const ;
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long internalSize( ) const { return ProbabilityBase::internalSize() + m_theta == nullptr ? 0 : m_theta->sizeOf() + m_theta->internalSize() + m_g == nullptr ? 0 : m_g->sizeOf() + m_g->internalSize(); }
-        HOST_DEVICE long sizeOf( ) const { return sizeof (*this); }
 };
 
 /*
@@ -611,8 +574,6 @@ class SimpleMaxwellianFission2d: public ProbabilityBase2d {
         HOST_DEVICE double evaluate( double a_x2, double a_x1 ) const ;
         HOST_DEVICE double sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const ;
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long internalSize( ) const { return ProbabilityBase::internalSize() + m_theta == nullptr ? 0 : m_theta->sizeOf() + m_theta->internalSize(); }
-        HOST_DEVICE long sizeOf( ) const { return sizeof (*this); }
 };
 
 /*
@@ -635,8 +596,6 @@ class Watt2d : public ProbabilityBase2d {
         HOST_DEVICE double evaluate( double a_x2, double a_x1 ) const ;
         HOST_DEVICE double sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const ;
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long internalSize( ) const { return ProbabilityBase::internalSize() + (m_a == nullptr ? 0 : m_a->sizeOf() + m_a->internalSize()) + (m_b == nullptr ? 0 : m_b->sizeOf() + m_b->internalSize()); }
-        HOST_DEVICE long sizeOf( ) const { return sizeof (*this); }
 };
 
 /*
@@ -658,8 +617,6 @@ class WeightedFunctionals2d: public ProbabilityBase2d {
         HOST_DEVICE double evaluate( double a_x2, double a_x1 ) const ;
         HOST_DEVICE double sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const ;
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long internalSize( ) const;
-        HOST_DEVICE long sizeOf( ) const { return sizeof (*this); }
 };
 
 /*
@@ -679,9 +636,8 @@ class ProbabilityBase3d : public ProbabilityBase {
 
         HOST_DEVICE ProbabilityBase3dType type( ) { return m_type; }
         HOST_DEVICE virtual double evaluate( double a_x3, double a_x2, double a_x1 ) const = 0;
-        HOST_DEVICE virtual double sample( double a_x3, double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const = 0;
+        HOST_DEVICE virtual double sample( double a_x3, double a_x2_1, double a_x2_2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const = 0;
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long sizeOf( ) const { return sizeof (*this); }
 };
 
 /*
@@ -700,10 +656,8 @@ class XYs3d : public ProbabilityBase3d {
         HOST_DEVICE ~XYs3d( );
 
         HOST_DEVICE double evaluate( double a_x3, double a_x2, double a_x1 ) const ;
-        HOST_DEVICE double sample( double a_x3, double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const ;
+        HOST_DEVICE double sample( double a_x3, double a_x2_1, double a_x2_2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const ;
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long internalSize( ) const;
-        HOST_DEVICE long sizeOf( ) const { return sizeof (*this); }
 };
 
 /*

@@ -122,9 +122,10 @@ MG::MG( std::string const &a_projectileID, Mode a_mode, DelayedNeutrons a_delaye
  *
  * @param a_suite               [in]    The suite to search for the requested form.
  * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
+ * @param a_throwOnError        [in]    If *true*, a *throw* is executed if no matching form is found; otherwise, *nullptr* is returned.
  ***********************************************************************************************************/
 
-Form const *MG::form( GIDI::Suite const &a_suite, Styles::TemperatureInfo const &a_temperatureInfo ) const {
+Form const *MG::form( GIDI::Suite const &a_suite, Styles::TemperatureInfo const &a_temperatureInfo, bool a_throwOnError ) const {
 
     std::string label;
 
@@ -139,7 +140,10 @@ Form const *MG::form( GIDI::Suite const &a_suite, Styles::TemperatureInfo const 
         if( m_mode == Mode::multiGroupWithSnElasticUpScatter ) iter = a_suite.find( a_temperatureInfo.heatedMultiGroup( ) );
     }
 
-    if( iter == a_suite.end( ) ) return( nullptr );
+    if( iter == a_suite.end( ) ) {
+        if( a_throwOnError ) throw Exception( "ERROR from GIDI::MG::form: label '" + label + "' not found in suite '" + a_suite.toXLink( ) );
+        return( nullptr );
+    }
     return( *iter );
 }
 

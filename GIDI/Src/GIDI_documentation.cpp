@@ -11,26 +11,33 @@
 
 namespace GIDI {
 
-namespace Documentation {
+namespace Documentation_1_10 {
+
+#define GIDI_nameChars "name"
 
 /*! \class Suite
- * This is essentially the GIDI::Suite class with the addition of the **findLabelInLineage** method.
+ * This is the GIDI::Suite class but with a different parse function.
  */
 
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
 Suite::Suite( ) :
-        GIDI::Suite( documentationsMoniker ) {
+        GIDI::Suite( GIDI_documentations_1_10_Chars ) {
 
 }
 
-/*!
- *  parse a documentations node into a Documentation::Suite
- */
-void Suite::parse(pugi::xml_node const &a_node) {
+/* *********************************************************************************************************//**
+ * Parse a GNDS 1.10 documentations node.
+ *
+ * @param a_node        [in]    The **pugi::xml_node** to be parsed.
+ * @param a_setupInfo   [in]    Information create my the Protare constructor to help in parsing.
+ ***********************************************************************************************************/
+
+void Suite::parse( pugi::xml_node const &a_node, SetupInfo &a_setupInfo ) {
+
     for( pugi::xml_node child = a_node.first_child( ); child; child = child.next_sibling( ) ) {
-        add( new Documentation( child, this ) );
+        add( new Documentation( child, a_setupInfo, this ) );
     }
 }
 
@@ -40,13 +47,15 @@ void Suite::parse(pugi::xml_node const &a_node) {
 /* *********************************************************************************************************//**
  *
  * @param a_node        [in]    The **pugi::xml_node** to be parsed.
+ * @param a_setupInfo   [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent      [in]    The parent GIDI::Suite.
  * @return
  ***********************************************************************************************************/
 
-Documentation::Documentation( pugi::xml_node const &a_node, GIDI::Suite *a_parent ) :
-        Form( documentationsMoniker, FormType::generic, a_node.attribute( "name" ).value() ) {
-    m_label = a_node.attribute( "name" ).value();
+Documentation::Documentation( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent ) :
+        Form( GIDI_documentation_1_10_Chars, FormType::generic, a_node.attribute( GIDI_nameChars ).value() ) {
+
+    m_label = a_node.attribute( GIDI_nameChars ).value();
     m_text = std::string( a_node.text().get() );
 }
 

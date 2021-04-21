@@ -162,39 +162,39 @@ Matrix transportCorrect( Matrix const &a_matrix, Vector const &a_transportCorrec
 Vector multiGroupXYs1d( Transporting::MultiGroup const &a_boundaries, Functions::XYs1d const &a_function, Transporting::Flux const &a_flux ) {
 
     std::vector<double> const &boundaries = a_boundaries.boundaries( );
-    ptwXPoints *boundaries_xs = ptwX_create( NULL, boundaries.size( ), boundaries.size( ), &(boundaries[0]) );
-    if( boundaries_xs == NULL ) throw Exception( "GIDI::multiGroup: ptwX_create failed." );
+    ptwXPoints *boundaries_xs = ptwX_create( nullptr, boundaries.size( ), boundaries.size( ), &(boundaries[0]) );
+    if( boundaries_xs == nullptr ) throw Exception( "GIDI::multiGroup: ptwX_create failed." );
 
     Transporting::Flux_order const &flux_order_0 = a_flux[0];
     double const *energies = flux_order_0.energies( );
     double const *fluxes = flux_order_0.fluxes( );
-    ptwXYPoints *fluxes_xys = ptwXY_createFrom_Xs_Ys( NULL, ptwXY_interpolationLinLin, ptwXY_interpolationToString( ptwXY_interpolationLinLin ), 
+    ptwXYPoints *fluxes_xys = ptwXY_createFrom_Xs_Ys( nullptr, ptwXY_interpolationLinLin, ptwXY_interpolationToString( ptwXY_interpolationLinLin ), 
         12, 1e-3, flux_order_0.size( ), 10, flux_order_0.size( ), energies, fluxes, 0 );
-    if( fluxes_xys == NULL ) {
+    if( fluxes_xys == nullptr ) {
         ptwX_free( boundaries_xs );
         throw Exception( "GIDI::multiGroup: ptwXY_createFrom_Xs_Ys failed." );
     }
 
-    ptwXPoints *multiGroupFlux = ptwXY_groupOneFunction( NULL, fluxes_xys, boundaries_xs, ptwXY_group_normType_none, NULL );
-    if( multiGroupFlux == NULL ) {
+    ptwXPoints *multiGroupFlux = ptwXY_groupOneFunction( nullptr, fluxes_xys, boundaries_xs, ptwXY_group_normType_none, nullptr );
+    if( multiGroupFlux == nullptr ) {
         ptwX_free( boundaries_xs );
         ptwXY_free( fluxes_xys );
         throw Exception( "GIDI::multiGroup: ptwXY_groupOneFunction failed." );
     }
 
-    ptwXYPoints *ptwXY = ptwXY_clone2( NULL, a_function.ptwXY( ) );
-    ptwXPoints *groups = NULL;
-    if( ptwXY != NULL ) {
-        ptwXY_mutualifyDomains( NULL, ptwXY, 1e-12, 1e-12, 1, fluxes_xys, 1e-12, 1e-12, 1 );
-        groups = ptwXY_groupTwoFunctions( NULL, ptwXY, fluxes_xys, boundaries_xs, ptwXY_group_normType_norm, multiGroupFlux );
+    ptwXYPoints *ptwXY = ptwXY_clone2( nullptr, a_function.ptwXY( ) );
+    ptwXPoints *groups = nullptr;
+    if( ptwXY != nullptr ) {
+        ptwXY_mutualifyDomains( nullptr, ptwXY, 1e-12, 1e-12, 1, fluxes_xys, 1e-12, 1e-12, 1 );
+        groups = ptwXY_groupTwoFunctions( nullptr, ptwXY, fluxes_xys, boundaries_xs, ptwXY_group_normType_norm, multiGroupFlux );
     }
     ptwX_free( boundaries_xs );
     ptwXY_free( ptwXY );
     ptwXY_free( fluxes_xys );
     ptwX_free( multiGroupFlux );
-    if( groups == NULL ) throw Exception( "GIDI::multiGroup: ptwXY_groupTwoFunctions failed." );
+    if( groups == nullptr ) throw Exception( "GIDI::multiGroup: ptwXY_groupTwoFunctions failed." );
 
-    Vector vector( ptwX_length( NULL, groups ), ptwX_getPointAtIndex( NULL, groups, 0 ) );
+    Vector vector( ptwX_length( nullptr, groups ), ptwX_getPointAtIndex( nullptr, groups, 0 ) );
     ptwX_free( groups );
 
     return( vector );

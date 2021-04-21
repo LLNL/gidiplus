@@ -14,13 +14,14 @@ namespace GIDI {
 /* *********************************************************************************************************//**
  * @param a_construction    [in]    Used to pass user options for parsing.
  * @param a_node            [in]    The **pugi::xml_node** to be parsed and used to construct the Protare.
+ * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  ***********************************************************************************************************/
 
-Flux::Flux( Construction::Settings const &a_construction, pugi::xml_node const &a_node ) :
-        Form( a_node, FormType::flux ),
-        m_flux( data2dParse( a_construction, a_node.first_child( ), NULL ) ) {
+Flux::Flux( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo ) :
+        Form( a_node, a_setupInfo, FormType::flux ),
+        m_flux( data2dParse( a_construction, a_node.first_child( ), a_setupInfo, nullptr ) ) {
 
-    if( m_flux != NULL ) m_flux->setAncestor( this );
+    if( m_flux != nullptr ) m_flux->setAncestor( this );
 }
 
 /* *********************************************************************************************************//**
@@ -41,10 +42,10 @@ Flux::~Flux( ) {
 void Flux::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
-    std::string attributes = a_writeInfo.addAttribute( "label", label( ) );
+    std::string attributes = a_writeInfo.addAttribute( GIDI_labelChars, label( ) );
 
     a_writeInfo.addNodeStarter( a_indent, moniker( ), attributes );
-    if( m_flux != NULL ) m_flux->toXMLList( a_writeInfo, indent2 );
+    if( m_flux != nullptr ) m_flux->toXMLList( a_writeInfo, indent2 );
     a_writeInfo.addNodeEnder( moniker( ) );
 }
 
@@ -53,11 +54,10 @@ void Flux::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) cons
  */
 
 /* *********************************************************************************************************//**
- * @param a_fileName            [in]    File containing a fluxes node to be parsed.
  ***********************************************************************************************************/
 
 Fluxes::Fluxes( ) :
-        Suite( fluxesMoniker ) {
+        Suite( GIDI_fluxesChars ) {
 
 }
 
@@ -66,7 +66,7 @@ Fluxes::Fluxes( ) :
  ***********************************************************************************************************/
 
 Fluxes::Fluxes( std::string const &a_fileName ) :
-        Suite( fluxesMoniker ) {
+        Suite( GIDI_fluxesChars ) {
 
     addFile( a_fileName );
 }
@@ -88,8 +88,17 @@ void Fluxes::addFile( std::string const &a_fileName ) {
     Construction::Settings construction( Construction::ParseMode::all, GIDI::Construction::PhotoMode::atomicOnly );
     PoPI::Database pops;
 
+    SetupInfo setupInfo( nullptr );
+
+    std::string formatVersionString = fluxes.attribute( GIDI_formatChars ).value( );
+    if( formatVersionString == "" ) formatVersionString = GNDS_formatVersion_1_10Chars;
+    FormatVersion formatVersion;
+    formatVersion.setFormat( formatVersionString );
+    if( !formatVersion.supported( ) ) throw Exception( "unsupport GND format version" );
+    setupInfo.m_formatVersion = formatVersion;
+
     for( pugi::xml_node child = fluxes.first_child( ); child; child = child.next_sibling( ) ) {
-        Functions::Function3dForm *function3d = data3dParse( construction, child, NULL );
+        Functions::Function3dForm *function3d = data3dParse( construction, child, setupInfo, nullptr );
 
         add( function3d );
     }

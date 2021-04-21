@@ -165,80 +165,35 @@ MultiGroupHash::MultiGroupHash( std::vector<double> a_boundaries ) :
 }
 
 /* *********************************************************************************************************//**
- * This constructor gets the list of multi-group boundaries from the GIDI::Styles::MultiGroup of *a_protare* with label *a_label*.
- * It calls MultiGroupHash::initialize to set up *this*.
- *
- * @param a_protare             [in]    The GIDI::Protare containing the GIDI::Styles::MultiGroup style.
- * @param a_label               [in]    The label of the desired GIDI::Styles::MultiGroup style of *a_protare*.
- * @param a_particleID          [in]    The PoPs' id of the particle whose multi-group boundaries are desired.
- ***********************************************************************************************************/
-
-MultiGroupHash::MultiGroupHash( GIDI::Protare const &a_protare, std::string const &a_label, std::string const &a_particleID ) {
-
-    initialize( a_protare, a_label, a_particleID );
-}
-
-/* *********************************************************************************************************//**
  * This constructor gets the list of multi-group boundaries from the first GIDI::Styles::MultiGroup of *a_protare*.
  * It calls MultiGroupHash::initialize to set up *this*.
  *
  * @param a_protare             [in]    The GIDI::Protare containing the GIDI::Styles::MultiGroup style.
+ * @param a_temperatureInfo     [in]    This is used to determine the multi-group boundaries.
  * @param a_particleID          [in]    The PoPs' id of the particle whose multi-group boundaries are desired.
  ***********************************************************************************************************/
 
-MultiGroupHash::MultiGroupHash( GIDI::Protare const &a_protare, std::string const &a_particleID ) {
+MultiGroupHash::MultiGroupHash( GIDI::Protare const &a_protare, GIDI::Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_particleID ) {
 
-    std::string label;
-    GIDI::Styles::Suite const &styleSuite( a_protare.styles( ) );
-
-    for( std::size_t i1 = 0; i1 < styleSuite.size( ); ++i1 ) {
-        GIDI::Styles::Base const *style = styleSuite.get<GIDI::Styles::Base>( i1 );
-
-        if( style->moniker( ) == multiGroupStyleMoniker ) {
-            label = style->label( );
-            break;
-        }
-    }
-
-    initialize( a_protare, label, a_particleID );
+    initialize( a_protare, a_temperatureInfo, a_particleID );
 }
 
 /* *********************************************************************************************************//**
  * This method is used by several constructors to get the multi-group data.
  *
  * @param a_protare             [in]    The GIDI::Protare containing the GIDI::Styles::MultiGroup style.
- * @param a_label               [in]    The label of the desired GIDI::Styles::MultiGroup style of *a_protare*.
+ * @param a_temperatureInfo     [in]    This is used to determine the multi-group boundaries.
  * @param a_particleID          [in]    The PoPs' id of the particle whose multi-group boundaries are desired.
  ***********************************************************************************************************/
 
-void MultiGroupHash::initialize( GIDI::Protare const &a_protare, std::string const &a_label, std::string a_particleID ) {
-
-    GIDI::Styles::Suite const &styleSuite( a_protare.styles( ) );
-    GIDI::Styles::Base const *style = styleSuite.get<GIDI::Styles::Base>( a_label );
+void MultiGroupHash::initialize( GIDI::Protare const &a_protare, GIDI::Styles::TemperatureInfo const &a_temperatureInfo, std::string a_particleID ) {
 
     if( a_particleID == "" ) a_particleID = a_protare.projectile( ).ID( );
 
-    if( style->moniker( ) == heatedMultiGroupStyleMoniker ) {
-        GIDI::Styles::HeatedMultiGroup const *heatedMultiGroup = static_cast<GIDI::Styles::HeatedMultiGroup const *>( style );
+    GIDI::Styles::Suite const &stylesSuite( a_protare.styles( ) );
+    GIDI::Styles::HeatedMultiGroup const *heatedMultiGroupStyle1 = stylesSuite.get<GIDI::Styles::HeatedMultiGroup>( a_temperatureInfo.heatedMultiGroup( ) );
 
-        style = styleSuite.get<GIDI::Styles::Base>( heatedMultiGroup->parameters( ) );
-    }
-
-    if( style->moniker( ) != multiGroupStyleMoniker ) THROW( "MultiGroupHash::MultiGroupHash: label does not map to a 'multiGroup' node." );
-
-    GIDI::Styles::MultiGroup const *multiGroup = static_cast<GIDI::Styles::MultiGroup const *>( style );
-
-    GIDI::Suite const &transportables( multiGroup->transportables( ) );
-    for( std::size_t i1 = 0; i1 < transportables.size( ); ++i1 ) {
-        GIDI::Transportable const *transportable = transportables.get<GIDI::Transportable>( i1 );
-
-        if( transportable->pid( ) == a_particleID ) {
-            m_boundaries = transportable->groupBoundaries( );
-            return;
-        }
-    }
-
-    THROW( "MultiGroupHash::MultiGroupHash: product not found." );
+    m_boundaries = heatedMultiGroupStyle1->groupBoundaries( a_particleID );
 }
 
 /* *********************************************************************************************************//**

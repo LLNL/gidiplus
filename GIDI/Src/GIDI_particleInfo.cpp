@@ -49,7 +49,7 @@ ParticleInfo::ParticleInfo( std::string const &a_ID, PoPI::Database const &a_glo
         m_mass( -1, "amu" ),
         m_excitationEnergy( 0, "MeV" ) {
 
-    PoPI::Base const *particleOrAlias = NULL;       // Need to get the mass and nuclear excitation energy. Favor from internal PoPs if present.
+    PoPI::Base const *particleOrAlias = nullptr;       // Need to get the mass and nuclear excitation energy. Favor from internal PoPs if present.
     std::string energyUnit( "MeV" );
 
     if( a_globalPoPs.exists( m_id ) ) {
@@ -71,7 +71,7 @@ ParticleInfo::ParticleInfo( std::string const &a_ID, PoPI::Database const &a_glo
         }
     }
 
-    if( particleOrAlias == NULL ) throw Exception( "ParticleInfo::ParticleInfo: particle ID not in global PoPs: " + m_id );
+    if( particleOrAlias == nullptr ) throw Exception( "ParticleInfo::ParticleInfo: particle ID not in global PoPs: " + m_id );
 
     if( particleOrAlias->isParticle( ) ) {
         PoPI::Particle const &particle = static_cast<PoPI::Particle const &>( *particleOrAlias );
@@ -88,6 +88,21 @@ ParticleInfo::ParticleInfo( std::string const &a_ID, PoPI::Database const &a_glo
             m_excitationEnergy = PhysicalQuantity( nuclide.levelEnergy( energyUnit ), energyUnit );
         }
     }
+}
+
+/* *********************************************************************************************************//**
+ * Copy constructor for ParticleInfo.
+ *
+ * @param a_particleInfo        [in]    ParticleInfo instance to copy.
+ ***********************************************************************************************************/
+
+ParticleInfo::ParticleInfo( ParticleInfo const &a_particleInfo ) :
+        m_id( a_particleInfo.ID( ) ),
+        m_qualifier( a_particleInfo.qualifier( ) ),
+        m_pid( a_particleInfo.pid( ) ),
+        m_mass( a_particleInfo.mass( ) ),
+        m_excitationEnergy( a_particleInfo.excitationEnergy( ) ) {
+
 }
 
 /* *********************************************************************************************************//**

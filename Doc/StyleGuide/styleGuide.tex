@@ -1,0 +1,99 @@
+\documentclass[11pt]{article}
+\setlength{\textwidth}{6.5 in}
+\setlength{\oddsidemargin}{-0. in}
+\setlength{\evensidemargin}{\oddsidemargin}
+
+\title{Style guide for PoPI, GIDI and MCGIDI: C++ APIs for reading and sampling GNDS data\footnote{
+This work was performed under the auspices of the U.S. Department of Energy by
+Lawrence Livermore National Laboratory under contract \#W-7405-ENG-48.}}
+\author{{Bret R. Beck}\\Lawrence Livermore National Laboratory\\UCRL-}
+
+\begin{document}
+
+\maketitle
+
+\pagebreak
+\tableofcontents
+\listoftables
+\pagebreak
+
+\section{Introduction}
+This document describes the style guide used for the PoPI, GIDI and MCGIDI C++ APIs.
+
+Indentation is four spaces. Tabs are not allowed anywhere. If a line is being continued, two indentation are required on the
+indented lines.
+
+\section{Naming}
+    As a general rule, names should be descriptive. Abbreviation are discouraged (e.g., use \texttt{crossSection} and not \texttt{xSec}).
+One can use acronyms (e.g., \texttt{NASA}, \texttt{ASCII}, \texttt{GIDI}); however, all letters in the acronym must be upper cased and
+all acronyms must be separeted by an underscore character (i.e., "\_") from other parts of the name.
+For example, use \texttt{GIDI\_neutronName} instead of \texttt{GIDIneutronName}, \texttt{GIDINeutronName} or \texttt{gidiNeutronName}.
+Most names are either \texttt{camelCase} (i.e., all first letters of the words are capitalized except for the first word),
+\texttt{PascalCase} (i.e., all first letters of the words are capitalized), or \texttt{camelCase} preceded by either \texttt{m\_} (for member names)
+or \texttt{a\_} (for argument names).
+
+Instance names should be the camel case representation of the object's name. For example, an instance of the \texttt{Reaction} class will have the
+name \texttt{reaction}.  If more than one instance of an object is needed within a section, names are constructed by adding sequence numbers to
+the prior rule starting with the number 1. For example, if three instances of a \texttt{Reaction} class are needed within a method, the names will be \texttt{reaction1},
+\texttt{reaction2} and \texttt{reaction3}.
+
+For an integer-type indexing variable in a \texttt{for} loop, the name should be as the ojbect being looped over with the extension \texttt{Index}. For example,
+when looping over a list of \texttt{Reaction} class objects, the integer-type indexing variable should be \texttt{reactionIndex}.
+If the loop is short, one can use the integer-type indexing variable \texttt{i\#} where the "\#" represents an integer string. For example, \texttt{i1},
+\texttt{i2} or \texttt{i3}.
+
+\begin{description}
+    \item[class:] Class names are pascal case. Examples are \texttt{Protare}, \texttt{Reaction} and \texttt{HeatedCrossSectionContinuousEnergy}.
+    \item[member:] Member names begin with a \texttt{m\_}, followed by a camel case. Examples are \texttt{m\_domainMin}, 
+                    \texttt{m\_crossSection} and \texttt{m\_reactions}.
+    \item[method:] Method names are camel case. Examples are \texttt{crossSection}, \texttt{sampleReaction} and \texttt{serialize}.
+    \item[function:] Same rule as for method names.
+    \item[arument:] Argument names begin with a \texttt{a\_}, followed by a camel case. Examples are \texttt{a\_domainMin},
+                    \texttt{a\_crossSection} and \texttt{a\_reactions}.
+\end{description}
+
+\section{if-else statements}
+All single statment \texttt{if} statements must of the form
+\begin{verbatim}
+    if( test ) statement
+\end{verbatim}
+
+All \texttt{if-else} statements must of the form
+\begin{verbatim}
+    if( test ) {
+        statement;
+        ...
+        statement; }
+    else if( test ) {
+        statement;
+        ...
+        statement; }
+    else if( test ) {
+        statement;
+        ...
+        statement; }
+    else {
+        statement;
+        ...
+        statement;
+    }
+
+\end{verbatim}
+
+\section{binary and logical operators}
+All binary and logical operators must have at least one space before the operator and at least one space after the operator. 
+This rule also applies to the equal sign (i.e., "=").
+
+\begin{verbatim}
+    sum = part1 + part2 + part3     // One indentation.
+            part4 + part5 +         // Three indentations.
+            part6                   // Three indentations.
+\end{verbatim}
+If alignment is desired, additional spaces are allowed around a binary operator. For example, the prior example can be written as
+\begin{verbatim}
+    sum =   part1 + part2 + part3   // One indentation.
+            part4 + part5 +         // Three indentations.
+            part6                   // Three indentations.
+\end{verbatim}
+
+\end{document}

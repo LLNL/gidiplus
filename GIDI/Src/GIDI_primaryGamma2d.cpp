@@ -18,16 +18,17 @@ namespace Functions {
  */
 
 /* *********************************************************************************************************//**
- * @param a_construction    [in]     Used to pass user options to the constructor.
- * @param a_node            [in]     The **pugi::xml_node** to be parsed and used to construct the XYs2d.
- * @param a_parent          [in]     The parent GIDI::Suite.
+ * @param a_construction    [in]    Used to pass user options to the constructor.
+ * @param a_node            [in]    The **pugi::xml_node** to be parsed and used to construct the XYs2d.
+ * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
+ * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-PrimaryGamma2d::PrimaryGamma2d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, Suite *a_parent ) :
-        Function2dForm( a_construction, a_node, FormType::primaryGamma2d, a_parent ),
-        m_domainMin( a_node.attribute( "domainMin" ).as_double( ) ),
-        m_domainMax( a_node.attribute( "domainMax" ).as_double( ) ),
-        m_value( a_node.attribute( "value" ).as_double( ) ) {
+PrimaryGamma2d::PrimaryGamma2d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+        Function2dForm( a_construction, a_node, a_setupInfo, FormType::primaryGamma2d, a_parent ),
+        m_domainMin( a_node.attribute( GIDI_domainMinChars ).as_double( ) ),
+        m_domainMax( a_node.attribute( GIDI_domainMaxChars ).as_double( ) ),
+        m_value( a_node.attribute( GIDI_valueChars ).as_double( ) ) {
 
 }
 
@@ -67,10 +68,10 @@ double PrimaryGamma2d::evaluate( double a_x2, double a_x1 ) const {
 void PrimaryGamma2d::toXMLList_func( WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
  
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
-    std::string attributes = a_writeInfo.addAttribute( "value", doubleToShortestString( value( ) ) );
+    std::string attributes = a_writeInfo.addAttribute( GIDI_valueChars, doubleToShortestString( value( ) ) );
 
-    attributes += a_writeInfo.addAttribute( "domainMin", doubleToShortestString( domainMin( ) ) );
-    attributes += a_writeInfo.addAttribute( "domainMax", doubleToShortestString( domainMax( ) ) );
+    attributes += a_writeInfo.addAttribute( GIDI_domainMinChars, doubleToShortestString( domainMin( ) ) );
+    attributes += a_writeInfo.addAttribute( GIDI_domainMaxChars, doubleToShortestString( domainMax( ) ) );
     a_writeInfo.addNodeStarter( a_indent, moniker( ), attributes );
 
     axes( ).toXMLList( a_writeInfo, indent2 );

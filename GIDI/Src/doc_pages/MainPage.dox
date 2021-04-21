@@ -251,11 +251,12 @@ GIDI::ProtareComposite instance which will contain two GIDI::ProtareSingle's (on
 If no match is found, a *nullptr* is returned.
 
 \section multiGroupSectionSection Multi-group data access
-    The classes *Protare*, *Reaction*, *OutputChannel* and *Product*, (as do the classes *FissionFragmentData*, *DelayedNeutron* and *FissionEnergyRelease*)
-    contain functions to retrieve multi-group data. The table \ref multi_group_functions "multi-group functions" list the function names and what they return.
+
+The classes *Protare*, *Reaction*, *OutputChannel* and *Product*, (as do the classes *FissionFragmentData*, *DelayedNeutron* and *FissionEnergyRelease*)
+contain functions to retrieve multi-group data. The table \ref multiGroupFunctions "multi-group functions" list the function names and what they return.
 
 <table>
-<caption id="multi_group_functions">A list of multi-group functions provided by GIDI. All values are flux-weighted and multi-grouped.
+<caption id="multiGroupFunctions">A list of multi-group functions provided by GIDI. All values are flux-weighted and multi-grouped.
 All values except those returned by *multiGroupInverseSpeed* and *multiGroupCrossSection* are cross section weighted.</caption>
 <tr><th> Function                               <th> Comment </tr>
 <tr><td> multiGroupInverseSpeed                 <td> This is the inverse of the projectile's speed (1/v). </tr>
@@ -274,7 +275,6 @@ All values except those returned by *multiGroupInverseSpeed* and *multiGroupCros
 <tr><td> multiGroupProductMatrix                <td> This is the transfer matrix for the specified outgoing particle and Legendre order. </tr>
 <tr><td> multiGroupFissionMatrix                <td> This is like *multiGroupProductMatrix* except only for neutrons for fission reactions. </tr>
 </table>
-
 
 \subsection accessingDataExample Accessing data in a GIDI::ProtareSingle instance.
 
@@ -338,7 +338,7 @@ This code produces the following output
         product id = 'n' label = 'n'
         product id = 'O16_e1' label = 'O16_e1'
 
-    List of distribution forms for product with id = n' label = 'n' is
+    List of distribution forms for product with id = 'n' label = 'n' is
             angularTwoBody  eval
             angularTwoBody  MonteCarlo_cdf
             multiGroup3d  MultiGroup_000

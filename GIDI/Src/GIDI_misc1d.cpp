@@ -21,12 +21,14 @@ namespace Functions {
  *
  * @param a_construction    [in]    Used to pass user options to the constructor.
  * @param a_node            [in]    The **pugi::xml_node** to be parsed and used to construct the XYs2d.
+ * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-ThermalNeutronScatteringLaw1d::ThermalNeutronScatteringLaw1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, Suite *a_parent ) :
-        Function1dForm( a_construction, a_node, FormType::thermalNeutronScatteringLaw1d, a_parent ),
-        m_href( a_node.attribute( hrefAttribute ).value( ) ) {
+ThermalNeutronScatteringLaw1d::ThermalNeutronScatteringLaw1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node,
+                SetupInfo &a_setupInfo, Suite *a_parent ) :
+        Function1dForm( a_construction, a_node, a_setupInfo, FormType::thermalNeutronScatteringLaw1d, a_parent ),
+        m_href( a_node.attribute( GIDI_hrefChars ).value( ) ) {
 
 }
 

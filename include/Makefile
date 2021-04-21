@@ -7,9 +7,9 @@ SHELL = /bin/bash
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
-.PHONY: default include clean realclean
+.PHONY: default include docs check clean realclean
 
-DIRS = statusMessageReporting GIDI MCGIDI PoPI numericalFunctions pugixml
+DIRS = pugixml numericalFunctions PoPI GIDI MCGIDI
 
 default: include
 
@@ -17,6 +17,10 @@ include:
 	cp ../gidiplus_version.h .
 	for DIR in $(DIRS); do cd ../$$DIR/; $(MAKE) include; done
 	for DIR in $(DIRS); do cp ../$$DIR/include/*.h* .; done
+
+docs:
+
+check:
 
 clean:
 	rm -f *.h *.hpp

@@ -14,8 +14,6 @@
 
 namespace MCGIDI {
 
-#define MCGIDI_electronMass_c2 0.510998946269       // electron mass * c^2 in MeV.
-
 namespace Distributions {
 
 enum class Type { none, unspecified, angularTwoBody, KalbachMann, uncorrelated, energyAngularMC, angularEnergyMC, coherentPhotoAtomicScattering,
@@ -52,8 +50,6 @@ class Distribution {
         HOST_DEVICE virtual double angleBiasing( Reaction const *a_reaction, double a_energy_in, double a_mu_lab, 
                 double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const = 0;
         HOST_DEVICE virtual void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE virtual long internalSize( ) const { return( 0 ); }                 /**< Returns the total member in bytes allocated for *this*. */
-        HOST_DEVICE virtual long sizeOf( ) const { return( sizeof( *this ) ); }         /**< Returns sizeof( *this* ) + internalSize( ). */
 
         HOST_DEVICE virtual void evaluate_pdf(double E_in_lab, double mu,    double &pdf_val) 
             { printf("MCGIDI Programmer Error. Distribution base class evaluate_pdf should never be used"); }
@@ -97,8 +93,6 @@ class AngularTwoBody : public Distribution {
         HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_energy_in, double a_mu_lab, 
                 double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const ;
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long internalSize( ) const { return( m_angular == nullptr ? 0 : m_angular->sizeOf( ) + m_angular->internalSize( ) ); }
-        HOST_DEVICE long sizeOf( ) const { return( sizeof( *this ) ); }                             /**< Returns the total member in bytes allocated for *this*. */
         HOST_DEVICE bool Upscatter( ) const { return( m_Upscatter ); }                              /**< Returns the value of the **m_Upscatter**. */
         HOST_DEVICE void evaluate_pdf( double E_in_lab, double mu, double &pdf_val ) {
             pdf_val = m_angular->evaluate( E_in_lab, mu );
@@ -131,10 +125,6 @@ class Uncorrelated : public Distribution {
         HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_energy_in, double a_mu_lab, 
                 double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const ;
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long internalSize( ) const { 
-                return( ( m_angular == nullptr ? 0 : m_angular->sizeOf( ) + m_angular->internalSize( ) ) + 
-                        ( m_energy == nullptr ? 0 : m_energy->sizeOf( ) + m_energy->internalSize( ) ) ); } /**< Returns the total member in bytes allocated for *this*. */
-        HOST_DEVICE long sizeOf( ) const { return( sizeof( *this ) ); }                                 /**< Returns sizeof( *this* ) + internalSize( ). */
 
         HOST_DEVICE void evaluate_pdf(double E_in_lab, double mu, double &pdf_val)
         {
@@ -168,11 +158,6 @@ class EnergyAngularMC : public Distribution {
         HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_energy_in, double a_mu_lab, 
                 double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const ;
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long internalSize( ) const {
-                return( ( m_energy == nullptr ? 0 : m_energy->sizeOf( ) + m_energy->internalSize( ) ) + 
-                        ( m_angularGivenEnergy == nullptr ? 0 : m_angularGivenEnergy->sizeOf( ) + m_angularGivenEnergy->internalSize( ) ) ); }
-                                                                                                    /**< Returns the total member in bytes allocated for *this*. */
-        HOST_DEVICE long sizeOf( ) const { return( sizeof( *this ) ); }                             /**< Returns sizeof( *this* ) + internalSize( ). */
 
         HOST_DEVICE void evaluate_pdf(double E_in_lab, double E_out, double mu, double &pdf_val)
         {
@@ -206,11 +191,6 @@ class AngularEnergyMC : public Distribution {
         HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_energy_in, double a_mu_lab, 
                 double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const ;
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long internalSize( ) const { 
-                return( ( m_angular == nullptr ? 0 : m_angular->sizeOf( ) + m_angular->internalSize( ) ) + 
-                        ( m_energyGivenAngular == nullptr ? 0 : m_energyGivenAngular->sizeOf( ) + m_energyGivenAngular->internalSize( ) ) ); }
-                                                                                                    /**< Returns the total member in bytes allocated for *this*. */
-        HOST_DEVICE long sizeOf( ) const { return( sizeof( *this ) ); }                             /**< Returns sizeof( *this* ) + internalSize( ). */
 
         HOST_DEVICE void evaluate_pdf(double E_in_lab, double mu, double &pdf_val)
         {
@@ -218,7 +198,7 @@ class AngularEnergyMC : public Distribution {
         }
         HOST_DEVICE void sample_pdf( double E_in_lab, double mu, double &E_out, double random_num, Sampling::Input &a_input,
                 double (*a_userrng)( void * ), void *a_rngState ) const {
-            E_out = m_energyGivenAngular->sample( E_in_lab, mu, random_num, a_userrng, a_rngState );
+            E_out = m_energyGivenAngular->sample( E_in_lab, mu, mu, random_num, a_userrng, a_rngState );
         }
 };
 
@@ -254,11 +234,6 @@ class KalbachMann : public Distribution {
         HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_energy_in, double a_mu_lab, 
                 double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const ;
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long internalSize( ) const {
-            return( ( m_f == nullptr ? 0 : m_f->sizeOf( ) + m_f->internalSize( ) ) + 
-                    ( m_r == nullptr ? 0 : m_r->sizeOf( ) + m_r->internalSize( ) ) + 
-                    ( m_a == nullptr ? 0 : m_a->sizeOf( ) + m_a->internalSize( ) ) ); }        /**< Returns the total member in bytes allocated for *this*. */
-        HOST_DEVICE long sizeOf( ) const { return( sizeof( *this ) ); }                     /**< Returns sizeof( *this* ) + internalSize( ). */
 
         HOST_DEVICE double evaluate( double E_in_lab, double E_out, double mu );
         HOST_DEVICE void evaluate_pdf(double E_in_lab, double E_out, double mu, double &pdf_val)
@@ -304,8 +279,6 @@ class CoherentPhotoAtomicScattering : public Distribution {
                 double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const ;
 
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long internalSize( ) const ;
-        HOST_DEVICE long sizeOf( ) const ;
 };
 
 /*
@@ -332,8 +305,6 @@ class IncoherentPhotoAtomicScattering : public Distribution {
         HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_energy_in, double a_mu_lab, 
                 double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const ;
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long internalSize( ) const ;
-        HOST_DEVICE long sizeOf( ) const ;
 /*
         HOST_DEVICE double evaluate( double E_in_lab, double mu );
 */
@@ -358,8 +329,6 @@ class PairProductionGamma : public Distribution {
         HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_energy_in, double a_mu_lab, 
                 double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const ;
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE virtual long internalSize( ) const { return( 0 ); }                 /**< Returns the total member in bytes allocated for *this*. */
-        HOST_DEVICE long sizeOf( ) const { return( sizeof( *this ) ); }                 /**< Returns sizeof( *this* ) + internalSize( ). */
 };
 
 /*
@@ -382,7 +351,6 @@ class Unspecified : public Distribution {
         HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_energy_in, double a_mu_lab, 
                 double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const ;
         HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long sizeOf( ) const { return( sizeof( *this ) ); }             /**< Returns sizeof( *this* ) + internalSize( ). */
 };
 
 /*

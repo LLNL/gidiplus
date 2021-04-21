@@ -361,6 +361,22 @@ HOST_DEVICE double ProtareComposite::crossSection( URR_protareInfos const &a_URR
 }
 
 /* *********************************************************************************************************//**
+ * Adds the energy dependent, total cross section corresponding to the temperature *a_temperature* multiplied by *a_userFactor* to *a_crossSectionVector*.
+ *
+ * @param   a_temperature               [in]        Specifies the temperature of the material.
+ * @param   a_userFactor                [in]        User factor which all cross sections are multiplied by.
+ * @param   a_numberAllocated           [in]        The length of memory allocated for *a_crossSectionVector*.
+ * @param   a_crossSectionVector        [in/out]    The energy dependent, total cross section to add cross section data to.
+ ***********************************************************************************************************/
+
+HOST_DEVICE void ProtareComposite::crossSectionVector( double a_temperature, double a_userFactor, int a_numberAllocated, double *a_crossSectionVector ) const {
+
+    std::size_t length = static_cast<std::size_t>( m_protares.size( ) );
+
+    for( std::size_t i1 = 0; i1 < length; ++i1 ) m_protares[i1]->crossSectionVector( a_temperature, a_userFactor, a_numberAllocated, a_crossSectionVector );
+}
+
+/* *********************************************************************************************************//**
  * Returns the cross section for reaction at index *a_reactionIndex*.
  *
  * @param   a_reactionIndex     [in]    The index of the reaction.
@@ -573,23 +589,12 @@ HOST_DEVICE void ProtareComposite::serialize( DataBuffer &a_buffer, DataBuffer::
             }
         }
     }
+    if( a_mode == DataBuffer::Mode::Memory ) {
+        a_buffer.m_placement += m_protares.internalSize();
+        a_buffer.incrementPlacement( sizeof( ProtareSingle ) * vectorSize );
+    }
 
     for( MCGIDI_VectorSizeType i1 = 0; i1 < vectorSize; ++i1 ) m_protares[i1]->serialize( a_buffer, a_mode );
-}
-
-/* *********************************************************************************************************//**
- * This method counts the number of bytes of memory allocated by *this*. That is the member needed by *this* that is greater than
- * sizeof( *this );
- ***********************************************************************************************************/
-
-HOST_DEVICE long ProtareComposite::internalSize( ) const {
-
-    std::size_t length = static_cast<std::size_t>( m_protares.size( ) );
-    long internal_size = m_protares.internalSize( );
-
-    for( std::size_t i1 = 0; i1 < length; ++i1 ) internal_size += m_protares[i1]->internalSize( );
-
-    return( internal_size );
 }
 
 }

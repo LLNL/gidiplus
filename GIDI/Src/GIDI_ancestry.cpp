@@ -23,7 +23,7 @@ namespace GIDI {
 
 Ancestry::Ancestry( std::string const &a_moniker, std::string const &a_attribute ) :
         m_moniker( a_moniker ),
-        m_ancestor( NULL ),
+        m_ancestor( nullptr ),
         m_attribute( a_attribute ) {
 
 }
@@ -45,7 +45,7 @@ Ancestry *Ancestry::root( ) {
 
     Ancestry *_root = this;
 
-    while( _root->m_ancestor != NULL ) _root = _root->m_ancestor;
+    while( _root->m_ancestor != nullptr ) _root = _root->m_ancestor;
     return( _root );
 }
 
@@ -59,7 +59,7 @@ Ancestry const *Ancestry::root( ) const {
 
     Ancestry const *_root = this;
 
-    while( _root->m_ancestor != NULL ) _root = _root->m_ancestor;
+    while( _root->m_ancestor != nullptr ) _root = _root->m_ancestor;
     return( _root );
 }
 
@@ -72,7 +72,7 @@ Ancestry const *Ancestry::root( ) const {
 
 Ancestry *Ancestry::findInAncestry( std::string const &a_href ) {
 
-    std::vector<std::string> segments = splitString( a_href, '/' );
+    std::vector<std::string> segments = PoPI::splitString( a_href, '/' );
 
     return( findInAncestry2( 0, segments ) );
 }
@@ -86,7 +86,7 @@ Ancestry *Ancestry::findInAncestry( std::string const &a_href ) {
 
 Ancestry const *Ancestry::findInAncestry( std::string const &a_href ) const {
 
-    std::vector<std::string> segments = splitString( a_href, '/' );
+    std::vector<std::string> segments = PoPI::splitString( a_href, '/' );
 
     return( findInAncestry2( 0, segments ) );
 }
@@ -111,7 +111,7 @@ Ancestry *Ancestry::findInAncestry2( std::size_t a_index, std::vector<std::strin
     if( segment == "" ) {
         item = this->root( );
         ++a_index;
-        if( a_segments[a_index] != item->moniker( ) ) return( NULL ); }
+        if( a_segments[a_index] != item->moniker( ) ) return( nullptr ); }
     else if( segment == "." ) {
         }
     else if( segment == ".." ) {
@@ -120,7 +120,7 @@ Ancestry *Ancestry::findInAncestry2( std::size_t a_index, std::vector<std::strin
         item = this->findInAncestry3( segment );
     }
 
-    if( item == NULL ) return( item );
+    if( item == nullptr ) return( item );
 
     ++a_index;
     return( item->findInAncestry2( a_index, a_segments ) );
@@ -146,7 +146,7 @@ Ancestry const *Ancestry::findInAncestry2( std::size_t a_index, std::vector<std:
     if( segment == "" ) {
         item = this->root( );
         ++a_index;
-        if( a_segments[a_index] != item->moniker( ) ) return( NULL ); }
+        if( a_segments[a_index] != item->moniker( ) ) return( nullptr ); }
     else if( segment == "." ) {
         }
     else if( segment == ".." ) {
@@ -155,7 +155,7 @@ Ancestry const *Ancestry::findInAncestry2( std::size_t a_index, std::vector<std:
         item = this->findInAncestry3( segment );
     }
 
-    if( item == NULL ) return( item );
+    if( item == nullptr ) return( item );
 
     ++a_index;
     return( item->findInAncestry2( a_index, a_segments ) );
@@ -167,7 +167,7 @@ Ancestry const *Ancestry::findInAncestry2( std::size_t a_index, std::vector<std:
  * @return          The constructed *xlink*.
  ***********************************************************************************************************/
 
-std::string Ancestry::toXLink( ) {
+std::string Ancestry::toXLink( ) const {
 
     std::string xlink( "/" + m_moniker + xlinkItemKey( ) );
 

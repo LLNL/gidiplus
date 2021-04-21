@@ -190,11 +190,11 @@ void Groups_from_bdfls::initialize( char const *a_fileName ) {
 
     char buffer[132], *pEnd, cValue[16];
     FILE *fIn = fopen( a_fileName, "r" );
-    if( fIn == NULL ) throw Exception( "Groups_from_bdfls::initialize: Could not open bdfls file." );
+    if( fIn == nullptr ) throw Exception( "Groups_from_bdfls::initialize: Could not open bdfls file." );
 
     while( true ) {
         int gid( -1 );
-        if( fgets( buffer, 132, fIn ) == NULL ) throw Exception( "Groups_from_bdfls::initialize: fgets failed for gid." );
+        if( fgets( buffer, 132, fIn ) == nullptr ) throw Exception( "Groups_from_bdfls::initialize: fgets failed for gid." );
         if( strlen( buffer ) > 73 ) {
             if( buffer[72] == '1' ) break;
         }
@@ -203,7 +203,7 @@ void Groups_from_bdfls::initialize( char const *a_fileName ) {
         std::string label( LLNL_gidToLabel( gid ) );
 
         long numberOfBoundaries( -1 );
-        if( fgets( buffer, 132, fIn ) == NULL ) throw Exception( "Groups_from_bdfls::initialize: fgets failed for numberOfBoundaries." );
+        if( fgets( buffer, 132, fIn ) == nullptr ) throw Exception( "Groups_from_bdfls::initialize: fgets failed for numberOfBoundaries." );
         numberOfBoundaries = strtol( buffer, &pEnd, 10 );
         if( numberOfBoundaries == -1 ) throw Exception( "Groups_from_bdfls::initialize: converting gid to long failed." );
 
@@ -212,7 +212,7 @@ void Groups_from_bdfls::initialize( char const *a_fileName ) {
         while( numberOfBoundaries > 0 ) {
             long i1, n1( 6 );
             if( numberOfBoundaries < 6 ) n1 = numberOfBoundaries;
-            if( fgets( buffer, 132, fIn ) == NULL ) throw Exception( "Groups_from_bdfls::initialize: fgets failed for boundaries." );
+            if( fgets( buffer, 132, fIn ) == nullptr ) throw Exception( "Groups_from_bdfls::initialize: fgets failed for boundaries." );
             for( i1 = 0; i1 < n1; ++i1, ++index ) {
                 strncpy( cValue, &buffer[12*i1], 12 );
                 cValue[12] = 0;

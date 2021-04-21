@@ -16,7 +16,7 @@
 static char const *description = "This program prints the multi-group available energy for a protare and its reactions.";
 
 void main2( int argc, char **argv );
-void readProtare( GIDI::Map::Map &map, PoPI::Database const &pops, std::string const &targetID, GIDI::Construction::PhotoMode photoMode, GIDI::Transporting::Particle const &photonParticle );
+void readProtare( ParseTestOptions &a_parseTestOption, GIDI::Construction::PhotoMode photoMode, GIDI::Transporting::Particle const &photonParticle );
 /*
 =========================================================
 */
@@ -42,17 +42,15 @@ int main( int argc, char **argv ) {
 */
 void main2( int argc, char **argv ) {
 
-    printCodeArguments( __FILE__, argc, argv );
+    argvOptions argv_options( __FILE__, description );
+    ParseTestOptions parseTestOptions( argv_options, argc, argv );
 
-    argvOptions argv_options( "photoScattering", description );
+    parseTestOptions.m_askPid = false;
+    parseTestOptions.m_askGNDS_File = true;
+    parseTestOptions.m_askPhotoAtomic = false;
+    parseTestOptions.m_askPhotoNuclear = false;
 
-    argv_options.add( argvOption( "--map", true, "The map file to use (default='../all.map')." ) );
-    argv_options.add( argvOption( "--tid", true, "The PoPs id of the target." ) );
-
-
-    PoPI::Database pops( "../pops.xml" );
-    std::string mapFilename = argv_options.find( "--map" )->zeroOrOneOption( argv, "../all.map" );
-    GIDI::Map::Map map( mapFilename, pops );
+    parseTestOptions.parse( );
 
     GIDI::Transporting::Groups_from_bdfls groups_from_bdfls( "../bdfls" );
     GIDI::Transporting::Fluxes_from_bdfls fluxes_from_bdfls( "../bdfls", 0 );
@@ -60,35 +58,34 @@ void main2( int argc, char **argv ) {
     GIDI::Transporting::Particle photonParticle( PoPI::IDs::photon, groups_from_bdfls.getViaGID( 70 ) );
     photonParticle.appendFlux( fluxes_from_bdfls.getViaFID( 1 ) );
 
-    std::string targetID = argv_options.find( "--map" )->zeroOrOneOption( argv, "O16" );
-
     std::cout << "Atomic only." << std::endl;
-    readProtare( map, pops, targetID, GIDI::Construction::PhotoMode::atomicOnly, photonParticle );
+    readProtare( parseTestOptions, GIDI::Construction::PhotoMode::atomicOnly, photonParticle );
 
     std::cout << std::endl;
     std::cout << "Nuclear only." << std::endl;
-    readProtare( map, pops, targetID, GIDI::Construction::PhotoMode::nuclearOnly, photonParticle );
+    readProtare( parseTestOptions, GIDI::Construction::PhotoMode::nuclearOnly, photonParticle );
 
     std::cout << std::endl;
     std::cout << "Nuclear and atomic." << std::endl;
-    readProtare( map, pops, targetID, GIDI::Construction::PhotoMode::nuclearAndAtomic, photonParticle );
+    readProtare( parseTestOptions, GIDI::Construction::PhotoMode::nuclearAndAtomic, photonParticle );
 }
 /*
 =========================================================
 */
-void readProtare( GIDI::Map::Map &map, PoPI::Database const &pops, std::string const &targetID, GIDI::Construction::PhotoMode photoMode, GIDI::Transporting::Particle const &photonParticle ) {
-
-    GIDI::Protare *protare;
+void readProtare( ParseTestOptions &a_parseTestOptions, GIDI::Construction::PhotoMode photoMode, GIDI::Transporting::Particle const &photonParticle ) {
 
     GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, photoMode );
-    protare = map.protare( construction, pops, PoPI::IDs::photon, targetID);
-    if( protare == NULL ) {
+    PoPI::Database pops;
+    GIDI::Protare *protare = a_parseTestOptions.protare( pops, "../pops.xml", "../all.map", construction, PoPI::IDs::photon, "O16" );
+    if( protare == nullptr ) {
+        std::string targetID = a_parseTestOptions.m_argvOptions.find( "--tid" )->zeroOrOneOption( a_parseTestOptions.m_argv, "O16" );
         std::cout << "protare for " << targetID << " not found." << std::endl;
-        exit( EXIT_FAILURE );
+        return;
     }
 
-    std::cout << stripDirectoryBase( protare->fileName( ), "/GIDI/Test/" ) << std::endl;
-    if( photoMode == GIDI::Construction::PhotoMode::nuclearAndAtomic ) std::cout << stripDirectoryBase( protare->fileName( 1 ), "/GIDI/Test/" ) << std::endl;
+    for( std::size_t i1 = 0; i1 < protare->numberOfProtares( ); ++i1 ) {
+        std::cout << stripDirectoryBase( protare->fileName( i1 ), "/GIDI/Test/" ) << std::endl;
+    }
 
     std::cout << "  " << "Number of reactions = " << protare->numberOfReactions( ) << std::endl;
 
@@ -134,7 +131,7 @@ void readProtare( GIDI::Map::Map &map, PoPI::Database const &pops, std::string c
     printVectorOfDoubles( "Neutron group boundaries :: ", doubles );
 
     doubles = protare->groupBoundaries( settings, temperatures[0], PoPI::IDs::photon );
-    printVectorOfDoubles( "Neutron group boundaries :: ", doubles );
+    printVectorOfDoubles( "Photon group boundaries :: ", doubles );
 
     GIDI::Vector vector = protare->multiGroupCrossSection( settings, temperatures[0] );
     printVector( "Total cross section :: ", vector );
@@ -189,6 +186,7 @@ void readProtare( GIDI::Map::Map &map, PoPI::Database const &pops, std::string c
         GIDI::Matrix matrix = protare->multiGroupProductMatrix( settings, temperatures[0], particles, PoPI::IDs::photon, order );
         printMatrix( "    Photon product matrix", -2, matrix );
     }
+
 // depositionData
 
     delete protare;

@@ -68,7 +68,7 @@ void NuclideGammaBranchStateInfo::calculateDerivedData( NuclideGammaBranchStateI
 
         double chainedMultiplicity = 0.0;
         double chainedAverageGammaEnergy = 0.0;
-        if( nuclideGammaBranchStateInfo != NULL ) {
+        if( nuclideGammaBranchStateInfo != nullptr ) {
             nuclideGammaBranchStateInfo->calculateDerivedData( a_nuclideGammaBranchStateInfos );
             chainedMultiplicity = nuclideGammaBranchStateInfo->multiplicity( );
             chainedAverageGammaEnergy = nuclideGammaBranchStateInfo->averageGammaEnergy( );
@@ -115,7 +115,7 @@ NuclideGammaBranchStateInfo *NuclideGammaBranchStateInfos::find( std::string con
         if( nuclideGammaBranchStateInfo->state( ) == a_state ) return( nuclideGammaBranchStateInfo );
     }
 
-    return( NULL );
+    return( nullptr );
 }
 
 }

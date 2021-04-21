@@ -14,7 +14,7 @@
 
 #include "MCGIDI.hpp"
 
-#include "MCGIDI_testUtilities.hpp"
+#include "GIDI_testUtilities.hpp"
 
 static char const *description = "Loops over temperature and energy, printing the total cross section. If projectile is a photon, see options *-a* and *-n*.";
 
@@ -45,40 +45,18 @@ int main( int argc, char **argv ) {
 void main2( int argc, char **argv ) {
 
     PoPI::Database pops;
-    pops.addFile( "../../../GIDI/Test/pops.xml", false );
-    GIDI::Construction::PhotoMode photo_mode = GIDI::Construction::PhotoMode::nuclearOnly;
-    std::set<int> reactionsToExclude;
+    argvOptions argv_options( __FILE__, description );
+    ParseTestOptions parseTestOptions( argv_options, argc, argv );
 
-    std::cerr << "    " << __FILE__;
-    for( int i1 = 1; i1 < argc; i1++ ) std::cerr << " " << argv[i1];
-    std::cerr << std::endl;
+    parseTestOptions.parse( );
 
-    argvOptions2 argv_options( "crossSections", description );
-
-    argv_options.add( argvOption2( "--map", true, "The map file to use." ) );
-    argv_options.add( argvOption2( "--pid", true, "The PoPs id of the projectile." ) );
-    argv_options.add( argvOption2( "--tid", true, "The PoPs id of the target." ) );
-    argv_options.add( argvOption2( "-a", false, "Include photo-atomic protare if relevant. If present, disables photo-nuclear unless *-n* also present." ) );
-    argv_options.add( argvOption2( "-n", false, "Include photo-nuclear protare if relevant. This is the default unless *-a* present." ) );
-
-    argv_options.parseArgv( argc, argv );
-
-    std::string mapFilename = argv_options.find( "--map" )->zeroOrOneOption( argv, "../../../GIDI/Test/all3T.map" );
-    std::string projectileID = argv_options.find( "--pid" )->zeroOrOneOption( argv, PoPI::IDs::neutron );
-    std::string targetID = argv_options.find( "--tid" )->zeroOrOneOption( argv, "O16" );
-
-    if( argv_options.find( "-a" )->present( ) ) {
-        photo_mode = GIDI::Construction::PhotoMode::atomicOnly;
-        if( argv_options.find( "-n" )->present( ) ) photo_mode = GIDI::Construction::PhotoMode::nuclearAndAtomic;
-    }
-
-    GIDI::Map::Map map( mapFilename, pops );
-    GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, photo_mode );
-    GIDI::Protare *protare = map.protare( construction, pops, projectileID, targetID );
+    GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, parseTestOptions.photonMode( ) );
+    GIDI::Protare *protare = parseTestOptions.protare( pops, "../../../GIDI/Test/pops.xml", "../../../GIDI/Test/Data/MG_MC/all_maps.map",
+        construction, PoPI::IDs::neutron, "O16" );
 
     GIDI::Styles::TemperatureInfos temperatures = protare->temperatures( );
     std::string label( temperatures[0].heatedCrossSection( ) );
-    MCGIDI::Transporting::MC settings( pops, projectileID, &protare->styles( ), label, GIDI::Transporting::DelayedNeutrons::on, 20.0 );
+    MCGIDI::Transporting::MC settings( pops, protare->projectile( ).ID( ), &protare->styles( ), label, GIDI::Transporting::DelayedNeutrons::on, 20.0 );
 
     GIDI::Transporting::Particles particles;
 
@@ -86,6 +64,7 @@ void main2( int argc, char **argv ) {
     GIDI::Transporting::Fluxes_from_bdfls fluxes_from_bdfls( "../../../GIDI/Test/bdfls", 0.0 );
 
     MCGIDI::DomainHash domainHash( 4000, 1e-8, 10 );
+    std::set<int> reactionsToExclude;
     MCGIDI::Protare *MCProtare = MCGIDI::protareFromGIDIProtare( *protare, pops, settings, particles, domainHash, temperatures, reactionsToExclude );
 
     MCProtare->setUserParticleIndex( pops[PoPI::IDs::neutron], 0 );

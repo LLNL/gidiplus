@@ -43,8 +43,6 @@ int main( int argc, char **argv ) {
     argv_options.add( argvOption2( "-n", false, "If present, add neutron as transporting particle." ) );
     argv_options.add( argvOption2( "-p", false, "If present, add photon as transporting particle." ) );
 
-    argv_options.add( argvOption2( "-n", false, "Include photo-nuclear protare if relevant. This is the default unless *-a* present." ) );
-
     argv_options.parseArgv( argc, argv );
 
     std::string mapFilename = argv_options.find( "--map" )->zeroOrOneOption( argv, "../../../GIDI/Test/all3T.map" );
@@ -87,6 +85,7 @@ int main( int argc, char **argv ) {
         photon.appendFlux( fluxes_from_bdfls.getViaFID( 1 ) );
         particles.add( photon );
     }
+
     particles.process( *protare, label );
 
     MCGIDI::Transporting::MC MC( pops, projectileID, &protare->styles( ), label, GIDI::Transporting::DelayedNeutrons::on, 20.0 );
@@ -103,7 +102,7 @@ int main( int argc, char **argv ) {
     MCGIDI::Vector<MCGIDI::Protare *> protares( 1 );
     protares[0] = MCProtare;
 
-    MCGIDI::MultiGroupHash multiGroupHash( *protare );
+    MCGIDI::MultiGroupHash multiGroupHash( *protare, temperatures[0] );
 
     for( MCGIDI_VectorSizeType i1 = 0; i1 < (MCGIDI_VectorSizeType) MCProtare->numberOfReactions( ); ++i1 ) {
         MCGIDI::Reaction const &reaction = *MCProtare->reaction( i1 );

@@ -7,27 +7,29 @@ SHELL = /bin/ksh
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
+.PHONY: default compile check clean realclean doDirs
+
 DIRS = Utilities matrix VectorAndMatrixReverse map parseXML groupBoundaries inverseSpeed productIDs crossSections productMatrix \
 	transportCorrection availableEnergy multiplicity Q averageProductData depositionData \
 	settingsProcess multiGroup temperatures splitString ancestry readAll photoAtomicScattering photoScattering TNSL gain \
-	multiGroups fluxes ENDLCValues activeReactions
-
-.PHONY: default check clean realclean
+	multiGroups fluxes ENDLCValues activeReactions delayedNeutronProducts
 
 default:
-	cd Utilities; $(MAKE) CXX=$(CXX) CXXFLAGS="$(CXXFLAGS)"
+	cd Utilities; $(MAKE)
 
 compile:
-	$(MAKE) doDirs TARGET=default CXX=$(CXX) CXXFLAGS="$(CXXFLAGS)"
+	$(MAKE) doDirs TARGET=default
 
 check:
-	$(MAKE) doDirs TARGET=check CXX=$(CXX) CXXFLAGS="$(CXXFLAGS)"
+	echo ""
+	echo "  -- Checking GIDI --"
+	$(MAKE) doDirs TARGET=check
 
 clean:
-	$(MAKE) doDirs TARGET=clean CXX=$(CXX) CXXFLAGS="$(CXXFLAGS)"
+	$(MAKE) doDirs TARGET=clean
 
 realclean:
-	$(MAKE) doDirs TARGET=realclean CXX=$(CXX) CXXFLAGS="$(CXXFLAGS)"
+	$(MAKE) doDirs TARGET=realclean
 
 doDirs:
-	for dir in $(DIRS); do cd $$dir; $(MAKE) $(TARGET) CXX=$(CXX) CXXFLAGS="$(CXXFLAGS)"; cd ../; done
+	for dir in $(DIRS); do cd $$dir; $(MAKE) $(TARGET); cd ../; done

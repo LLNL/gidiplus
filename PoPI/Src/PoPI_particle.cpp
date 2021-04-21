@@ -25,12 +25,12 @@ Particle::Particle( pugi::xml_node const &a_node, Particle_class a_class, std::s
         IDBase( a_node, a_class ),
         m_family( a_family ),
         m_hasNucleus( a_hasNucleus ),
-        m_mass( a_node.child( "mass" ) ),
-        m_spin( a_node.child( "spin" ) ),
-        m_parity( a_node.child( "parity" ) ),
-        m_charge( a_node.child( "charge" ) ),
-        m_halflife( a_node.child( "halflife" ) ),
-        m_decayData( a_node.child( "decayData" ) ) {
+        m_mass( a_node.child( PoPI_massChars ) ),
+        m_spin( a_node.child( PoPI_spinChars ) ),
+        m_parity( a_node.child( PoPI_parityChars ) ),
+        m_charge( a_node.child( PoPI_chargeChars ) ),
+        m_halflife( a_node.child( PoPI_halflifeChars ) ),
+        m_decayData( a_node.child( PoPI_decayDataChars ) ) {
 
 }
 /*
@@ -48,7 +48,7 @@ double Particle::massValue( char const *a_unit ) const {
 
     PQ_double const *pq_mass = dynamic_cast<PQ_double const *>( mass( )[0] );
 
-    if( pq_mass == NULL ) throw Exception( "Particle does not have a PoPI::PQ_double mass." );
+    if( pq_mass == nullptr ) throw Exception( "Particle does not have a PoPI::PQ_double mass." );
     return( pq_mass->value( a_unit ) );
 }
 /*

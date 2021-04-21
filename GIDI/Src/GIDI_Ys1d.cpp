@@ -27,7 +27,8 @@ namespace Functions {
  ***********************************************************************************************************/
 
 Ys1d::Ys1d( Axes const &a_axes, ptwXY_interpolation a_interpolation, int a_index, double a_outerDomainValue ) :
-        Function1dForm( Ys1dMoniker, FormType::Ys1d, a_axes, a_interpolation, a_index, a_outerDomainValue ) {
+        Function1dForm( GIDI_Ys1dChars, FormType::Ys1d, a_axes, a_interpolation, a_index, a_outerDomainValue ),
+        m_start( 0 ) {
 
 }
 
@@ -42,7 +43,7 @@ Ys1d::Ys1d( Axes const &a_axes, ptwXY_interpolation a_interpolation, int a_index
  ***********************************************************************************************************/
 
 Ys1d::Ys1d( Axes const &a_axes, ptwXY_interpolation a_interpolation, std::size_t a_start, std::vector<double> const &a_Ys, int a_index, double a_outerDomainValue ) :
-        Function1dForm( Ys1dMoniker, FormType::Ys1d, a_axes, a_interpolation, a_index, a_outerDomainValue ),
+        Function1dForm( GIDI_Ys1dChars, FormType::Ys1d, a_axes, a_interpolation, a_index, a_outerDomainValue ),
         m_start( a_start ),
         m_Ys( a_Ys ) {
 
@@ -53,15 +54,16 @@ Ys1d::Ys1d( Axes const &a_axes, ptwXY_interpolation a_interpolation, std::size_t
  *
  * @param a_construction        [in]    Used to pass user options for parsing.
  * @param a_node                [in]    The Ys1d pugi::xml_node to be parsed and to construct the instance.
+ * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent              [in]    If imbedded in a two dimensional function, its pointers.
  ***********************************************************************************************************/
 
-Ys1d::Ys1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, Suite *a_parent ) :
-        Function1dForm( a_construction, a_node, FormType::Ys1d, a_parent ),
-        m_start( a_node.child( "values" ).attribute( "start" ).as_int( ) ),         // as_int returns 0 if "start" not present.
+Ys1d::Ys1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+        Function1dForm( a_construction, a_node, a_setupInfo, FormType::Ys1d, a_parent ),
+        m_start( a_node.child( GIDI_valuesChars ).attribute( GIDI_startChars ).as_int( ) ),         // as_int returns 0 if "start" not present.
         m_Ys( ) {
 
-    parseValuesOfDoubles( a_construction, a_node.child( "values" ), m_Ys );
+    parseValuesOfDoubles( a_construction, a_node.child( GIDI_valuesChars ), a_setupInfo, m_Ys );
 }
 
 /* *********************************************************************************************************//**
@@ -183,12 +185,36 @@ double Ys1d::evaluate( double a_x1 ) const {
 void Ys1d::toXMLList_func( WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
-    std::string attributes = a_writeInfo.addAttribute( "label", label( ) );
+    std::string attributes = a_writeInfo.addAttribute( GIDI_labelChars, label( ) );
     
     a_writeInfo.addNodeStarter( a_indent, moniker( ), attributes );
     axes( ).toXMLList( a_writeInfo, indent2 );
     doublesToXMLList( a_writeInfo, indent2, m_Ys, m_start );
     a_writeInfo.addNodeEnder( moniker( ) );
+}
+
+/* *********************************************************************************************************//**
+ * Prints the pair (index, y) values to stdout. The format string must have a long and a double conversion specifiers (e.g., "    %10ld %.6f").
+ *
+ * @param       a_format            [in]    The format string passed to the C printf function.
+ ***********************************************************************************************************/
+
+void Ys1d::print( char const *a_format ) {
+
+    long size = static_cast<long>(  m_Ys.size( ) );
+    for( long index = 0; index < size; ++index ) printf( a_format, index + m_start, m_Ys[index] );
+}
+
+/* *********************************************************************************************************//**
+ * Prints the pair (index, y) values to stdout. The format string must have a long and a double conversion specifiers (e.g., "    %10ld %.6f").
+ *
+ * @param       a_format            [in]    The format string passed to the C printf function.
+ ***********************************************************************************************************/
+
+void Ys1d::print( std::string const &a_format ) {
+
+    print( a_format.c_str( ) );
+
 }
 
 }               // End namespace Functions.

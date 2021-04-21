@@ -55,7 +55,7 @@ void ProtareComposite::append( Protare *a_protare ) {
  * @return                          The format version.
  ******************************************************************/
 
-std::string const &ProtareComposite::formatVersion( std::size_t a_index ) const {
+FormatVersion const &ProtareComposite::formatVersion( std::size_t a_index ) const {
 
     return( m_protares[a_index]->formatVersion( ) );
 }
@@ -145,7 +145,7 @@ std::size_t ProtareComposite::numberOfProtares( ) const {
  *
  * @param a_index               [in]    Index of the **ProtareSingle** to return.
  *
- * @return                              Pointer to the requested protare or NULL if invalid *a_index*..
+ * @return                              Pointer to the requested protare or nullptr if invalid *a_index*..
  ***********************************************************************************************************/
 
 ProtareSingle *ProtareComposite::protare( std::size_t a_index ) {
@@ -157,7 +157,7 @@ ProtareSingle *ProtareComposite::protare( std::size_t a_index ) {
         a_index -= number;
     }
 
-    return( NULL );
+    return( nullptr );
 }
 
 /* *********************************************************************************************************//**
@@ -165,7 +165,7 @@ ProtareSingle *ProtareComposite::protare( std::size_t a_index ) {
  *
  * @param a_index               [in]    Index of the **ProtareSingle** to return.
  *
- * @return                              Pointer to the requested protare or NULL if invalid *a_index*..
+ * @return                              Pointer to the requested protare or nullptr if invalid *a_index*..
  ***********************************************************************************************************/
 
 ProtareSingle const *ProtareComposite::protare( std::size_t a_index ) const {
@@ -177,7 +177,7 @@ ProtareSingle const *ProtareComposite::protare( std::size_t a_index ) const {
         a_index -= number;
     }
 
-    return( NULL );
+    return( nullptr );
 }
 
 /* *********************************************************************************************************//**
@@ -192,12 +192,12 @@ double ProtareComposite::thresholdFactor( ) const {
 }
 
 /* *********************************************************************************************************//**
- * Returns the Documentation::Suite from the first protare in *m_protares*.
+ * Returns the Documentation_1_10::Suite from the first protare in *m_protares*.
  *
- * @return              The Documentation::Suite.
+ * @return              The Documentation_1_10::Suite.
  ******************************************************************/
 
-Documentation::Suite &ProtareComposite::documentations( ) {
+Documentation_1_10::Suite &ProtareComposite::documentations( ) {
 
     return( m_protares[0]->documentations( ) );
 }
@@ -411,18 +411,6 @@ bool ProtareComposite::hasFission( ) const {
         if( m_protares[i1]->hasFission( ) ) return( true );
     }
     return( false );
-}
-
-/* *********************************************************************************************************//**
- * Returns the requested Styles::MultiGroup from the styles.
- *
- * @param a_label   [in]    Label for the requested Styles::MultiGroup.
- * @return                  The requested MultiGroup style.
- ***********************************************************************************************************/
-
-Styles::MultiGroup const *ProtareComposite::multiGroup( std::string const &a_label ) const {
-
-    return( m_protares[0]->multiGroup( a_label ) );
 }
 
 /* *********************************************************************************************************//**
@@ -750,6 +738,27 @@ stringAndDoublePairs ProtareComposite::muCutoffForCoulombPlusNuclearElastic( ) c
     }
 
     return( muCutoffs );
+}
+
+/* *********************************************************************************************************//**
+ * Returns the list of DelayedNeutronProduct instances.
+ * 
+ * @return      a_delayedNeutronProducts        The list of delayed neutrons.
+ ***********************************************************************************************************/
+ 
+DelayedNeutronProducts ProtareComposite::delayedNeutronProducts( ) const {
+
+    DelayedNeutronProducts delayedNeutronProducts1;
+
+    if( hasFission( ) ) {
+        for( std::size_t i1 = 0; i1 < m_protares.size( ); ++i1 ) {
+            DelayedNeutronProducts delayedNeutronProducts2 = m_protares[i1]->delayedNeutronProducts( );
+
+            delayedNeutronProducts1.insert( delayedNeutronProducts1.end( ), delayedNeutronProducts2.begin( ), delayedNeutronProducts2.end( ) );
+        }
+    }
+
+    return( delayedNeutronProducts1 );
 }
 
 }

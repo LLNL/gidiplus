@@ -9,6 +9,8 @@ SHELL = /bin/sh
 
 .PHONY: default utilities check checke clean realclean doTarget
 
+subDirectories = Utilities UnitTesting
+
 default:
 	$(MAKE) doTarget MODE=''
 

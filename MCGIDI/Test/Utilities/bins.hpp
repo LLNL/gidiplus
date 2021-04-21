@@ -159,7 +159,7 @@ class Bins {
                     x1 = ( i1 + 0.5 ) / ( (double) m_bins.size( ) ) * m_domainWidth + m_domainMin;
                 }
 
-                fprintf( a_fOut, "%23.16e  %15.7e  %8ld  %15.7e", x1, partial / norm, m_bins[i1], partial );
+                fprintf( a_fOut, "%23.15e  %15.7e  %8ld  %15.7e", x1, partial / norm, m_bins[i1], partial );
                 if( a_includeWeights ) {
                     partial = m_weightedBins[i1] / weightedTotal;
 

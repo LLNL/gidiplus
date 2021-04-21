@@ -29,7 +29,7 @@ namespace GIDI {
 ProtareTNSL::ProtareTNSL( Construction::Settings const &a_construction, ProtareSingle *a_protare, ProtareSingle *a_TNSL ) :
         m_protare( a_protare ),
         m_TNSL( a_TNSL ),
-        m_elasticReaction( NULL ) {
+        m_elasticReaction( nullptr ) {
 
     if( a_protare->projectile( ).ID( ) != PoPI::IDs::neutron ) throw Exception( "ProtareTNSL::ProtareTNSL: a_protare neutron as target." );
     if( a_TNSL->projectile( ).ID( ) != PoPI::IDs::neutron ) throw Exception( "ProtareTNSL::ProtareTNSL: a_TNSL not thermal neutron scattering protare." );
@@ -46,7 +46,7 @@ ProtareTNSL::ProtareTNSL( Construction::Settings const &a_construction, ProtareS
         }
     }
 
-    if( m_elasticReaction == NULL ) throw Exception( "ProtareTNSL::ProtareTNSL: could not find elastic reaction in a_protare." );
+    if( m_elasticReaction == nullptr ) throw Exception( "ProtareTNSL::ProtareTNSL: could not find elastic reaction in a_protare." );
 
     m_maximumTNSL_MultiGroupIndex[""] = 0;                             // In case temperatureInfo.heatedMultiGroup( ) is an empty string. Is this needed?
     Styles::TemperatureInfos temperatures = m_TNSL->temperatures( );
@@ -62,20 +62,21 @@ ProtareTNSL::ProtareTNSL( Construction::Settings const &a_construction, ProtareS
             for( ; i1 < crossSection.size( ); ++i1 ) {
                 if( crossSection[i1] == 0 ) break;
             }
-            if( i1 > 0 ) --i1;                                      // Assume that the last non-zero multi-group in TSNL is incomplete.
             maximumMultiGroupIndex = i1;
                                                                     // The check of multiplicity is needed because FUDGE has a inconsistency in what maximum energy 
                                                                     // to use for TNSL calculations. The following lines can be remove when this issue is resolved in FUDGE.
+                                                                    // This should not be needed for data produced after 15/Jan/2021 or probably earlier as FUDGE was fixed.
             Vector multiplicity = m_TNSL->multiGroupMultiplicity( settings, *iter, PoPI::IDs::neutron );
             for( i1 = 0; i1 < multiplicity.size( ); ++i1 ) {
                 if( multiplicity[i1] == 0 ) break;
             }
-            if( i1 > 0 ) --i1;                                      // Assume that the last non-zero multi-group in TSNL is incomplete.
             if( i1 < maximumMultiGroupIndex ) maximumMultiGroupIndex = i1;
 
             m_maximumTNSL_MultiGroupIndex[label] = maximumMultiGroupIndex;
         }
     }
+
+    m_elasticReaction->modifiedMultiGroupElasticForTNSL( m_maximumTNSL_MultiGroupIndex );
 
 // FIXME do I need to check that data are consistence.
 }
@@ -154,7 +155,7 @@ void ProtareTNSL::combineMatrices( Transporting::MG const &a_settings, Styles::T
  * @return                          The format version.
  ******************************************************************/
 
-std::string const &ProtareTNSL::formatVersion( std::size_t a_index ) const {
+FormatVersion const &ProtareTNSL::formatVersion( std::size_t a_index ) const {
 
     if( a_index == 0 ) return( m_protare->formatVersion( ) );
     if( a_index == 1 ) return( m_TNSL->formatVersion( ) );
@@ -241,14 +242,14 @@ Frame ProtareTNSL::projectileFrame( std::size_t a_index ) const {
  *
  * @param a_index               [in]    Index of the **ProtareSingle** to return. Can only be 0 or 1.
  *
- * @return                              Pointer to the requested protare or NULL if invalid *a_index*..
+ * @return                              Pointer to the requested protare or nullptr if invalid *a_index*..
  ***********************************************************************************************************/
 
 ProtareSingle *ProtareTNSL::protare( std::size_t a_index ) {
 
     if( a_index == 0 ) return( m_protare );
     if( a_index == 1 ) return( m_TNSL );
-    return( NULL );
+    return( nullptr );
 }
 
 /* *********************************************************************************************************//**
@@ -256,14 +257,14 @@ ProtareSingle *ProtareTNSL::protare( std::size_t a_index ) {
  *
  * @param a_index               [in]    Index of the **ProtareSingle** to return. Can only be 0 or 1.
  *
- * @return                              Pointer to the requested protare or NULL if invalid *a_index*..
+ * @return                              Pointer to the requested protare or nullptr if invalid *a_index*..
  ***********************************************************************************************************/
 
 ProtareSingle const *ProtareTNSL::protare( std::size_t a_index ) const {
 
     if( a_index == 0 ) return( m_protare );
     if( a_index == 1 ) return( m_TNSL );
-    return( NULL );
+    return( nullptr );
 }
 
 /* *********************************************************************************************************//**
@@ -278,12 +279,12 @@ double ProtareTNSL::thresholdFactor( ) const {
 }
 
 /* *********************************************************************************************************//**
- * Returns the Documentation::Suite from the non TNSL protare.
+ * Returns the Documentation_1_10::Suite from the non TNSL protare.
  *
- * @return              The Documentation::Suite.
+ * @return              The Documentation_1_10::Suite.
  ******************************************************************/
 
-Documentation::Suite &ProtareTNSL::documentations( ) {
+Documentation_1_10::Suite &ProtareTNSL::documentations( ) {
 
     return( m_protare->documentations( ) );
 }
@@ -460,18 +461,6 @@ Reaction const *ProtareTNSL::orphanProduct( std::size_t a_index ) const {
 bool ProtareTNSL::hasFission( ) const {
 
     return( m_protare->hasFission( ) );
-}
-
-/* *********************************************************************************************************//**
- * Returns the requested Styles::MultiGroup from the styles from the non TNSL protare.
- *
- * @param a_label   [in]    Label for the requested Styles::MultiGroup.
- * @return                  The requested MultiGroup style.
- ***********************************************************************************************************/
-
-Styles::MultiGroup const *ProtareTNSL::multiGroup( std::string const &a_label ) const {
-
-    return( m_protare->multiGroup( a_label ) );
 }
 
 /* *********************************************************************************************************//**
@@ -814,6 +803,52 @@ Vector ProtareTNSL::multiGroupGain( Transporting::MG const &a_settings, Styles::
     combineVectors( a_settings, a_temperatureInfo, vector, vectorElastic, m_TNSL->multiGroupGain( a_settings, a_temperatureInfo, a_productID ) );
 
     return( vector );
+}
+
+/* *********************************************************************************************************//**
+ * If the protare is a ProtareTNSL then summing over all reactions will include the standard protare's elastic cross section
+ * in the domain of the TNSL data. The standard elastic cross section should not be added in this domain.
+ * If needed, this function corrects the cross section for this over counting of the elastic cross section.
+ *
+ * @param       a_label                     [in]    The label of the elastic cross section data to use if over counting needs to be corrected.
+ * @param       a_crossSectionSum           [in]    The cross section to correct.
+ ***********************************************************************************************************/
+
+void ProtareTNSL::TNSL_crossSectionSumCorrection( std::string const &a_label, Functions::XYs1d &a_crossSectionSum ) {
+
+    double projectileEnergyMax = m_TNSL->projectileEnergyMax( );
+    Functions::XYs1d *xys1d = m_elasticReaction->crossSection( ).get<Functions::XYs1d>( a_label );
+
+    ptwXYPoints *ptwXY = const_cast<ptwXYPoints *>( xys1d->ptwXY( ) );
+    ptwXYPoints *sliced = ptwXY_domainMaxSlice( NULL, ptwXY, projectileEnergyMax, ptwXY_length( NULL, ptwXY ), 1 );
+    Functions::XYs1d slicedXYs1d( a_crossSectionSum.axes( ), sliced );
+
+    a_crossSectionSum -= slicedXYs1d;
+}
+
+/* *********************************************************************************************************//**
+ * If the protare is a ProtareTNSL then summing over all reactions will include the standard protare's elastic cross section
+ * in the domain of the TNSL data. The standard elastic cross section should not be added in this domain.
+ * If needed, this function corrects the cross section for this over counting of the elastic cross section.
+ *
+ * @param       a_label                     [in]    The label of the elastic cross section data to use if over counting needs to be corrected.
+ * @param       a_crossSectionSum           [in]    The cross section to correct.
+ ***********************************************************************************************************/
+
+void ProtareTNSL::TNSL_crossSectionSumCorrection( std::string const &a_label, Functions::Ys1d &a_crossSectionSum ) {
+
+    double projectileEnergyMax = m_TNSL->projectileEnergyMax( );
+    Styles::GriddedCrossSection const *griddedCrossSection = m_protare->styles( ).get<Styles::GriddedCrossSection>( a_label );
+    std::vector<double> const energies = griddedCrossSection->grid( ).values( );
+    Functions::Ys1d const *ys1d = m_elasticReaction->crossSection( ).get<Functions::Ys1d const>( a_label );
+
+    std::size_t start = ys1d->start( );
+    std::vector<double> const &Ys = ys1d->Ys( );
+    std::vector<double> &crossSectionYs = a_crossSectionSum.Ys( );
+    for( std::size_t index = 0; index < Ys.size( ); ++index ) {
+        if( energies[index] > projectileEnergyMax ) break;
+        crossSectionYs[index+start] -= Ys[index];
+    }
 }
 
 /* *********************************************************************************************************//**

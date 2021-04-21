@@ -8,7 +8,18 @@
 import unittest
 import math
 
-from numericalFunctions import angularMomentumCoupling as nf_amc
+import os
+import glob
+
+import numericalFunctions
+
+# Deployment via Makefiles places shared libraries in .../fudge/numericalFunctions/lib
+if len(glob.glob(os.path.join(numericalFunctions.__path__[0], 'lib', '*angularMomentumCoupling*'))) > 0:
+    from numericalFunctions.lib import angularMomentumCoupling as nf_amc
+
+# Deployment via `pip install` places shared libraries in .../site-packages/numericalFunctions
+else:
+    from numericalFunctions import angularMomentumCoupling as nf_amc
 
 class Test_ClebschGordanCoefficient(unittest.TestCase):
 

@@ -163,7 +163,12 @@ nfu_status ptwXY_thicken( statusMessageReporting *smr, ptwXYPoints *ptwXY1, int 
         smr_setReportError2p( smr, nfu_SMR_libraryID, nfu_otherInterpolation, "Other interpolation not allowed." );
         return( nfu_otherInterpolation );
     }
-    if( ( sectionSubdivideMax < 1 ) || ( dDomainMax < 0. ) || ( fDomainMax < 1. ) ) return( nfu_badInput );
+    if( ( sectionSubdivideMax < 1 ) || ( dDomainMax < 0. ) || ( fDomainMax < 1. ) ) {
+        smr_setReportError2( smr, nfu_SMR_libraryID, nfu_Error, 
+                "ptwXY_thicken: One or more of the following not satisfied: sectionSubdivideMax = %d > 0, dDomainMax = %e >= 0.0, fDomainMax = %e >= 1.0",
+                sectionSubdivideMax, dDomainMax, fDomainMax );
+        return( nfu_badInput );
+    }
     if( sectionSubdivideMax > ptwXY_sectionSubdivideMax ) sectionSubdivideMax = ptwXY_sectionSubdivideMax;
     if( ptwXY_simpleCoalescePoints( smr, ptwXY1 ) != nfu_Okay ) {
         smr_setReportError2p( smr, nfu_SMR_libraryID, nfu_Error, "Via." );

@@ -236,8 +236,26 @@ HOST_DEVICE double ProtareTNSL::crossSection( URR_protareInfos const &a_URR_prot
         crossSection1 = m_protareWithElastic->crossSection( a_URR_protareInfos, a_hashIndex, a_temperature, a_energy, a_sampling );
     }
 
-
     return( crossSection1 );
+}
+
+/* *********************************************************************************************************//**
+ * Adds the energy dependent, total cross section corresponding to the temperature *a_temperature* multiplied by *a_userFactor* to *a_crossSectionVector*.
+ *
+ * @param   a_temperature               [in]        Specifies the temperature of the material.
+ * @param   a_userFactor                [in]        User factor which all cross sections are multiplied by.
+ * @param   a_numberAllocated           [in]        The length of memory allocated for *a_crossSectionVector*.
+ * @param   a_crossSectionVector        [in/out]    The energy dependent, total cross section to add cross section data to.
+ ***********************************************************************************************************/
+
+HOST_DEVICE void ProtareTNSL::crossSectionVector( double a_temperature, double a_userFactor, int a_numberAllocated, double *a_crossSectionVector ) const {
+
+    if( a_temperature <= m_TNSL_maximumTemperature ) {
+        m_TNSL->crossSectionVector( a_temperature, a_userFactor, a_numberAllocated, a_crossSectionVector );
+        m_protareWithoutElastic->crossSectionVector( a_temperature, a_userFactor, a_numberAllocated, a_crossSectionVector ); }
+    else {
+        m_protareWithElastic->crossSectionVector( a_temperature, a_userFactor, a_numberAllocated, a_crossSectionVector );
+    }
 }
 
 /* *********************************************************************************************************//**
@@ -464,19 +482,14 @@ HOST_DEVICE void ProtareTNSL::serialize( DataBuffer &a_buffer, DataBuffer::Mode 
             m_protareWithoutElastic = new ProtareSingle( );
         }
     }
+    if( a_mode == DataBuffer::Mode::Memory ) {
+            a_buffer.incrementPlacement( sizeof( ProtareSingle ) );
+            a_buffer.incrementPlacement( sizeof( ProtareSingle ) );
+            a_buffer.incrementPlacement( sizeof( ProtareSingle ) );
+    }
     m_protareWithElastic->serialize( a_buffer, a_mode );
     m_TNSL->serialize( a_buffer, a_mode );
     m_protareWithoutElastic->serialize( a_buffer, a_mode );
-}
-
-/* *********************************************************************************************************//**
- * This method counts the number of bytes of memory allocated by *this*. That is the member needed by *this* that is greater than
- * sizeof( *this );
- ***********************************************************************************************************/
-
-HOST_DEVICE long ProtareTNSL::internalSize( ) const {
-
-    return( m_protareWithElastic->internalSize( ) + m_TNSL->internalSize( ) + m_protareWithoutElastic->internalSize( ) );
 }
 
 }

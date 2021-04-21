@@ -20,9 +20,9 @@ namespace GIDI {
  ***********************************************************************************************************/
 
 FissionFragmentData::FissionFragmentData( ) :
-        Ancestry( fissionFragmentDataMoniker ),
-        m_delayedNeutrons( delayedNeutronsMoniker ),
-        m_fissionEnergyReleases( fissionEnergyReleasesMoniker ) {
+        Ancestry( GIDI_fissionFragmentDataChars ),
+        m_delayedNeutrons( GIDI_delayedNeutronsChars ),
+        m_fissionEnergyReleases( GIDI_fissionEnergyReleasesChars ) {
 
 }
 
@@ -31,17 +31,18 @@ FissionFragmentData::FissionFragmentData( ) :
  *
  * @param a_construction    [in]    Used to pass user options to the constructor.
  * @param a_node            [in]    The reaction pugi::xml_node to be parsed and used to construct the reaction.
+ * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops            [in]    The *external* PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs    [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
  *                                  This is the <**PoPs**> node under the <**reactionSuite**> node.
  * @param a_styles          [in]    The <**styles**> node under the <**reactionSuite**> node.
  ***********************************************************************************************************/
 
-FissionFragmentData::FissionFragmentData( Construction::Settings const &a_construction, pugi::xml_node const &a_node, PoPI::Database const &a_pops, 
-                PoPI::Database const &a_internalPoPs, Styles::Suite const *a_styles ) :
+FissionFragmentData::FissionFragmentData( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,
+                PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Styles::Suite const *a_styles ) :
         Ancestry( a_node.name( ) ),
-        m_delayedNeutrons( a_construction, delayedNeutronsMoniker, a_node, a_pops, a_internalPoPs, parseDelayedNeutronsSuite, a_styles ),
-        m_fissionEnergyReleases( a_construction, fissionEnergyReleasesMoniker, a_node, a_pops, a_internalPoPs, parseFissionEnergyReleasesSuite, a_styles ) {
+        m_delayedNeutrons( a_construction, GIDI_delayedNeutronsChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseDelayedNeutronsSuite, a_styles ),
+        m_fissionEnergyReleases( a_construction, GIDI_fissionEnergyReleasesChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseFissionEnergyReleasesSuite, a_styles ) {
 
     m_delayedNeutrons.setAncestor( this );
     m_fissionEnergyReleases.setAncestor( this );
@@ -61,33 +62,33 @@ FissionFragmentData::~FissionFragmentData( ) {
 }
 
 /* *********************************************************************************************************//**
- * Used by Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or NULL if none exists.
+ * Used by Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or nullptr if none exists.
  *
  * @param a_item    [in]    The name of the class member whose pointer is to be return.
- * @return                  The pointer to the class member or NULL if class does not have a member named a_item.
+ * @return                  The pointer to the class member or nullptr if class does not have a member named a_item.
  ***********************************************************************************************************/
 
 Ancestry *FissionFragmentData::findInAncestry3( std::string const &a_item ) {
 
-    if( a_item == delayedNeutronsMoniker ) return( &m_delayedNeutrons );
-    if( a_item == fissionEnergyReleasesMoniker ) return( &m_fissionEnergyReleases );
+    if( a_item == GIDI_delayedNeutronsChars ) return( &m_delayedNeutrons );
+    if( a_item == GIDI_fissionEnergyReleasesChars ) return( &m_fissionEnergyReleases );
 
-    return( NULL );
+    return( nullptr );
 }
 
 /* *********************************************************************************************************//**
- * Used by Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or NULL if none exists.
+ * Used by Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or nullptr if none exists.
  *
  * @param a_item    [in]    The name of the class member whose pointer is to be return.
- * @return                  The pointer to the class member or NULL if class does not have a member named a_item.
+ * @return                  The pointer to the class member or nullptr if class does not have a member named a_item.
  ***********************************************************************************************************/
 
 Ancestry const *FissionFragmentData::findInAncestry3( std::string const &a_item ) const {
 
-    if( a_item == delayedNeutronsMoniker ) return( &m_delayedNeutrons );
-    if( a_item == fissionEnergyReleasesMoniker ) return( &m_fissionEnergyReleases );
+    if( a_item == GIDI_delayedNeutronsChars ) return( &m_delayedNeutrons );
+    if( a_item == GIDI_fissionEnergyReleasesChars ) return( &m_fissionEnergyReleases );
 
-    return( NULL );
+    return( nullptr );
 }
 
 /* *********************************************************************************************************//**
@@ -284,6 +285,22 @@ Vector FissionFragmentData::multiGroupAverageMomentum( Transporting::MG const &a
     }
 
     return( vector );
+}
+
+/* *********************************************************************************************************//**
+ * Appends a DelayedNeutronProduct instance for each delayed neutron in *m_delayedNeutrons*.
+ *
+ * @param       a_delayedNeutronProducts    [in/out]    The list to append the delayed neutrons to.
+ ***********************************************************************************************************/
+
+void FissionFragmentData::delayedNeutronProducts( DelayedNeutronProducts &a_delayedNeutronProducts ) const {
+
+    for( std::size_t index = 0; index < m_delayedNeutrons.size( ); ++index ) {
+        DelayedNeutron const &delayedNeutron = *m_delayedNeutrons.get<DelayedNeutron>( index );
+
+        PhysicalQuantity rate = *delayedNeutron.rate( ).get<PhysicalQuantity>( 0 );
+        a_delayedNeutronProducts.push_back( DelayedNeutronProduct( delayedNeutron.delayedNeutronIndex( ), rate, &delayedNeutron.product( ) ) );
+    }
 }
 
 /* *********************************************************************************************************//**

@@ -12,7 +12,7 @@ ARFLAGS = -cr
 default: libPoPI.a
 
 libPoPI.a:
-	cd ../Src; $(MAKE) CC=$(CXX) CXXFLAGS='$(CXXFLAGS)'
+	cd ../Src; $(MAKE)
 	cp ../Src/libPoPI.a .
 
 check:

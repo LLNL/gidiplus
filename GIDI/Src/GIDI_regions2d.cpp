@@ -19,22 +19,29 @@ namespace Functions {
 
 /* *********************************************************************************************************//**
  *
- * @param a_construction    [in]     Used to pass user options to the constructor.
- * @param a_node            [in]     The **pugi::xml_node** to be parsed and used to construct the XYs2d.
- * @param a_parent          [in]     The parent GIDI::Suite.
+ * @param a_construction    [in]    Used to pass user options to the constructor.
+ * @param a_node            [in]    The **pugi::xml_node** to be parsed and used to construct the XYs2d.
+ * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
+ * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-Regions2d::Regions2d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, Suite *a_parent ) :
-        Function2dForm( a_construction, a_node, FormType::regions2d, a_parent ) {
+Regions2d::Regions2d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+        Function2dForm( a_construction, a_node, a_setupInfo, FormType::regions2d, a_parent ) {
+
+    if( a_setupInfo.m_formatVersion.format( ) != GNDS_formatVersion_1_10Chars ) {
+        data2dListParse( a_construction, a_node.child( GIDI_function2dsChars ), a_setupInfo, m_function2ds );
+        checkSequentialDomainLimits2d( m_function2ds, m_Xs );
+        return;                                     // Need to add uncertainty parsing.
+    }
 
     for( pugi::xml_node child = a_node.first_child( ); child; child = child.next_sibling( ) ) {
         std::string name( child.name( ) );
 
-        if( name == "axes" ) continue;
-        if( name == "uncertainty" ) continue;
+        if( name == GIDI_axesChars ) continue;
+        if( name == GIDI_uncertaintyChars ) continue;
 
-        Function2dForm *_form = data2dParse( a_construction, child, NULL );
-        if( _form == NULL ) throw Exception( "Regions2d::Regions2d: data2dParse returned NULL." );
+        Function2dForm *_form = data2dParse( a_construction, child, a_setupInfo, nullptr );
+        if( _form == nullptr ) throw Exception( "Regions2d::Regions2d: data2dParse returned nullptr." );
         append( _form );
     }
 }
@@ -44,7 +51,7 @@ Regions2d::Regions2d( Construction::Settings const &a_construction, pugi::xml_no
 
 Regions2d::~Regions2d( ) {
 
-    for( std::vector<Function2dForm *>::iterator iter = m_functions2d.begin( ); iter < m_functions2d.end( ); ++iter ) delete *iter;
+    for( std::vector<Function2dForm *>::iterator iter = m_function2ds.begin( ); iter < m_function2ds.end( ); ++iter ) delete *iter;
 }
 
 /* *********************************************************************************************************//**
@@ -89,7 +96,7 @@ void Regions2d::append( Function2dForm *a_function ) {
     }
 
     m_Xs.push_back( _domainMax );
-    m_functions2d.push_back( a_function );
+    m_function2ds.push_back( a_function );
 }
 
 /* *********************************************************************************************************//**
@@ -108,12 +115,12 @@ double Regions2d::evaluate( double a_x2, double a_x1 ) const {
 
     if( iX1 < 0 ) {
         if( iX1 == -1 ) {       /* x1 > last value of Xs. */
-            return( m_functions2d.back( )->evaluate( a_x2, a_x1 ) );
+            return( m_function2ds.back( )->evaluate( a_x2, a_x1 ) );
         }
         iX1 = 0;                /* x1 < last value of Xs. */
     }
 
-    return( m_functions2d[iX1]->evaluate( a_x2, a_x1 ) );
+    return( m_function2ds[iX1]->evaluate( a_x2, a_x1 ) );
 }
 
 /* *********************************************************************************************************//**
@@ -131,18 +138,18 @@ void Regions2d::toXMLList_func( WriteInfo &a_writeInfo, std::string const &a_ind
     std::string attributes;
 
     if( a_embedded ) {
-        attributes += a_writeInfo.addAttribute( "outerDomainValue", doubleToShortestString( outerDomainValue( ) ) ); }
+        attributes += a_writeInfo.addAttribute( GIDI_outerDomainValueChars, doubleToShortestString( outerDomainValue( ) ) ); }
     else {
         if( a_inRegions ) {
-            attributes = a_writeInfo.addAttribute( "index", intToString( index( ) ) ); }
+            attributes = a_writeInfo.addAttribute( GIDI_indexChars, intToString( index( ) ) ); }
         else {
-            if( label( ) != "" ) attributes = a_writeInfo.addAttribute( "label", label( ) );
+            if( label( ) != "" ) attributes = a_writeInfo.addAttribute( GIDI_labelChars, label( ) );
         }
     }
 
     a_writeInfo.addNodeStarter( a_indent, moniker( ), attributes );
     axes( ).toXMLList( a_writeInfo, indent2 ); 
-    for( std::vector<Function2dForm *>::const_iterator iter = m_functions2d.begin( ); iter != m_functions2d.end( ); ++iter ) (*iter)->toXMLList_func( a_writeInfo, indent2, false, true );
+    for( std::vector<Function2dForm *>::const_iterator iter = m_function2ds.begin( ); iter != m_function2ds.end( ); ++iter ) (*iter)->toXMLList_func( a_writeInfo, indent2, false, true );
     a_writeInfo.addNodeEnder( moniker( ) );
 }
 

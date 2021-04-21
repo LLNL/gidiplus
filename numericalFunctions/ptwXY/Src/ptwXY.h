@@ -127,6 +127,7 @@ ptwXYPoints *ptwXY_domainMaxSlice( statusMessageReporting *smr, ptwXYPoints *ptw
 
 ptwXY_interpolation ptwXY_getInterpolation( ptwXYPoints *ptwXY );
 char const *ptwXY_getInterpolationString( ptwXYPoints *ptwXY );
+nfu_status ptwXY_setInterpolationString( ptwXYPoints *ptwXY, char const *interpolationString );
 nfu_status ptwXY_getStatus( ptwXYPoints *ptwXY );
 int ptwXY_getUserFlag( ptwXYPoints *ptwXY );
 void ptwXY_setUserFlag( ptwXYPoints *ptwXY, int userFlag );

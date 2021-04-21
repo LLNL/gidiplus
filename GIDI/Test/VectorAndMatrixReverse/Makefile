@@ -7,49 +7,15 @@ SHELL = /bin/bash
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
-.PHONY: default vectorReverse matrixReverse clean realclean
+GIDI_PLUS_PATH ?= $(abspath ../../..)
+CppSource = $(sort $(wildcard *.cpp))
 
-PUGIXML_PATH = ../../../pugixml
-PUGIXML_INCLUDE = $(PUGIXML_PATH)/include
-PUGIXML_LIB = $(PUGIXML_PATH)/lib
+include ../../Makefile.paths
+include ../Makefile.check
 
-POPs_PATH = ../../../PoPI
-POPs_INCLUDE = $(POPs_PATH)/include
-POPs_LIB = $(POPs_PATH)/lib
-
-SMR_PATH = ../../../statusMessageReporting
-SMR_INCLUDE = $(SMR_PATH)/include
-SMR_LIB = $(SMR_PATH)/lib
-
-NF_PATH = ../../../numericalFunctions
-NF_INCLUDE = $(NF_PATH)/include
-NF_LIB = $(NF_PATH)/lib
-
-local_CXXFLAGS = $(CXXFLAGS) -I../../include -L../../lib \
-		-I../Utilities -L../Utilities \
-		-I$(POPs_INCLUDE) -L$(POPs_LIB) \
-		-I$(SMR_INCLUDE) -L$(SMR_LIB) \
-		-I$(NF_INCLUDE) -L$(NF_LIB) \
-		-I$(PUGIXML_INCLUDE) -L$(PUGIXML_LIB)
-
-LIBS = -lGIDI_testUtilities -lGIDI -lPoPI -lstatusMessageReporting -lnumericalfunctions -lpugixml
-
-default: vectorReverse matrixReverse
-
-vectorReverse: vectorReverse.cpp
-	$(CXX) $(local_CXXFLAGS) -o vectorReverse vectorReverse.cpp $(LIBS)
-
-matrixReverse: matrixReverse.cpp
-	$(CXX) $(local_CXXFLAGS) -o matrixReverse matrixReverse.cpp $(LIBS)
-
-check: vectorReverse matrixReverse
-	./vectorReverse > o1
-	../Utilities/diff.com vectorReverse/vectorReverse vectorReverse.out o1
-	./matrixReverse > o2
-	../Utilities/diff.com matrixReverse/matrixReverse matrixReverse.out o2
-
-clean:
-	rm -f vectorReverse matrixReverse o[0-9]* file1 file2
-
-realclean: clean
-	rm -rf *.dSYM
+check: $(Executables)
+	if [ ! -e Outputs ]; then mkdir Outputs; fi
+	./vectorReverse > Outputs/vectorReverse.out
+	../Utilities/diff.com vectorReverse/vectorReverse Benchmarks/vectorReverse.out Outputs/vectorReverse.out
+	./matrixReverse > Outputs/matrixReverse.out
+	../Utilities/diff.com matrixReverse/matrixReverse Benchmarks/matrixReverse.out Outputs/matrixReverse.out

@@ -26,12 +26,12 @@ def checkOptions( target, options ) :
     if( args.verbose > 0 ) : print( )
     output = '%s.%s' % ( code, target )
     for option in options : output += '.%s' % option
-    output = os.path.join( 'Outputs', output + '.out' )
-    output = output.replace( '..', '.' )
-    cmd = './%s %s --tid %s > o' % ( code, ' '.join( options ), target )
+    benchmarks = os.path.join( 'Benchmarks', output + '.out' ).replace( '..', '.' )
+    output = os.path.join( 'Outputs', output + '.out' ).replace( '..', '.' )
+    cmd = './%s %s --tid %s > %s' % ( code, ' '.join( options ), target, output )
     if( args.verbose > 0 ) : print( cmd )
     os.system( cmd )
-    cmd = '../Utilities/diff.com %s/%s %s o' % ( code, code, output )
+    cmd = '../Utilities/diff.com %s/%s %s %s' % ( code, code, benchmarks, output )
     if( args.verbose > 0 ) : print( cmd )
     os.system( cmd )
 
@@ -39,4 +39,5 @@ def checkTarget( target ) :
 
     for options in [ [ '' ], [ '-p' ] ] : checkOptions( target, options )
 
+if( not( os.path.exists( 'Outputs' ) ) ) : os.mkdir( 'Outputs' )
 for target in args.targets : checkTarget( target )

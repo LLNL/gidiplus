@@ -8,57 +8,12 @@
 */
 
 #include <stdlib.h>
-#include <sstream>
+#include <stdio.h>
 #include <algorithm>
 
 #include "GIDI.hpp"
 
 namespace GIDI {
-
-/*! \class Rate
- * Class to store GNDS <**rate**> node under a <**delayedNeutron**> node.
- */
-
-/* *********************************************************************************************************//**
- * This function converts the text of a **pugi::xml_node** into a list of doubles.
- *
- * @param a_construction        [in]     Used to pass user options to the constructor.
- * @param a_node                [in]    The **pugi::xml_node** node whoses text is to be converted into a list of doubles.
- * @param a_parent              [in]    The parent GIDI::Suite.
- ***********************************************************************************************************/
-
-Rate::Rate( Construction::Settings const &a_construction, pugi::xml_node const &a_node, Suite *a_parent ) :
-        Form( a_node, FormType::rate, a_parent ),
-        m_value( a_node.attribute( "value" ).as_double( ) ),
-        m_unit( a_node.attribute( "unit" ).value( ) ) {
-
-}
-
-/* *********************************************************************************************************//**
- ***********************************************************************************************************/
-
-Rate::~Rate( ) {
-
-}
-
-/* *********************************************************************************************************//**
- * Fills the argument *a_writeInfo* with the XML lines that represent *this*. Recursively enters each sub-node.
- *
- * @param       a_writeInfo         [in/out]    Instance containing incremental indentation and other information and stores the appended lines.
- * @param       a_indent            [in]        The amount to indent *this* node.
- ***********************************************************************************************************/
-
-void Rate::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
-
-    std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
-    std::string attributes;
-
-    attributes += a_writeInfo.addAttribute( "label", label( ) );
-    attributes += a_writeInfo.addAttribute( "value", doubleToShortestString( value( ) ) );
-    attributes += a_writeInfo.addAttribute( "unit", unit( ) );
-
-    a_writeInfo.addNodeStarterEnder( a_indent, moniker( ), attributes );
-}
 
 /* *********************************************************************************************************//**
  * This function takes a file path and returns its real path. On a Unix system, the system function realPath is called.
@@ -70,9 +25,9 @@ void Rate::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) cons
 
 std::string realPath( char const *a_path ) {
 
-    char *p1 = realpath( a_path, NULL );
+    char *p1 = realpath( a_path, nullptr );
 
-    if( p1 == NULL ) {
+    if( p1 == nullptr ) {
         std::string errMsg( "realPath: file does not exist: " );
         throw Exception( errMsg + a_path );
     } 
@@ -92,31 +47,6 @@ std::string realPath( char const *a_path ) {
 std::string realPath( std::string const &a_path ) {
 
     return( realPath( a_path.c_str( ) ) );
-}
-
-/* *********************************************************************************************************//**
- * This function splits that string *a_string* into separate strings using the delimiter character *a_delimiter*.
- *
- * @param a_string      [in]    The string to split.
- * @param a_delimiter   [in]    The delimiter character.
- *
- * @return                      The list of strings.
- ***********************************************************************************************************/
-
-std::vector<std::string> splitString( std::string const &a_string, char a_delimiter ) {
-
-    std::stringstream stringStream( a_string );
-    std::string segment;
-    std::vector<std::string> segments;
-    int i1 = 0;
-
-    while( std::getline( stringStream, segment, a_delimiter ) ) {
-        if( ( i1 > 0 ) && ( segment.size( ) == 0 ) ) continue;      // Remove sequential "//".
-        segments.push_back( segment );
-        ++i1;
-    }
-
-    return( segments );
 }
 
 /* *********************************************************************************************************//**
@@ -162,7 +92,7 @@ long binarySearchVector( double a_x, std::vector<double> const &a_Xs ) {
 
 void intsToXMLList( WriteInfo &a_writeInfo, std::string const &a_indent, std::vector<int> a_values, std::string const &a_attributes ) {
 
-    a_writeInfo.addNodeStarter( a_indent, "values", a_attributes );
+    a_writeInfo.addNodeStarter( a_indent, GIDI_valuesChars, a_attributes );
 
     std::string intString;
     std::string sep( "" );
@@ -173,37 +103,40 @@ void intsToXMLList( WriteInfo &a_writeInfo, std::string const &a_indent, std::ve
     }
 
     a_writeInfo.m_lines.back( ) += intString;
-    a_writeInfo.addNodeEnder( "values" );
+    a_writeInfo.addNodeEnder( GIDI_valuesChars );
 }
 
 /* *********************************************************************************************************//**
  * This function converts the text of a **pugi::xml_node** into a list of doubles.
  *
- * @param a_construction        [in]     Used to pass user options to the constructor.
- * @param a_node        [in]    The **pugi::xml_node** node whoses text is to be converted into a list of doubles.
- * @param a_values      [in]    The list to fill with the converted values.
+ * @param a_construction        [in]    Used to pass user options to the constructor.
+ * @param a_node                [in]    The **pugi::xml_node** node whoses text is to be converted into a list of doubles.
+ * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
+ * @param a_values              [in]    The list to fill with the converted values.
  ***********************************************************************************************************/
 
-void parseValuesOfDoubles( Construction::Settings const &a_construction, pugi::xml_node const &a_node, std::vector<double> &a_values) {
+void parseValuesOfDoubles( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,
+            std::vector<double> &a_values) {
 
-    parseValuesOfDoubles( a_node, a_values, a_construction.useSystem_strtod( ) );
+    parseValuesOfDoubles( a_node, a_setupInfo, a_values, a_construction.useSystem_strtod( ) );
 }
 
 /* *********************************************************************************************************//**
  * This function converts the text of a **pugi::xml_node** into a list of doubles.
  *
  * @param a_node                [in]    The **pugi::xml_node** node whoses text is to be converted into a list of doubles.
+ * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_values              [in]    The list to fill with the converted values.
  * @param a_useSystem_strtod    [in]    Flag passed to the function nfu_stringToListOfDoubles.
  ***********************************************************************************************************/
 
-void parseValuesOfDoubles( pugi::xml_node const &a_node, std::vector<double> &a_values, int a_useSystem_strtod ) {
+void parseValuesOfDoubles( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, std::vector<double> &a_values, int a_useSystem_strtod ) {
 
     int64_t numberConverted;
     char *endCharacter;
 
-    double *p1 = nfu_stringToListOfDoubles( NULL, a_node.text( ).get( ), ' ', &numberConverted, &endCharacter, a_useSystem_strtod );
-    if( p1 == NULL ) throw Exception( "parseValuesOfDoubles: nfu_stringToListOfDoubles returned NULL." );
+    double *p1 = nfu_stringToListOfDoubles( nullptr, a_node.text( ).get( ), ' ', &numberConverted, &endCharacter, a_useSystem_strtod );
+    if( p1 == nullptr ) throw Exception( "parseValuesOfDoubles: nfu_stringToListOfDoubles returned nullptr." );
 
     a_values.resize( numberConverted );
     for( int64_t i1 = 0; i1 < numberConverted; ++i1 ) a_values[i1] = p1[i1];
@@ -231,9 +164,9 @@ void doublesToXMLList( WriteInfo &a_writeInfo, std::string const &a_indent, std:
     std::string sep = "";
 
     if( !a_newLine ) indent = "";
-    if( a_valueType != "" ) attributes += a_writeInfo.addAttribute( "valueType", a_valueType );
-    if( a_start != 0 ) attributes += a_writeInfo.addAttribute( "start", size_t_ToString( a_start ) );
-    XMLLine = a_writeInfo.nodeStarter( indent, "values", attributes );
+    if( a_valueType != "" ) attributes += a_writeInfo.addAttribute( GIDI_valueTypeChars, a_valueType );
+    if( a_start != 0 ) attributes += a_writeInfo.addAttribute( GIDI_startChars, size_t_ToString( a_start ) );
+    XMLLine = a_writeInfo.nodeStarter( indent, GIDI_valuesChars, attributes );
 
     if( valuesPerLine < 1 ) valuesPerLine = 1;
     int numberOfValuesInLine = 0;
@@ -265,7 +198,7 @@ void doublesToXMLList( WriteInfo &a_writeInfo, std::string const &a_indent, std:
         a_writeInfo.push_back( XMLLine );
     }
 
-    a_writeInfo.addNodeEnder( "values" );
+    a_writeInfo.addNodeEnder( GIDI_valuesChars );
 }
 
 /* *********************************************************************************************************//**
@@ -294,15 +227,16 @@ void WriteInfo::print( ) {
  * This function returns an frame enum representing a **pugi::xml_node**'s attribute with name *a_name*.
  *
  * @param a_node        [in]    The **pugi::xml_node** node whoses attribute named *a_node* is to be parsed to determine the frame.
+ * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_name        [in]    The name of the attribute to parse.
  *
  * @return                      The *frame* enum representing the node's frame.
  ***********************************************************************************************************/
 
-Frame parseFrame( pugi::xml_node const &a_node, std::string const &a_name ) {
+Frame parseFrame( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, std::string const &a_name ) {
 
     Frame frame = Frame::lab;
-    if( strcmp( a_node.attribute( a_name.c_str( ) ).value( ), "centerOfMass" ) == 0 ) frame = Frame::centerOfMass;
+    if( strcmp( a_node.attribute( a_name.c_str( ) ).value( ), GIDI_centerOfMassChars ) == 0 ) frame = Frame::centerOfMass;
     return( frame );
 }
 
@@ -449,8 +383,8 @@ std::vector<std::string> sortedListOfStrings( std::vector<std::string> const &a_
 
 std::string frameToString( Frame a_frame ) {
 
-    if( a_frame == Frame::lab ) return( "lab" );
-    return( "centerOfMass" );
+    if( a_frame == Frame::lab ) return( GIDI_labChars );
+    return( GIDI_centerOfMassChars );
 }
 
 /* *********************************************************************************************************//**
@@ -468,12 +402,12 @@ std::string nodeWithValuesToDoubles( WriteInfo &a_writeInfo, std::string const &
     std::string xml = a_writeInfo.nodeStarter( "", a_nodeName );
     std::string sep( "" );
 
-    xml += a_writeInfo.nodeStarter( "", "values" );
+    xml += a_writeInfo.nodeStarter( "", GIDI_valuesChars );
     for( std::size_t i1 = 0; i1 < a_values.size( ); ++i1 ) {
         xml += sep + doubleToShortestString( a_values[i1] );
         if( i1 == 0 ) sep = " ";
     }
-    xml += a_writeInfo.nodeEnder( "values" );
+    xml += a_writeInfo.nodeEnder( GIDI_valuesChars );
     xml += a_writeInfo.nodeEnder( a_nodeName );
 
     return( xml );
@@ -546,7 +480,7 @@ void energy2dToXMLList( WriteInfo &a_writeInfo, std::string const &a_moniker, st
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
 
-    if( a_function == NULL ) return;
+    if( a_function == nullptr ) return;
 
     a_writeInfo.addNodeStarter( a_indent, a_moniker, "" );
     a_function->toXMLList( a_writeInfo, indent2 );

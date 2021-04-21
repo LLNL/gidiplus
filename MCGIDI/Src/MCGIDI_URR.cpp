@@ -102,6 +102,7 @@ HOST_DEVICE void URR_protareInfos::serialize( DataBuffer &a_buffer, DataBuffer::
     DATA_MEMBER_INT( vectorSizeInt, a_buffer, a_mode );
     vectorSize = (std::size_t) vectorSizeInt;
     if( a_mode == DataBuffer::Mode::Unpack ) m_URR_protareInfos.resize( vectorSize, &a_buffer.m_placement );
+    if( a_mode == DataBuffer::Mode::Memory ) a_buffer.m_placement += m_URR_protareInfos.internalSize();
 
     for( std::size_t vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
         m_URR_protareInfos[vectorIndex].serialize( a_buffer, a_mode );

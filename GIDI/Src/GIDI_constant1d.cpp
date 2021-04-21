@@ -28,7 +28,7 @@ namespace Functions {
  ***********************************************************************************************************/
 
 Constant1d::Constant1d( Axes const &a_axes, double a_value, double a_domainMin, double a_domainMax, int a_index, double a_outerDomainValue ) :
-        Function1dForm( constant1dMoniker, FormType::constant1d, a_axes, ptwXY_interpolationLinLin, a_index, a_outerDomainValue ),
+        Function1dForm( GIDI_constant1dChars, FormType::constant1d, a_axes, ptwXY_interpolationLinLin, a_index, a_outerDomainValue ),
         m_value( a_value ),
         m_domainMin( a_domainMin ),
         m_domainMax( a_domainMax ) {
@@ -39,14 +39,15 @@ Constant1d::Constant1d( Axes const &a_axes, double a_value, double a_domainMin, 
  *
  * @param a_construction    [in]    Used to pass user options for parsing.
  * @param a_node            [in]    The **pugi::xml_node** to be parsed and used to construct the XYs2d.
+ * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-Constant1d::Constant1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, Suite *a_parent ) :
-        Function1dForm( a_construction, a_node, FormType::constant1d, a_parent ),
-        m_value( a_node.attribute( "value" ).as_double( ) ),
-        m_domainMin( a_node.attribute( "domainMin" ).as_double( ) ),
-        m_domainMax( a_node.attribute( "domainMax" ).as_double( ) ) {
+Constant1d::Constant1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+        Function1dForm( a_construction, a_node, a_setupInfo, FormType::constant1d, a_parent ),
+        m_value( a_node.attribute( GIDI_valueChars ).as_double( ) ),
+        m_domainMin( a_node.attribute( GIDI_domainMinChars ).as_double( ) ),
+        m_domainMax( a_node.attribute( GIDI_domainMaxChars ).as_double( ) ) {
 
 }
 
@@ -85,18 +86,18 @@ void Constant1d::toXMLList_func( WriteInfo &a_writeInfo, std::string const &a_in
     std::string attributes;
     
     if( a_embedded ) {
-        attributes += a_writeInfo.addAttribute( "outerDomainValue", doubleToShortestString( outerDomainValue( ) ) ); }
+        attributes += a_writeInfo.addAttribute( GIDI_outerDomainValueChars, doubleToShortestString( outerDomainValue( ) ) ); }
     else {
         if( a_inRegions ) {
-            attributes = a_writeInfo.addAttribute( "index", intToString( index( ) ) ); }
+            attributes = a_writeInfo.addAttribute( GIDI_indexChars, intToString( index( ) ) ); }
         else {
-            attributes = a_writeInfo.addAttribute( "label", label( ) );
+            attributes = a_writeInfo.addAttribute( GIDI_labelChars, label( ) );
         }
     }
 
-    attributes += a_writeInfo.addAttribute( "value", doubleToShortestString( m_value ) );
-    attributes += a_writeInfo.addAttribute( "domainMin", doubleToShortestString( m_domainMin ) );
-    attributes += a_writeInfo.addAttribute( "domainMax", doubleToShortestString( m_domainMax ) );
+    attributes += a_writeInfo.addAttribute( GIDI_valueChars, doubleToShortestString( m_value ) );
+    attributes += a_writeInfo.addAttribute( GIDI_domainMinChars, doubleToShortestString( m_domainMin ) );
+    attributes += a_writeInfo.addAttribute( GIDI_domainMaxChars, doubleToShortestString( m_domainMax ) );
 
     a_writeInfo.addNodeStarter( a_indent, moniker( ), attributes );
     axes( ).toXMLList( a_writeInfo, indent2 );

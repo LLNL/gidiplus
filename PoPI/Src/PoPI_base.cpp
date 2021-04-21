@@ -9,8 +9,8 @@
 
 #include "PoPI.hpp"
 
-static std::string IDString( "id" );
-static std::string symbolString( "symbol" );
+#define PoPI_idChars "id"
+#define PoPI_symbolChars "symbol"
 
 namespace PoPI {
 
@@ -53,7 +53,7 @@ IDBase::IDBase( std::string const &a_id, Particle_class a_class ) :
 =========================================================
 */
 IDBase::IDBase( pugi::xml_node const &a_node, Particle_class a_class ) :
-        Base( a_node, IDString, a_class ) {
+        Base( a_node, PoPI_idChars, a_class ) {
 
 }
 /*
@@ -77,7 +77,7 @@ int IDBase::addToDatabase( Database *a_DB ) {
 ============================================================
 */
 SymbolBase::SymbolBase( pugi::xml_node const &a_node, Particle_class a_class ) :
-        Base( a_node, symbolString, a_class ) {
+        Base( a_node, PoPI_symbolChars, a_class ) {
 
 }
 /*

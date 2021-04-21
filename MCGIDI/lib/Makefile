@@ -12,7 +12,7 @@ ARFLAGS = -cr
 default: libMCGIDI.a
 
 libMCGIDI.a:
-	cd ../Src; $(MAKE) CC=$(CXX) CXXFLAGS='$(CXXFLAGS)' POPs_PATH='$(POPs_PATH)' SMR_PATH='$(SMR_PATH)' NF_PATH='$(NF_PATH)'
+	cd ../Src; $(MAKE)
 	cp ../Src/libMCGIDI.a .
 
 check:

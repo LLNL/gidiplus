@@ -14,15 +14,35 @@
 
 #include "utilities4Speed.hpp"
 
+void main2( int argc, char **argv );
 /*
 =========================================================
 */
 int main( int argc, char **argv ) {
 
+    try {
+        main2( argc, argv ); }
+    catch (std::exception &exception) {
+        std::cerr << exception.what( ) << std::endl;
+        exit( EXIT_FAILURE ); }
+    catch (char const *str) {
+        std::cout << str << std::endl;
+        exit( EXIT_FAILURE ); }
+    catch (std::string &str) {
+        std::cout << str << std::endl;
+        exit( EXIT_FAILURE );
+    }
+
+    exit( EXIT_SUCCESS );
+}
+/*
+=========================================================
+*/
+void main2( int argc, char **argv ) {
+
     std::string mapFilename( "../../../GIDI/Test/all3T.map" );
     PoPI::Database pops( "../../../GIDI/Test/pops.xml" );
-    GIDI::Map map( mapFilename, pops );
-    GIDI::ProtareSingle *protare;
+    GIDI::Map::Map map( mapFilename, pops );
     GIDI::Transporting::Particles particles;
     std::vector<std::string> libraries;
     std::set<int> reactionsToExclude;
@@ -33,32 +53,20 @@ int main( int argc, char **argv ) {
     for( int i1 = 1; i1 < argc; i1++ ) std::cout << " " << argv[i1];
     std::cout << std::endl;
 
-    std::string protareFilename( map.protareFilename( "n", "O16" ) );
-
+    GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, GIDI::Construction::PhotoMode::atomicOnly );
     time0 = clock( );
     time1 = time0;
-    try {
-        GIDI::Construction::Settings construction( GIDI::Construction::e_all, GIDI::Construction::e_nuclearAndAtomic );
-        protare = new GIDI::ProtareSingle( construction, protareFilename, GIDI::XML, pops, libraries ); }
-    catch (char const *str) {
-        std::cout << str << std::endl;
-        exit( EXIT_FAILURE );
-    }
+    GIDI::Protare *protare = map.protare( construction, pops, "n", "O16" );
     printTime( "    load GIDI: ", time1 );
 
     GIDI::Styles::TemperatureInfos temperatures = protare->temperatures( );
+    GIDI::Styles::TemperatureInfo temperature = temperatures[0];
 
-    std::string label( "MonteCarlo" );
-    MCGIDI::Settings::MC MC( pops, "n", &protare->styles( ), label, true, 20 );
+    std::string label( temperature.heatedCrossSection( ) );
+    MCGIDI::Transporting::MC MC( pops, "n", &protare->styles( ), label, GIDI::Transporting::DelayedNeutrons::on, 20.0 );
 
     MCGIDI::DomainHash domainHash( 4000, 1e-8, 100.0 );
-    MCGIDI::ProtareSingle *MCProtare;
-    try {
-        MCProtare = new MCGIDI::ProtareSingle( *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude ); }
-    catch (char const *str) {
-        std::cout << str << std::endl;
-        exit( EXIT_FAILURE );
-    }
+    MCGIDI::Protare *MCProtare = MCGIDI::protareFromGIDIProtare( *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude );
     printTime( "    load MCGIDI: ", time1 );
 
     MCGIDI::Vector<MCGIDI::Protare *> protares( 1 );

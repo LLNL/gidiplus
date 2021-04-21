@@ -11,12 +11,14 @@
 
 namespace PoPI {
 
+#define PoPI_generationChars "generation"
+
 /*
 =========================================================
 */
 Lepton::Lepton( pugi::xml_node const &a_node, Database *a_DB, Database *a_parent ) :
-        Particle( a_node, Particle_class::lepton, family_lepton ),
-        m_generation( a_node.attribute( "generation" ).value( ) ) {
+        Particle( a_node, Particle_class::lepton, PoPI_leptonChars ),
+        m_generation( a_node.attribute( PoPI_generationChars ).value( ) ) {
 
     addToDatabase( a_DB );
 }

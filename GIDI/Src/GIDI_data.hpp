@@ -10,6 +10,7 @@
 #ifndef GIDI_data_hpp_included
 #define GIDI_data_hpp_included 1
 
+#include <stdio.h>
 #include <string>
 #include <vector>
 
@@ -72,7 +73,8 @@ class Vector {
         ~Vector( );
 
         std::size_t size( ) const { return( m_vector.size( ) ); }                                   /**< Returns a number of elements of *this*. */
-        void resize( std::size_t a_number ) { m_vector.resize( a_number, 0 ); }                     /**< Resizes *this* to *a_number* elements. For details, see std::vector.resize. */
+        void resize( std::size_t a_number, double a_value = 0.0 ) { m_vector.resize( a_number, a_value ); }                     /**< Resizes *this* to *a_number* elements. For details, see std::vector.resize. */
+        std::vector<double> &data( ) { return( m_vector ); }
 
         double &operator[]( std::size_t a_index ) { return( m_vector[a_index] ); }           /**< Returns a reference to the (*a_index*-1)th element. */
         double operator[]( std::size_t a_index ) const { return( m_vector[a_index] ); }      /**< Returns a reference to the (*a_index*-1)th element. */
@@ -97,8 +99,10 @@ class Vector {
 
         void reverse( );
 
+        void setToValueInFlatRange( std::size_t a_start, std::size_t a_end, double a_value );
         double sum( );
         void print( std::string const &a_prefix ) const ;
+        void write( FILE *a_file, std::string const &a_prefix ) const ;
 };
 
 /*

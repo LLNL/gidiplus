@@ -21,15 +21,15 @@ PQ_suite::PQ_suite( pugi::xml_node const &a_node ) :
         std::string name( child.name( ) );
         PhysicalQuantity *quantity;
 
-        if( name == "double" ) {
+        if( name == PoPI_doubleChars ) {
             quantity = new PQ_double( child ); }
-        else if( name == "integer" ) {
+        else if( name == PoPI_integerChars ) {
             quantity = new PQ_integer( child ); }
-        else if( name == "fraction" ) {
+        else if( name == PoPI_fractionChars ) {
             quantity = new PQ_fraction( child ); }
-        else if( name == "string" ) {
+        else if( name == PoPI_stringChars ) {
             quantity = new PQ_string( child ); }
-        else if( name == "shell" ) {
+        else if( name == PoPI_shellChars ) {
             quantity = new PQ_shell( child ); }
         else {
             continue;

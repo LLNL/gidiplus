@@ -1,0 +1,34 @@
+# <<BEGIN-copyright>>
+# <<END-copyright>>
+
+.PHONY: default bin clean realclean
+
+local_CXXFLAGS = $(CXXFLAGS) \
+        -I$(MCGIDI_PATH)/include -L$(MCGIDI_PATH)/lib \
+        -I$(MCGIDI_PATH)/Test/Utilities -L$(MCGIDI_PATH)/Test/Utilities \
+        -I$(GIDI_PATH)/include -L$(GIDI_PATH)/lib \
+        -I$(GIDI_PATH)/Test/Utilities -L$(GIDI_PATH)/Test/Utilities \
+        -I$(POPI_INCLUDE) -L$(POPI_LIB) \
+        -I$(SMR_INCLUDE) -L$(SMR_LIB) \
+        -I$(NF_INCLUDE) -L$(NF_LIB) \
+        -I$(PUGIXML_INCLUDE) -L$(PUGIXML_LIB)
+
+LIBS = -lGIDI_testUtilities -lMCGIDI_testUtilities -lMCGIDI -lGIDI -lPoPI -lstatusMessageReporting -lnumericalfunctions -lexpat -lpugixml
+
+EXES = $(CppSources:.cpp=)
+
+default: bin
+
+%: %.cpp
+	echo "    "$@
+	$(CXX) $(local_CXXFLAGS) $< -o $@ $(LIBS)
+
+bin: $(EXES)
+	cp $(EXES) ../..
+
+clean:
+	rm -f $(EXES)
+	rm -f ../../$(EXES)
+
+realclean: clean
+	rm -rf *.dSYM

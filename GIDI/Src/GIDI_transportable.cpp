@@ -11,6 +11,8 @@
 
 namespace GIDI {
 
+#define GIDI_conserveChars "conserve"
+
 /*! \class Transportable
  * Class for the GNDS <**transportable**> node that resides under the <**transportables**> node.
  */
@@ -18,14 +20,29 @@ namespace GIDI {
 /* *********************************************************************************************************//**
  * @param a_construction    [in]    Used to pass user options to the constructor.
  * @param a_node            [in]    The **pugi::xml_node** to be parsed to construct a Transportable instance.
+ * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops            [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-Transportable::Transportable( Construction::Settings const &a_construction, pugi::xml_node const &a_node, PoPI::Database const &a_pops, Suite *a_parent ) :
-        Form( a_node, FormType::transportable, a_parent ),
-        m_conserve( a_node.attribute( "conserve" ).value( ) ),
-        m_group( a_construction, a_node.child( groupMoniker ), a_pops ) {
+Transportable::Transportable( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,
+                PoPI::Database const &a_pops, Suite *a_parent ) :
+        Form( a_node, a_setupInfo, FormType::transportable, a_parent ),
+        m_conserve( a_node.attribute( GIDI_conserveChars ).value( ) ),
+        m_group( a_construction, a_node.child( GIDI_groupChars ), a_setupInfo, a_pops ) {
+}
+
+/* *********************************************************************************************************//**
+ * Copy constructor.
+ *
+ * @param a_transportable   [in]    Transportable instance to copy.
+ ***********************************************************************************************************/
+
+Transportable::Transportable( Transportable const &a_transportable ) :
+        Form( a_transportable ),
+        m_conserve( a_transportable.conserve( ) ),
+        m_group( a_transportable.group( ) ) {
+
 }
 
 /* *********************************************************************************************************//**
@@ -38,9 +55,9 @@ Transportable::Transportable( Construction::Settings const &a_construction, pugi
 void Transportable::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
-    std::string attributes = a_writeInfo.addAttribute( "label", label( ) );
+    std::string attributes = a_writeInfo.addAttribute( GIDI_labelChars, label( ) );
 
-    attributes += a_writeInfo.addAttribute( "conserve", m_conserve );
+    attributes += a_writeInfo.addAttribute( GIDI_conserveChars, m_conserve );
     a_writeInfo.addNodeStarter( a_indent, moniker( ), attributes );
     m_group.toXMLList( a_writeInfo, indent2 );
     a_writeInfo.addNodeEnder( moniker( ) );

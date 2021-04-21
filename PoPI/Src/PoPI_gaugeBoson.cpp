@@ -15,7 +15,7 @@ namespace PoPI {
 =========================================================
 */
 GaugeBoson::GaugeBoson( pugi::xml_node const &a_node, Database *a_DB, Database *a_parent ) :
-        Particle( a_node, Particle_class::gaugeBoson, family_gaugeBoson ) {
+        Particle( a_node, Particle_class::gaugeBoson, PoPI_gaugeBosonChars ) {
 
     addToDatabase( a_DB );
 }

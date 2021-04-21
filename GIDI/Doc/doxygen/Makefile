@@ -7,8 +7,6 @@ SHELL = /bin/ksh
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
-DIRS = doxygen
-
 .PHONY: default check clean realclean
 
 default:

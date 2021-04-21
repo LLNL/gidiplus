@@ -11,9 +11,15 @@
 
 namespace PoPI {
 
-#define decayModesString "decayModes"
-#define decayPathString "decayPath"
-#define productsString "products"
+#define PoPI_decayModesChars "decayModes"
+#define PoPI_decayModeChars "decayMode"
+#define PoPI_decayPathChars "decayPath"
+#define PoPI_decayChars "decay"
+#define PoPI_productsChars "products"
+#define PoPI_photonEmissionProbabilitiesChars "photonEmissionProbabilities"
+
+#define PoPI_modeChars "mode"
+#define PoPI_probabilityChars "probability"
 
 /*
 ============================================================
@@ -21,9 +27,9 @@ namespace PoPI {
 ============================================================
 */
 DecayData::DecayData( pugi::xml_node const &a_node ) :
-        m_decayModes( decayModesString ) {
+        m_decayModes( PoPI_decayModesChars ) {
 
-    m_decayModes.appendFromParentNode2( a_node.child( "decayModes" ), this );
+    m_decayModes.appendFromParentNode2( a_node.child( PoPI_decayModesChars ), this );
 }
 /*
 =========================================================
@@ -51,7 +57,7 @@ void DecayData::toXMLList( std::vector<std::string> &a_XMLList, std::string cons
 
     if( size == 0 ) return;
 
-    std::string header = a_indent1 + "<decayData>";
+    std::string header = a_indent1 + "<" + PoPI_decayDataChars + ">";
     a_XMLList.push_back( header );
 
     if( size > 0 ) {
@@ -59,7 +65,7 @@ void DecayData::toXMLList( std::vector<std::string> &a_XMLList, std::string cons
         m_decayModes.toXMLList( a_XMLList, indent2 );
     }
 
-    appendXMLEnd( a_XMLList, "decayData" );
+    appendXMLEnd( a_XMLList, PoPI_decayDataChars );
 }
 
 /*
@@ -68,13 +74,13 @@ void DecayData::toXMLList( std::vector<std::string> &a_XMLList, std::string cons
 ============================================================
 */
 DecayMode::DecayMode( pugi::xml_node const &a_node, DecayData const *a_decayData ) :
-        m_label( a_node.attribute( "label" ).value( ) ),
-        m_mode( a_node.attribute( "mode" ).value( ) ),
-        m_probability( a_node.child( "probability" ) ),
-        m_photonEmissionProbabilities( a_node.child( "photonEmissionProbabilities" ) ),
-        m_decayPath( decayPathString ) {
+        m_label( a_node.attribute( PoPI_labelChars ).value( ) ),
+        m_mode( a_node.attribute( PoPI_modeChars ).value( ) ),
+        m_probability( a_node.child( PoPI_probabilityChars ) ),
+        m_photonEmissionProbabilities( a_node.child( PoPI_photonEmissionProbabilitiesChars ) ),
+        m_decayPath( PoPI_decayPathChars ) {
 
-    m_decayPath.appendFromParentNode2( a_node.child( "decayPath" ), this );
+    m_decayPath.appendFromParentNode2( a_node.child( PoPI_decayPathChars ), this );
 }
 /*
 ============================================================
@@ -87,7 +93,7 @@ DecayMode::~DecayMode( ) {
 */
 void DecayMode::calculateNuclideGammaBranchStateInfo( PoPI::Database const &a_pops, NuclideGammaBranchStateInfo &a_nuclideGammaBranchStateInfo ) const {
 
-    if( m_mode == PoPI_decayMode_electroMagnetic ) {
+    if( m_mode == PoPI_decayModeElectroMagnetic ) {
         double _probability = getPhysicalQuantityOfSuiteAsDouble( probability( ) );
         double _photonEmissionProbabilities = getPhysicalQuantityOfSuiteAsDouble( photonEmissionProbabilities( ), true, 1.0 );
 
@@ -120,7 +126,7 @@ void DecayMode::toXMLList( std::vector<std::string> &a_XMLList, std::string cons
     m_probability.toXMLList( a_XMLList, indent2 );
     m_decayPath.toXMLList( a_XMLList, indent2 );
 
-    appendXMLEnd( a_XMLList, "decayMode" );
+    appendXMLEnd( a_XMLList, PoPI_decayModeChars );
 }
 
 /*
@@ -129,10 +135,10 @@ void DecayMode::toXMLList( std::vector<std::string> &a_XMLList, std::string cons
 ============================================================
 */
 Decay::Decay( pugi::xml_node const &a_node, DecayMode const *a_decayMode ) :
-        m_index( a_node.attribute( "index" ).as_int( ) ),
-        m_products( productsString ) {
+        m_index( a_node.attribute( PoPI_indexChars ).as_int( ) ),
+        m_products( PoPI_productsChars ) {
 
-    m_products.appendFromParentNode2( a_node.child( "products" ), this );
+    m_products.appendFromParentNode2( a_node.child( PoPI_productsChars ), this );
 }
 /*
 ============================================================
@@ -155,8 +161,7 @@ void Decay::toXMLList( std::vector<std::string> &a_XMLList, std::string const &a
     std::string indent2 = a_indent1 + "  ";
     m_products.toXMLList( a_XMLList, indent2 );
 
-    appendXMLEnd( a_XMLList, "decay" );
-
+    appendXMLEnd( a_XMLList, PoPI_decayChars );
 }
 
 /*
@@ -166,8 +171,8 @@ void Decay::toXMLList( std::vector<std::string> &a_XMLList, std::string const &a
 */
 Product::Product( pugi::xml_node const &a_node, Decay *a_DB ) :
         m_id( -1 ),
-        m_pid( a_node.attribute( "pid" ).value( ) ),
-        m_label( a_node.attribute( "label" ).value( ) ) {
+        m_pid( a_node.attribute( PoPI_pidChars ).value( ) ),
+        m_label( a_node.attribute( PoPI_labelChars ).value( ) ) {
 
 }
 /*

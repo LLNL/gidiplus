@@ -19,7 +19,7 @@ void main2( int argc, char **argv );
 void readProtare( GIDI::Map::Map &map, PoPI::Database const &pops, std::string const &targetID );
 void printFunctionInfo( std::string const &name, GIDI::Functions::Function1dForm *function );
 double integrateSub( int _n, double _a, double logE, double E1, double _y1, double E2, double _y2 );
-std::string toString( double a_value, char const *a_fmt = NULL );
+std::string toString( double a_value, char const *a_fmt = nullptr );
 /*
 =========================================================
 */
@@ -65,7 +65,7 @@ void readProtare( GIDI::Map::Map &map, PoPI::Database const &pops, std::string c
 
     GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, GIDI::Construction::PhotoMode::atomicOnly );
     GIDI::Protare *protare = map.protare( construction, pops, PoPI::IDs::photon, targetID );
-    if( protare == NULL ) {
+    if( protare == nullptr ) {
         std::cout << "protare for " << targetID << " not found." << std::endl;
         exit( EXIT_FAILURE );
     }
@@ -86,7 +86,7 @@ void readProtare( GIDI::Map::Map &map, PoPI::Database const &pops, std::string c
 
             std::cout << "        distribution form moniker = " << form->moniker( ) << std::endl;
 
-            if( form->moniker( ) == coherentPhotonScatteringMoniker ) {
+            if( form->moniker( ) == GIDI_coherentPhotonScatteringChars ) {
                 GIDI::Distributions::CoherentPhotoAtomicScattering *coherentPhotonScattering = static_cast<GIDI::Distributions::CoherentPhotoAtomicScattering *>( form );
 
                 std::cout << "          href = " << coherentPhotonScattering->href( ) << std::endl;
@@ -112,7 +112,7 @@ void printFunctionInfo( std::string const &name, GIDI::Functions::Function1dForm
 
     char xFmt[] = "%23.16e";
 
-    if( function == NULL ) return;
+    if( function == nullptr ) return;
 
     std::string domainUnit = function->axes( )[0]->unit( );
     std::string rangeUnit = function->axes( )[1]->unit( );
@@ -141,7 +141,7 @@ void printFunctionInfo( std::string const &name, GIDI::Functions::Function1dForm
         GIDI::Functions::Regions1d *regions1d = (GIDI::Functions::Regions1d *)( function );
         for( std::size_t i1 = 0; i1 < regions1d->Xs( ).size( ); ++i1 ) std::cout << "              x[" << i1 << "] = " << regions1d->Xs( )[i1] << std::endl;
 
-        std::vector<GIDI::Functions::Function1dForm *> &functions1d = regions1d->functions1d2( );
+        std::vector<GIDI::Functions::Function1dForm *> &functions1d = regions1d->function1ds( );
         std::cout << "              number of regions = " << functions1d.size( );
         for( std::size_t i1 = 0; i1 < functions1d.size( ); ++i1 ) {
             GIDI::Functions::XYs1d &xys1d = *static_cast<GIDI::Functions::XYs1d *>( functions1d[i1] );
@@ -216,7 +216,7 @@ double integrateSub( int _n, double _a, double logX, double E1, double _y1, doub
 */
 std::string toString( double a_value, char const *a_fmt ) {
 
-    if( a_fmt == NULL ) a_fmt = " % 23.16e";
+    if( a_fmt == nullptr ) a_fmt = " % 23.16e";
     char Str[128];
     sprintf( Str, a_fmt, a_value );
     return( std::string( Str ) );

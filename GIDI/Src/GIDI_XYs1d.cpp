@@ -31,11 +31,11 @@ namespace Functions {
  ***********************************************************************************************************/
 
 XYs1d::XYs1d( Axes const &a_axes, ptwXY_interpolation a_interpolation, int a_index, double a_outerDomainValue ) :
-    Function1dForm( XYs1dMoniker, FormType::XYs1d, a_axes, a_interpolation, a_index, a_outerDomainValue ) {
+    Function1dForm( GIDI_XYs1dChars, FormType::XYs1d, a_axes, a_interpolation, a_index, a_outerDomainValue ) {
 
     double dummy[2];
 
-    m_ptwXY = ptwXY_create2( NULL, a_interpolation, 0, 0, 0, dummy, 0 );
+    m_ptwXY = ptwXY_create2( nullptr, a_interpolation, 0, 0, 0, dummy, 0 );
 }
 
 /* *********************************************************************************************************//**
@@ -51,11 +51,11 @@ XYs1d::XYs1d( Axes const &a_axes, ptwXY_interpolation a_interpolation, int a_ind
  ***********************************************************************************************************/
 
 XYs1d::XYs1d( Axes const &a_axes, ptwXY_interpolation a_interpolation, std::vector<double> const &a_values, int a_index, double a_outerDomainValue ) :
-    Function1dForm( XYs1dMoniker, FormType::XYs1d, a_axes, a_interpolation, a_index, a_outerDomainValue ) {
+    Function1dForm( GIDI_XYs1dChars, FormType::XYs1d, a_axes, a_interpolation, a_index, a_outerDomainValue ) {
 
     int64_t length = static_cast<int64_t>( a_values.size( ) ) / 2;
 
-    m_ptwXY = ptwXY_create2( NULL, a_interpolation, length, 0, length, a_values.data( ), 0 );
+    m_ptwXY = ptwXY_create2( nullptr, a_interpolation, length, 0, length, a_values.data( ), 0 );
 }
 
 /* *********************************************************************************************************//**
@@ -70,7 +70,7 @@ XYs1d::XYs1d( Axes const &a_axes, ptwXY_interpolation a_interpolation, std::vect
  ***********************************************************************************************************/
 
 XYs1d::XYs1d( Axes const &a_axes, ptwXYPoints *a_ptwXY, int a_index, double a_outerDomainValue ) :
-    Function1dForm( XYs1dMoniker, FormType::XYs1d, a_axes, ptwXY_interpolationLinLin, a_index, a_outerDomainValue ),
+    Function1dForm( GIDI_XYs1dChars, FormType::XYs1d, a_axes, ptwXY_interpolationLinLin, a_index, a_outerDomainValue ),
     m_ptwXY( a_ptwXY ) {
 
 }
@@ -80,17 +80,18 @@ XYs1d::XYs1d( Axes const &a_axes, ptwXYPoints *a_ptwXY, int a_index, double a_ou
  *
  * @param a_construction        [in]    Used to pass user options for parsing.
  * @param a_node                [in]    The XYs1d pugi::xml_node to be parsed and to construct the instance.
+ * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent              [in]    If imbedded in a two dimensional function, its pointers.
  ***********************************************************************************************************/
 
-XYs1d::XYs1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, Suite *a_parent ) :
-        Function1dForm( a_construction, a_node, FormType::XYs1d, a_parent ) {
+XYs1d::XYs1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+        Function1dForm( a_construction, a_node, a_setupInfo, FormType::XYs1d, a_parent ) {
 
     char *endCharacter;
 
-    m_ptwXY = ptwXY_fromString( NULL, a_node.child( "values" ).text( ).get( ), ' ', interpolation( ), 
+    m_ptwXY = ptwXY_fromString( nullptr, a_node.child( GIDI_valuesChars ).text( ).get( ), ' ', interpolation( ), 
             interpolationString( ).c_str( ), 12, 1e-3, &endCharacter, a_construction.useSystem_strtod( ) );
-    if( m_ptwXY == NULL ) throw Exception( "XYs1d::XYs1d: ptwXY_fromString failed" );
+    if( m_ptwXY == nullptr ) throw Exception( "XYs1d::XYs1d: ptwXY_fromString failed" );
 }
 
 /* *********************************************************************************************************//**
@@ -101,10 +102,10 @@ XYs1d::XYs1d( Construction::Settings const &a_construction, pugi::xml_node const
 
 XYs1d::XYs1d( XYs1d const &a_XYs1d ) :
         Function1dForm( a_XYs1d ),
-        m_ptwXY( NULL ) {
+        m_ptwXY( nullptr ) {
 
-    m_ptwXY = ptwXY_clone2( NULL, a_XYs1d.ptwXY( ) );
-    if( m_ptwXY == NULL ) throw Exception( "XYs1d::XYs1d:2: ptwXY_clone2 failed" );
+    m_ptwXY = ptwXY_clone2( nullptr, a_XYs1d.ptwXY( ) );
+    if( m_ptwXY == nullptr ) throw Exception( "XYs1d::XYs1d:2: ptwXY_clone2 failed" );
 }
 
 /* *********************************************************************************************************//**
@@ -124,7 +125,7 @@ XYs1d::~XYs1d( ) {
 
 std::pair<double, double> XYs1d::operator[]( std::size_t a_index ) const {
 
-    if( (int64_t) a_index >= ptwXY_length( NULL, m_ptwXY ) ) throw Exception( "XYs1d::operator[]: index out of bounds." );
+    if( (int64_t) a_index >= ptwXY_length( nullptr, m_ptwXY ) ) throw Exception( "XYs1d::operator[]: index out of bounds." );
 
     ptwXYPoint *point = ptwXY_getPointAtIndex_Unsafely( m_ptwXY, (int64_t) a_index );
     std::pair<double, double> CPPPoint( point->x, point->y );
@@ -159,10 +160,10 @@ XYs1d &XYs1d::operator+=( XYs1d const &a_rhs ) {
     ptwXYPoints *sum, *ptwXY1, *ptwXY2;
 
     mutualifyDomains( m_ptwXY, a_rhs.ptwXY( ), &ptwXY1, &ptwXY2 );
-    sum = ptwXY_add_ptwXY( NULL, ptwXY1, ptwXY2 );
+    sum = ptwXY_add_ptwXY( nullptr, ptwXY1, ptwXY2 );
     ptwXY_free( ptwXY1 );
     ptwXY_free( ptwXY2 );
-    if( sum == NULL ) throw Exception( "XYs1d::operator+=: ptwXY_clone2 failed for sum" );
+    if( sum == nullptr ) throw Exception( "XYs1d::operator+=: ptwXY_clone2 failed for sum" );
 
     ptwXY_free( m_ptwXY );
     m_ptwXY = sum;
@@ -197,10 +198,10 @@ XYs1d &XYs1d::operator-=( XYs1d const &a_rhs ) {
     ptwXYPoints *sum, *ptwXY1, *ptwXY2;
 
     mutualifyDomains( m_ptwXY, a_rhs.ptwXY( ), &ptwXY1, &ptwXY2 );
-    sum = ptwXY_sub_ptwXY( NULL, ptwXY1, ptwXY2 );
+    sum = ptwXY_sub_ptwXY( nullptr, ptwXY1, ptwXY2 );
     ptwXY_free( ptwXY1 );
     ptwXY_free( ptwXY2 );
-    if( sum == NULL ) throw Exception( "XYs1d::operator+=: ptwXY_clone2 failed for sum" );
+    if( sum == nullptr ) throw Exception( "XYs1d::operator+=: ptwXY_clone2 failed for sum" );
 
     ptwXY_free( m_ptwXY );
     m_ptwXY = sum;
@@ -274,7 +275,7 @@ std::vector<double> XYs1d::ysMappedToXs( std::vector<double> const &a_xs, std::s
             double x = a_xs[i2], y;
             if( x > point2->x ) break;           // Happens because of round off errors. Need to fix.
 
-            ptwXY_interpolatePoint( NULL, ptwXY_interpolationLinLin, x, &y, point1->x, point1->y, point2->x, point2->y );
+            ptwXY_interpolatePoint( nullptr, ptwXY_interpolationLinLin, x, &y, point1->x, point1->y, point2->x, point2->y );
             _ys.push_back( y );
             ++i2;
             if( x >= point2->x ) break;         // This check can fail hence check above.
@@ -294,12 +295,12 @@ std::vector<double> XYs1d::ysMappedToXs( std::vector<double> const &a_xs, std::s
 
 XYs1d XYs1d::domainSliceMax( double a_domainMax ) const {
 
-    ptwXYPoints *_ptwXY = ptwXY_clone2( NULL, m_ptwXY );
-    if( _ptwXY == NULL ) throw Exception( "domainSliceMax: ptwXY_clone2 failed" );
+    ptwXYPoints *_ptwXY = ptwXY_clone2( nullptr, m_ptwXY );
+    if( _ptwXY == nullptr ) throw Exception( "domainSliceMax: ptwXY_clone2 failed" );
 
-    ptwXYPoints *ptwXYSliced = ptwXY_domainMaxSlice( NULL, _ptwXY, a_domainMax, 10, 1 );
+    ptwXYPoints *ptwXYSliced = ptwXY_domainMaxSlice( nullptr, _ptwXY, a_domainMax, 10, 1 );
     ptwXY_free( _ptwXY );
-    if( ptwXYSliced == NULL ) throw Exception( "domainSliceMax: ptwXY_domainMaxSlice failed" );
+    if( ptwXYSliced == nullptr ) throw Exception( "domainSliceMax: ptwXY_domainMaxSlice failed" );
 
     return( XYs1d( axes( ), ptwXYSliced ) );
 }
@@ -313,7 +314,7 @@ XYs1d XYs1d::domainSliceMax( double a_domainMax ) const {
 
 double XYs1d::evaluate( double a_x1 ) const {
 
-    std::size_t length = ptwXY_length( NULL, m_ptwXY );
+    std::size_t length = ptwXY_length( nullptr, m_ptwXY );
     if( length == 0 ) throw Exception( "XYs1d::evaluate: XYs1d has no datum." );
 
     ptwXYPoint *point = ptwXY_getPointAtIndex_Unsafely( m_ptwXY, 0 );
@@ -323,7 +324,7 @@ double XYs1d::evaluate( double a_x1 ) const {
     if( point->x <= a_x1 ) return( point->y );
 
     double y;
-    nfu_status status = ptwXY_getValueAtX( NULL, m_ptwXY, a_x1, &y );
+    nfu_status status = ptwXY_getValueAtX( nullptr, m_ptwXY, a_x1, &y );
     if( status != nfu_Okay ) throw Exception( "XYs1d::evaluate: status != nfu_Okay" );
     return( y );
 }
@@ -343,16 +344,16 @@ void XYs1d::toXMLList_func( WriteInfo &a_writeInfo, std::string const &a_indent,
     std::string attributes;
 
     if( a_embedded ) {
-        attributes += a_writeInfo.addAttribute( "outerDomainValue", doubleToShortestString( outerDomainValue( ) ) ); }
+        attributes += a_writeInfo.addAttribute( GIDI_outerDomainValueChars, doubleToShortestString( outerDomainValue( ) ) ); }
     else {
         if( a_inRegions ) {
-            attributes = a_writeInfo.addAttribute( "index", intToString( index( ) ) ); }
+            attributes = a_writeInfo.addAttribute( GIDI_indexChars, intToString( index( ) ) ); }
         else {
-            if( label( ) != "" ) attributes = a_writeInfo.addAttribute( "label", label( ) );
+            if( label( ) != "" ) attributes = a_writeInfo.addAttribute( GIDI_labelChars, label( ) );
         }
     }
 
-    if( interpolation( ) != ptwXY_interpolationLinLin ) attributes += a_writeInfo.addAttribute( "interpolation", interpolationString( ) );
+    if( interpolation( ) != ptwXY_interpolationLinLin ) attributes += a_writeInfo.addAttribute( GIDI_interpolationChars, interpolationString( ) );
 
     a_writeInfo.addNodeStarter( a_indent, moniker( ), attributes );
     axes( ).toXMLList( a_writeInfo, indent2 );
@@ -366,6 +367,28 @@ void XYs1d::toXMLList_func( WriteInfo &a_writeInfo, std::string const &a_indent,
 
     doublesToXMLList( a_writeInfo, indent2, doubles );
     a_writeInfo.addNodeEnder( moniker( ) );
+}
+
+/* *********************************************************************************************************//**
+ * Prints the (x,y) values to stdout. The format string must have two double conversion specifiers (e.g., "    %12.3e %.6f").
+ *
+ * @param       a_format            [in]    The format string passed to the C printf function.
+ ***********************************************************************************************************/
+
+void XYs1d::print( char const *a_format ) {
+
+    ptwXY_simplePrint( m_ptwXY, a_format );
+}
+
+/* *********************************************************************************************************//**
+ * Prints the (x,y) values to stdout. The format string must have two double conversion specifiers (e.g., "    %12.3e %.6f").
+ *
+ * @param       a_format            [in]    The format string passed to the C printf function.
+ ***********************************************************************************************************/
+
+void XYs1d::print( std::string const &a_format ) {
+
+    print( a_format.c_str( ) );
 }
 
 }               // End namespace Functions.
@@ -385,16 +408,16 @@ static void mutualifyDomains( ptwXYPoints const *a_lhs, ptwXYPoints const *a_rhs
 
     double lowerEps = 1e-12, upperEps = 1e-12;
 
-    *a_ptwXY1 = ptwXY_clone2( NULL, a_lhs );
-    if( *a_ptwXY1 == NULL ) throw GIDI::Exception( "mutualifyDomains: ptwXY_clone2 failed for a_ptwXY1" );
+    *a_ptwXY1 = ptwXY_clone2( nullptr, a_lhs );
+    if( *a_ptwXY1 == nullptr ) throw GIDI::Exception( "mutualifyDomains: ptwXY_clone2 failed for a_ptwXY1" );
 
-    *a_ptwXY2 = ptwXY_clone2( NULL, a_rhs );
-    if( *a_ptwXY2 == NULL ) {
+    *a_ptwXY2 = ptwXY_clone2( nullptr, a_rhs );
+    if( *a_ptwXY2 == nullptr ) {
         ptwXY_free( *a_ptwXY1 );
         throw GIDI::Exception( "mutualifyDomains: ptwXY_clone2 failed form a_ptwXY2" );
     }
 
-    nfu_status status = ptwXY_mutualifyDomains( NULL, *a_ptwXY1, lowerEps, upperEps, 1, *a_ptwXY2, lowerEps, upperEps, 1 );
+    nfu_status status = ptwXY_mutualifyDomains( nullptr, *a_ptwXY1, lowerEps, upperEps, 1, *a_ptwXY2, lowerEps, upperEps, 1 );
     if( status != nfu_Okay ) {
         ptwXY_free( *a_ptwXY1 );
         ptwXY_free( *a_ptwXY2 );

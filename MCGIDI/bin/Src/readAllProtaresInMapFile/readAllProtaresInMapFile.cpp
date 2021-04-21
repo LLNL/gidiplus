@@ -111,13 +111,13 @@ void walk( GIDI::Transporting::Particles &particles, std::string const &mapFilen
 
         std::string path = entry->path( GIDI::Map::BaseEntry::PathForm::cumulative );
 
-        if( entry->name( ) == GIDI_importMoniker ) {
+        if( entry->name( ) == GIDI_importChars ) {
             walk( particles, path, pops ); }
-        else if( ( entry->name( ) == GIDI_protareMoniker ) || ( entry->name( ) == GIDI_TNSLMoniker ) ) {
+        else if( ( entry->name( ) == GIDI_protareChars ) || ( entry->name( ) == GIDI_TNSLChars ) ) {
             std::vector<std::string> libraries;
 
             entry->libraries( libraries );
-            readProtare( particles, path, pops, libraries, entry->name( ) == GIDI_protareMoniker ); }
+            readProtare( particles, path, pops, libraries, entry->name( ) == GIDI_protareChars ); }
         else {
             std::cerr << "    ERROR: unknown map entry name: " << entry->name( ) << std::endl;
         }
@@ -136,7 +136,9 @@ void readProtare( GIDI::Transporting::Particles &particles, std::string const &p
     try {
         std::cout << "        " << protareFilename << std::endl;
 
-        protare = new GIDI::ProtareSingle( *constructionPtr, protareFilename, GIDI::FileType::XML, pops, a_libraries, a_targetRequiredInGlobalPoPs );
+        GIDI::ParticleSubstitution particleSubstitution;
+        protare = new GIDI::ProtareSingle( *constructionPtr, protareFilename, GIDI::FileType::XML, pops, particleSubstitution, a_libraries, 
+                GIDI_MapInteractionNuclearChars, a_targetRequiredInGlobalPoPs );
         GIDI::Styles::TemperatureInfos temperatures = protare->temperatures( );
 
 

@@ -27,7 +27,7 @@ namespace Functions {
  ***********************************************************************************************************/
 
 Polynomial1d::Polynomial1d( Axes const &a_axes, double a_domainMin, double a_domainMax, std::vector<double> const &a_coefficients, int a_index, double a_outerDomainValue ) :
-        Function1dForm( polynomial1dMoniker, FormType::polynomial1d, a_axes, ptwXY_interpolationLinLin, a_index, a_outerDomainValue ),
+        Function1dForm( GIDI_polynomial1dChars, FormType::polynomial1d, a_axes, ptwXY_interpolationLinLin, a_index, a_outerDomainValue ),
         m_domainMin( a_domainMin ),
         m_domainMax( a_domainMax ),
         m_coefficients( a_coefficients ) {
@@ -35,17 +35,18 @@ Polynomial1d::Polynomial1d( Axes const &a_axes, double a_domainMin, double a_dom
 }
 
 /* *********************************************************************************************************//**
- * @param a_construction    [in]     Used to pass user options to the constructor.
- * @param a_node            [in]     The **pugi::xml_node** to be parsed and used to construct the XYs2d.
- * @param a_parent          [in]     The parent GIDI::Suite.
+ * @param a_construction    [in]    Used to pass user options to the constructor.
+ * @param a_node            [in]    The **pugi::xml_node** to be parsed and used to construct the XYs2d.
+ * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
+ * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-Polynomial1d::Polynomial1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, Suite *a_parent ) :
-        Function1dForm( a_construction, a_node, FormType::polynomial1d, a_parent ),
-        m_domainMin( a_node.attribute( "domainMin" ).as_double( ) ),
-        m_domainMax( a_node.attribute( "domainMax" ).as_double( ) ) {
+Polynomial1d::Polynomial1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+        Function1dForm( a_construction, a_node, a_setupInfo, FormType::polynomial1d, a_parent ),
+        m_domainMin( a_node.attribute( GIDI_domainMinChars ).as_double( ) ),
+        m_domainMax( a_node.attribute( GIDI_domainMaxChars ).as_double( ) ) {
 
-    parseValuesOfDoubles( a_construction, a_node.child( "values" ), m_coefficients );
+    parseValuesOfDoubles( a_construction, a_node.child( GIDI_valuesChars ), a_setupInfo, m_coefficients );
 }
 
 /* *********************************************************************************************************//**
@@ -104,17 +105,17 @@ void Polynomial1d::toXMLList_func( WriteInfo &a_writeInfo, std::string const &a_
     std::string attributes;
 
     if( a_embedded ) {
-        attributes += a_writeInfo.addAttribute( "outerDomainValue", doubleToShortestString( outerDomainValue( ) ) ); }
+        attributes += a_writeInfo.addAttribute( GIDI_outerDomainValueChars, doubleToShortestString( outerDomainValue( ) ) ); }
     else {
         if( a_inRegions ) {
-            attributes = a_writeInfo.addAttribute( "index", intToString( index( ) ) ); }
+            attributes = a_writeInfo.addAttribute( GIDI_indexChars, intToString( index( ) ) ); }
         else {
-            if( label( ) != "" ) attributes = a_writeInfo.addAttribute( "label", label( ) );
+            if( label( ) != "" ) attributes = a_writeInfo.addAttribute( GIDI_labelChars, label( ) );
         }
     }
 
-    attributes = a_writeInfo.addAttribute( "domainMin", doubleToShortestString( domainMin( ) ) );
-    attributes += a_writeInfo.addAttribute( "domainMax", doubleToShortestString( domainMax( ) ) );
+    attributes = a_writeInfo.addAttribute( GIDI_domainMinChars, doubleToShortestString( domainMin( ) ) );
+    attributes += a_writeInfo.addAttribute( GIDI_domainMaxChars, doubleToShortestString( domainMax( ) ) );
     a_writeInfo.addNodeStarter( a_indent, moniker( ), attributes );
 
     axes( ).toXMLList( a_writeInfo, indent2 );

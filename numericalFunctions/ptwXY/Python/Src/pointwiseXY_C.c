@@ -485,10 +485,10 @@ static int pointwiseXY_C__setitem__( pointwiseXY_CPy *self, Py_ssize_t _index, P
         return( -1 );
     }
     if( value == NULL ) {
-        if( ptwXY_deletePoints( smr, self->ptwXY, index, index + 1 ) != nfu_Okay )
+        if( ptwXY_deletePoints( smr, self->ptwXY, index, index + 1 ) != nfu_Okay ) {
             pointwiseXY_C_SetPyErrorExceptionFromSMR( PyExc_Exception, smr );
             status = -1;
-        }
+        } }
     else {
         switch( pyObject_NumberOrPtwXY( value ) ) {
         case pyObject_Unsupported :
@@ -909,7 +909,7 @@ static PyObject *pointwiseXY_C__idiv__( PyObject *self, PyObject *other ) {
         self = pointwiseXY_C_add_sub_mul_div_number_insitu( s3, other, ptwXY_div_doubleFrom );
         break;
     case pyObject_ptwXY :
-        if( s3->safeDivide || s3->safeDivide ) {
+        if( s3->safeDivide || o3->safeDivide ) {
             self = pointwiseXY_C_add_sub_mul_div_pointwiseXY_C_insitu( s3, o3, pointwiseXY_C_div_pointwiseXY_C_Py_withSafeDivide ); }
         else {
             self = pointwiseXY_C_add_sub_mul_div_pointwiseXY_C_insitu( s3, o3, pointwiseXY_C_div_pointwiseXY_C_Py_withoutSafeDivide );
@@ -1702,6 +1702,19 @@ static PyObject *pointwiseXY_C_getInterpolation( pointwiseXY_CPy *self ) {
     if( pointwiseXY_C_checkStatus( self ) != 0 ) return( NULL );
 
     return( Py_BuildValue( "s", ptwXY_getInterpolationString( self->ptwXY ) ) );
+}
+/*
+************************************************************
+*/
+static PyObject *pointwiseXY_C_setInterpolation( pointwiseXY_CPy *self, PyObject *args ) {
+
+    char *interpolationString;
+
+    if( !PyArg_ParseTuple( args, "s", &interpolationString ) ) return( NULL );
+
+    if( ptwXY_setInterpolationString( self->ptwXY, interpolationString ) == nfu_Okay ) return( pointwiseXY_C_GetNone( ) );
+
+    return( pointwiseXY_C_SetPyErrorExceptionReturnNull( "Other interpolation not support for setInterpolation: interpolation = '%s'", interpolationString ) );
 }
 /*
 ************************************************************
@@ -3762,6 +3775,7 @@ static PyMethodDef pointwiseXY_CPyMethods[] = {
     { "getBiSectionMax", (PyCFunction) pointwiseXY_C_getBiSectionMax, METH_NOARGS, "Returns self's biSectionMax value." },
     { "getInfill", (PyCFunction) pointwiseXY_C_getInfill, METH_NOARGS, "Returns self's infill flag." },
     { "getInterpolation", (PyCFunction) pointwiseXY_C_getInterpolation, METH_NOARGS, "Returns self's interpolation as a string." },
+    { "setInterpolation", (PyCFunction) pointwiseXY_C_setInterpolation, METH_VARARGS, "Set self's interpolation. Other interpolation not supported." },
     { "getNFStatus", (PyCFunction) pointwiseXY_C_getNFStatus, METH_NOARGS, "Returns self's numerical functions status flag (an integer)." },
     { "lowerIndexBoundingX", (PyCFunction) pointwiseXY_C_lowerIndexBoundingX, METH_VARARGS,
         "Returns the lower index in self that bounds the x-value. -1 is returned if x is outside domain.\n" \
@@ -3901,8 +3915,8 @@ static PyMethodDef pointwiseXY_CPyMethods[] = {
     { "thicken", (PyCFunction) pointwiseXY_C_thicken, METH_VARARGS | METH_KEYWORDS, 
         "Returns a new instance with denser points than self filled in using self's interpolation. The number of points added are determined by the following arguments\n" \
             "sectionSubdivideMax    maximum number of points to insert between consecutive points (default 1),\n" \
-            "dDomainMax                  minimum dx step (default 0),\n" \
-            "fDomainMax                  minimum fractional step (default 1)." },
+            "dDomainMax             minimum dx step (default 0),\n" \
+            "fDomainMax             minimum fractional step (default 1)." },
     { "thin", (PyCFunction) pointwiseXY_C_thin, METH_VARARGS, 
         "Returns a new instance of self thinned to accuracy (i.e., points are removed if possible).\n" \
         "\nArguments are:\n" \

@@ -11,19 +11,21 @@
 
 namespace PoPI {
 
-#define isotopesString "isotopes"
+#define PoPI_chemicalElementChars "chemicalElement"
+#define PoPI_isotopesChars "isotopes"
+#define PoPI_Z_Chars "Z"
 
 /*
 =========================================================
 */
 ChemicalElement::ChemicalElement( pugi::xml_node const &a_node, Database *a_DB, Database *a_parent ) :
         SymbolBase( a_node, Particle_class::chemicalElement ),
-        m_Z( a_node.attribute( "Z" ).as_int( ) ),
-        m_name( a_node.attribute( "name" ).value( ) ),
-        m_isotopes( isotopesString ) {
+        m_Z( a_node.attribute( PoPI_Z_Chars ).as_int( ) ),
+        m_name( a_node.attribute( PoPI_nameChars ).value( ) ),
+        m_isotopes( PoPI_isotopesChars ) {
 
     addToSymbols( a_DB );
-    m_isotopes.appendFromParentNode( a_node.child( "isotopes" ), a_DB, this );
+    m_isotopes.appendFromParentNode( a_node.child( PoPI_isotopesChars ), a_DB, this );
 }
 /*
 =========================================================
@@ -57,14 +59,14 @@ void ChemicalElement::toXMLList( std::vector<std::string> &a_XMLList, std::strin
     a_XMLList.push_back( header );
 
     std::string indent2 = a_indent1 + "  ";
-    std::string isotopeSuite = indent2 + "<isotopes>";
+    std::string isotopeSuite = indent2 + "<" + PoPI_isotopesChars + ">";
     a_XMLList.push_back( isotopeSuite );
 
     std::string indent3 = indent2 + "  ";
     for( std::string::size_type i1 = 0; i1 < size; ++i1 ) m_isotopes[i1].toXMLList( a_XMLList, indent3 );
 
-    appendXMLEnd( a_XMLList, "isotopes" );
-    appendXMLEnd( a_XMLList, "chemicalElement" );
+    appendXMLEnd( a_XMLList, PoPI_isotopesChars );
+    appendXMLEnd( a_XMLList, PoPI_chemicalElementChars );
 }   
 
 }

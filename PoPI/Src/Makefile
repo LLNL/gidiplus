@@ -7,27 +7,32 @@ SHELL = /bin/ksh
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
+include ../Makefile.paths
+
+local_CXXFLAGS = $(CXXFLAGS) -I$(PUGIXML_INCLUDE)
+
 .PHONY: default clean realclean
 
-localCXXFLAGS = $(CXXFLAGS) -I../../pugixml/include
-
-CppSources = PoPI_database.cpp PoPI_base.cpp PoPI_particle.cpp PoPI_gaugeBoson.cpp PoPI_lepton.cpp PoPI_baryon.cpp \
-    PoPI_chemicalElement.cpp PoPI_isotope.cpp PoPI_nuclide.cpp PoPI_nucleus.cpp \
-    PoPI_unorthodox.cpp PoPI_alias.cpp \
-    PoPI_pq_suite.cpp PoPI_physicalQuantity.cpp \
-    PoPI_decayData.cpp PoPI_misc.cpp PoPI_nuclideGammaBranching.cpp
-
+CppSources = $(sort $(wildcard *.cpp))
 CppObjs = $(CppSources:.cpp=.o)
+Archive = libPoPI.a
 
-default: $(CppObjs)
-	rm -f libPoPI.a
-	$(AR) -cr libPoPI.a *.o
+default:
+	echo ""
+	echo "  -- PoPI/Src --"
+	$(MAKE) $(Archive)
 
 %.o: %.cpp
 	echo "    "$<
-	$(CXX) -c $(localCXXFLAGS) $< -o $@
+	$(CXX) -c $(local_CXXFLAGS) $< -o $@
+
+$(Archive): $(CppObjs)
+	rm -f $@
+	$(AR) -cr $@ $(CppObjs)
+
+$(CppSources): PoPI.hpp
 
 clean:
-	rm -f *.o *.so *.a
+	rm -f *.o $(Archive)
 
 realclean: clean

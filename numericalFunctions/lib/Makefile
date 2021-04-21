@@ -11,7 +11,7 @@ SHELL = /bin/sh
 
 default: libnumericalfunctions.a
 
-libnumericalfunctions.a: $(objects)
+libnumericalfunctions.a:
 	rm -f *.o
 	$(AR) -x $(NFUPDATING_PATH)/lib/*.a
 	ARFLAGS=-cr; \

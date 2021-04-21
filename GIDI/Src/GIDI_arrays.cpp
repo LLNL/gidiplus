@@ -19,14 +19,15 @@ namespace GIDI {
  *
  * @param a_construction        [in]    Used to pass user options for parsing.
  * @param a_node                [in]    The **pugi::xml_node** to be parsed.
+ * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_data                [out]   An empty GIDI::Vector that is filled with the data.
  *
  * @return                              0 if successfull and 1 otherwise.
  ***********************************************************************************************************/
 
-int parseFlattened1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, Vector &a_data ) {
+int parseFlattened1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Vector &a_data ) {
 
-    FlattenedArrayData arrayData( a_node, 1, a_construction.useSystem_strtod( ) );
+    FlattenedArrayData arrayData( a_node, a_setupInfo, 1, a_construction.useSystem_strtod( ) );
 
     std::size_t size = (std::size_t) arrayData.m_shape[0];
     a_data.resize( size );
@@ -46,21 +47,22 @@ int parseFlattened1d( Construction::Settings const &a_construction, pugi::xml_no
 /* *********************************************************************************************************//**
  * Function to parse a flattened array of dimension **a_dimensions**.
  *
- * @param a_node            [in]    The **pugi::xml_node** to be parsed.
- * @param a_dimensions      [int]   The dimension of the flattened array to be parsed.
+ * @param a_node                [in]    The **pugi::xml_node** to be parsed.
+ * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
+ * @param a_dimensions          [in]    The dimension of the flattened array to be parsed.
  * @param a_useSystem_strtod    [in]    Flag passed to the function nfu_stringToListOfDoubles.
  ***********************************************************************************************************/
 
-FlattenedArrayData::FlattenedArrayData( pugi::xml_node const &a_node, int a_dimensions, int a_useSystem_strtod ) :
-        Form( a_node, FormType::flattenedArrayData ),
+FlattenedArrayData::FlattenedArrayData( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, int a_dimensions, int a_useSystem_strtod ) :
+        Form( a_node, a_setupInfo, FormType::flattenedArrayData ),
         m_numberOfStarts( 0 ), 
         m_numberOfLengths( 0 ),
-        m_starts( NULL ),
-        m_lengths( NULL ) {
+        m_starts( nullptr ),
+        m_lengths( nullptr ) {
 
     bool m_dValuesPresent( false );
 
-    std::string shape( a_node.attribute( "shape" ).value( ) );
+    std::string shape( a_node.attribute( GIDI_shapeChars ).value( ) );
     long numberOfDimensions = (long) std::count( shape.begin( ), shape.end( ), ',' ), prior = 0, next;
     while( --numberOfDimensions >= 0 ) {
         next = shape.find( ",", prior );
@@ -77,26 +79,25 @@ FlattenedArrayData::FlattenedArrayData( pugi::xml_node const &a_node, int a_dime
         char *endCharacter;
         std::string name( child.name( ) );
 
-        if( name == "values" ) {
-            std::string label( child.attribute( "label" ).value( ) );
+        if( name == GIDI_valuesChars ) {
+            std::string label( child.attribute( GIDI_labelChars ).value( ) );
             char const *text = child.text( ).get( );
 
-            if( label == "starts" ) {
+            if( label == GIDI_startsChars ) {
                 int64_t numberOfStarts;
-                m_starts = nfu_stringToListOfInt32s( NULL, text, ' ', &numberOfStarts, &endCharacter );
+                m_starts = nfu_stringToListOfInt32s( nullptr, text, ' ', &numberOfStarts, &endCharacter );
                 m_numberOfStarts = (std::size_t) numberOfStarts;
-                if( m_starts == NULL ) throw Exception( "m_starts == NULL" );
+                if( m_starts == nullptr ) throw Exception( "m_starts == nullptr" );
                 if( *endCharacter != 0 ) throw Exception( "bad 'starts' string" ); } 
-            else if( label == "lengths" ) {
+            else if( label == GIDI_lengthsChars ) {
                 int64_t numberOfLengths;
-                m_lengths = nfu_stringToListOfInt32s( NULL, text, ' ', &numberOfLengths, &endCharacter );
+                m_lengths = nfu_stringToListOfInt32s( nullptr, text, ' ', &numberOfLengths, &endCharacter );
                 m_numberOfLengths = (std::size_t) numberOfLengths;
-                if( m_lengths == NULL ) throw Exception( "m_lengths == NULL" );
+                if( m_lengths == nullptr ) throw Exception( "m_lengths == nullptr" );
                 if( *endCharacter != 0 ) throw Exception( "bad 'lengths' string" ); }
             else if( label == "" ) {
                 m_dValuesPresent = true;
-                parseValuesOfDoubles( child, m_dValues, a_useSystem_strtod ); 
-}
+                parseValuesOfDoubles( child, a_setupInfo, m_dValues, a_useSystem_strtod ); }
             else {
                 throw Exception( "unknown label for flatteded array sub-element" );
             } }
@@ -104,8 +105,8 @@ FlattenedArrayData::FlattenedArrayData( pugi::xml_node const &a_node, int a_dime
             throw Exception( "unknown flattened array sub-element" );
         }
     }
-    if( m_starts == NULL ) throw Exception( "array missing starts element" );
-    if( m_lengths == NULL ) throw Exception( "array missing lengths element" );
+    if( m_starts == nullptr ) throw Exception( "array missing starts element" );
+    if( m_lengths == nullptr ) throw Exception( "array missing lengths element" );
     if( !m_dValuesPresent ) throw Exception( "array missing dValues element" );
     if( m_numberOfStarts != m_numberOfLengths ) throw Exception( "m_numberOfStarts != m_numberOfLengths for array" );
 }
@@ -117,6 +118,33 @@ FlattenedArrayData::~FlattenedArrayData( ) {
 
     smr_freeMemory2( m_starts );
     smr_freeMemory2( m_lengths );
+}
+
+/* *********************************************************************************************************//**
+ * Sets all elements in the range [*a_start*,*a_end*) to *a_value*.
+ *
+ * @param a_start       [in]    The starting flat-cell index of *this* to fill with *a_value*.
+ * @param a_end         [in]    One after the last flat-cell index of *this* to fill with *a_value*.
+ * @param a_value       [in]    The value to set each double in the range to.
+ ***********************************************************************************************************/
+
+void FlattenedArrayData::setToValueInFlatRange( int a_start, int a_end, double a_value ) {
+
+    int size = 1;
+    for( auto iter = m_shape.begin( ); iter != m_shape.end( ); ++iter ) size *= *iter;
+    a_end = std::min( a_end, size );
+
+    long numberOfValuesToSet = 0;
+    for( std::size_t startIndex = 0; startIndex < m_numberOfStarts; ++startIndex ) {
+        long start = m_starts[startIndex];
+        long length = m_lengths[startIndex];
+
+        if( ( start + length ) > a_end ) length = a_end - start;
+        if( length < 0 ) break;
+        numberOfValuesToSet += length;
+    }
+
+    for( long index = 0; index < numberOfValuesToSet; ++index ) m_dValues[index] = 0.0;
 }
 
 /* *********************************************************************************************************//**
@@ -138,7 +166,7 @@ void FlattenedArrayData::toXMLList( WriteInfo &a_writeInfo, std::string const &a
         sep = ",";
     }
 
-    std::string attributes = a_writeInfo.addAttribute( "shape", shapeString ) + a_writeInfo.addAttribute( "compression", "flattened" );
+    std::string attributes = a_writeInfo.addAttribute( GIDI_shapeChars, shapeString ) + a_writeInfo.addAttribute( "compression", "flattened" );
 
     a_writeInfo.addNodeStarter( a_indent, moniker( ), attributes );
 

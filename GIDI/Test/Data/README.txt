@@ -1,3 +1,2 @@
-Large test data files have been omitted from this distribution to keep the repository small.
-They will be made available, but in the meantime contact the authors if you
-wish to get a copy: mattoon1@llnl.gov
+Large test data files have been omitted from the repository to keep size down.
+They are available from the release page (https://github.com/LLNL/gidiplus/releases/tag/v3.19.73).

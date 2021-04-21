@@ -81,7 +81,7 @@ int main2( int argc, char **argv ) {
     GIDI::Styles::TemperatureInfos temperatures = protare->temperatures( );
     std::string label( temperatures[0].griddedCrossSection( ) );
     MCGIDI::Transporting::MC MC( pops, projectileID, &protare->styles( ), label, GIDI::Transporting::DelayedNeutrons::on, 20.0 );
-    MC.ignoreENDF_MT5( argv_options.find( "--MT5" )->present( ) );
+    MC.setIgnoreENDF_MT5( argv_options.find( "--MT5" )->present( ) );
 
     GIDI::Transporting::Groups_from_bdfls groups_from_bdfls( "../../../GIDI/Test/bdfls" );
     GIDI::Transporting::Fluxes_from_bdfls fluxes_from_bdfls( "../../../GIDI/Test/bdfls", 0 );

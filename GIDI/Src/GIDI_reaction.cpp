@@ -20,13 +20,13 @@ Reaction::Reaction( int a_ENDF_MT, std::string a_fissionGenre ) :
         m_active( true ),
         m_ENDF_MT( a_ENDF_MT ),
         m_fissionGenre( a_fissionGenre ),
-        m_doubleDifferentialCrossSection( doubleDifferentialCrossSectionMoniker ),
-        m_crossSection( crossSectionMoniker ),
-        m_availableEnergy( availableEnergyMoniker ),
-        m_availableMomentum( availableMomentumMoniker ),
+        m_doubleDifferentialCrossSection( GIDI_doubleDifferentialCrossSectionChars ),
+        m_crossSection( GIDI_crossSectionChars ),
+        m_availableEnergy( GIDI_availableEnergyChars ),
+        m_availableMomentum( GIDI_availableMomentumChars ),
         m_outputChannel( ) {
 
-    setMoniker( reactionMoniker );
+    setMoniker( GIDI_reactionChars );
 }
 
 /* *********************************************************************************************************//**
@@ -34,6 +34,7 @@ Reaction::Reaction( int a_ENDF_MT, std::string a_fissionGenre ) :
  *
  * @param a_construction    [in]    Used to pass user options to the constructor.
  * @param a_node            [in]    The reaction pugi::xml_node to be parsed and used to construct the reaction.
+ * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops            [in]    The *external* PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs    [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
  *                                  This is the <**PoPs**> node under the <**reactionSuite**> node.
@@ -41,21 +42,21 @@ Reaction::Reaction( int a_ENDF_MT, std::string a_fissionGenre ) :
  * @param a_styles          [in]    The <**styles**> node under the <**reactionSuite**> node.
  ***********************************************************************************************************/
 
-Reaction::Reaction( Construction::Settings const &a_construction, pugi::xml_node const &a_node, PoPI::Database const &a_pops, 
+Reaction::Reaction( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, 
                 PoPI::Database const &a_internalPoPs, Protare const &a_protare, Styles::Suite const *a_styles ) :
-        Form( a_node, FormType::reaction ),
+        Form( a_node, a_setupInfo, FormType::reaction ),
         m_active( true ),
-        m_ENDF_MT( a_node.attribute( "ENDF_MT" ).as_int( ) ),
+        m_ENDF_MT( a_node.attribute( GIDI_ENDF_MT_Chars ).as_int( ) ),
         m_ENDL_C( 0 ),
         m_ENDL_S( 0 ),
-        m_fissionGenre( a_node.attribute( "fissionGenre" ).value( ) ),
+        m_fissionGenre( a_node.attribute( GIDI_fissionGenreChars ).value( ) ),
         m_QThreshold( 0.0 ),
         m_crossSectionThreshold( 0.0 ),
-        m_doubleDifferentialCrossSection( a_construction, doubleDifferentialCrossSectionMoniker, a_node, a_pops, a_internalPoPs, parseDoubleDifferentialCrossSectionSuite, a_styles ),
-        m_crossSection( a_construction, crossSectionMoniker, a_node, a_pops, a_internalPoPs, parseCrossSectionSuite, a_styles ),
-        m_availableEnergy( a_construction, availableEnergyMoniker, a_node, a_pops, a_internalPoPs, parseAvailableSuite, a_styles ),
-        m_availableMomentum( a_construction, availableMomentumMoniker, a_node, a_pops, a_internalPoPs, parseAvailableSuite, a_styles ),
-        m_outputChannel( NULL ) {
+        m_doubleDifferentialCrossSection( a_construction, GIDI_doubleDifferentialCrossSectionChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseDoubleDifferentialCrossSectionSuite, a_styles ),
+        m_crossSection( a_construction, GIDI_crossSectionChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseCrossSectionSuite, a_styles ),
+        m_availableEnergy( a_construction, GIDI_availableEnergyChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseAvailableSuite, a_styles ),
+        m_availableMomentum( a_construction, GIDI_availableMomentumChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseAvailableSuite, a_styles ),
+        m_outputChannel( nullptr ) {
 
     m_isPairProduction = label( ).find( "pair production" ) != std::string::npos;
 
@@ -66,7 +67,7 @@ Reaction::Reaction( Construction::Settings const &a_construction, pugi::xml_node
 
     ENDL_CFromENDF_MT( m_ENDF_MT, &m_ENDL_C, &m_ENDL_S );
 
-    m_outputChannel = new OutputChannel( a_construction, a_node.child( outputChannelMoniker ), a_pops, a_internalPoPs, a_styles, hasFission( ) );
+    m_outputChannel = new OutputChannel( a_construction, a_node.child( GIDI_outputChannelChars ), a_setupInfo, a_pops, a_internalPoPs, a_styles, hasFission( ) );
     m_outputChannel->setAncestor( this );
 
     if( ( a_construction.parseMode( ) != Construction::ParseMode::outline ) && ( a_construction.parseMode( ) != Construction::ParseMode::readOnly ) ) {
@@ -89,7 +90,7 @@ Reaction::Reaction( Construction::Settings const &a_construction, pugi::xml_node
         m_QThreshold = a_protare.thresholdFactor( ) * _Q;
 
         if( _Q > 0.0 ) {               // Try to do a better job determining m_crossSectionThreshold.
-            std::vector<Suite::const_iterator> monikers = a_protare.styles( ).findAllOfMoniker( griddedCrossSectionStyleMoniker );
+            std::vector<Suite::const_iterator> monikers = a_protare.styles( ).findAllOfMoniker( GIDI_griddedCrossSectionStyleChars );
             if( ( a_construction.parseMode( ) != Construction::ParseMode::multiGroupOnly ) && ( monikers.size( ) > 0 ) ) {
                 Styles::GriddedCrossSection const &griddedCrossSection = static_cast<Styles::GriddedCrossSection const &>( **monikers[0] );
                 Grid grid = griddedCrossSection.grid( );
@@ -108,7 +109,7 @@ Reaction::Reaction( Construction::Settings const &a_construction, pugi::xml_node
 
 Reaction::~Reaction( ) {
 
-    if( m_outputChannel != NULL ) delete m_outputChannel;
+    if( m_outputChannel != nullptr ) delete m_outputChannel;
 }
 
 /* *********************************************************************************************************//**
@@ -194,39 +195,54 @@ void Reaction::outputChannel( OutputChannel *a_outputChannel ) {
 }
 
 /* *********************************************************************************************************//**
- * Used by Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or NULL if none exists.
+ * Only for internal use. Called by ProtareTNSL instance to zero the lower energy multi-group data covered by the TNSL ProtareSingle.
+ *
+ * @param a_maximumTNSL_MultiGroupIndex     [in]    A map that contains labels for heated multi-group data and the last valid group boundary
+ *                                                  for the TNSL data for that boundary.
+ ***********************************************************************************************************/
+
+void Reaction::modifiedMultiGroupElasticForTNSL( std::map<std::string,std::size_t> a_maximumTNSL_MultiGroupIndex ) {
+
+    m_crossSection.modifiedMultiGroupElasticForTNSL( a_maximumTNSL_MultiGroupIndex );
+    m_availableEnergy.modifiedMultiGroupElasticForTNSL( a_maximumTNSL_MultiGroupIndex );
+    m_availableMomentum.modifiedMultiGroupElasticForTNSL( a_maximumTNSL_MultiGroupIndex );
+    m_outputChannel->modifiedMultiGroupElasticForTNSL( a_maximumTNSL_MultiGroupIndex );
+}
+
+/* *********************************************************************************************************//**
+ * Used by Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or nullptr if none exists.
  *
  * @param a_item    [in]    The name of the class member whose pointer is to be return.
- * @return                  The pointer to the class member or NULL if class does not have a member named a_item.
+ * @return                  The pointer to the class member or nullptr if class does not have a member named a_item.
  ***********************************************************************************************************/
 
 Ancestry *Reaction::findInAncestry3( std::string const &a_item ) {
 
-    if( a_item == doubleDifferentialCrossSectionMoniker ) return( &m_doubleDifferentialCrossSection );
-    if( a_item == crossSectionMoniker ) return( &m_crossSection );
-    if( a_item == availableEnergyMoniker ) return( &m_availableEnergy );
-    if( a_item == availableMomentumMoniker ) return( &m_availableMomentum );
-    if( a_item == outputChannelMoniker ) return( m_outputChannel );
+    if( a_item == GIDI_doubleDifferentialCrossSectionChars ) return( &m_doubleDifferentialCrossSection );
+    if( a_item == GIDI_crossSectionChars ) return( &m_crossSection );
+    if( a_item == GIDI_availableEnergyChars ) return( &m_availableEnergy );
+    if( a_item == GIDI_availableMomentumChars ) return( &m_availableMomentum );
+    if( a_item == GIDI_outputChannelChars ) return( m_outputChannel );
 
-    return( NULL );
+    return( nullptr );
 }
 
 /* *********************************************************************************************************//**
- * Used by Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or NULL if none exists.
+ * Used by Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or nullptr if none exists.
  *
  * @param a_item    [in]    The name of the class member whose pointer is to be return.
- * @return                  The pointer to the class member or NULL if class does not have a member named a_item.
+ * @return                  The pointer to the class member or nullptr if class does not have a member named a_item.
  ***********************************************************************************************************/
 
 Ancestry const *Reaction::findInAncestry3( std::string const &a_item ) const {
 
-    if( a_item == doubleDifferentialCrossSectionMoniker ) return( &m_doubleDifferentialCrossSection );
-    if( a_item == crossSectionMoniker ) return( &m_crossSection );
-    if( a_item == availableEnergyMoniker ) return( &m_availableEnergy );
-    if( a_item == availableMomentumMoniker ) return( &m_availableMomentum );
-    if( a_item == outputChannelMoniker ) return( m_outputChannel );
+    if( a_item == GIDI_doubleDifferentialCrossSectionChars ) return( &m_doubleDifferentialCrossSection );
+    if( a_item == GIDI_crossSectionChars ) return( &m_crossSection );
+    if( a_item == GIDI_availableEnergyChars ) return( &m_availableEnergy );
+    if( a_item == GIDI_availableMomentumChars ) return( &m_availableMomentum );
+    if( a_item == GIDI_outputChannelChars ) return( m_outputChannel );
 
-    return( NULL );
+    return( nullptr );
 }
 
 /* *********************************************************************************************************//**
@@ -442,6 +458,17 @@ Vector Reaction::multiGroupGain( Transporting::MG const &a_settings, Styles::Tem
 }
 
 /* *********************************************************************************************************//**
+ * Appends a DelayedNeutronProduct instance for each delayed neutron in *m_delayedNeutrons*.
+ *
+ * @param       a_delayedNeutronProducts    [in/out]    The list to append the delayed neutrons to.
+ ***********************************************************************************************************/
+
+void Reaction::delayedNeutronProducts( DelayedNeutronProducts &a_delayedNeutronProducts ) const {
+
+    if( m_outputChannel != nullptr ) m_outputChannel->delayedNeutronProducts( a_delayedNeutronProducts );
+}
+
+/* *********************************************************************************************************//**
  * Returns, via arguments, the average energy and momentum, and gain for product with particle id *a_particleID*.
  *
  * @param a_particleID          [in]    The particle id of the product.
@@ -459,7 +486,7 @@ void Reaction::continuousEnergyProductData( std::string const &a_particleID, dou
 
 //    if( ENDF_MT( ) == 516 ) return;             // FIXME, may be something wrong with the way FUDGE converts ENDF to GNDS.
 
-    if( m_outputChannel != NULL ) m_outputChannel->continuousEnergyProductData( a_particleID, a_energy, a_productEnergy, a_productMomentum, a_productGain );
+    if( m_outputChannel != nullptr ) m_outputChannel->continuousEnergyProductData( a_particleID, a_energy, a_productEnergy, a_productMomentum, a_productGain );
 }
 
 /* *********************************************************************************************************//**
@@ -474,14 +501,14 @@ void Reaction::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     std::string attributes;
 
-    attributes += a_writeInfo.addAttribute( "label", label( ) );
-    attributes += a_writeInfo.addAttribute( "ENDF_MT", intToString( ENDF_MT( ) ) );
-    if( m_fissionGenre != "" ) attributes += a_writeInfo.addAttribute( "fissionGenre", m_fissionGenre );
+    attributes += a_writeInfo.addAttribute( GIDI_labelChars, label( ) );
+    attributes += a_writeInfo.addAttribute( GIDI_ENDF_MT_Chars, intToString( ENDF_MT( ) ) );
+    if( m_fissionGenre != "" ) attributes += a_writeInfo.addAttribute( GIDI_fissionGenreChars, m_fissionGenre );
     a_writeInfo.addNodeStarter( a_indent, moniker( ), attributes );
 
     m_doubleDifferentialCrossSection.toXMLList( a_writeInfo, indent2 );    
     m_crossSection.toXMLList( a_writeInfo, indent2 );    
-    if( m_outputChannel != NULL ) m_outputChannel->toXMLList( a_writeInfo, indent2 );
+    if( m_outputChannel != nullptr ) m_outputChannel->toXMLList( a_writeInfo, indent2 );
     m_availableEnergy.toXMLList( a_writeInfo, indent2 );
     m_availableMomentum.toXMLList( a_writeInfo, indent2 );
 
@@ -499,7 +526,7 @@ void Reaction::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) 
 
 int ENDL_CFromENDF_MT( int ENDF_MT, int *ENDL_C, int *ENDL_S ) {
 
-    int MT1_50ToC[] = { 1,   10,  -3,   -4,   -5,    0,    0,    0,    0,  -10,
+    int MT1_50ToC[] = { 1,   10,  -3,   11,   -5,    0,    0,    0,    0,  -10,
                        32,    0,   0,    0,    0,   12,   13,   15,   15,   15,
                        15,   26,  36,   33,  -25,    0,  -27,   20,   27,  -30,
                         0,   22,  24,   25,  -35,  -36,   14,   15,    0,    0,

@@ -7,6 +7,8 @@
 # <<END-copyright>>
 */
 
+#include <limits.h>
+#include <sstream>
 #include <stdexcept>
 
 #include "PoPI.hpp"
@@ -195,6 +197,54 @@ double getPhysicalQuantityOfSuiteAsDouble( PQ_suite const &a_suite, bool a_allow
 Exception::Exception( std::string const & a_message ) :
         std::runtime_error( a_message ) {
 
+}
+
+/* *********************************************************************************************************//**
+ * This function splits that string *a_string* into separate strings using the delimiter character *a_delimiter*.
+ *
+ * @param a_string      [in]    The string to split.
+ * @param a_delimiter   [in]    The delimiter character.
+ *
+ * @return                      The list of strings.
+ ***********************************************************************************************************/
+
+std::vector<std::string> splitString( std::string const &a_string, char a_delimiter ) {
+
+    std::stringstream stringStream( a_string );
+    std::string segment;
+    std::vector<std::string> segments;
+    int i1 = 0;
+
+    while( std::getline( stringStream, segment, a_delimiter ) ) {
+        if( ( i1 > 0 ) && ( segment.size( ) == 0 ) ) continue;      // Remove sequential "//".
+        segments.push_back( segment );
+        ++i1;
+    }
+
+    return( segments );
+}
+
+/* *********************************************************************************************************//**
+ * Converts a string to an integer. All characteros of the string must be valid int characters except for the trailing 0.
+ *
+ * @param a_string              [in]        The string to convert to an int.
+ * @param a_value               [in]        The converted int value.
+ *
+ * @return                                  true if successful and false otherwise.
+  ***********************************************************************************************************/
+
+bool stringToInt( std::string const &a_string, int &a_value ) {
+
+    char const *digits = a_string.c_str( );
+    char *nonDigit;
+    long value = strtol( digits, &nonDigit, 10 );
+
+    if( digits == nonDigit ) return( false );
+    if( *nonDigit != 0 ) return( false );
+    if( ( value < INT_MIN ) || ( value > INT_MAX ) ) return( false );
+
+    a_value = static_cast<int>( value );
+    return( true );
 }
 
 }

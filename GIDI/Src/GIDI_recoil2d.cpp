@@ -24,7 +24,7 @@ namespace Functions {
  ***********************************************************************************************************/
 
 Recoil2d::Recoil2d( std::string const &a_label, std::string const &a_href ) :
-        Function2dForm( recoilMoniker, FormType::recoil2d, ptwXY_interpolationLinLin, 0, 0.0 ),
+        Function2dForm( GIDI_recoilChars, FormType::recoil2d, ptwXY_interpolationLinLin, 0, 0.0 ),
         m_xlink( a_href ) {
 
     setLabel( a_label );
@@ -32,14 +32,15 @@ Recoil2d::Recoil2d( std::string const &a_label, std::string const &a_href ) :
 
 /* *********************************************************************************************************//**
  *
- * @param a_construction    [in]     Used to pass user options to the constructor.
- * @param a_node            [in]     The **pugi::xml_node** to be parsed and used to construct the XYs2d.
- * @param a_parent          [in]     The parent GIDI::Suite.
+ * @param a_construction    [in]    Used to pass user options to the constructor.
+ * @param a_node            [in]    The **pugi::xml_node** to be parsed and used to construct the XYs2d.
+ * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
+ * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-Recoil2d::Recoil2d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, Suite *a_parent ) :
-        Function2dForm( a_construction, a_node, FormType::recoil2d, a_parent ),
-        m_xlink( a_node.attribute( "href" ).value( ) ) {
+Recoil2d::Recoil2d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+        Function2dForm( a_construction, a_node, a_setupInfo, FormType::recoil2d, a_parent ),
+        m_xlink( a_node.attribute( GIDI_hrefChars ).value( ) ) {
 
 }
 
@@ -97,7 +98,7 @@ double Recoil2d::evaluate( double a_x2, double a_x1 ) const {
 
 void Recoil2d::toXMLList_func( WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
 
-    a_writeInfo.addNodeStarterEnder( a_indent, moniker( ), a_writeInfo.addAttribute( "href", m_xlink ) );
+    a_writeInfo.addNodeStarterEnder( a_indent, moniker( ), a_writeInfo.addAttribute( GIDI_hrefChars, m_xlink ) );
 }
 
 }               // End namespace Functions.

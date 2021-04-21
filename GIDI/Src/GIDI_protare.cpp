@@ -27,7 +27,8 @@ static bool sortTemperatures( Styles::TemperatureInfo const &lhs, Styles::Temper
 Protare::Protare( ) :
         Ancestry( "" ),
         m_projectile( "", "", -1.0 ),
-        m_target( "", "", -1.0 ) {
+        m_target( "", "", -1.0 ),
+        m_GNDS_target( "", "", -1.0 ) {
     
 }
 
@@ -42,40 +43,92 @@ Protare::~Protare( ) {
  * Called by the constructs. This method does most of the parsing.
  *
  * @param a_node                        [in]    The protare (i.e., reactionSuite) node to be parsed and used to construct a Protare.
+ * @param a_setupInfo                   [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops                        [in]    A PoPs Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs                [in]    The internal PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_targetRequiredInGlobalPoPs  [in]    If *true*, the target is required to be in **a_pops**.
  * @param a_requiredInPoPs              [in]    If *true*, no particle is required to be in **a_pops**.
  ***********************************************************************************************************/
 
-void Protare::initialize( pugi::xml_node const &a_node, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, bool a_targetRequiredInGlobalPoPs,
-                bool a_requiredInPoPs ) {
+void Protare::initialize( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs,
+                bool a_targetRequiredInGlobalPoPs, bool a_requiredInPoPs ) {
 
     setMoniker( a_node.name( ) );    
 
-    std::string projectileID = a_node.attribute( "projectile" ).value( );
+    std::string projectileID = a_node.attribute( GIDI_projectileChars ).value( );
     m_projectile = ParticleInfo( projectileID, a_pops, a_internalPoPs, a_requiredInPoPs );
 
-    std::string targetID = a_node.attribute( "target" ).value( );
-    m_target = ParticleInfo( targetID, a_pops, a_internalPoPs, a_targetRequiredInGlobalPoPs && a_requiredInPoPs );
+    std::string targetID = a_node.attribute( GIDI_targetChars ).value( );
+    m_GNDS_target = ParticleInfo( targetID, a_pops, a_internalPoPs, a_targetRequiredInGlobalPoPs && a_requiredInPoPs );
+
+    auto iter = a_setupInfo.m_particleSubstitution->find( m_GNDS_target.ID( ) );
+    if( iter != a_setupInfo.m_particleSubstitution->end( ) ) {
+        m_target = iter->second; }
+    else {
+        m_target = m_GNDS_target;
+    }
+}
+
+/* *********************************************************************************************************//**
+ * If the protare is a ProtareTNSL then summing over all reactions will include the standard protare's elastic cross section
+ * in the domain of the TNSL data. The standard elastic cross section should not be added in this domain.
+ * If needed, this function corrects the cross section for this over counting of the elastic cross section.
+ * This method does nothing unless overwritten by the ProtareTNSL class.
+ *
+ * @param       a_label                     [in]    The label of the elastic cross section data to use if over counting needs to be corrected.
+ * @param       a_crossSectionSum           [in]    The cross section to correct.
+ ***********************************************************************************************************/
+
+void Protare::TNSL_crossSectionSumCorrection( std::string const &a_label, Functions::XYs1d &a_crossSectionSum ) {
+
+}
+
+/* *********************************************************************************************************//**
+ * If the protare is a ProtareTNSL then summing over all reactions will include the standard protare's elastic cross section
+ * in the domain of the TNSL data. The standard elastic cross section should not be added in this domain.
+ * If needed, this function corrects the cross section for this over counting of the elastic cross section.
+ * This method does nothing unless overwritten by the ProtareTNSL class.
+ *
+ * @param       a_label                     [in]    The label of the elastic cross section data to use if over counting needs to be corrected.
+ * @param       a_crossSectionSum           [in]    The cross section to correct.
+ ***********************************************************************************************************/
+
+void Protare::TNSL_crossSectionSumCorrection( std::string const &a_label, Functions::Ys1d &a_crossSectionSum ) {
+
+}
+
+/* *********************************************************************************************************//**
+ * If the protare is a ProtareTNSL then summing over all reactions will include the standard protare's elastic cross section
+ * in the domain of the TNSL data. The standard elastic cross section should not be added in this domain.
+ * If needed, this function corrects the cross section for this over counting of the elastic cross section.
+ * This method does nothing as the multi-group cross section data for the standard protare's elastic cross section are
+ * zeroed when the data are read in. However, this method is added so codes do not have to check the type of data they are accessing.
+ *
+ * @param       a_label                     [in]    The label of the elastic cross section data to use if over counting needs to be corrected.
+ * @param       a_crossSectionSum           [in]    The cross section to correct.
+ ***********************************************************************************************************/
+
+void Protare::TNSL_crossSectionSumCorrection( std::string const &a_label, Vector &a_crossSectionSum ) {
+
 }
 
 /* *********************************************************************************************************//**
  * Returns a list of all reaction indices whose ENDL C value is in the set *a_CValues*.
  *
- * @param       a_CValues               [in]    A list of ENDL C values.
+ * @param       a_CValues                       [in]    A list of ENDL C values.
+ * @param       a_checkActiveState              [in]    If true, all reactions whose active state is false are not included in the returned set even if their CValue match on in the list.
  *
  * @return                                      The list of reaction indices.
  ***********************************************************************************************************/
 
-std::set<int> Protare::reactionIndicesMatchingENDLCValues( std::set<int> const &a_CValues ) {
+std::set<int> Protare::reactionIndicesMatchingENDLCValues( std::set<int> const &a_CValues, bool a_checkActiveState ) {
 
     std::set<int> indices;
 
     for( std::size_t i1 = 0; i1 < numberOfReactions( ); ++i1 ) {
         Reaction *reaction1 = reaction( i1 );
 
-        if( !reaction1->active( ) ) continue;
+        if( a_checkActiveState && !reaction1->active( ) ) continue;
         if( a_CValues.find( reaction1->ENDL_C( ) ) != a_CValues.end( ) ) indices.insert( i1 );
     }
 
@@ -93,15 +146,19 @@ std::set<int> Protare::reactionIndicesMatchingENDLCValues( std::set<int> const &
  * @param a_projectileID    [in]    The PoPs id of the projectile.
  * @param a_targetID        [in]    The PoPs id of the target.
  * @param a_evaluation      [in]    The evaluation string.
+ * @param a_interaction     [in]    The interaction flag for the protare.
+ * @param a_formatVersion   [in]    The GNDS format to use.
  ***********************************************************************************************************/
 
-ProtareSingle::ProtareSingle( PoPI::Database const &a_pops, std::string const &a_projectileID, std::string const &a_targetID, std::string const &a_evaluation ) :
-        m_formatVersion( GIDI_format ),
+ProtareSingle::ProtareSingle( PoPI::Database const &a_pops, std::string const &a_projectileID, std::string const &a_targetID, std::string const &a_evaluation,
+                std::string const &a_interaction, std::string const &a_formatVersion ) :
+        m_formatVersion( a_formatVersion ),
         m_evaluation( a_evaluation ),
+        m_interaction( a_interaction ),
         m_projectileFrame( Frame::lab ),
         m_thresholdFactor( 0.0 ) {
 
-    setMoniker( GIDI_topLevelMoniker );
+    setMoniker( GIDI_topLevelChars );
     initialize( );
 
     setProjectile( ParticleInfo( a_projectileID, a_pops, a_pops, true ) );
@@ -115,15 +172,19 @@ ProtareSingle::ProtareSingle( PoPI::Database const &a_pops, std::string const &a
  * @param a_fileName                    [in]    File containing a protare (i.e., reactionSuite) node that is parsed and used to construct the Protare.
  * @param a_fileType                    [in]    File type of a_fileType. Currently, only GIDI::XML is supported.
  * @param a_pops                        [in]    A PoPs Database instance used to get particle indices and possibly other particle information.
+ * @param a_particleSubstitution        [in]    Map of particles to substitute with another particles.
  * @param a_libraries                   [in]    The list of libraries that were searched to find *this*.
+ * @param a_interaction                 [in]    The interaction flag for the protare.
  * @param a_targetRequiredInGlobalPoPs  [in]    If *true*, the target is required to be in **a_pops**.
  * @param a_requiredInPoPs              [in]    If *true*, no particle is required to be in **a_pops**.
  ***********************************************************************************************************/
 
 ProtareSingle::ProtareSingle( Construction::Settings const &a_construction, std::string const &a_fileName, FileType a_fileType, 
-                PoPI::Database const &a_pops, std::vector<std::string> const &a_libraries, bool a_targetRequiredInGlobalPoPs, bool a_requiredInPoPs ) :
+                PoPI::Database const &a_pops, ParticleSubstitution const &a_particleSubstitution, std::vector<std::string> const &a_libraries, 
+                std::string const &a_interaction, bool a_targetRequiredInGlobalPoPs, bool a_requiredInPoPs ) :
         Protare( ),
         m_libraries( a_libraries ),
+        m_interaction( a_interaction ),
         m_fileName( a_fileName ),
         m_realFileName( realPath( a_fileName ) ) {
 
@@ -136,26 +197,11 @@ ProtareSingle::ProtareSingle( Construction::Settings const &a_construction, std:
 
     pugi::xml_node protare = doc.first_child( );
 
-    initialize( a_construction, protare, a_pops, a_targetRequiredInGlobalPoPs, a_requiredInPoPs );
-}
+    SetupInfo setupInfo( this );
+    ParticleSubstitution particleSubstitution( a_particleSubstitution );
+    setupInfo.m_particleSubstitution = &particleSubstitution;
 
-/* *********************************************************************************************************//**
- * Parses a GNDS pugi::xml_node instance to construct the Protare instance. Calls the ProtareSingle::initialize method which does most of the work.
- *
- * @param a_construction                [in]    Used to pass user options to the constructor.
- * @param a_node                        [in]    The **pugi::xml_node** to be parsed and used to construct the Protare.
- * @param a_pops                        [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
- * @param a_libraries                   [in]    The list of libraries that were searched to find *this*.
- * @param a_targetRequiredInGlobalPoPs  [in]    If *true*, the target is required to be in **a_pops**.
- * @param a_requiredInPoPs              [in]    If *true*, no particle is required to be in **a_pops**.
- ***********************************************************************************************************/
-
-ProtareSingle::ProtareSingle( Construction::Settings const &a_construction, pugi::xml_node const &a_node, PoPI::Database const &a_pops,
-                std::vector<std::string> const &a_libraries, bool a_targetRequiredInGlobalPoPs, bool a_requiredInPoPs ) :
-        Protare( ),
-        m_libraries( a_libraries ) {
-
-    initialize( a_construction, a_node, a_pops, a_targetRequiredInGlobalPoPs, a_requiredInPoPs );
+    initialize( a_construction, protare, setupInfo, a_pops, a_targetRequiredInGlobalPoPs, a_requiredInPoPs );
 }
 
 /* *********************************************************************************************************//**
@@ -164,25 +210,25 @@ ProtareSingle::ProtareSingle( Construction::Settings const &a_construction, pugi
 
 void ProtareSingle::initialize( ) {
 
-    m_externalFiles.setMoniker( externalFilesMoniker );
+    m_externalFiles.setMoniker( GIDI_externalFilesChars );
     m_externalFiles.setAncestor( this );
 
-    m_styles.setMoniker( stylesMoniker );
+    m_styles.setMoniker( GIDI_stylesChars );
     m_styles.setAncestor( this );
 
     m_documentations.setAncestor( this );
-    m_documentations.setMoniker( documentationsMoniker );
+    m_documentations.setMoniker( GIDI_documentations_1_10_Chars );
 
     m_reactions.setAncestor( this );
-    m_reactions.setMoniker( reactionsMoniker );
+    m_reactions.setMoniker( GIDI_reactionsChars );
 
     m_orphanProducts.setAncestor( this );
-    m_orphanProducts.setMoniker( orphanProductsMoniker );
+    m_orphanProducts.setMoniker( GIDI_orphanProductsChars );
 
     m_sums.setAncestor( this );
 
     m_fissionComponents.setAncestor( this );
-    m_fissionComponents.setMoniker( fissionComponentsMoniker );
+    m_fissionComponents.setMoniker( GIDI_fissionComponentsChars );
 }
 
 /* *********************************************************************************************************//**
@@ -190,44 +236,60 @@ void ProtareSingle::initialize( ) {
  *
  * @param a_construction                [in]    Used to pass user options to the constructor.
  * @param a_node                        [in]    The protare (i.e., reactionSuite) node to be parsed and used to construct a Protare.
+ * @param a_setupInfo                   [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops                        [in]    A PoPs Database instance used to get particle indices and possibly other particle information.
  * @param a_targetRequiredInGlobalPoPs  [in]    If *true*, the target is required to be in **a_pops**.
  * @param a_requiredInPoPs              [in]    If *true*, no particle is required to be in **a_pops**.
  ***********************************************************************************************************/
 
-void ProtareSingle::initialize( Construction::Settings const &a_construction, pugi::xml_node const &a_node, PoPI::Database const &a_pops, bool a_targetRequiredInGlobalPoPs,
-                bool a_requiredInPoPs ) {
+void ProtareSingle::initialize( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,
+                PoPI::Database const &a_pops, bool a_targetRequiredInGlobalPoPs, bool a_requiredInPoPs ) {
 
-    pugi::xml_node internalPoPs = a_node.child( "PoPs" );
+    pugi::xml_node internalPoPs = a_node.child( GIDI_PoPsChars );
     m_internalPoPs.addDatabase( internalPoPs, true );
+    std::vector<PoPI::Alias *> const aliases = m_internalPoPs.aliases( );
+    for( auto alias = aliases.begin( ); alias != aliases.end( ); ++alias ) {
+        a_setupInfo.m_particleSubstitution->insert( { (*alias)->pid( ), ParticleInfo( (*alias)->ID( ), a_pops, a_pops, true ) } );
+    }
 
-    Protare::initialize( a_node, a_pops, m_internalPoPs, a_targetRequiredInGlobalPoPs, a_requiredInPoPs );
+    Protare::initialize( a_node, a_setupInfo, a_pops, m_internalPoPs, a_targetRequiredInGlobalPoPs, a_requiredInPoPs );
     initialize( );
 
-    m_formatVersion = a_node.attribute( "format" ).value( );
-    if( m_formatVersion != GIDI_format ) throw Exception( "unsupport GND format version" );
+    m_formatVersion.setFormat( a_node.attribute( GIDI_formatChars ).value( ) );
+    if( !m_formatVersion.supported( ) ) throw Exception( "unsupport GND format version" );
+    a_setupInfo.m_formatVersion = m_formatVersion;
+
+    if( m_formatVersion.major( ) > 1 ) m_interaction = a_node.attribute( GIDI_interactionChars ).value( );
 
     m_internalPoPs.calculateNuclideGammaBranchStateInfos( m_nuclideGammaBranchStateInfos );
 
     m_isTNSL_ProtareSingle = false;
     m_thresholdFactor = 1.0;
     if( a_pops.exists( target( ).pid( ) ) ) {
-        PoPI::Base const &target1( a_pops.get<PoPI::Base>( target( ).pid( ) ) );
-        if( target1.isUnorthodox( ) ) m_isTNSL_ProtareSingle = target( ).pid( ).find( "Fission" ) == std::string::npos;  // FIXME, not a good way to determine this.
-        m_thresholdFactor = 1.0 + projectile( ).mass( "amu" ) / target( ).mass( "amu" );
+        std::string name( a_node.child( GIDI_reactionsChars ).first_child( ).child( GIDI_doubleDifferentialCrossSectionChars ).first_child( ).name( ) );
+
+        m_isTNSL_ProtareSingle = name.find( "thermalNeutronScatteringLaw" ) != std::string::npos;
+        m_thresholdFactor = 1.0 + projectile( ).mass( "amu" ) / target( ).mass( "amu" );            // BRB FIXME, I think only this statement needs to be in this if section.
     }
 
-    m_evaluation = a_node.attribute( "evaluation" ).value( );
+    m_evaluation = a_node.attribute( GIDI_evaluationChars ).value( );
 
-    m_projectileFrame = parseFrame( a_node, "projectileFrame" );
+    m_projectileFrame = parseFrame( a_node, a_setupInfo, GIDI_projectileFrameChars );
 
-    m_externalFiles.parse( a_construction, a_node.child( externalFilesMoniker ), a_pops, m_internalPoPs, parseExternalFilesSuite, NULL );
-    m_styles.parse( a_construction, a_node.child( stylesMoniker ), a_pops, m_internalPoPs, parseStylesSuite, NULL );
-    m_reactions.parse( a_construction, a_node.child( reactionsMoniker ), a_pops, m_internalPoPs, parseReaction, &m_styles );
-    m_orphanProducts.parse( a_construction, a_node.child( orphanProductsMoniker ), a_pops, m_internalPoPs, parseOrphanProduct, &m_styles );
+    m_externalFiles.parse( a_construction, a_node.child( GIDI_externalFilesChars ), a_setupInfo, a_pops, m_internalPoPs, parseExternalFilesSuite, nullptr );
 
-    m_sums.parse( a_construction, a_node.child( sumsMoniker ), a_pops, m_internalPoPs );
-    m_fissionComponents.parse( a_construction, a_node.child( fissionComponentsMoniker ), a_pops, m_internalPoPs, parseFissionComponent, &m_styles );
+    m_styles.parse( a_construction, a_node.child( GIDI_stylesChars ), a_setupInfo, a_pops, m_internalPoPs, parseStylesSuite, nullptr );
+
+    Styles::Evaluated *evaluated = m_styles.get<Styles::Evaluated>( 0 );
+
+    m_projectileEnergyMin = evaluated->projectileEnergyDomain( ).minimum( );
+    m_projectileEnergyMax = evaluated->projectileEnergyDomain( ).maximum( );
+
+    m_reactions.parse( a_construction, a_node.child( GIDI_reactionsChars ), a_setupInfo, a_pops, m_internalPoPs, parseReaction, &m_styles );
+    m_orphanProducts.parse( a_construction, a_node.child( GIDI_orphanProductsChars ), a_setupInfo, a_pops, m_internalPoPs, parseOrphanProduct, &m_styles );
+
+    m_sums.parse( a_construction, a_node.child( GIDI_sumsChars ), a_setupInfo, a_pops, m_internalPoPs );
+    m_fissionComponents.parse( a_construction, a_node.child( GIDI_fissionComponentsChars ), a_setupInfo, a_pops, m_internalPoPs, parseFissionComponent, &m_styles );
 }
 
 /* *********************************************************************************************************//**
@@ -238,7 +300,7 @@ ProtareSingle::~ProtareSingle( ) {
 }
 
 /* *********************************************************************************************************//**
- * Returns the pointer representing the protare (i.e., *this*) if *a_index* is 0 and NULL otherwise.
+ * Returns the pointer representing the protare (i.e., *this*) if *a_index* is 0 and nullptr otherwise.
  *
  * @param a_index               [in]    Must always be 0.
  *
@@ -247,12 +309,12 @@ ProtareSingle::~ProtareSingle( ) {
 
 ProtareSingle *ProtareSingle::protare( std::size_t a_index ) {
 
-    if( a_index != 0 ) return( NULL );
+    if( a_index != 0 ) return( nullptr );
     return( this );
 }
 
 /* *********************************************************************************************************//**
- * Returns the pointer representing the protare (i.e., *this*) if *a_index* is 0 and NULL otherwise.
+ * Returns the pointer representing the protare (i.e., *this*) if *a_index* is 0 and nullptr otherwise.
  *
  * @param a_index               [in]    Must always be 0.
  *
@@ -261,7 +323,7 @@ ProtareSingle *ProtareSingle::protare( std::size_t a_index ) {
 
 ProtareSingle const *ProtareSingle::protare( std::size_t a_index ) const {
 
-    if( a_index != 0 ) return( NULL );
+    if( a_index != 0 ) return( nullptr );
     return( this );
 }
 
@@ -338,7 +400,7 @@ Styles::TemperatureInfos ProtareSingle::temperatures( ) const {
     for( std::size_t i1 = 0; i1 < size; ++i1 ) {
         Styles::Base const *style1 = m_styles.get<Styles::Base>( i1 );
 
-        if( style1->moniker( ) == heatedStyleMoniker ) {
+        if( style1->moniker( ) == GIDI_heatedStyleChars ) {
             PhysicalQuantity const &temperature = style1->temperature( );
             std::string heated_cross_section( style1->label( ) );
             std::string gridded_cross_section( "" );
@@ -349,16 +411,16 @@ Styles::TemperatureInfos ProtareSingle::temperatures( ) const {
             for( std::size_t i2 = 0; i2 < size; ++i2 ) {
                 Styles::Base const *style2 = m_styles.get<Styles::Base>( i2 );
 
-                if( style2->moniker( ) == multiGroupStyleMoniker ) continue;
+                if( style2->moniker( ) == GIDI_multiGroupStyleChars ) continue;
                 if( style2->temperature( ).value( ) != temperature.value( ) ) continue;
 
-                if( style2->moniker( ) == griddedCrossSectionStyleMoniker ) {
+                if( style2->moniker( ) == GIDI_griddedCrossSectionStyleChars ) {
                     gridded_cross_section = style2->label( ); }
-                else if( style2->moniker( ) == URR_probabilityTablesStyleMoniker ) {
+                else if( style2->moniker( ) == GIDI_URR_probabilityTablesStyleChars ) {
                     URR_probability_tables = style2->label( ); }
-                else if( style2->moniker( ) == SnElasticUpScatterStyleMoniker ) {
+                else if( style2->moniker( ) == GIDI_SnElasticUpScatterStyleChars ) {
                     Sn_elastic_upscatter = style2->label( ); }
-                else if( style2->moniker( ) == heatedMultiGroupStyleMoniker ) {
+                else if( style2->moniker( ) == GIDI_heatedMultiGroupStyleChars ) {
                     heated_multi_group = style2->label( );
                 }
             }
@@ -385,26 +447,6 @@ Styles::TemperatureInfos ProtareSingle::temperatures( ) const {
 bool sortTemperatures( Styles::TemperatureInfo const &lhs, Styles::TemperatureInfo const &rhs ) {
 
     return( lhs.temperature( ).value( ) < rhs.temperature( ).value( ) );
-}
-
-/* *********************************************************************************************************//**
- * Returns the requested Styles::MultiGroup from the styles.
- *
- * @param a_label   [in]    Label for the requested Styles::MultiGroup.
- * @return
- ***********************************************************************************************************/
-
-Styles::MultiGroup const *ProtareSingle::multiGroup( std::string const &a_label ) const {
-
-    Styles::Base const *style1 = m_styles.get<Styles::Base>( a_label );
-
-    if( style1->moniker( ) == SnElasticUpScatterStyleMoniker ) style1 = m_styles.get<Styles::Base>( style1->derivedStyle( ) );
-    if( style1->moniker( ) == heatedMultiGroupStyleMoniker ) {
-        Styles::HeatedMultiGroup const *heatedMultiGroup = static_cast<Styles::HeatedMultiGroup const *>( style1 );
-        style1 = m_styles.get<Styles::Base>( heatedMultiGroup->parameters( ) );
-    }
-    if( style1->moniker( ) != multiGroupStyleMoniker ) return( NULL );
-    return( static_cast<Styles::MultiGroup const *>( style1 ) );
 }
 
 /* *********************************************************************************************************//**
@@ -437,7 +479,7 @@ Vector ProtareSingle::multiGroupInverseSpeed( Transporting::MG const &a_settings
 
     Styles::HeatedMultiGroup const *heatedMultiGroupStyle1 = m_styles.get<Styles::HeatedMultiGroup>( a_temperatureInfo.heatedMultiGroup( ) );
 
-    return( heatedMultiGroupStyle1->inverseSpeed( ) );
+    return( heatedMultiGroupStyle1->inverseSpeedData( ) );
 }
 
 /* *********************************************************************************************************//**
@@ -458,39 +500,39 @@ bool ProtareSingle::hasFission( ) const {
 }
 
 /* *********************************************************************************************************//**
- * Used by Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or NULL if none exists.
+ * Used by Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or nullptr if none exists.
  *
  * @param a_item    [in]    The name of the class member whose pointer is to be return.
- * @return                  The pointer to the class member or NULL if class does not have a member named a_item.
+ * @return                  The pointer to the class member or nullptr if class does not have a member named a_item.
  ***********************************************************************************************************/
 
 Ancestry *ProtareSingle::findInAncestry3( std::string const &a_item ) {
 
-    if( a_item == stylesMoniker ) return( &m_styles );
-    if( a_item == reactionsMoniker ) return( &m_reactions );
-    if( a_item == orphanProductsMoniker ) return( &m_orphanProducts );
-    if( a_item == sumsMoniker ) return( &m_sums );
-    if( a_item == fissionComponentsMoniker ) return( &m_fissionComponents );
+    if( a_item == GIDI_stylesChars ) return( &m_styles );
+    if( a_item == GIDI_reactionsChars ) return( &m_reactions );
+    if( a_item == GIDI_orphanProductsChars ) return( &m_orphanProducts );
+    if( a_item == GIDI_sumsChars ) return( &m_sums );
+    if( a_item == GIDI_fissionComponentsChars ) return( &m_fissionComponents );
 
-    return( NULL );
+    return( nullptr );
 }
 
 /* *********************************************************************************************************//**
- * Used by Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or NULL if none exists.
+ * Used by Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or nullptr if none exists.
  *
  * @param a_item    [in]    The name of the class member whose pointer is to be return.
- * @return                  The pointer to the class member or NULL if class does not have a member named a_item.
+ * @return                  The pointer to the class member or nullptr if class does not have a member named a_item.
  ***********************************************************************************************************/
 
 Ancestry const *ProtareSingle::findInAncestry3( std::string const &a_item ) const {
 
-    if( a_item == stylesMoniker ) return( &m_styles );
-    if( a_item == reactionsMoniker ) return( &m_reactions );
-    if( a_item == orphanProductsMoniker ) return( &m_orphanProducts );
-    if( a_item == sumsMoniker ) return( &m_sums );
-    if( a_item == fissionComponentsMoniker ) return( &m_fissionComponents );
+    if( a_item == GIDI_stylesChars ) return( &m_styles );
+    if( a_item == GIDI_reactionsChars ) return( &m_reactions );
+    if( a_item == GIDI_orphanProductsChars ) return( &m_orphanProducts );
+    if( a_item == GIDI_sumsChars ) return( &m_sums );
+    if( a_item == GIDI_fissionComponentsChars ) return( &m_fissionComponents );
 
-    return( NULL );
+    return( nullptr );
 }
 
 /* *********************************************************************************************************//**
@@ -880,7 +922,7 @@ stringAndDoublePairs ProtareSingle::muCutoffForCoulombPlusNuclearElastic( ) cons
     for( std::size_t i1 = 0; i1 < m_styles.size( ); ++i1 ) {
         Styles::Base const *style1 = m_styles.get<Styles::Base>( i1 );
 
-        if( style1->moniker( ) == CoulombPlusNuclearElasticMuCutoffStyleMoniker ) {
+        if( style1->moniker( ) == GIDI_CoulombPlusNuclearElasticMuCutoffStyleChars ) {
             Styles::CoulombPlusNuclearElasticMuCutoff const *style2 = static_cast<Styles::CoulombPlusNuclearElasticMuCutoff const *>( style1 );
             
             stringAndDoublePair labelMu( style2->label( ), style2->muCutoff( ) );
@@ -890,6 +932,28 @@ stringAndDoublePairs ProtareSingle::muCutoffForCoulombPlusNuclearElastic( ) cons
     }
 
     return( muCutoffs );
+}
+
+/* *********************************************************************************************************//**
+ * Returns the list of DelayedNeutronProduct instances.
+ *
+ * @return      a_delayedNeutronProducts        The list of delayed neutrons.
+ ***********************************************************************************************************/
+
+DelayedNeutronProducts ProtareSingle::delayedNeutronProducts( ) const {
+
+    DelayedNeutronProducts delayedNeutronProducts1;
+
+    if( hasFission( ) ) {
+        for( std::size_t i1 = 0; i1 < m_reactions.size( ); ++i1 ) {
+            Reaction const *reaction1 = m_reactions.get<Reaction>( i1 );
+
+            if( !reaction1->active( ) ) continue;
+            if( reaction1->hasFission( ) ) reaction1->delayedNeutronProducts( delayedNeutronProducts1 );
+        }
+    }
+
+    return( delayedNeutronProducts1 );
 }
 
 /* *********************************************************************************************************//**
@@ -922,16 +986,16 @@ void ProtareSingle::saveAs( std::string const &a_fileName ) const {
 void ProtareSingle::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
-    std::string header = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+    std::string header = GNDS_XML_verionEncoding;
     std::string attributes;
 
     a_writeInfo.push_back( header );
 
-    attributes  = a_writeInfo.addAttribute( "projectile", projectile( ).ID( ) );
-    attributes += a_writeInfo.addAttribute( "target", target( ).ID( ) );
-    attributes += a_writeInfo.addAttribute( "evaluation", evaluation( ) );
-    attributes += a_writeInfo.addAttribute( "format", GIDI_format );
-    attributes += a_writeInfo.addAttribute( "projectileFrame", frameToString( projectileFrame( ) ) );
+    attributes  = a_writeInfo.addAttribute( GIDI_projectileChars, projectile( ).ID( ) );
+    attributes += a_writeInfo.addAttribute( GIDI_targetChars, GNDS_target( ).ID( ) );
+    attributes += a_writeInfo.addAttribute( GIDI_evaluationChars, evaluation( ) );
+    attributes += a_writeInfo.addAttribute( GIDI_formatChars, m_formatVersion.format( ) );
+    attributes += a_writeInfo.addAttribute( GIDI_projectileFrameChars, frameToString( projectileFrame( ) ) );
 
     a_writeInfo.addNodeStarter( a_indent, moniker( ), attributes );
 

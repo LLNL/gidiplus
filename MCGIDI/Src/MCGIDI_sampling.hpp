@@ -157,15 +157,40 @@ class ProductHandler {
 ================ StdVectorProductHandler ===================
 ============================================================
 */
-#ifndef __CUDACC__
+#ifdef __CUDACC__
+
+#define MCGIDI_CUDACC_numberOfProducts 1000
+
+class StdVectorProductHandler : public ProductHandler {
+
+    private:
+        std::size_t m_size;
+        Product m_products[1024];
+
+    public:
+        HOST_DEVICE StdVectorProductHandler( ) : m_size( 0 ) { }
+        HOST_DEVICE ~StdVectorProductHandler( ) { }
+
+        HOST_DEVICE virtual std::size_t size( ) { return( m_size ); }
+        HOST_DEVICE Product &operator[]( long a_index ) { return( m_products[a_index] ); }
+        HOST_DEVICE void push_back( Product &a_product ) {
+            if( m_size < MCGIDI_CUDACC_numberOfProducts ) {
+                m_products[m_size] = a_product;
+                ++m_size;
+            }
+        }
+        HOST_DEVICE void clear( ) { m_size = 0; }
+};
+
+#else
 class StdVectorProductHandler : public ProductHandler {
 
     private:
         std::vector<Product> m_products;            /**< The list of products sampled. */
 
     public:
-        StdVectorProductHandler( ) : m_products( ) { }
-        ~StdVectorProductHandler( ) { }
+        HOST_DEVICE StdVectorProductHandler( ) : m_products( ) { }
+        HOST_DEVICE ~StdVectorProductHandler( ) { }
 
         HOST_DEVICE virtual std::size_t size( ) { return( m_products.size( ) ); }
         HOST_DEVICE Product &operator[]( long a_index ) { return( m_products[a_index] ); }

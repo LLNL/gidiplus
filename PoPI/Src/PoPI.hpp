@@ -24,34 +24,49 @@
 
 namespace PoPI {
 
-#define FORMAT "0.1"
-
 #define PoPI_AMU2MeV_c2 931.494028
 #define PoPI_electronMass_MeV_c2 0.5109989461
 
-#define family_gaugeBoson "gaugeBoson"
-#define family_lepton "lepton"
-#define family_baryon "baryon"
-#define family_nuclide "nuclide"
-#define family_nucleus "nucleus"
-#define family_unorthodox "unorthodox"
+#define PoPI_formatVersion_0_1_Chars "0.1"
+#define PoPI_formatVersion_1_10_Chars "1.10"
+#define PoPI_formatVersion_2_0_LLNL_3_Chars "2.0.LLNL_3"
+
+#define PoPI_PoPsChars "PoPs"
+
+#define PoPI_gaugeBosonChars "gaugeBoson"
+#define PoPI_leptonChars "lepton"
+#define PoPI_baryonChars "baryon"
+#define PoPI_nuclidesChars "nuclides"
+#define PoPI_nuclideChars "nuclide"
+#define PoPI_nucleusChars "nucleus"
+#define PoPI_unorthodoxChars "unorthodox"
+#define PoPI_aliasesChars "aliases"
 
 enum class Particle_class { gaugeBoson, lepton, baryon, unorthodox, nuclide, nucleus, chemicalElement, isotope, alias, metaStable };
 
-#define pq_massTag "mass"
-#define pq_spinTag "spin"
-#define pq_chargeTag "charge"
-#define pq_parityTag "parity"
-#define pq_halflifeTag "halflife"
-#define pq_energyTag "energy"
+#define PoPI_massChars "mass"
+#define PoPI_spinChars "spin"
+#define PoPI_parityChars "parity"
+#define PoPI_chargeChars "charge"
+#define PoPI_halflifeChars "halflife"
 
-#define pq_doubleTag "double"
-#define pq_integerTag "integer"
-#define pq_fractionTag "fraction"
-#define pq_stringTag "string"
-#define pq_shellTag "shell"
+#define PoPI_doubleChars "double"
+#define PoPI_integerChars "integer"
+#define PoPI_fractionChars "fraction"
+#define PoPI_stringChars "string"
+#define PoPI_shellChars "shell"
+#define PoPI_decayDataChars "decayData"
 
-#define PoPI_decayMode_electroMagnetic "electroMagnetic"
+#define PoPI_decayModeElectroMagnetic "electroMagnetic"
+
+#define PoPI_formatChars "format"
+#define PoPI_labelChars "label"
+#define PoPI_indexChars "index"
+#define PoPI_pidChars "pid"
+#define PoPI_nameChars "name"
+#define PoPI_versionChars "version"
+#define PoPI_particleChars "particle"
+#define PoPI_metaStableChars "metaStable"
 
 enum class PQ_class { Double, integer, fraction, string, shell };
 
@@ -100,6 +115,33 @@ class Exception : public std::runtime_error {
     public :
         explicit Exception( std::string const &a_message );
 
+};
+
+/*
+============================================================
+====================== FormatVersion =======================
+============================================================
+*/
+class FormatVersion {
+
+    private:
+        std::string m_format;               /**< The GNDS format version. */
+        int m_major;                        /**< The GNDS format major value as an integer. */
+        int m_minor;                        /**< The GNDS format minor value as an integer. */
+        std::string m_patch;                /**< The GNDS format patch string. This will be an empty string except for unofficial formats. */
+
+    public:
+        FormatVersion( );
+        FormatVersion( std::string const &a_formatVersion );
+        FormatVersion( FormatVersion const &a_formatVersion );
+
+        std::string const &format( ) const { return( m_format ); }
+        int major( ) const { return( m_major ); }
+        int minor( ) const { return( m_minor ); }
+        std::string const &patch( ) const { return( m_patch ); }
+
+        bool setFormat( std::string const &a_formatVersion );
+        bool supported( );
 };
 
 /*
@@ -803,9 +845,9 @@ class MetaStable : public Alias {
 class Database {
 
     private:
+        FormatVersion m_formatVersion;
         std::string m_name;
         std::string m_version;
-        std::string m_format;
         ParticleList m_list;
         std::map<std::string,int> m_map;               // Be careful with this as a map[key] will add key if it is not in the map.
         SymbolList m_symbolList;
@@ -826,9 +868,11 @@ class Database {
         Database( pugi::xml_node const &a_database );
         ~Database( );
 
+        FormatVersion const &formatVersion( void ) const { return( m_formatVersion ); }
         std::string const &name( void ) const { return( m_name ); }
         std::string const &version( void ) const { return( m_version ); }
-        std::string const &format( void ) const { return( m_format ); }
+
+        std::vector<Alias *> aliases( ) { return( m_aliases ); }
 
         void addFile( char const *a_fileName, bool a_warnIfDuplicate );
         void addFile( std::string const &a_fileName, bool a_warnIfDuplicate );
@@ -876,9 +920,9 @@ class Database {
 template<typename T> T const &Database::get( int a_index ) const {
 
     Base *particle = m_list[a_index];
-    if( particle == NULL ) throw std::range_error( "particle not in database" );
+    if( particle == nullptr ) throw std::range_error( "particle not in database" );
     T const *object = dynamic_cast<T const *>( particle );
-    if( object == NULL ) throw std::bad_cast( );
+    if( object == nullptr ) throw std::bad_cast( );
 
     return( *object );
 }
@@ -890,13 +934,15 @@ template<typename T> T const &Database::get( std::string const &a_id ) const {
     int index = (*this)[a_id];
     Base *particle = m_list[index];
     T const *object = dynamic_cast<T const *>( particle );
-    if( object == NULL ) throw std::bad_cast( );
+    if( object == nullptr ) throw std::bad_cast( );
 
     return( *object );
 }
 
 double getPhysicalQuantityAsDouble( PhysicalQuantity const &a_physicalQuantity );
 double getPhysicalQuantityOfSuiteAsDouble( PQ_suite const &a_suite, bool a_allowEmpty = false, double a_emptyValue = 0.0 );
+std::vector<std::string> splitString( std::string const &a_string, char a_delimiter );
+bool stringToInt( std::string const &a_string, int &a_value );
 
 }
 

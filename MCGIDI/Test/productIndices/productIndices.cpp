@@ -14,14 +14,15 @@
 
 #include "MCGIDI.hpp"
 
-#include "MCGIDI_testUtilities.hpp"
+#include "GIDI_testUtilities.hpp"
 
 static char const *description = "Loops over temperature and energy, printing the total cross section. If projectile is a photon, see options *--pa* and *--pn*.";
 
 void main2( int argc, char **argv );
-void read_MCGIDI_protare( PoPI::Database const &a_pops, GIDI::Protare *a_protare, GIDI::Styles::TemperatureInfos const & a_temperatures, MCGIDI::Transporting::MC &a_settings, 
-                int productBinary );
-void printProductList( PoPI::Database const &a_pops, MCGIDI::Protare * a_protare, bool a_transportablesOnly );
+void read_MCGIDI_protare( PoPI::Database const &a_pops, GIDI::Protare *a_protare, GIDI::Transporting::Groups_from_bdfls &groups_from_bdfls, 
+                GIDI::Transporting::Fluxes_from_bdfls &fluxes_from_bdfls, GIDI::Styles::TemperatureInfos const &a_temperatures, 
+                MCGIDI::Transporting::MC &a_settings, int productBinary, std::string &a_outputLines );
+void printProductList( PoPI::Database const &a_pops, MCGIDI::Protare * a_protare, bool a_transportablesOnly, std::string &a_outputLines );
 /*
 =========================================================
 */
@@ -47,50 +48,46 @@ int main( int argc, char **argv ) {
 */
 void main2( int argc, char **argv ) {
 
+    int numberOfLoops = 1 << 7;
     PoPI::Database pops;
-    pops.addFile( "../../../GIDI/Test/pops.xml", false );
-    GIDI::Construction::PhotoMode photo_mode = GIDI::Construction::PhotoMode::nuclearOnly;
+    argvOptions argv_options( __FILE__, description );
+    ParseTestOptions parseTestOptions( argv_options, argc, argv );
 
-    std::cerr << "    " << __FILE__;
-    for( int i1 = 1; i1 < argc; i1++ ) std::cerr << " " << argv[i1];
-    std::cerr << std::endl;
+    parseTestOptions.parse( );
 
-    argvOptions2 argv_options( "crossSections", description );
-
-    argv_options.add( argvOption2( "--map", true, "The map file to use." ) );
-    argv_options.add( argvOption2( "--pid", true, "The PoPs id of the projectile." ) );
-    argv_options.add( argvOption2( "--tid", true, "The PoPs id of the target." ) );
-    argv_options.add( argvOption2( "--pa", false, "Include photo-atomic protare if relevant. If present, disables photo-nuclear unless *--pn* also present." ) );
-    argv_options.add( argvOption2( "--pn", false, "Include photo-nuclear protare if relevant. This is the default unless *--pa* present." ) );
-
-    argv_options.parseArgv( argc, argv );
-
-    std::string mapFilename = argv_options.find( "--map" )->zeroOrOneOption( argv, "../../../GIDI/Test/all3T.map" );
-    std::string projectileID = argv_options.find( "--pid" )->zeroOrOneOption( argv, PoPI::IDs::neutron );
-    std::string targetID = argv_options.find( "--tid" )->zeroOrOneOption( argv, "O16" );
-
-    if( argv_options.find( "--pa" )->present( ) ) {
-        photo_mode = GIDI::Construction::PhotoMode::atomicOnly;
-        if( argv_options.find( "--pn" )->present( ) ) photo_mode = GIDI::Construction::PhotoMode::nuclearAndAtomic;
-    }
-
-    GIDI::Map::Map map( mapFilename, pops );
-    GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, photo_mode );
-    GIDI::Protare *protare = map.protare( construction, pops, projectileID, targetID );
+    GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, parseTestOptions.photonMode( ) );
+    GIDI::Protare *protare = parseTestOptions.protare( pops, "../../../GIDI/Test/pops.xml", "../../../GIDI/Test/Data/MG_MC/all_maps.map", 
+        construction, PoPI::IDs::neutron, "O16" );
 
     GIDI::Styles::TemperatureInfos temperatures = protare->temperatures( );
     std::string label( temperatures[0].heatedCrossSection( ) );
-    MCGIDI::Transporting::MC settings( pops, projectileID, &protare->styles( ), label, GIDI::Transporting::DelayedNeutrons::on, 20.0 );
+    MCGIDI::Transporting::MC settings( pops, protare->projectile( ).ID( ), &protare->styles( ), label, GIDI::Transporting::DelayedNeutrons::on, 20.0 );
 
-    for( int i1 = 0; i1 < 2 << 7; ++i1 ) read_MCGIDI_protare( pops, protare, temperatures, settings, i1 );
+    GIDI::Transporting::Groups_from_bdfls groups_from_bdfls( "../../../GIDI/Test/bdfls" );
+    GIDI::Transporting::Fluxes_from_bdfls fluxes_from_bdfls( "../../../GIDI/Test/bdfls", 0.0 );
+
+    int i1;
+    std::vector<std::string> outputList( numberOfLoops );
+
+#pragma omp parallel private( i1 ) shared( pops, protare, groups_from_bdfls, fluxes_from_bdfls, temperatures, settings, outputList )
+{
+#pragma omp for schedule( dynamic ) nowait
+    for( i1 = 0; i1 < numberOfLoops; ++i1 ) {
+
+        read_MCGIDI_protare( pops, protare, groups_from_bdfls, fluxes_from_bdfls, temperatures, settings, i1, outputList[i1] );
+    }
+}
+
+    for( auto iter = outputList.begin( ); iter != outputList.end( ); ++iter ) std::cout << *iter;
 
     delete protare;
 }
 /*
 =========================================================
 */
-void read_MCGIDI_protare( PoPI::Database const &a_pops, GIDI::Protare *a_protare, GIDI::Styles::TemperatureInfos const & a_temperatures, MCGIDI::Transporting::MC &a_settings, 
-                int productBinary ) {
+void read_MCGIDI_protare( PoPI::Database const &a_pops, GIDI::Protare *a_protare, GIDI::Transporting::Groups_from_bdfls &groups_from_bdfls, 
+                GIDI::Transporting::Fluxes_from_bdfls &fluxes_from_bdfls, GIDI::Styles::TemperatureInfos const &a_temperatures, 
+                MCGIDI::Transporting::MC &a_settings, int productBinary, std::string &a_outputLines ) {
 
     std::set<int> reactionsToExclude;
     std::map<std::string, std::string> particlesAndGIDs;
@@ -105,11 +102,8 @@ void read_MCGIDI_protare( PoPI::Database const &a_pops, GIDI::Protare *a_protare
 
     GIDI::Transporting::Particles particles;
 
-    GIDI::Transporting::Groups_from_bdfls groups_from_bdfls( "../../../GIDI/Test/bdfls" );
-    GIDI::Transporting::Fluxes_from_bdfls fluxes_from_bdfls( "../../../GIDI/Test/bdfls", 0.0 );
-
     int productDigit = 1;
-    std::cout << std::endl;
+    a_outputLines += '\n';
     for( std::map<std::string, std::string>::iterator iter = particlesAndGIDs.begin( ); iter != particlesAndGIDs.end( ); ++iter, productDigit <<= 1 ) {
         if( productDigit & productBinary ) {
             GIDI::Transporting::MultiGroup multi_group = groups_from_bdfls.viaLabel( iter->second );
@@ -118,10 +112,10 @@ void read_MCGIDI_protare( PoPI::Database const &a_pops, GIDI::Protare *a_protare
             particle.appendFlux( fluxes_from_bdfls.getViaFID( 1 ) );
             particles.add( particle );
 
-            std::cout << iter->first << " ";
+            a_outputLines += iter->first + " ";
         }
     }
-    std::cout << std::endl;
+    a_outputLines += '\n';
 
     MCGIDI::DomainHash domainHash( 4000, 1e-8, 10 );
     MCGIDI::Protare *MCProtare;
@@ -131,23 +125,38 @@ void read_MCGIDI_protare( PoPI::Database const &a_pops, GIDI::Protare *a_protare
     MCProtare->setUserParticleIndex( a_pops["H2"], 10 );
     MCProtare->setUserParticleIndex( a_pops[PoPI::IDs::photon], 11 );
 
-    printProductList( a_pops, MCProtare, true );
-    printProductList( a_pops, MCProtare, false );
+    printProductList( a_pops, MCProtare, true, a_outputLines );
+    printProductList( a_pops, MCProtare, false, a_outputLines );
 
     delete MCProtare;
 }
 /*
 =========================================================
 */
-void printProductList( PoPI::Database const &a_pops, MCGIDI::Protare * a_protare, bool a_transportablesOnly ) {
+void printProductList( PoPI::Database const &a_pops, MCGIDI::Protare * a_protare, bool a_transportablesOnly, std::string &a_outputLines ) {
 
     MCGIDI::Vector<int> indices = a_protare->productIndices( a_transportablesOnly );
     MCGIDI::Vector<int> userIndices = a_protare->userProductIndices( a_transportablesOnly );
+    std::string aSpace( " " );
 
-    std::cout << "    transportables only = " << a_transportablesOnly << std::endl;
+    a_outputLines += "    transportables only = ";
+    if( a_transportablesOnly ) {
+        a_outputLines += "1"; }
+    else {
+        a_outputLines += "0";
+    }
+    a_outputLines += '\n';
     for( auto i1 = 0; i1 < indices.size( ); ++i1 ) {
         PoPI::Base const &particle = a_pops.get<PoPI::Base>( indices[i1] );
+        std::string index = std::to_string( indices[i1] );
 
-        std::cout << "        " << indices[i1] << " " << particle.ID( ) << " " << userIndices[i1] << std::endl;
+        a_outputLines += "        ";
+        a_outputLines +=  index;
+        a_outputLines += " ";
+        a_outputLines += particle.ID( );
+        a_outputLines += " ";
+        index = std::to_string( userIndices[i1] );
+        a_outputLines += index;
+        a_outputLines += '\n';
     }
 }

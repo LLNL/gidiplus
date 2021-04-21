@@ -11,12 +11,14 @@
 
 namespace PoPI {
 
+#define PoPI_metaStableIndexChars "metaStableIndex"
+
 /*
 =========================================================
 */
 Alias::Alias( pugi::xml_node const &a_node, Database *a_DB, Particle_class a_class ) :
         IDBase( a_node, a_class ),
-        m_pid( a_node.attribute( "pid" ).value( ) ),
+        m_pid( a_node.attribute( PoPI_pidChars ).value( ) ),
         m_pidIndex( -1 ) {
 
     if( a_class == Particle_class::alias ) addToDatabase( a_DB );
@@ -41,7 +43,7 @@ void Alias::toXMLList( std::vector<std::string> &a_XMLList, std::string const &a
 */
 MetaStable::MetaStable( pugi::xml_node const &a_node, Database *a_DB ) :
         Alias( a_node, a_DB, Particle_class::metaStable ),
-        m_metaStableIndex( a_node.attribute( "metaStableIndex" ).as_int( ) ) {
+        m_metaStableIndex( a_node.attribute( PoPI_metaStableIndexChars ).as_int( ) ) {
 
     addToDatabase( a_DB );
 }

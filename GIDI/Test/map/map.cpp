@@ -135,7 +135,7 @@ bool mapWalkCallBack( GIDI::Map::ProtareBase const *a_protareEntry, std::string 
     std::cout << path << std::endl;
 
     GIDI::Map::ProtareBase const *protareEntry = map->findProtareEntry( a_protareEntry->projectileID( ), a_protareEntry->targetID( ), "", a_protareEntry->evaluation( ) );
-    if( protareEntry == NULL ) {
+    if( protareEntry == nullptr ) {
         std::cout << "Oops" << std::endl; }
     else {
         std::cout << "    " << protareEntry->parent( )->library( ) << "    " << protareEntry->evaluation( ) << std::endl;

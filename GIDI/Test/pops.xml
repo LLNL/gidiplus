@@ -1,6 +1,8 @@
 <?xml version="1.0"?>
 <PoPs name="lPoPs" version="0.0.1" format="0.1">
   <aliases>
+    <metaStable id="Na24_m1" pid="Na24_e1" metaStableIndex="1"/>
+    <metaStable id="Al26_m1" pid="Al26_e1" metaStableIndex="1"/>
     <particle id="gamma" pid="photon"/></aliases>
   <gaugeBosons>
     <gaugeBoson id="photon">
@@ -1963,7 +1965,15 @@
                 <charge>
                   <integer label="default" value="11" unit="e"/></charge>
                 <energy>
-                  <double label="default" value="0.0" unit="eV"/></energy></nucleus></nuclide></nuclides></isotope>
+                  <double label="default" value="0.0" unit="eV"/></energy></nucleus></nuclide>
+            <nuclide id="Na24_e1">
+                <charge>
+                  <integer label="eval" value="0" unit="e"/></charge>
+                <nucleus id="na24_e1" index="1">
+                  <charge>
+                    <integer label="eval" value="11" unit="e"/></charge>
+                  <energy>
+                    <double label="eval" value="0.47229" unit="MeV"/></energy></nucleus></nuclide></nuclides></isotope>
         <isotope symbol="Na25" A="25">
           <nuclides>
             <nuclide id="Na25">
@@ -2491,7 +2501,17 @@
                 <charge>
                   <integer label="default" value="13" unit="e"/></charge>
                 <energy>
-                  <double label="default" value="0.0" unit="eV"/></energy></nucleus></nuclide></nuclides></isotope>
+                  <double label="default" value="0.0" unit="eV"/></energy></nucleus></nuclide>
+            <nuclide id="Al26_e1">
+              <charge>
+                <integer label="default" value="0" unit="e"/></charge>
+              <nucleus id="al26_e1" index="1">
+                <spin>
+                  <fraction label="default" value="0" unit="hbar"/></spin>
+                <charge>
+                  <integer label="default" value="13" unit="e"/></charge>
+                <energy>
+                  <double label="default" value="2.28305e+5" unit="eV"/></energy></nucleus></nuclide></nuclides></isotope>
         <isotope symbol="Al27" A="27">
           <nuclides>
             <nuclide id="Al27">

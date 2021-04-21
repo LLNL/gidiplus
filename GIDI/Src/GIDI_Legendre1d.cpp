@@ -26,7 +26,7 @@ namespace Functions {
  ***********************************************************************************************************/
 
 Legendre1d::Legendre1d( Axes const &a_axes, int a_index, double a_outerDomainValue ) :
-        Function1dForm( LegendreMoniker, FormType::Legendre1d, a_axes, ptwXY_interpolationLinLin, a_index, a_outerDomainValue ) {
+        Function1dForm( GIDI_LegendreChars, FormType::Legendre1d, a_axes, ptwXY_interpolationLinLin, a_index, a_outerDomainValue ) {
 
 }
 
@@ -34,13 +34,14 @@ Legendre1d::Legendre1d( Axes const &a_axes, int a_index, double a_outerDomainVal
  *
  * @param a_construction    [in]    Used to pass user options for parsing.
  * @param a_node            [in]    The **pugi::xml_node** to be parsed and used to construct the XYs2d.
+ * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-Legendre1d::Legendre1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, Suite *a_parent ) :
-        Function1dForm( a_construction, a_node, FormType::Legendre1d, a_parent ) {
+Legendre1d::Legendre1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+        Function1dForm( a_construction, a_node, a_setupInfo, FormType::Legendre1d, a_parent ) {
 
-    parseValuesOfDoubles( a_construction, a_node.child( "values" ), m_coefficients );
+    parseValuesOfDoubles( a_construction, a_node.child( GIDI_valuesChars ), a_setupInfo, m_coefficients );
 }
 
 /* *********************************************************************************************************//**
@@ -50,7 +51,7 @@ Legendre1d::Legendre1d( Construction::Settings const &a_construction, pugi::xml_
  ***********************************************************************************************************/
 
 Legendre1d::Legendre1d( Legendre1d const &a_Legendre1d ) :
-        Function1dForm( LegendreMoniker, FormType::Legendre1d, a_Legendre1d.axes( ), ptwXY_interpolationLinLin, 0, 0.0 ),
+        Function1dForm( GIDI_LegendreChars, FormType::Legendre1d, a_Legendre1d.axes( ), ptwXY_interpolationLinLin, 0, 0.0 ),
         m_coefficients( a_Legendre1d.coefficients( ) ) {
 
 }
@@ -90,12 +91,12 @@ void Legendre1d::toXMLList_func( WriteInfo &a_writeInfo, std::string const &a_in
     std::string attributes;
 
     if( a_embedded ) {
-        attributes += a_writeInfo.addAttribute( "outerDomainValue", doubleToShortestString( outerDomainValue( ) ) ); }
+        attributes += a_writeInfo.addAttribute( GIDI_outerDomainValueChars, doubleToShortestString( outerDomainValue( ) ) ); }
     else {
         if( a_inRegions ) {
-            attributes = a_writeInfo.addAttribute( "index", intToString( index( ) ) ); }
+            attributes = a_writeInfo.addAttribute( GIDI_indexChars, intToString( index( ) ) ); }
         else {
-            if( label( ) != "" ) attributes = a_writeInfo.addAttribute( "label", label( ) );
+            if( label( ) != "" ) attributes = a_writeInfo.addAttribute( GIDI_labelChars, label( ) );
         }
     }
 

@@ -19,12 +19,13 @@ namespace GIDI {
 /* *********************************************************************************************************//**
  *
  * @param a_node            [in]     The **pugi::xml_node** to be parsed and used to construct the PhysicalQuantity.
+ * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  ***********************************************************************************************************/
 
-PhysicalQuantity::PhysicalQuantity( pugi::xml_node const &a_node ) :
-        Form( a_node, FormType::physicalQuantity ),
-        m_value( a_node.attribute( "value" ).as_double( ) ),
-        m_unit( a_node.attribute( "unit" ).value( ) ) {
+PhysicalQuantity::PhysicalQuantity( pugi::xml_node const &a_node, SetupInfo &a_setupInfo ) :
+        Form( a_node, a_setupInfo, FormType::physicalQuantity ),
+        m_value( a_node.attribute( GIDI_valueChars ).as_double( ) ),
+        m_unit( a_node.attribute( GIDI_unitChars ).value( ) ) {
 
 }
 
@@ -57,7 +58,7 @@ PhysicalQuantity::~PhysicalQuantity( ) {
 
 void PhysicalQuantity::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
-    std::string attributes = a_writeInfo.addAttribute( "value", doubleToShortestString( value( ) ) ) + a_writeInfo.addAttribute( "unit", unit( ) );
+    std::string attributes = a_writeInfo.addAttribute( GIDI_valueChars, doubleToShortestString( value( ) ) ) + a_writeInfo.addAttribute( GIDI_unitChars, unit( ) );
 
     a_writeInfo.addNodeStarterEnder( a_indent, moniker( ), attributes );
 }

@@ -102,12 +102,13 @@ std::string outputChannelPrefix( int offset, int width, GIDI::Reaction *reaction
 long integerFromArgv( int iarg, int argc, char **argv );
 void printVector( char const *prefix, GIDI::Vector &vector );
 void printVector( std::string &prefix, GIDI::Vector &vector );
+void writeVector( std::string const &a_fileName, std::string const &prefix, GIDI::Vector const &vector );
 void printVectorOfDoubles( char const *a_prefix, std::vector<double> const &doubles );
 void printVectorOfDoubles( std::string &a_prefix, std::vector<double> const &doubles );
 void printIDs( char const *a_prefix, std::set<std::string> const &ids );
 void printIDs( std::string &a_prefix, std::set<std::string> const &ids );
-void printMatrix( char const *a_prefix, int maxOrder, GIDI::Matrix &matrix );
-void printMatrix( std::string &prefix, int maxOrder, GIDI::Matrix &matrix );
+void printMatrix( char const *a_prefix, int maxOrder, GIDI::Matrix &matrix, std::string indent = "    " );
+void printMatrix( std::string &prefix, int maxOrder, GIDI::Matrix &matrix, std::string indent = "    " );
 std::string stripDirectoryBase( std::string const &a_path, std::string const &a_section = "/GIDI/Test/" );
 std::string stripDotCPP( std::string const &a_path );
 void printCodeArguments( std::string a_codeName, int a_argc, char **a_argv );

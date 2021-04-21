@@ -12,7 +12,17 @@ from __future__ import print_function
 import os
 import sys
 
-from numericalFunctions import specialFunctions
+import glob
+
+import numericalFunctions
+
+# Deployment via Makefiles places shared libraries in .../fudge/numericalFunctions/lib
+if len(glob.glob(os.path.join(numericalFunctions.__path__[0], 'lib', '*specialFunctions*'))) > 0:
+    from numericalFunctions.lib import specialFunctions
+
+# Deployment via `pip install` places shared libraries in .../site-packages/numericalFunctions
+else:
+    from numericalFunctions import specialFunctions
 
 options = []
 if( 'CHECKOPTIONS' in os.environ ) : options = os.environ['CHECKOPTIONS'].split( )

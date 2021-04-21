@@ -38,7 +38,9 @@ int main( int argc, char **argv ) {
 
     try {
         GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, GIDI::Construction::PhotoMode::nuclearAndAtomic );
-        protare = new GIDI::ProtareSingle( construction, protareFilename, GIDI::FileType::XML, pops, libraries ); }
+        GIDI::ParticleSubstitution particleSubstitution;
+
+        protare = new GIDI::ProtareSingle( construction, protareFilename, GIDI::FileType::XML, pops, particleSubstitution, libraries, GIDI_MapInteractionNuclearChars ); }
     catch (char const *str) {
         std::cout << str << std::endl;
         exit( EXIT_FAILURE );
@@ -75,7 +77,7 @@ int main( int argc, char **argv ) {
     protares[0] = MCProtare;
     MCGIDI::URR_protareInfos URR_protare_infos( protares );
 
-    MCGIDI::MultiGroupHash multiGroupHash( *protare );
+    MCGIDI::MultiGroupHash multiGroupHash( *protare, temperatures[0] );
     std::size_t numberOfReactions = MCProtare->reactions( ).size( );
 
     std::cout << "              energy   group    # of non zero       cross section             delta     ratio" << std::endl;

@@ -20,21 +20,22 @@ namespace Functions {
 /* *********************************************************************************************************//**
  * @param a_construction        [in]    Used to pass user options for parsing.
  * @param a_node                [in]    The pugi::xml_node to be parsed to construct the instance.
+ * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent              [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-FissionEnergyRelease::FissionEnergyRelease( Construction::Settings const &a_construction, pugi::xml_node const &a_node, Suite *a_parent ) :
-        Function1dForm( a_construction, a_node, FormType::fissionEnergyRelease1d, a_parent ) {
+FissionEnergyRelease::FissionEnergyRelease( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+        Function1dForm( a_construction, a_node, a_setupInfo, FormType::fissionEnergyRelease1d, a_parent ) {
 
-    m_promptProductKE = data1dParse( a_construction, a_node.child( "promptProductKE" ).first_child( ), NULL );
-    m_promptNeutronKE = data1dParse( a_construction, a_node.child( "promptNeutronKE" ).first_child( ), NULL );
-    m_delayedNeutronKE = data1dParse( a_construction, a_node.child( "delayedNeutronKE" ).first_child( ), NULL );
-    m_promptGammaEnergy = data1dParse( a_construction, a_node.child( "promptGammaEnergy" ).first_child( ), NULL );
-    m_delayedGammaEnergy = data1dParse( a_construction, a_node.child( "delayedGammaEnergy" ).first_child( ), NULL );
-    m_delayedBetaEnergy = data1dParse( a_construction, a_node.child( "delayedBetaEnergy" ).first_child( ), NULL );
-    m_neutrinoEnergy = data1dParse( a_construction, a_node.child( "neutrinoEnergy" ).first_child( ), NULL );
-    m_nonNeutrinoEnergy = data1dParse( a_construction, a_node.child( "nonNeutrinoEnergy" ).first_child( ), NULL );
-    m_totalEnergy = data1dParse( a_construction, a_node.child( "totalEnergy" ).first_child( ), NULL );
+    m_promptProductKE = data1dParse( a_construction, a_node.child( GIDI_promptProductKEChars ).first_child( ), a_setupInfo, nullptr );
+    m_promptNeutronKE = data1dParse( a_construction, a_node.child( GIDI_promptNeutronKEChars ).first_child( ), a_setupInfo, nullptr );
+    m_delayedNeutronKE = data1dParse( a_construction, a_node.child( GIDI_delayedNeutronKEChars ).first_child( ), a_setupInfo, nullptr );
+    m_promptGammaEnergy = data1dParse( a_construction, a_node.child( GIDI_promptGammaEnergyChars ).first_child( ), a_setupInfo, nullptr );
+    m_delayedGammaEnergy = data1dParse( a_construction, a_node.child( GIDI_delayedGammaEnergyChars ).first_child( ), a_setupInfo, nullptr );
+    m_delayedBetaEnergy = data1dParse( a_construction, a_node.child( GIDI_delayedBetaEnergyChars ).first_child( ), a_setupInfo, nullptr );
+    m_neutrinoEnergy = data1dParse( a_construction, a_node.child( GIDI_neutrinoEnergyChars ).first_child( ), a_setupInfo, nullptr );
+    m_nonNeutrinoEnergy = data1dParse( a_construction, a_node.child( GIDI_nonNeutrinoEnergyChars ).first_child( ), a_setupInfo, nullptr );
+    m_totalEnergy = data1dParse( a_construction, a_node.child( GIDI_totalEnergyChars ).first_child( ), a_setupInfo, nullptr );
 }
 
 /* *********************************************************************************************************//**
@@ -42,15 +43,15 @@ FissionEnergyRelease::FissionEnergyRelease( Construction::Settings const &a_cons
 
 FissionEnergyRelease::~FissionEnergyRelease( ) {
 
-    if( m_promptProductKE != NULL ) delete m_promptProductKE;
-    if( m_promptNeutronKE != NULL ) delete m_promptNeutronKE;
-    if( m_delayedNeutronKE != NULL ) delete m_delayedNeutronKE;
-    if( m_promptGammaEnergy != NULL ) delete m_promptGammaEnergy;
-    if( m_delayedGammaEnergy != NULL ) delete m_delayedGammaEnergy;
-    if( m_delayedBetaEnergy != NULL ) delete m_delayedBetaEnergy;
-    if( m_neutrinoEnergy != NULL ) delete m_neutrinoEnergy;
-    if( m_nonNeutrinoEnergy != NULL ) delete m_nonNeutrinoEnergy;
-    if( m_totalEnergy != NULL ) delete m_totalEnergy;
+    if( m_promptProductKE != nullptr ) delete m_promptProductKE;
+    if( m_promptNeutronKE != nullptr ) delete m_promptNeutronKE;
+    if( m_delayedNeutronKE != nullptr ) delete m_delayedNeutronKE;
+    if( m_promptGammaEnergy != nullptr ) delete m_promptGammaEnergy;
+    if( m_delayedGammaEnergy != nullptr ) delete m_delayedGammaEnergy;
+    if( m_delayedBetaEnergy != nullptr ) delete m_delayedBetaEnergy;
+    if( m_neutrinoEnergy != nullptr ) delete m_neutrinoEnergy;
+    if( m_nonNeutrinoEnergy != nullptr ) delete m_nonNeutrinoEnergy;
+    if( m_totalEnergy != nullptr ) delete m_totalEnergy;
 }
 
 /* *********************************************************************************************************//**
@@ -90,17 +91,17 @@ void FissionEnergyRelease::toXMLList( WriteInfo &a_writeInfo, std::string const 
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
 
-    a_writeInfo.addNodeStarter( a_indent, moniker( ), a_writeInfo.addAttribute( "label", label( ) ) );
+    a_writeInfo.addNodeStarter( a_indent, moniker( ), a_writeInfo.addAttribute( GIDI_labelChars, label( ) ) );
 
-    energyReleaseToXMLList( a_writeInfo, "promptProductKE", indent2, m_promptProductKE );
-    energyReleaseToXMLList( a_writeInfo, "promptNeutronKE", indent2, m_promptNeutronKE );
-    energyReleaseToXMLList( a_writeInfo, "delayedNeutronKE", indent2, m_delayedNeutronKE );
-    energyReleaseToXMLList( a_writeInfo, "promptGammaEnergy", indent2, m_promptGammaEnergy );
-    energyReleaseToXMLList( a_writeInfo, "delayedGammaEnergy", indent2, m_delayedGammaEnergy );
-    energyReleaseToXMLList( a_writeInfo, "delayedBetaEnergy", indent2, m_delayedBetaEnergy );
-    energyReleaseToXMLList( a_writeInfo, "neutrinoEnergy", indent2, m_neutrinoEnergy );
-    energyReleaseToXMLList( a_writeInfo, "nonNeutrinoEnergy", indent2, m_nonNeutrinoEnergy );
-    energyReleaseToXMLList( a_writeInfo, "totalEnergy", indent2, m_totalEnergy );
+    energyReleaseToXMLList( a_writeInfo, GIDI_promptProductKEChars, indent2, m_promptProductKE );
+    energyReleaseToXMLList( a_writeInfo, GIDI_promptNeutronKEChars, indent2, m_promptNeutronKE );
+    energyReleaseToXMLList( a_writeInfo, GIDI_delayedNeutronKEChars, indent2, m_delayedNeutronKE );
+    energyReleaseToXMLList( a_writeInfo, GIDI_promptGammaEnergyChars, indent2, m_promptGammaEnergy );
+    energyReleaseToXMLList( a_writeInfo, GIDI_delayedGammaEnergyChars, indent2, m_delayedGammaEnergy );
+    energyReleaseToXMLList( a_writeInfo, GIDI_delayedBetaEnergyChars, indent2, m_delayedBetaEnergy );
+    energyReleaseToXMLList( a_writeInfo, GIDI_neutrinoEnergyChars, indent2, m_neutrinoEnergy );
+    energyReleaseToXMLList( a_writeInfo, GIDI_nonNeutrinoEnergyChars, indent2, m_nonNeutrinoEnergy );
+    energyReleaseToXMLList( a_writeInfo, GIDI_totalEnergyChars, indent2, m_totalEnergy );
 
     a_writeInfo.addNodeEnder( moniker( ) );
 }
@@ -118,7 +119,7 @@ void FissionEnergyRelease::energyReleaseToXMLList( WriteInfo &a_writeInfo, std::
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
 
-    if( a_function == NULL ) return;
+    if( a_function == nullptr ) return;
 
     a_writeInfo.addNodeStarter( a_indent, a_moniker, "" );
     a_function->toXMLList( a_writeInfo, indent2 );

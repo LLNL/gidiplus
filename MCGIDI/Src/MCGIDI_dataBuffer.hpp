@@ -22,10 +22,10 @@ namespace MCGIDI {
 class DataBuffer {
 
     public:
-        long m_intIndex;
-        long m_floatIndex;
-        long m_charIndex;
-        long m_longIndex;
+        size_t m_intIndex;
+        size_t m_floatIndex;
+        size_t m_charIndex;
+        size_t m_longIndex;
 
         int *m_intData;
         double *m_floatData;
@@ -34,9 +34,9 @@ class DataBuffer {
 
         char *m_placementStart;
         char *m_placement;
-        long m_maxPlacementSize;
+        size_t m_maxPlacementSize;
 
-        enum class Mode { Count, Pack, Unpack, Reset };
+        enum class Mode { Count, Pack, Unpack, Reset, Memory };
 
         HOST_DEVICE DataBuffer( void ) :
                 m_intIndex( 0 ),
@@ -123,9 +123,9 @@ class DataBuffer {
                     ( a_input.m_charIndex == m_charIndex ) && ( a_input.m_longIndex  == m_longIndex  ) );
         }
 
-        HOST_DEVICE void incrementPlacement(long a_delta) {
+        HOST_DEVICE void incrementPlacement(size_t a_delta) {
 
-            long sub = a_delta % 8;
+            size_t sub = a_delta % 8;
             if (sub != 0) a_delta += (8-sub);
             m_placement += a_delta;
         }
@@ -134,13 +134,13 @@ class DataBuffer {
         HOST_DEVICE bool validate() {
 
             if (m_placementStart == 0) return true;
-            if (m_placement - m_placementStart > m_maxPlacementSize) return false;
+            if (m_placement > m_maxPlacementSize + m_placementStart) return false;
             return true;
         }
 
 #ifdef __CUDACC__
         // Copy this host object to the device and return its pointer
-        HOST DataBuffer *copyToDevice(long a_cpuSize, char *&a_protarePtr) {
+        HOST DataBuffer *copyToDevice(size_t a_cpuSize, char *&a_protarePtr) {
 
             DataBuffer *devicePtr = nullptr;
             DataBuffer buf_tmp;
@@ -198,30 +198,31 @@ class DataBuffer {
 #define DATA_MEMBER_FLOAT(member, buf, mode) DATA_MEMBER_SIMPLE(member, (buf).m_floatData, (buf).m_floatIndex, mode)
 
 #define DATA_MEMBER_STRING(member, buf, mode) \
-    {if (     mode == DataBuffer::Mode::Count ) {((buf).m_charIndex) += (long) member.size(); ((buf).m_intIndex)++; } \
-     else if ( mode == DataBuffer::Mode::Pack   ) {long array_size = (long) member.size(); \
+    {if (     mode == DataBuffer::Mode::Count ) {((buf).m_charIndex) += member.size(); ((buf).m_intIndex)++; } \
+     else if ( mode == DataBuffer::Mode::Pack   ) {size_t array_size = member.size(); \
              (buf).m_intData[((buf).m_intIndex)++] = array_size; \
-             for (long size_index = 0; size_index < array_size; size_index++)\
+             for (size_t size_index = 0; size_index < array_size; size_index++)\
                  {(buf).m_charData[ ((buf).m_charIndex)++ ] = (member[size_index]); }} \
-     else if ( mode == DataBuffer::Mode::Unpack ) {long array_size = (buf).m_intData[((buf).m_intIndex)++]; \
+     else if ( mode == DataBuffer::Mode::Unpack ) {size_t array_size = (buf).m_intData[((buf).m_intIndex)++]; \
          member.resize(array_size, &(buf).m_placement); \
-         for (long size_index = 0; size_index < array_size; size_index++) \
+         for (size_t size_index = 0; size_index < array_size; size_index++) \
              {member[size_index] = (buf).m_charData[ ((buf).m_charIndex)++ ]; }} \
-     else if ( mode == DataBuffer::Mode::Reset ) {long array_size = (long) member.size(); \
-         for (long size_index = 0; size_index < array_size; size_index++) \
-            {((buf).m_charIndex)++; member[size_index] = '\0'; }}}
+     else if ( mode == DataBuffer::Mode::Reset ) {size_t array_size = member.size(); \
+         for (size_t size_index = 0; size_index < array_size; size_index++) \
+            {((buf).m_charIndex)++; member[size_index] = '\0'; }} \
+     else if ( mode == DataBuffer::Mode::Memory ) { (buf).incrementPlacement(sizeof(char) * (member.size()+1)); } }
 
 // For threads of 32
 #ifdef __CUDA_ARCH__
 #define DATA_MEMBER_VECTOR_DOUBLE(member, buf, mode) \
     { \
-        long vector_size = (long) member.size(); \
+        size_t vector_size = member.size(); \
         DATA_MEMBER_INT(vector_size, (buf), mode); \
         if ( mode == DataBuffer::Mode::Unpack ) member.resize(vector_size, &(buf).m_placement); \
-        long bufferIndex = (buf).m_floatIndex; \
-        for ( long member_index = 0; member_index < vector_size; member_index += 32, bufferIndex += 32 ) \
+        size_t bufferIndex = (buf).m_floatIndex; \
+        for ( size_t member_index = 0; member_index < vector_size; member_index += 32, bufferIndex += 32 ) \
         { \
-            long thrMemberId = member_index+threadIdx.x; \
+            size_t thrMemberId = member_index+threadIdx.x; \
             if (thrMemberId >= vector_size) continue; \
             member[thrMemberId] = (buf).m_floatData[bufferIndex + threadIdx.x]; \
         } \
@@ -230,10 +231,11 @@ class DataBuffer {
 #else
 #define DATA_MEMBER_VECTOR_DOUBLE(member, buf, mode) \
     { \
-        long vector_size = (long) member.size(); \
+        size_t vector_size = member.size(); \
         DATA_MEMBER_INT(vector_size, (buf), mode); \
         if ( mode == DataBuffer::Mode::Unpack ) member.resize(vector_size, &(buf).m_placement); \
-        for ( long member_index = 0; member_index < vector_size; member_index++ ) \
+        if ( mode == DataBuffer::Mode::Memory ) { (buf).incrementPlacement(sizeof(double) * member.capacity()); } \
+        for ( size_t member_index = 0; member_index < vector_size; member_index++ ) \
         { \
             DATA_MEMBER_FLOAT(member[member_index], (buf), mode); \
         } \
@@ -244,13 +246,13 @@ class DataBuffer {
 #ifdef __CUDA_ARCH__
 #define DATA_MEMBER_VECTOR_INT(member, buf, mode) \
     { \
-        long vector_size = (long) member.size(); \
+        size_t vector_size = member.size(); \
         DATA_MEMBER_INT(vector_size, (buf), mode); \
         if ( mode == DataBuffer::Mode::Unpack ) member.resize(vector_size, &(buf).m_placement); \
-        long bufferIndex = (buf).m_intIndex; \
-        for ( long member_index = 0; member_index < vector_size; member_index += 32, bufferIndex += 32 ) \
+        size_t bufferIndex = (buf).m_intIndex; \
+        for ( size_t member_index = 0; member_index < vector_size; member_index += 32, bufferIndex += 32 ) \
         { \
-            long thrMemberId = member_index+threadIdx.x; \
+            size_t thrMemberId = member_index+threadIdx.x; \
             if (thrMemberId >= vector_size) continue; \
             member[thrMemberId] = (buf).m_intData[bufferIndex + threadIdx.x]; \
         } \
@@ -259,10 +261,11 @@ class DataBuffer {
 #else
 #define DATA_MEMBER_VECTOR_INT(member, buf, mode) \
     { \
-        long vector_size = (long) member.size(); \
+        size_t vector_size = member.size(); \
         DATA_MEMBER_INT(vector_size, (buf), mode); \
         if ( mode == DataBuffer::Mode::Unpack ) member.resize(vector_size, &(buf).m_placement); \
-        for ( long member_index = 0; member_index < vector_size; member_index++ ) \
+        if ( mode == DataBuffer::Mode::Memory ) { (buf).incrementPlacement(sizeof(int) * member.capacity()); } \
+        for ( size_t member_index = 0; member_index < vector_size; member_index++ ) \
         { \
             DATA_MEMBER_INT(member[member_index], (buf), mode); \
         } \
@@ -271,10 +274,11 @@ class DataBuffer {
 
 #define DATA_MEMBER_VECTOR_INT_NO_THREAD(member, buf, mode) \
     { \
-        long vector_size = (long) member.size(); \
+        size_t vector_size = member.size(); \
         DATA_MEMBER_INT(vector_size, (buf), mode); \
         if ( mode == DataBuffer::Mode::Unpack ) member.resize(vector_size, &(buf).m_placement); \
-        for ( long member_index = 0; member_index < vector_size; member_index++ ) \
+        if ( mode == DataBuffer::Mode::Memory ) { (buf).incrementPlacement(sizeof(int) * member.capacity()); } \
+        for ( size_t member_index = 0; member_index < vector_size; member_index++ ) \
         { \
             DATA_MEMBER_INT(member[member_index], (buf), mode); \
         } \
@@ -283,10 +287,10 @@ class DataBuffer {
 // For threads of 32
 #ifdef __CUDA_ARCH__
 #define DATA_MEMBER_CHAR_ARRAY( member, buf, mode ) { \
-        long array_size = (long) sizeof( member ); \
-        long bufferIndex = (buf).m_charIndex; \
-        for ( long member_index = 0; member_index < array_size; member_index += 32, bufferIndex += 32 ) { \
-            long thrMemberId = member_index+threadIdx.x; \
+        size_t array_size = sizeof( member ); \
+        size_t bufferIndex = (buf).m_charIndex; \
+        for ( size_t member_index = 0; member_index < array_size; member_index += 32, bufferIndex += 32 ) { \
+            size_t thrMemberId = member_index+threadIdx.x; \
             if( thrMemberId >= array_size ) continue; \
             member[thrMemberId] = (buf).m_charData[bufferIndex + threadIdx.x]; \
         } \
@@ -294,8 +298,8 @@ class DataBuffer {
     }
 #else
 #define DATA_MEMBER_CHAR_ARRAY( member, buf, mode ) { \
-        long array_size = (long) sizeof( member ); \
-        for ( long member_index = 0; member_index < array_size; member_index++ ) DATA_MEMBER_CHAR( member[member_index], (buf), mode ); \
+        size_t array_size = sizeof( member ); \
+        for ( size_t member_index = 0; member_index < array_size; member_index++ ) DATA_MEMBER_CHAR( member[member_index], (buf), mode ); \
     }
 #endif
 

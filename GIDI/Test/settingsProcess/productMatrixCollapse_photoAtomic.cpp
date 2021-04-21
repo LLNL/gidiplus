@@ -58,7 +58,7 @@ void main2( int argc, char **argv ) {
 
     GIDI::Protare *protare = parseTestOptions.protare( pops, "../pops.xml", "../all.map", construction, PoPI::IDs::photon, "O" );
 
-    std::cout << protare->fileName( ) << std::endl;
+    std::cout << stripDirectoryBase( protare->fileName( ) ) << std::endl;
 
     GIDI::Styles::TemperatureInfos temperatures = protare->temperatures( );
     for( GIDI::Styles::TemperatureInfos::iterator iter = temperatures.begin( ); iter != temperatures.end( ); ++iter ) {

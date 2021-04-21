@@ -20,17 +20,20 @@ namespace GIDI {
  ***********************************************************************************************************/
 
 ExternalFile::ExternalFile( std::string const &a_label, std::string const &a_path ) :
-        Form( externalFileMoniker, FormType::externalFile, a_label ),
+        Form( GIDI_externalFileChars, FormType::externalFile, a_label ),
         m_path( a_path ) {
 
 }
 
 /* *********************************************************************************************************//**
+ * @param a_node            [in]    The **pugi::xml_node** to be parsed to construct a GeneralEvaporation2d instance.
+ * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
+ * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-ExternalFile::ExternalFile( pugi::xml_node const &a_node, GIDI::Suite *a_parent ) :
-        Form( a_node, FormType::externalFile ),
-        m_path( a_node.attribute( "path" ).value( ) ) {
+ExternalFile::ExternalFile( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent ) :
+        Form( a_node, a_setupInfo, FormType::externalFile ),
+        m_path( a_node.attribute( GIDI_pathChars ).value( ) ) {
 
 }
 
@@ -52,8 +55,8 @@ void ExternalFile::toXMLList( WriteInfo &a_writeInfo, std::string const &a_inden
 
     std::string attributes;
 
-    attributes  = a_writeInfo.addAttribute( "label", label( ) );
-    attributes += a_writeInfo.addAttribute( "path", path( ) );
+    attributes  = a_writeInfo.addAttribute( GIDI_labelChars, label( ) );
+    attributes += a_writeInfo.addAttribute( GIDI_pathChars, path( ) );
 
     a_writeInfo.addNodeStarterEnder( a_indent, moniker( ), attributes );
 }

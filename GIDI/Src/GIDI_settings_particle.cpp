@@ -39,14 +39,14 @@ Particles::~Particles( ) {
  *
  * @param a_pid                     [in]    The PoPs id of the particle to return.
  *
- * @return                                  Pointer to particle if it exists or NULL otherwise.
+ * @return                                  Pointer to particle if it exists or nullptr otherwise.
  ***********************************************************************************************************/
 
 Particle const *Particles::particle( std::string const &a_pid ) const {
 
     std::map<std::string, Particle>::const_iterator particle = m_particles.find( a_pid );
 
-    if( particle == m_particles.end( ) ) return( NULL );
+    if( particle == m_particles.end( ) ) return( nullptr );
     return( &(particle->second) );
 }
 
@@ -111,14 +111,18 @@ void Particles::process( Protare const &a_protare, std::string const &a_label ) 
 
     if( a_label == "" ) return;
 
-    Styles::MultiGroup const *multiGroupStyle = a_protare.multiGroup( a_label );
-    if( multiGroupStyle == NULL ) throw Exception( "parameters style not found or wrong type." );
+    Styles::Base const *style = a_protare.styles( ).get<Styles::Base>( a_label );
+
+    if( style->moniker( ) == GIDI_SnElasticUpScatterStyleChars ) style = a_protare.styles( ).get<Styles::Base>( style->derivedStyle( ) );
+    if( style->moniker( ) != GIDI_heatedMultiGroupStyleChars ) throw Exception( "Label does not yield a heatedMultiGroup style." );
+
+    Styles::HeatedMultiGroup const &heatedMultiGroup = *static_cast<Styles::HeatedMultiGroup const *>( style );
 
     for( std::map<std::string, Particle>::iterator iter = m_particles.begin( ); iter != m_particles.end( ); ++iter ) {
         std::string pid = iter->first;
         Particle *particle = &(iter->second);
 
-        std::vector<double> const &groupBoundaries = multiGroupStyle->groupBoundaries( pid );
+        std::vector<double> const &groupBoundaries = heatedMultiGroup.groupBoundaries( pid );
 
         particle->process( groupBoundaries );
     }
@@ -260,7 +264,7 @@ ProcessedFlux const *Particle::nearestProcessedFluxToTemperature( double a_tempe
     double priorTemperature, lastTemperature;
     std::vector<ProcessedFlux>::const_iterator iter;
 
-    if( m_processedFluxes.size( ) == 0 ) return( NULL );
+    if( m_processedFluxes.size( ) == 0 ) return( nullptr );
 
     priorTemperature = m_processedFluxes[0].temperature( );
     for( iter = m_processedFluxes.begin( ); iter != m_processedFluxes.end( ); ++iter ) {

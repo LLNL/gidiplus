@@ -302,16 +302,4 @@ HOST_DEVICE void Reaction::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_m
     }
 }
 
-/* *********************************************************************************************************//**
- * This method counts the number of bytes of memory allocated by *this*. That is the member needed by *this* that is greater than
- * sizeof( *this );
- ***********************************************************************************************************/
-
-HOST_DEVICE long Reaction::internalSize( ) const {
-
-    return( m_label.internalSize( ) + m_upscatterModelACrossSection.internalSize( ) + m_productIndices.internalSize( ) + 
-            m_productIndicesTransportable.internalSize( ) + m_productMultiplicities.internalSize( ) + m_outputChannel.internalSize( ) +
-            m_userProductIndices.internalSize( ) + m_userProductIndicesTransportable.internalSize( ) );
-}
-
 }

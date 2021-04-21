@@ -111,7 +111,7 @@ int main( int argc, char **argv ) {
     MCGIDI::URR_protareInfos URR_protare_infos( protares );
 
     std::size_t numberOfReactions = MCProtare->numberOfReactions( );
-    MCGIDI::MultiGroupHash multiGroupHash( *protare );
+    MCGIDI::MultiGroupHash multiGroupHash( *protare, temperatures[0] );
 
     std::cout << "Reaction info" << std::endl;
     std::cout << "                                                 threshold   threshold  offset" << std::endl;

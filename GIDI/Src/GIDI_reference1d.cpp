@@ -19,14 +19,15 @@ namespace Functions {
 
 /* *********************************************************************************************************//**
  *
- * @param a_construction    [in]     Used to pass user options to the constructor.
- * @param a_node            [in]     The **pugi::xml_node** to be parsed and used to construct the XYs2d.
- * @param a_parent          [in]     The parent GIDI::Suite.
+ * @param a_construction    [in]    Used to pass user options to the constructor.
+ * @param a_node            [in]    The **pugi::xml_node** to be parsed and used to construct the XYs2d.
+ * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
+ * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-Reference1d::Reference1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, Suite *a_parent ) :
-        Function1dForm( a_construction, a_node, FormType::reference1d, a_parent ),
-        m_xlink( a_node.attribute( "href" ).value( ) ) {
+Reference1d::Reference1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+        Function1dForm( a_construction, a_node, a_setupInfo, FormType::reference1d, a_parent ),
+        m_xlink( a_node.attribute( GIDI_hrefChars ).value( ) ) {
 
 }
 
@@ -84,8 +85,8 @@ void Reference1d::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent
 
     std::string attributes;
 
-    attributes += a_writeInfo.addAttribute( "label", label( ) );
-    attributes += a_writeInfo.addAttribute( "href", m_xlink );
+    attributes += a_writeInfo.addAttribute( GIDI_labelChars, label( ) );
+    attributes += a_writeInfo.addAttribute( GIDI_hrefChars, m_xlink );
     a_writeInfo.addNodeStarterEnder( a_indent, moniker( ), attributes );
 }
 

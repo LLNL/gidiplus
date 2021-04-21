@@ -916,6 +916,8 @@ ptwXPoints *ptwXY_runningIntegral( statusMessageReporting *smr, ptwXYPoints *ptw
 
     if( ( runningIntegral = ptwX_new( smr, ptwXY->length ) ) == NULL ) goto Err;
 
+    if( ptwXY->length == 0 ) return( runningIntegral );
+
     if( ptwX_setPointAtIndex( smr, runningIntegral, 0, 0. ) != nfu_Okay ) goto Err;
     for( i = 1; i < ptwXY->length; i++ ) {
         if( ptwXY_f_integrate( smr, ptwXY->interpolation, ptwXY->points[i-1].x, ptwXY->points[i-1].y, 

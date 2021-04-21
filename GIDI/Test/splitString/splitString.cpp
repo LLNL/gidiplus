@@ -7,10 +7,14 @@
 # <<END-copyright>>
 */
 
+/*
+This needs to be moved to PoPI/Test when tests are implemented in PoPI.
+*/
+
 #include <stdlib.h>
 #include <iostream>
 
-#include "GIDI.hpp"
+#include "PoPI.hpp"
 
 void splitAndPrint( std::string const &string, char delimiter );
 /*
@@ -42,7 +46,7 @@ void splitAndPrint( std::string const &string, char delimiter ) {
     std::cout << "String to split is '" << string << "'" << std::endl;
     std::cout << "Delimiter is '" << delimiter << "'" << std::endl;
 
-    std::vector<std::string> segmets = GIDI::splitString( string, delimiter );
+    std::vector<std::string> segmets = PoPI::splitString( string, delimiter );
     std::cout << "    ";
     for( std::size_t i1 = 0; i1 < segmets.size( ); ++i1 ) {
         if( i1 > 0 ) std::cout << ", ";

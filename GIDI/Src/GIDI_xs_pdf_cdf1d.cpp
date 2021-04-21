@@ -13,6 +13,10 @@ namespace GIDI {
 
 namespace Functions {
 
+#define GIDI_xsChars "xs"
+#define GIDI_pdfChars "pdf"
+#define GIDI_cdfChars "cdf"
+
 /*! \class Xs_pdf_cdf1d
  * Class for the GNDS <**xs_pdf_cdf1d**> node.
  */
@@ -30,7 +34,7 @@ namespace Functions {
 
 Xs_pdf_cdf1d::Xs_pdf_cdf1d( Axes const &a_axes, ptwXY_interpolation a_interpolation, std::vector<double> const &a_Xs, 
                 std::vector<double> const &a_pdf, std::vector<double> const &a_cdf, int a_index, double a_outerDomainValue ) :
-        Function1dForm( xs_pdf_cdf1dMoniker, FormType::xs_pdf_cdf1d, a_axes, a_interpolation, a_index, a_outerDomainValue ),
+        Function1dForm( GIDI_xs_pdf_cdf1dChars, FormType::xs_pdf_cdf1d, a_axes, a_interpolation, a_index, a_outerDomainValue ),
         m_xs( a_Xs ),
         m_pdf( a_pdf ),
         m_cdf( a_cdf ) {
@@ -40,16 +44,17 @@ Xs_pdf_cdf1d::Xs_pdf_cdf1d( Axes const &a_axes, ptwXY_interpolation a_interpolat
 /* *********************************************************************************************************//**
  *
  * @param a_construction    [in]    Used to pass user options to the constructor.
- * @param a_node            [in]     The **pugi::xml_node** to be parsed and used to construct the XYs2d.
- * @param a_parent          [in]     The parent GIDI::Suite.
+ * @param a_node            [in]    The **pugi::xml_node** to be parsed and used to construct the XYs2d.
+ * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
+ * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-Xs_pdf_cdf1d::Xs_pdf_cdf1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, Suite *a_parent ) :
-        Function1dForm( a_construction, a_node, FormType::xs_pdf_cdf1d, a_parent ) {
+Xs_pdf_cdf1d::Xs_pdf_cdf1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+        Function1dForm( a_construction, a_node, a_setupInfo, FormType::xs_pdf_cdf1d, a_parent ) {
 
-        parseValuesOfDoubles( a_construction, a_node.child( "xs" ).child( "values" ), m_xs );
-        parseValuesOfDoubles( a_construction, a_node.child( "pdf" ).child( "values" ), m_pdf );
-        parseValuesOfDoubles( a_construction, a_node.child( "cdf" ).child( "values" ), m_cdf );
+        parseValuesOfDoubles( a_construction, a_node.child( GIDI_xsChars ).child( GIDI_valuesChars ), a_setupInfo, m_xs );
+        parseValuesOfDoubles( a_construction, a_node.child( GIDI_pdfChars ).child( GIDI_valuesChars ), a_setupInfo, m_pdf );
+        parseValuesOfDoubles( a_construction, a_node.child( GIDI_cdfChars ).child( GIDI_valuesChars ), a_setupInfo, m_cdf );
 }
 
 /* *********************************************************************************************************//**
@@ -86,21 +91,21 @@ void Xs_pdf_cdf1d::toXMLList_func( WriteInfo &a_writeInfo, std::string const &a_
     std::string attributes;
 
     if( a_embedded ) {
-        attributes += a_writeInfo.addAttribute( "outerDomainValue", doubleToShortestString( outerDomainValue( ) ) ); }
+        attributes += a_writeInfo.addAttribute( GIDI_outerDomainValueChars, doubleToShortestString( outerDomainValue( ) ) ); }
     else {
         if( a_inRegions ) {
-            attributes = a_writeInfo.addAttribute( "index", intToString( index( ) ) ); }
+            attributes = a_writeInfo.addAttribute( GIDI_indexChars, intToString( index( ) ) ); }
         else {
-            if( label( ) != "" ) attributes = a_writeInfo.addAttribute( "label", label( ) );
+            if( label( ) != "" ) attributes = a_writeInfo.addAttribute( GIDI_labelChars, label( ) );
         }
     }
 
-    if( interpolation( ) != ptwXY_interpolationLinLin ) attributes += a_writeInfo.addAttribute( "interpolation", interpolationString( ) );
+    if( interpolation( ) != ptwXY_interpolationLinLin ) attributes += a_writeInfo.addAttribute( GIDI_interpolationChars, interpolationString( ) );
 
     std::string xml = a_writeInfo.nodeStarter( a_indent, moniker( ), attributes );
-    xml += nodeWithValuesToDoubles( a_writeInfo,  "xs", m_xs );
-    xml += nodeWithValuesToDoubles( a_writeInfo, "pdf", m_pdf );
-    xml += nodeWithValuesToDoubles( a_writeInfo, "cdf", m_cdf );
+    xml += nodeWithValuesToDoubles( a_writeInfo,  GIDI_xsChars, m_xs );
+    xml += nodeWithValuesToDoubles( a_writeInfo, GIDI_pdfChars, m_pdf );
+    xml += nodeWithValuesToDoubles( a_writeInfo, GIDI_cdfChars, m_cdf );
     xml += a_writeInfo.nodeEnder( moniker( ) );
 
     a_writeInfo.push_back( xml );

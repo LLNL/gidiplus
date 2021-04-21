@@ -7,67 +7,28 @@ SHELL = /bin/ksh
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
-.PHONY: default crossSections crossSectionSum clean realclean
+GIDI_PLUS_PATH ?= $(abspath ../../..)
+CppSource = $(sort $(wildcard *.cpp))
 
-PUGIXML_PATH = ../../../pugixml
-PUGIXML_INCLUDE = $(PUGIXML_PATH)/include
-PUGIXML_LIB = $(PUGIXML_PATH)/lib
-
-POPs_PATH = ../../../PoPI
-POPs_INCLUDE = $(POPs_PATH)/include
-POPs_LIB = $(POPs_PATH)/lib
-
-SMR_PATH = ../../../statusMessageReporting
-SMR_INCLUDE = $(SMR_PATH)/include
-SMR_LIB = $(SMR_PATH)/lib
-
-NF_PATH = ../../../numericalFunctions
-NF_INCLUDE = $(NF_PATH)/include
-NF_LIB = $(NF_PATH)/lib
-
-GIDI_PATH = ../../../GIDI
-GIDI_INCLUDE = $(GIDI_PATH)/include
-GIDI_LIB = $(GIDI_PATH)/lib
-
-
-local_CXXFLAGS = $(CXXFLAGS) -I../../include -L../../lib \
-		-I$(GIDI_INCLUDE) -L$(GIDI_LIB) \
-		-I$(POPs_INCLUDE) -L$(POPs_LIB) \
-		-I$(SMR_INCLUDE) -L$(SMR_LIB) \
-		-I$(NF_INCLUDE) -L$(NF_LIB) \
-		-I$(PUGIXML_INCLUDE) -L$(PUGIXML_LIB) \
-		-I../Utilities -L../Utilities
-
-LIBS = -lMCGIDI -lGIDI -lPoPI -lstatusMessageReporting -lnumericalfunctions -lMCGIDI_testUtilities -lpugixml
-
-default: crossSections crossSectionSum
-
-crossSections: crossSections.cpp
-	$(CXX) $(local_CXXFLAGS) -o crossSections crossSections.cpp $(LIBS)
-
-crossSectionSum: crossSectionSum.cpp
-	$(CXX) $(local_CXXFLAGS) -o crossSectionSum crossSectionSum.cpp $(LIBS)
+include ../../Makefile.paths
+include ../Makefile.check
 
 check: crossSections crossSectionSum
-	./crossSections > o
-	../Utilities/diff.com crossSections/crossSections crossSections.out o
+	if [ ! -e Outputs ]; then mkdir Outputs; fi
+	./crossSections > Outputs/crossSections.out
+	../Utilities/diff.com crossSection/crossSections Benchmarks/crossSections.out Outputs/crossSections.out
 
-	./crossSections --pid photon --tid O16 --map ../../../GIDI/Test/Data/MG_MC/all.map > o
-	../Utilities/diff.com crossSections/crossSections-1 crossSections.photon+O16.out o
-	./crossSections --pid photon --tid O16 --map ../../../GIDI/Test/Data/MG_MC/all.map -n > o
-	../Utilities/diff.com crossSections/crossSections-2 crossSections.photon+O16.out o
-	./crossSections --pid photon --tid O16 --map ../../../GIDI/Test/Data/MG_MC/all.map -a > o
-	../Utilities/diff.com crossSections/crossSections-3 crossSections.photon+O16.atomic.out o
-	./crossSections --pid photon --tid O16 --map ../../../GIDI/Test/Data/MG_MC/all.map -a -n > o
-	../Utilities/diff.com crossSections/crossSections-4 crossSections.photon+O16.atomic+nuclear.out o
+	./crossSections --pid photon --tid O16 --map ../../../GIDI/Test/Data/MG_MC/all.map > Outputs/crossSections.photon+O16.out
+	../Utilities/diff.com crossSection/crossSections-1 Benchmarks/crossSections.photon+O16.out Outputs/crossSections.photon+O16.out
+	./crossSections --pid photon --tid O16 --map ../../../GIDI/Test/Data/MG_MC/all.map -n > Outputs/crossSections.photon+O16.out
+	../Utilities/diff.com crossSection/crossSections-2 Benchmarks/crossSections.photon+O16.out Outputs/crossSections.photon+O16.out
+	./crossSections --pid photon --tid O16 --map ../../../GIDI/Test/Data/MG_MC/all.map -a > Outputs/crossSections.photon+O16.atomic.out
+	../Utilities/diff.com crossSection/crossSections-3 Benchmarks/crossSections.photon+O16.atomic.out Outputs/crossSections.photon+O16.atomic.out
+	./crossSections --pid photon --tid O16 --map ../../../GIDI/Test/Data/MG_MC/all.map -a -n > Outputs/crossSections.photon+O16.atomic+nuclear.out
+	../Utilities/diff.com crossSection/crossSections-4 Benchmarks/crossSections.photon+O16.atomic+nuclear.out Outputs/crossSections.photon+O16.atomic+nuclear.out
 
-	./crossSections --tid HinCH2 --map ../../../GIDI/Test/Data/MG_MC/neutrons/all.map > o
-	../Utilities/diff.com crossSections/crossSections-HinCH2 crossSections.HinCH2.out o
+	./crossSections --tid HinCH2 --map ../../../GIDI/Test/Data/MG_MC/neutrons/all.map > Outputs/crossSections.HinCH2.out
+	../Utilities/diff.com crossSection/crossSections-HinCH2 Benchmarks/crossSections.HinCH2.out Outputs/crossSections.HinCH2.out
 
-	./crossSectionSum > o
-	../Utilities/diff.com crossSectionSum/crossSectionSum crossSectionSum.out o
-
-clean:
-	rm -f crossSections crossSectionSum o
-
-realclean: clean
+	./crossSectionSum > Outputs/crossSectionSum.out
+	../Utilities/diff.com crossSectionSum/crossSectionSum Benchmarks/crossSectionSum.out Outputs/crossSectionSum.out

@@ -7,42 +7,38 @@ SHELL = /bin/ksh
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
-DIRS = Src include lib bin Doc
+.PHONY: default include lib bin check speeds clean realclean docs doDIRS
 
-POPs_PATH = $(abspath ../PoPI)
-SMR_PATH = $(abspath ../statusMessageReporting)
-NF_PATH = $(abspath ../numericalFunctions)
+DIRS = Src include lib bin Test Speeds Doc
 
-.PHONY: default include lib bin clean realclean
+GIDI_PLUS_PATH ?= $(abspath ..)
+export GIDI_PLUS_PATH
 
 default: include lib
 	cd Test; $(MAKE) default
 	$(MAKE) bin
+	cd Speeds; $(MAKE) default
 
 include:
 	cd include; $(MAKE)
 
 lib:
-	cd lib; $(MAKE) CXX=$(CXX) CXXFLAGS='$(CXXFLAGS)' POPs_PATH='$(POPs_PATH)' SMR_PATH='$(SMR_PATH)' NF_PATH='$(NF_PATH)'
+	cd lib; $(MAKE)
 
 bin:
-	cd bin; $(MAKE) CXX=$(CXX) CXXFLAGS='$(CXXFLAGS)' POPs_PATH='$(POPs_PATH)' SMR_PATH='$(SMR_PATH)' NF_PATH='$(NF_PATH)' bin
+	cd bin; $(MAKE) bin
 
 check:
-	cd Test; $(MAKE) CXX=$(CXX) CXXFLAGS='$(CXXFLAGS)' POPs_PATH='$(POPs_PATH)' SMR_PATH='$(SMR_PATH)' NF_PATH='$(NF_PATH)' check
+	cd Test; $(MAKE) check
 
 speeds:
-	cd Speeds; $(MAKE) CXX=$(CXX) CXXFLAGS='$(CXXFLAGS)' POPs_PATH='$(POPs_PATH)' SMR_PATH='$(SMR_PATH)' NF_PATH='$(NF_PATH)' speeds
+	cd Speeds; $(MAKE) speeds
 
 clean:
 	$(MAKE) doDIRS _DIRS="$(DIRS)" _TARGET=clean
-	cd Test; $(MAKE) clean
-	cd Speeds; $(MAKE) clean
 
 realclean:
 	$(MAKE) doDIRS _DIRS="$(DIRS)" _TARGET=realclean
-	cd Test; $(MAKE) realclean
-	cd Speeds; $(MAKE) realclean
 
 docs:
 	doxygen Doc/doxygen/Doxyfile

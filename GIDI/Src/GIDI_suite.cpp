@@ -36,6 +36,7 @@ Suite::Suite( std::string const &a_moniker ) :
  * @param a_construction        [in]    Used to pass user options to the constructor.
  * @param a_moniker             [in]    The **GNDS** moniker for the Suite instance.
  * @param a_node                [in]    The pugi::xml_node to be parsed and used to construct the Product.
+ * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops                [in]    The *external* PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs        [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
  *                                      This is the <**PoPs**> node under the <**reactionSuite**> node.
@@ -43,14 +44,14 @@ Suite::Suite( std::string const &a_moniker ) :
  * @param a_styles              [in]    The <**styles**> node under the <**reactionSuite**> node.
  ***********************************************************************************************************/
 
-Suite::Suite( Construction::Settings const &a_construction, std::string const &a_moniker, pugi::xml_node const &a_node, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, 
-                parseSuite a_parseSuite, Styles::Suite const *a_styles ) :
+Suite::Suite( Construction::Settings const &a_construction, std::string const &a_moniker, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,
+                PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, parseSuite a_parseSuite, Styles::Suite const *a_styles ) :
         Ancestry( a_moniker ),
         m_styles( a_styles ) {
 
     pugi::xml_node const node = a_node.child( a_moniker.c_str( ) );
 
-    if( node.type( ) != pugi::node_null ) parse( a_construction, node, a_pops, a_internalPoPs, a_parseSuite, a_styles );
+    if( node.type( ) != pugi::node_null ) parse( a_construction, node, a_setupInfo, a_pops, a_internalPoPs, a_parseSuite, a_styles );
 }
 
 /* *********************************************************************************************************//**
@@ -65,6 +66,7 @@ Suite::~Suite( ) {
  *
  * @param a_construction        [in]    Used to pass user options to the constructor.
  * @param a_node                [in]    The pugi::xml_node to be parsed and used to construct the Product.
+ * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops                [in]    The *external* PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs        [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
  *                                      This is the <**PoPs**> node under the <**reactionSuite**> node.
@@ -72,14 +74,14 @@ Suite::~Suite( ) {
  * @param a_styles              [in]    The <**styles**> node under the <**reactionSuite**> node.
  ***********************************************************************************************************/
 
-void Suite::parse( Construction::Settings const &a_construction, pugi::xml_node const &a_node, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs,
-                parseSuite a_parseSuite, GIDI::Styles::Suite const *a_styles ) {
+void Suite::parse( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops,
+                PoPI::Database const &a_internalPoPs, parseSuite a_parseSuite, GIDI::Styles::Suite const *a_styles ) {
 
     for( pugi::xml_node child = a_node.first_child( ); child; child = child.next_sibling( ) ) {
         std::string name( child.name( ) );
 
-        Form *form = a_parseSuite( a_construction, this, child, a_pops, a_internalPoPs, name, a_styles );
-        if( form != NULL ) add( form );
+        Form *form = a_parseSuite( a_construction, this, child, a_setupInfo, a_pops, a_internalPoPs, name, a_styles );
+        if( form != nullptr ) add( form );
     }
 }
 
@@ -191,17 +193,40 @@ std::vector<Suite::const_iterator> Suite::findAllOfMoniker( std::string const &a
 }
 
 /* *********************************************************************************************************//**
- * Used by Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or NULL if none exists.
+ * Only for internal use. Called by ProtareTNSL instance to zero the lower energy multi-group data covered by the ProtareSingle that
+ * contains the TNSL data covers the lower energy multi-group data.
+ *
+ * @param a_maximumTNSL_MultiGroupIndex     [in]    A map that contains labels for heated multi-group data and the last valid group boundary
+ *                                                  for the TNSL data for that boundary.
+ ***********************************************************************************************************/
+
+void Suite::modifiedMultiGroupElasticForTNSL( std::map<std::string,std::size_t> a_maximumTNSL_MultiGroupIndex ) {
+
+    for( auto iter = a_maximumTNSL_MultiGroupIndex.begin( ); iter != a_maximumTNSL_MultiGroupIndex.end( ); ++iter ) {
+        auto formIter = find( iter->first );
+
+        if( formIter == end( ) ) continue;
+
+        if( (*formIter)->type( ) == FormType::gridded1d ) {
+            reinterpret_cast<Functions::Gridded1d *>( (*formIter) )->modifiedMultiGroupElasticForTNSL( iter->second ); }
+        else if( (*formIter)->type( ) == FormType::gridded3d ) {
+            reinterpret_cast<Functions::Gridded3d *>( (*formIter) )->modifiedMultiGroupElasticForTNSL( iter->second );
+        }
+    }
+}
+
+/* *********************************************************************************************************//**
+ * Used by Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or nullptr if none exists.
  *
  * @param a_item    [in]    The name of the class member whose pointer is to be return.
- * @return                  The pointer to the class member or NULL if class does not have a member named a_item.
+ * @return                  The pointer to the class member or nullptr if class does not have a member named a_item.
  ***********************************************************************************************************/
 
 Ancestry *Suite::findInAncestry3( std::string const &a_item ) {
 
     std::size_t index( a_item.find( '=' ) ), lastQuote = a_item.size( ) - 2;
 
-    if( index == std::string::npos ) return( NULL );
+    if( index == std::string::npos ) return( nullptr );
     ++index;
     if( index > lastQuote ) throw Exception( "Suite::findInAncestry3: invalide xlink" );
     if( a_item[index] != '\'' ) throw Exception( "Suite::findInAncestry3: invalid xlink, missing '." );
@@ -214,17 +239,17 @@ Ancestry *Suite::findInAncestry3( std::string const &a_item ) {
 }
 
 /* *********************************************************************************************************//**
- * Used by Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or NULL if none exists.
+ * Used by Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or nullptr if none exists.
  *
  * @param a_item    [in]    The name of the class member whose pointer is to be return.
- * @return                  The pointer to the class member or NULL if class does not have a member named a_item.
+ * @return                  The pointer to the class member or nullptr if class does not have a member named a_item.
  ***********************************************************************************************************/
 
 Ancestry const *Suite::findInAncestry3( std::string const &a_item ) const {
 
     std::size_t index( a_item.find( '=' ) ), lastQuote = a_item.size( ) - 2;
 
-    if( index == std::string::npos ) return( NULL );
+    if( index == std::string::npos ) return( nullptr );
     ++index;
     if( index > lastQuote ) throw Exception( "Suite::findInAncestry3: invalide xlink" );
     if( a_item[index] != '\'' ) throw Exception( "Suite::findInAncestry3: invalid xlink, missing '." );

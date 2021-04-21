@@ -7,55 +7,44 @@ SHELL = /bin/ksh
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
+include ../Makefile.paths
+
+local_CXXFLAGS = $(CXXFLAGS) -I$(PUGIXML_INCLUDE) -I$(POPI_INCLUDE) -I$(SMR_INCLUDE) -I$(NF_INCLUDE) -I$(GIDI_INCLUDE)
+
 .PHONY: default clean realclean
 
-PIGI_PATH = ../../pugixml
-PIGI_INCLUDE = $(PIGI_PATH)/include
-
-POPs_PATH = ../../PoPI
-POPs_INCLUDE = $(POPs_PATH)/include
-
-SMR_PATH = ../../statusMessageReporting
-SMR_INCLUDE = $(SMR_PATH)/include
-
-NF_PATH = ../../numericalFunctions
-NF_INCLUDE = $(NF_PATH)/include
-
-GIDI_PATH = ../../GIDI
-GIDI_INCLUDE = $(GIDI_PATH)/include
-
-local_CXXFLAGS = $(CXXFLAGS) -I$(PIGI_INCLUDE) -I$(POPs_INCLUDE) -I$(SMR_INCLUDE) -I$(NF_INCLUDE) -I$(GIDI_INCLUDE)
-
-CppSources = MCGIDI_settings.cpp \
-             MCGIDI_protare.cpp \
-             MCGIDI_protareComposite.cpp \
-             MCGIDI_protareTNSL.cpp \
-             MCGIDI_heatedCrossSections.cpp \
-             MCGIDI_reaction.cpp \
-             MCGIDI_outputChannel.cpp \
-             MCGIDI_product.cpp \
-             MCGIDI_misc.cpp \
-             MCGIDI_domainHash.cpp \
-             MCGIDI_functions.cpp \
-             MCGIDI_sampling.cpp \
-             MCGIDI_distributions.cpp \
-             MCGIDI_string.cpp \
-             MCGIDI_angle_biasing.cpp \
-			 MCGIDI_nuclideGammaBranching.cpp \
-			 MCGIDI_delayedNeutron.cpp \
-			 MCGIDI_URR.cpp
-
+CppSources = $(sort $(wildcard *.cpp))
 CppObjs = $(CppSources:.cpp=.o)
+Archive = libMCGIDI.a
 
-default: $(CppObjs)
-	rm -f libMCGIDI.a
-	$(AR) -cr libMCGIDI.a *.o
+ifdef UNITY
+CppObjs = MCGIDI.o
+endif
+
+default:
+	echo ""
+	echo "  -- MCGIDI/Src --"
+	$(MAKE) $(Archive)
+
+MCGIDI.cpp: $(CppSources)
+	cat $(CppSources) > MCGIDI.cpp
 
 %.o: %.cpp
 	echo "    "$<
 	$(CXX) -c $(local_CXXFLAGS) $< -o $@
 
+$(Archive): $(CppObjs)
+	rm -f $@
+	$(AR) -cr $@ $(CppObjs)
+
+$(CppSources): MCGIDI.hpp
+MCGIDI.hpp: MCGIDI_sampling.hpp MCGIDI_dataBuffer.hpp MCGIDI_vector.hpp MCGIDI_string.hpp MCGIDI_declareMacro.hpp MCGIDI_functions.hpp MCGIDI_distributions.hpp
+MCGIDI_string.cpp: MCGIDI_string.hpp
+MCGIDI_dataBuffer.hpp MCGIDI_distributions.hpp MCGIDI_sampling.hpp MCGIDI_string.hpp MCGIDI_vector.hpp: MCGIDI_declareMacro.hpp
+MCGIDI_sampling.hpp: MCGIDI_vector.hpp
+MCGIDI_functions.hpp: MCGIDI_dataBuffer.hpp
+
 clean:
-	rm -f *.o *.so *.a
+	rm -f *.o $(Archive) MCGIDI.cpp
 
 realclean: clean

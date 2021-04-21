@@ -1,0 +1,276 @@
+label = heated_000  temperature = 0
+reaction (  0) = O + photon [coherent]  threshold = 0
+    energy = 1e-13
+        productIndex    3 KE = 1e-13  p = 2.99792e+10  m_px_vx = 1.52806e+10  m_py_vy = -1.54226e+10  m_pz_vz = 2.06737e+10
+    energy = 2e-13
+        productIndex    3 KE = 2e-13  p = 2.99792e+10  m_px_vx = 8.74157e+09  m_py_vy = 7.33442e+09  m_pz_vz = 2.77227e+10
+    energy = 4e-13
+        productIndex    3 KE = 4e-13  p = 2.99792e+10  m_px_vx = -1.8257e+10  m_py_vy = 7.06139e+09  m_pz_vz = -2.27062e+10
+    energy = 8e-13
+        productIndex    3 KE = 8e-13  p = 2.99792e+10  m_px_vx = -1.10337e+10  m_py_vy = 1.02297e+10  m_pz_vz = -2.593e+10
+    energy = 1.6e-12
+        productIndex    3 KE = 1.6e-12  p = 2.99792e+10  m_px_vx = 8.61901e+09  m_py_vy = 1.10045e+10  m_pz_vz = -2.65211e+10
+    energy = 3.2e-12
+        productIndex    3 KE = 3.2e-12  p = 2.99792e+10  m_px_vx = -1.0131e+10  m_py_vy = 1.54226e+10  m_pz_vz = 2.36276e+10
+    energy = 6.4e-12
+        productIndex    3 KE = 6.4e-12  p = 2.99792e+10  m_px_vx = -1.46452e+09  m_py_vy = -2.40921e+10  m_pz_vz = 1.77815e+10
+    energy = 1.28e-11
+        productIndex    3 KE = 1.28e-11  p = 2.99792e+10  m_px_vx = -2.62842e+10  m_py_vy = -1.07239e+10  m_pz_vz = 9.63814e+09
+    energy = 2.56e-11
+        productIndex    3 KE = 2.56e-11  p = 2.99792e+10  m_px_vx = 6.72231e+09  m_py_vy = 2.44124e+10  m_pz_vz = 1.60499e+10
+    energy = 5.12e-11
+        productIndex    3 KE = 5.12e-11  p = 2.99792e+10  m_px_vx = -7.43427e+09  m_py_vy = -1.33643e+10  m_pz_vz = 2.57853e+10
+    energy = 1.024e-10
+        productIndex    3 KE = 1.024e-10  p = 2.99792e+10  m_px_vx = -3.25197e+09  m_py_vy = -8.94104e+09  m_pz_vz = 2.84295e+10
+    energy = 2.048e-10
+        productIndex    3 KE = 2.048e-10  p = 2.99792e+10  m_px_vx = -1.16304e+10  m_py_vy = -3.89803e+09  m_pz_vz = 2.73549e+10
+    energy = 4.096e-10
+        productIndex    3 KE = 4.096e-10  p = 2.99792e+10  m_px_vx = -7.64847e+09  m_py_vy = 2.48819e+10  m_pz_vz = 1.48711e+10
+    energy = 8.192e-10
+        productIndex    3 KE = 8.192e-10  p = 2.99792e+10  m_px_vx = -1.91659e+10  m_py_vy = 1.1586e+10  m_pz_vz = 1.99296e+10
+    energy = 1.6384e-09
+        productIndex    3 KE = 1.6384e-09  p = 2.99792e+10  m_px_vx = -1.89318e+10  m_py_vy = -2.31545e+10  m_pz_vz = 2.0518e+09
+    energy = 3.2768e-09
+        productIndex    3 KE = 3.2768e-09  p = 2.99792e+10  m_px_vx = -1.5071e+09  m_py_vy = -2.07358e+10  m_pz_vz = 2.15989e+10
+    energy = 6.5536e-09
+        productIndex    3 KE = 6.5536e-09  p = 2.99792e+10  m_px_vx = 2.77865e+10  m_py_vy = 1.29339e+09  m_pz_vz = 1.11801e+10
+    energy = 1.31072e-08
+        productIndex    3 KE = 1.31072e-08  p = 2.99792e+10  m_px_vx = 2.93971e+10  m_py_vy = -4.61581e+09  m_pz_vz = -3.64115e+09
+    energy = 2.62144e-08
+        productIndex    3 KE = 2.62144e-08  p = 2.99792e+10  m_px_vx = 1.19629e+09  m_py_vy = -2.77434e+10  m_pz_vz = 1.12974e+10
+    energy = 5.24288e-08
+        productIndex    3 KE = 5.24288e-08  p = 2.99792e+10  m_px_vx = 2.29485e+10  m_py_vy = -1.87703e+10  m_pz_vz = -4.44964e+09
+    energy = 1.04858e-07
+        productIndex    3 KE = 1.04858e-07  p = 2.99792e+10  m_px_vx = 1.71153e+10  m_py_vy = -2.43145e+10  m_pz_vz = 3.82462e+09
+    energy = 2.09715e-07
+        productIndex    3 KE = 2.09715e-07  p = 2.99792e+10  m_px_vx = 1.2824e+10  m_py_vy = 2.69782e+10  m_pz_vz = -2.54515e+09
+    energy = 4.1943e-07
+        productIndex    3 KE = 4.1943e-07  p = 2.99792e+10  m_px_vx = -1.78245e+10  m_py_vy = 7.29184e+09  m_pz_vz = -2.29755e+10
+    energy = 8.38861e-07
+        productIndex    3 KE = 8.38861e-07  p = 2.99792e+10  m_px_vx = -2.59966e+10  m_py_vy = -7.5061e+09  m_pz_vz = 1.29071e+10
+    energy = 1.67772e-06
+        productIndex    3 KE = 1.67772e-06  p = 2.99792e+10  m_px_vx = -2.04988e+09  m_py_vy = 2.34464e+10  m_pz_vz = 1.85693e+10
+    energy = 3.35544e-06
+        productIndex    3 KE = 3.35544e-06  p = 2.99792e+10  m_px_vx = -2.97137e+10  m_py_vy = -3.52826e+09  m_pz_vz = 1.84397e+09
+    energy = 6.71089e-06
+        productIndex    3 KE = 6.71089e-06  p = 2.99792e+10  m_px_vx = -2.34616e+10  m_py_vy = -1.86449e+10  m_pz_vz = 8.23484e+08
+    energy = 1.34218e-05
+        productIndex    3 KE = 1.34218e-05  p = 2.99792e+10  m_px_vx = -1.63106e+10  m_py_vy = 2.04347e+10  m_pz_vz = 1.46677e+10
+    energy = 2.68435e-05
+        productIndex    3 KE = 2.68435e-05  p = 2.99792e+10  m_px_vx = -2.81873e+10  m_py_vy = 4.56946e+09  m_pz_vz = 9.12966e+09
+    energy = 5.36871e-05
+        productIndex    3 KE = 5.36871e-05  p = 2.99792e+10  m_px_vx = 1.43775e+10  m_py_vy = 2.41237e+10  m_pz_vz = 1.04922e+10
+    energy = 0.000107374
+        productIndex    3 KE = 0.000107374  p = 2.99792e+10  m_px_vx = -2.09413e+10  m_py_vy = -2.14076e+10  m_pz_vz = -1.38947e+09
+    energy = 0.000214748
+        productIndex    3 KE = 0.000214748  p = 2.99792e+10  m_px_vx = 2.31985e+10  m_py_vy = 8.96507e+09  m_pz_vz = 1.67395e+10
+    energy = 0.000429497
+        productIndex    3 KE = 0.000429497  p = 2.99792e+10  m_px_vx = 1.35556e+10  m_py_vy = -8.87099e+09  m_pz_vz = -2.52251e+10
+    energy = 0.000858993
+        productIndex    3 KE = 0.000858993  p = 2.99792e+10  m_px_vx = -1.59333e+10  m_py_vy = -2.06773e+09  m_pz_vz = 2.53102e+10
+    energy = 0.00171799
+        productIndex    3 KE = 0.00171799  p = 2.99792e+10  m_px_vx = -4.08153e+09  m_py_vy = -1.58611e+10  m_pz_vz = 2.51102e+10
+    energy = 0.00343597
+        productIndex    3 KE = 0.00343597  p = 2.99792e+10  m_px_vx = 2.3823e+09  m_py_vy = 1.25308e+10  m_pz_vz = 2.71304e+10
+    energy = 0.00687195
+        productIndex    3 KE = 0.00687195  p = 2.99792e+10  m_px_vx = -1.61496e+10  m_py_vy = 3.51382e+09  m_pz_vz = 2.5012e+10
+    energy = 0.0137439
+        productIndex    3 KE = 0.0137439  p = 2.99792e+10  m_px_vx = -1.40833e+08  m_py_vy = 1.83605e+10  m_pz_vz = 2.36987e+10
+    energy = 0.0274878
+        productIndex    3 KE = 0.0274878  p = 2.99792e+10  m_px_vx = -2.20502e+09  m_py_vy = -1.59304e+09  m_pz_vz = 2.98556e+10
+    energy = 0.0549756
+        productIndex    3 KE = 0.0549756  p = 2.99792e+10  m_px_vx = 1.18297e+10  m_py_vy = 2.19988e+09  m_pz_vz = 2.74586e+10
+    energy = 0.109951
+        productIndex    3 KE = 0.109951  p = 2.99792e+10  m_px_vx = 3.43487e+08  m_py_vy = -2.30329e+09  m_pz_vz = 2.98887e+10
+    energy = 0.219902
+        productIndex    3 KE = 0.219902  p = 2.99792e+10  m_px_vx = -2.95203e+08  m_py_vy = -3.6993e+07  m_pz_vz = 2.99778e+10
+    energy = 0.439805
+        productIndex    3 KE = 0.439805  p = 2.99792e+10  m_px_vx = 1.23586e+09  m_py_vy = -2.44968e+08  m_pz_vz = 2.99528e+10
+    energy = 0.879609
+        productIndex    3 KE = 0.879609  p = 2.99792e+10  m_px_vx = -5.32427e+07  m_py_vy = -3.8523e+07  m_pz_vz = 2.99792e+10
+    energy = 1.75922
+        productIndex    3 KE = 1.75922  p = 2.99792e+10  m_px_vx = -1.70716e+07  m_py_vy = 3.30676e+07  m_pz_vz = 2.99792e+10
+    energy = 3.51844
+        productIndex    3 KE = 3.51844  p = 2.99792e+10  m_px_vx = 3.00788e+07  m_py_vy = -4.03004e+07  m_pz_vz = 2.99792e+10
+    energy = 7.03687
+        productIndex    3 KE = 7.03687  p = 2.99792e+10  m_px_vx = 1.62172e+08  m_py_vy = 2.4753e+08  m_pz_vz = 2.99778e+10
+    energy = 14.0737
+        productIndex    3 KE = 14.0737  p = 2.99792e+10  m_px_vx = 2.03195e+07  m_py_vy = -9.58165e+07  m_pz_vz = 2.99791e+10
+    energy = 28.1475
+        productIndex    3 KE = 28.1475  p = 2.99792e+10  m_px_vx = -7.50018e+06  m_py_vy = -2.30221e+07  m_pz_vz = 2.99792e+10
+    energy = 56.295
+        productIndex    3 KE = 56.295  p = 2.99792e+10  m_px_vx = -1.23506e+07  m_py_vy = 4.59625e+06  m_pz_vz = 2.99792e+10
+reaction (  1) = O + photon [incoherent]  threshold = 0
+    energy = 1e-13
+        productIndex    3 KE = 1e-13  p = 2.99792e+10  m_px_vx = 2.60623e+10  m_py_vy = -6.57423e+09  m_pz_vz = 1.32775e+10
+    energy = 2e-13
+        productIndex    3 KE = 2e-13  p = 2.99792e+10  m_px_vx = -2.08985e+10  m_py_vy = 2.97423e+08  m_pz_vz = 2.14923e+10
+    energy = 4e-13
+        productIndex    3 KE = 4e-13  p = 2.99792e+10  m_px_vx = 2.52508e+10  m_py_vy = -7.5098e+09  m_pz_vz = -1.43094e+10
+    energy = 8e-13
+        productIndex    3 KE = 8e-13  p = 2.99792e+10  m_px_vx = 6.42279e+09  m_py_vy = 2.82718e+10  m_pz_vz = -7.62949e+09
+    energy = 1.6e-12
+        productIndex    3 KE = 1.6e-12  p = 2.99792e+10  m_px_vx = -2.47664e+10  m_py_vy = -1.45485e+10  m_pz_vz = -8.58619e+09
+    energy = 3.2e-12
+        productIndex    3 KE = 3.2e-12  p = 2.99792e+10  m_px_vx = 2.81058e+10  m_py_vy = 8.81638e+09  m_pz_vz = -5.57579e+09
+    energy = 6.4e-12
+        productIndex    3 KE = 6.4e-12  p = 2.99792e+10  m_px_vx = -1.98587e+10  m_py_vy = 2.22293e+10  m_pz_vz = -3.20106e+09
+    energy = 1.28e-11
+        productIndex    3 KE = 1.28e-11  p = 2.99792e+10  m_px_vx = 1.53084e+10  m_py_vy = 2.56572e+10  m_pz_vz = -2.47291e+09
+    energy = 2.56e-11
+        productIndex    3 KE = 2.56e-11  p = 2.99792e+10  m_px_vx = 2.55586e+10  m_py_vy = -9.82626e+09  m_pz_vz = 1.22049e+10
+    energy = 5.12e-11
+        productIndex    3 KE = 5.12e-11  p = 2.99792e+10  m_px_vx = 1.63917e+10  m_py_vy = 2.07106e+10  m_pz_vz = -1.41824e+10
+    energy = 1.024e-10
+        productIndex    3 KE = 1.024e-10  p = 2.99792e+10  m_px_vx = -1.60933e+10  m_py_vy = 1.29722e+10  m_pz_vz = -2.17136e+10
+    energy = 2.048e-10
+        productIndex    3 KE = 2.048e-10  p = 2.99792e+10  m_px_vx = -1.35034e+10  m_py_vy = -2.66414e+10  m_pz_vz = -2.57903e+09
+    energy = 4.096e-10
+        productIndex    3 KE = 4.096e-10  p = 2.99792e+10  m_px_vx = 1.24175e+10  m_py_vy = -6.7273e+09  m_pz_vz = -2.64444e+10
+    energy = 8.192e-10
+        productIndex    3 KE = 8.192e-10  p = 2.99792e+10  m_px_vx = -2.32924e+10  m_py_vy = 9.43194e+09  m_pz_vz = 1.6348e+10
+    energy = 1.6384e-09
+        productIndex    3 KE = 1.6384e-09  p = 2.99792e+10  m_px_vx = -1.91685e+10  m_py_vy = -7.79049e+09  m_pz_vz = -2.1694e+10
+    energy = 3.2768e-09
+        productIndex    3 KE = 3.2768e-09  p = 2.99792e+10  m_px_vx = -1.08392e+10  m_py_vy = -1.0377e+10  m_pz_vz = -2.59535e+10
+    energy = 6.5536e-09
+        productIndex    3 KE = 6.5536e-09  p = 2.99792e+10  m_px_vx = 2.1108e+10  m_py_vy = 3.13565e+09  m_pz_vz = -2.10565e+10
+    energy = 1.31072e-08
+        productIndex    3 KE = 1.31072e-08  p = 2.99792e+10  m_px_vx = 2.85007e+10  m_py_vy = -8.72727e+09  m_pz_vz = -3.20939e+09
+    energy = 2.62144e-08
+        productIndex    3 KE = 2.62144e-08  p = 2.99792e+10  m_px_vx = -1.84303e+10  m_py_vy = -6.60678e+09  m_pz_vz = -2.27031e+10
+    energy = 5.24288e-08
+        productIndex    3 KE = 5.24288e-08  p = 2.99792e+10  m_px_vx = -2.77366e+10  m_py_vy = 7.4278e+09  m_pz_vz = 8.61757e+09
+    energy = 1.04858e-07
+        productIndex    3 KE = 1.04858e-07  p = 2.99792e+10  m_px_vx = -1.67616e+10  m_py_vy = -1.38862e+10  m_pz_vz = -2.0615e+10
+    energy = 2.09715e-07
+        productIndex    3 KE = 2.09715e-07  p = 2.99792e+10  m_px_vx = 1.41464e+10  m_py_vy = 1.49561e+10  m_pz_vz = -2.17933e+10
+    energy = 4.1943e-07
+        productIndex    3 KE = 4.1943e-07  p = 2.99792e+10  m_px_vx = 5.61903e+09  m_py_vy = -2.85002e+10  m_pz_vz = -7.41067e+09
+    energy = 8.38861e-07
+        productIndex    3 KE = 8.38859e-07  p = 2.99792e+10  m_px_vx = -2.08709e+08  m_py_vy = -2.63834e+10  m_pz_vz = -1.42347e+10
+    energy = 1.67772e-06
+        productIndex    3 KE = 1.67772e-06  p = 2.99792e+10  m_px_vx = 1.41793e+10  m_py_vy = 2.54415e+10  m_pz_vz = 7.10151e+09
+    energy = 3.35544e-06
+        productIndex    3 KE = 3.35542e-06  p = 2.99792e+10  m_px_vx = 3.42857e+09  m_py_vy = 2.9257e+10  m_pz_vz = -5.57014e+09
+    energy = 6.71089e-06
+        productIndex    3 KE = 6.71072e-06  p = 2.99792e+10  m_px_vx = -3.31345e+09  m_py_vy = 1.01172e+10  m_pz_vz = -2.80253e+10
+    energy = 1.34218e-05
+        productIndex    3 KE = 1.34212e-05  p = 2.99792e+10  m_px_vx = -3.98329e+09  m_py_vy = 2.28057e+10  m_pz_vz = -1.9047e+10
+    energy = 2.68435e-05
+        productIndex    3 KE = 2.68407e-05  p = 2.99792e+10  m_px_vx = -2.34789e+09  m_py_vy = -4.76263e+09  m_pz_vz = -2.95053e+10
+    energy = 5.36871e-05
+        productIndex    3 KE = 5.36792e-05  p = 2.99792e+10  m_px_vx = 1.20357e+10  m_py_vy = 2.48241e+10  m_pz_vz = -1.17329e+10
+    energy = 0.000107374
+        productIndex    3 KE = 0.00010733  p = 2.99792e+10  m_px_vx = 9.3883e+09  m_py_vy = -2.31037e+09  m_pz_vz = -2.83774e+10
+    energy = 0.000214748
+        productIndex    3 KE = 0.000214571  p = 2.99792e+10  m_px_vx = -1.43274e+09  m_py_vy = 7.71476e+09  m_pz_vz = -2.89341e+10
+    energy = 0.000429497
+        productIndex    3 KE = 0.000429193  p = 2.99792e+10  m_px_vx = -2.63893e+10  m_py_vy = 1.34179e+10  m_pz_vz = 4.72431e+09
+    energy = 0.000858993
+        productIndex    3 KE = 0.00085613  p = 2.99792e+10  m_px_vx = -5.33673e+08  m_py_vy = -4.33185e+09  m_pz_vz = -2.96598e+10
+    energy = 0.00171799
+        productIndex    3 KE = 0.00170703  p = 2.99792e+10  m_px_vx = 2.96878e+09  m_py_vy = -1.20697e+10  m_pz_vz = -2.72812e+10
+    energy = 0.00343597
+        productIndex    3 KE = 0.00340944  p = 2.99792e+10  m_px_vx = 2.79534e+10  m_py_vy = -9.75289e+09  m_pz_vz = -4.71626e+09
+    energy = 0.00687195
+        productIndex    3 KE = 0.00673523  p = 2.99792e+10  m_px_vx = 8.51626e+09  m_py_vy = 2.43515e+10  m_pz_vz = -1.52719e+10
+    energy = 0.0137439
+        productIndex    3 KE = 0.0133691  p = 2.99792e+10  m_px_vx = 1.70909e+10  m_py_vy = -2.45977e+10  m_pz_vz = -1.2682e+09
+    energy = 0.0274878
+        productIndex    3 KE = 0.0262099  p = 2.99792e+10  m_px_vx = -2.94183e+10  m_py_vy = -5.04421e+09  m_pz_vz = 2.80612e+09
+    energy = 0.0549756
+        productIndex    3 KE = 0.054441  p = 2.99792e+10  m_px_vx = -9.47827e+09  m_py_vy = -8.16906e+09  m_pz_vz = 2.72431e+10
+    energy = 0.109951
+        productIndex    3 KE = 0.101256  p = 2.99792e+10  m_px_vx = -2.12551e+10  m_py_vy = 1.10665e+10  m_pz_vz = 1.80141e+10
+    energy = 0.219902
+        productIndex    3 KE = 0.21316  p = 2.99792e+10  m_px_vx = -1.04819e+10  m_py_vy = -4.1715e+09  m_pz_vz = 2.77756e+10
+    energy = 0.439805
+        productIndex    3 KE = 0.403091  p = 2.99792e+10  m_px_vx = 4.36617e+09  m_py_vy = -1.26922e+10  m_pz_vz = 2.68067e+10
+    energy = 0.879609
+        productIndex    3 KE = 0.584438  p = 2.99792e+10  m_px_vx = 2.03191e+10  m_py_vy = 6.09596e+09  m_pz_vz = 2.11832e+10
+    energy = 1.75922
+        productIndex    3 KE = 1.32651  p = 2.99792e+10  m_px_vx = -1.17393e+10  m_py_vy = -4.94301e+09  m_pz_vz = 2.71387e+10
+    energy = 3.51844
+        productIndex    3 KE = 2.27719  p = 2.99792e+10  m_px_vx = 8.17484e+09  m_py_vy = -8.35689e+09  m_pz_vz = 2.7606e+10
+    energy = 7.03687
+        productIndex    3 KE = 5.58725  p = 2.99792e+10  m_px_vx = 4.29736e+09  m_py_vy = -3.88332e+09  m_pz_vz = 2.94144e+10
+    energy = 14.0737
+        productIndex    3 KE = 0.836053  p = 2.99792e+10  m_px_vx = 1.5825e+10  m_py_vy = 2.20433e+10  m_pz_vz = 1.27443e+10
+    energy = 28.1475
+        productIndex    3 KE = 0.966982  p = 2.99792e+10  m_px_vx = 1.99989e+10  m_py_vy = 1.68305e+10  m_pz_vz = 1.4681e+10
+    energy = 56.295
+        productIndex    3 KE = 4.59084  p = 2.99792e+10  m_px_vx = -7.23804e+07  m_py_vy = 1.32047e+10  m_pz_vz = 2.69144e+10
+reaction (  2) = e- + O [photo-electric]  threshold = 0
+    energy = 1e-13
+    energy = 2e-13
+    energy = 4e-13
+    energy = 8e-13
+    energy = 1.6e-12
+    energy = 3.2e-12
+    energy = 6.4e-12
+    energy = 1.28e-11
+    energy = 2.56e-11
+    energy = 5.12e-11
+    energy = 1.024e-10
+    energy = 2.048e-10
+    energy = 4.096e-10
+    energy = 8.192e-10
+    energy = 1.6384e-09
+    energy = 3.2768e-09
+    energy = 6.5536e-09
+    energy = 1.31072e-08
+    energy = 2.62144e-08
+    energy = 5.24288e-08
+    energy = 1.04858e-07
+    energy = 2.09715e-07
+    energy = 4.1943e-07
+    energy = 8.38861e-07
+    energy = 1.67772e-06
+    energy = 3.35544e-06
+    energy = 6.71089e-06
+    energy = 1.34218e-05
+    energy = 2.68435e-05
+    energy = 5.36871e-05
+    energy = 0.000107374
+    energy = 0.000214748
+    energy = 0.000429497
+    energy = 0.000858993
+    energy = 0.00171799
+    energy = 0.00343597
+    energy = 0.00687195
+    energy = 0.0137439
+    energy = 0.0274878
+    energy = 0.0549756
+    energy = 0.109951
+    energy = 0.219902
+    energy = 0.439805
+    energy = 0.879609
+    energy = 1.75922
+    energy = 3.51844
+    energy = 7.03687
+    energy = 14.0737
+    energy = 28.1475
+    energy = 56.295
+reaction (  3) = O + photon [pair production: electron field]  threshold = 1.022
+    energy = 1.022
+        productIndex    3 KE = 0.510999  p = 2.99792e+10  m_px_vx = -1.39377e+10  m_py_vy = 2.64762e+10  m_pz_vz = -1.87312e+09
+        productIndex    3 KE = 0.510999  p = 2.99792e+10  m_px_vx = 1.39377e+10  m_py_vy = -2.64762e+10  m_pz_vz = 1.87312e+09
+    energy = 2.044
+        productIndex    3 KE = 0.510999  p = 2.99792e+10  m_px_vx = 1.37302e+10  m_py_vy = 2.62336e+10  m_pz_vz = 4.69403e+09
+        productIndex    3 KE = 0.510999  p = 2.99792e+10  m_px_vx = -1.37302e+10  m_py_vy = -2.62336e+10  m_pz_vz = -4.69403e+09
+    energy = 4.088
+        productIndex    3 KE = 0.510999  p = 2.99792e+10  m_px_vx = 2.31808e+10  m_py_vy = 8.05169e+09  m_pz_vz = -1.72213e+10
+        productIndex    3 KE = 0.510999  p = 2.99792e+10  m_px_vx = -2.31808e+10  m_py_vy = -8.05169e+09  m_pz_vz = 1.72213e+10
+    energy = 8.176
+        productIndex    3 KE = 0.510999  p = 2.99792e+10  m_px_vx = 1.84136e+09  m_py_vy = 1.84791e+10  m_pz_vz = -2.35348e+10
+        productIndex    3 KE = 0.510999  p = 2.99792e+10  m_px_vx = -1.84136e+09  m_py_vy = -1.84791e+10  m_pz_vz = 2.35348e+10
+    energy = 16.352
+        productIndex    3 KE = 0.510999  p = 2.99792e+10  m_px_vx = -2.44249e+10  m_py_vy = 9.5679e+09  m_pz_vz = 1.45132e+10
+        productIndex    3 KE = 0.510999  p = 2.99792e+10  m_px_vx = 2.44249e+10  m_py_vy = -9.5679e+09  m_pz_vz = -1.45132e+10
+    energy = 32.704
+        productIndex    3 KE = 0.510999  p = 2.99792e+10  m_px_vx = 1.16557e+10  m_py_vy = 5.36905e+09  m_pz_vz = 2.70938e+10
+        productIndex    3 KE = 0.510999  p = 2.99792e+10  m_px_vx = -1.16557e+10  m_py_vy = -5.36905e+09  m_pz_vz = -2.70938e+10
+    energy = 65.408
+        productIndex    3 KE = 0.510999  p = 2.99792e+10  m_px_vx = 2.908e+10  m_py_vy = 2.31359e+09  m_pz_vz = 6.91037e+09
+        productIndex    3 KE = 0.510999  p = 2.99792e+10  m_px_vx = -2.908e+10  m_py_vy = -2.31359e+09  m_pz_vz = -6.91037e+09

@@ -284,7 +284,7 @@ ptwXYPoints *ptwXY_fromString( statusMessageReporting *smr, char const *str, cha
         return( NULL );
     }
     if( ( numberConverted % 2 ) == 0 ) {
-        ptwXY = ptwXY_create( NULL, interpolation, interpolationString, biSectionMax, accuracy, numberConverted / 2, 10, numberConverted / 2, doublePtr, 0 ); }
+        ptwXY = ptwXY_create( smr, interpolation, interpolationString, biSectionMax, accuracy, numberConverted / 2, 10, numberConverted / 2, doublePtr, 0 ); }
     else {
         smr_setReportError2( smr, nfu_SMR_libraryID, nfu_oddNumberOfValues, "Odd number = %d of float for ptwXY.", (int) numberConverted );
     }

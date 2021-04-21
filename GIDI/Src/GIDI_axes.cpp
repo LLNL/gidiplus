@@ -22,25 +22,26 @@ namespace GIDI {
 Axes::Axes( ) :
         Form( FormType::axes ) {
 
-    setMoniker( axesMoniker );
+    setMoniker( GIDI_axesChars );
 }
 
 /* *********************************************************************************************************//**
  *
  * @param a_node                [in]    The **pugi::xml_node** to be parsed and used to construct the Axes.
+ * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_useSystem_strtod    [in]    Flag passed to the function nfu_stringToListOfDoubles.
  ***********************************************************************************************************/
 
-Axes::Axes( pugi::xml_node const &a_node, int a_useSystem_strtod ) :
-        Form( a_node, FormType::axes ) {
+Axes::Axes( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, int a_useSystem_strtod ) :
+        Form( a_node, a_setupInfo, FormType::axes ) {
 
     for( pugi::xml_node child = a_node.first_child( ); child; child = child.next_sibling( ) ) {
         std::string name( child.name( ) );
 
-        if(      name == "axis" ) {
-            m_axes.push_back( new Axis( child ) ); }
-        else if( name == "grid" ) {
-            m_axes.push_back( new Grid( child, a_useSystem_strtod ) ); }
+        if(      name == GIDI_axisChars ) {
+            m_axes.push_back( new Axis( child, a_setupInfo ) ); }
+        else if( name == GIDI_gridChars ) {
+            m_axes.push_back( new Grid( child, a_setupInfo, a_useSystem_strtod ) ); }
         else {
             throw Exception( "unknown axes sub-element" );
         }

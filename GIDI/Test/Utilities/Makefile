@@ -7,39 +7,27 @@ SHELL = /bin/ksh
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
-PUGIXML_PATH = ../../../pugixml
-PUGIXML_INCLUDE = $(PUGIXML_PATH)/include
-PUGIXML_LIB = $(PUGIXML_PATH)/lib
+GIDI_PLUS_PATH ?= $(abspath ../../..)
+CppSources = $(sort $(wildcard *.cpp))
+CppObjs = $(CppSources:.cpp=.o)
+Archive = libGIDI_testUtilities.a
 
-POPs_PATH = ../../../PoPI
-POPs_INCLUDE = $(POPs_PATH)/include
-POPs_LIB = $(POPs_PATH)/lib
+include ../../Makefile.paths
+include ../Makefile.check
 
-SMR_PATH = ../../../statusMessageReporting
-SMR_INCLUDE = $(SMR_PATH)/include
-SMR_LIB = $(SMR_PATH)/lib
+default:
+	echo ""
+	echo "  -- GIDI/Test/Utilities --"
+	$(MAKE) $(Archive)
 
-NF_PATH = ../../../numericalFunctions
-NF_INCLUDE = $(NF_PATH)/include
-NF_LIB = $(NF_PATH)/lib
+%.o: %.cpp
+	echo "    "$<
+	$(CXX) -c $(local_CXXFLAGS) $< -o $@
 
-local_CXXFLAGS = $(CXXFLAGS) \
-        -I../../include -I$(POPs_INCLUDE) -I$(SMR_INCLUDE) -I$(NF_INCLUDE) -I$(PUGIXML_INCLUDE)
+$(Archive): $(CppObjs)
+	rm -f $@
+	$(AR) -cr $@ $(CppObjs)
 
-.PHONY: default check clean realclean
+GIDI_testUtilities.cpp: GIDI_testUtilities.hpp
 
-default: libGIDI_testUtilities.a
-
-GIDI_testUtilities.o: GIDI_testUtilities.cpp
-	$(CXX) $(local_CXXFLAGS) -c -o GIDI_testUtilities.o GIDI_testUtilities.cpp
-
-libGIDI_testUtilities.a: GIDI_testUtilities.o
-	$(AR) -cr libGIDI_testUtilities.a *.o
-
-check: libGIDI_testUtilities.a
-
-clean:
-	rm -f GIDI_testUtilities.o file1 file2
-
-realclean: clean
-	rm -rf *.dSYM
+check:

@@ -14,17 +14,19 @@
 
 namespace PoPI {
 
+#define PoPI_energyChars "energy"
+
 /*
 =========================================================
 */
 Nucleus::Nucleus( pugi::xml_node const &a_node, Database *a_DB, Nuclide *a_nuclide ) :
-        Particle( a_node, Particle_class::nucleus, family_nucleus, -1 ),
+        Particle( a_node, Particle_class::nucleus, PoPI_nucleusChars, -1 ),
         m_nuclide( a_nuclide ),
         m_Z( a_nuclide->Z( ) ),
         m_A( a_nuclide->A( ) ),
-        m_levelName( a_node.attribute( "index" ).value( ) ),
-        m_levelIndex( a_node.attribute( "index" ).as_int( ) ),
-        m_energy( a_node.child( "energy" ) ) {
+        m_levelName( a_node.attribute( PoPI_indexChars ).value( ) ),                // The string version of m_levelIndex.
+        m_levelIndex( a_node.attribute( PoPI_indexChars ).as_int( ) ),              // The int version of m_levelName.
+        m_energy( a_node.child( PoPI_energyChars ) ) {
 
     if( a_node.empty( ) ) throw Exception( "nuclide is missing nuclues" );
 

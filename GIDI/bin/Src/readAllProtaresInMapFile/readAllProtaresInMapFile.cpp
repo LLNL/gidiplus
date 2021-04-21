@@ -19,7 +19,7 @@
 static int mode = 0;
 static bool printLibraries = false;
 static bool useSystem_strtod = true;
-static GIDI::Construction::Settings *constructionPtr = NULL;
+static GIDI::Construction::Settings *constructionPtr = nullptr;
 
 void subMain( int argc, char **argv );
 void walk( std::string const &mapFilename, PoPI::Database const &pops );
@@ -40,7 +40,7 @@ void subMain( int argc, char **argv ) {
 
     int iarg = 1;
     PoPI::Database pops = PoPI::Database( );
-    char *mapFilePtr = NULL;
+    char *mapFilePtr = nullptr;
 
     for( ; iarg < argc; ++iarg ) {
 
@@ -67,7 +67,7 @@ void subMain( int argc, char **argv ) {
             } }
         else {
             try {
-                if( mapFilePtr == NULL ) {
+                if( mapFilePtr == nullptr ) {
                     mapFilePtr = argv[iarg]; }
                 else {
                     pops.addFile( argv[iarg], true );
@@ -80,7 +80,7 @@ void subMain( int argc, char **argv ) {
         }
     }
 
-    if( mapFilePtr == NULL ) throw std::range_error( "need map file name" );
+    if( mapFilePtr == nullptr ) throw std::range_error( "need map file name" );
     if( argc < iarg ) printUsage( );
 
     GIDI::Construction::ParseMode parseMode( GIDI::Construction::ParseMode::all );
@@ -119,13 +119,13 @@ void walk( std::string const &mapFilename, PoPI::Database const &pops ) {
 
         std::string path = entry->path( GIDI::Map::BaseEntry::PathForm::cumulative );
 
-        if( entry->name( ) == GIDI_importMoniker ) {
+        if( entry->name( ) == GIDI_importChars ) {
             walk( path, pops ); }
-        else if( ( entry->name( ) == GIDI_protareMoniker ) || ( entry->name( ) == GIDI_TNSLMoniker ) ) {
+        else if( ( entry->name( ) == GIDI_protareChars ) || ( entry->name( ) == GIDI_TNSLChars ) ) {
             std::vector<std::string> libraries;
 
             entry->libraries( libraries );
-            readProtare( path, pops, libraries, entry->name( ) == GIDI_protareMoniker ); }
+            readProtare( path, pops, libraries, entry->name( ) == GIDI_protareChars ); }
         else {
             std::cerr << "    ERROR: unknown map entry name: " << entry->name( ) << std::endl;
         }
@@ -136,12 +136,14 @@ void walk( std::string const &mapFilename, PoPI::Database const &pops ) {
 */
 void readProtare( std::string const &protareFilename, PoPI::Database const &pops, std::vector<std::string> &a_libraries, bool a_targetRequiredInGlobalPoPs ) {
 
-    GIDI::Protare *protare = NULL;
+    GIDI::Protare *protare = nullptr;
+    GIDI::ParticleSubstitution particleSubstitution;
 
     try {
         std::cout << "        " << protareFilename;
 
-        protare = new GIDI::ProtareSingle( *constructionPtr, protareFilename, GIDI::FileType::XML, pops, a_libraries, a_targetRequiredInGlobalPoPs );
+        protare = new GIDI::ProtareSingle( *constructionPtr, protareFilename, GIDI::FileType::XML, pops, particleSubstitution, a_libraries, 
+                GIDI_MapInteractionNuclearChars, a_targetRequiredInGlobalPoPs );
 
         if( printLibraries ) {
             std::cout << ": libraries =";

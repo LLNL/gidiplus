@@ -25,7 +25,18 @@ void printVector( std::string &prefix, GIDI::Vector &vector );
 */
 int main( int argc, char **argv ) {
 
-    main2( argc, argv );
+    try {
+        main2( argc, argv ); }
+    catch (std::exception &exception) {
+        std::cerr << exception.what( ) << std::endl;
+        exit( EXIT_FAILURE ); }
+    catch (char const *str) {
+        std::cout << str << std::endl;
+        exit( EXIT_FAILURE ); }
+    catch (std::string &str) {
+        std::cout << str << std::endl;
+        exit( EXIT_FAILURE );
+    }
 
     exit( EXIT_SUCCESS );
 }
@@ -64,13 +75,8 @@ void main2( int argc, char **argv ) {
     }
 
     GIDI::Map::Map map( mapFilename, pops );
-    try {
-        GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, photo_mode );
-        protare = map.protare( construction, pops, projectileID, targetID ); }
-    catch (char const *str) {
-        std::cout << str << std::endl;
-        exit( EXIT_FAILURE );
-    }
+    GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, photo_mode );
+    protare = map.protare( construction, pops, projectileID, targetID );
 
     GIDI::Styles::TemperatureInfos temperatures = protare->temperatures( );
     for( GIDI::Styles::TemperatureInfos::const_iterator iter = temperatures.begin( ); iter != temperatures.end( ); ++iter ) {
@@ -82,12 +88,7 @@ void main2( int argc, char **argv ) {
 
     MCGIDI::DomainHash domainHash( 4000, 1e-8, 10 );
     MCGIDI::Protare *MCProtare;
-    try {
-        MCProtare = MCGIDI::protareFromGIDIProtare( *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude ); }
-    catch (char const *str) {
-        std::cout << str << std::endl;
-        exit( EXIT_FAILURE );
-    }
+    MCProtare = MCGIDI::protareFromGIDIProtare( *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude );
 
     std::cout << std::endl;
     std::cout << "Is ProtareSingle " << ( MCProtare->protareType( ) == MCGIDI::ProtareType::single ) << std::endl;

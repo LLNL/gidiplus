@@ -14,7 +14,7 @@
 
 static char const *description = "This program traverses a map file, printing each protare, and its library and resolved library.";
 
-GIDI::Map::Map *mapRoot = NULL;
+GIDI::Map::Map *mapRoot = nullptr;
 
 void main2( int argc, char **argv );
 void walk( std::string const &mapFilename, PoPI::Database const &pops );
@@ -69,16 +69,16 @@ void walk( std::string const &mapFilename, PoPI::Database const &pops ) {
     std::cout << "    " << stripDirectoryBase( mapFilename, "/GIDI/Test/Data/MG_MC" ) << std::endl;
     GIDI::Map::Map map( mapFilename, pops );
 
-    if( mapRoot == NULL ) mapRoot = &map;
+    if( mapRoot == nullptr ) mapRoot = &map;
 
     for( std::size_t i1 = 0; i1 < map.size( ); ++i1 ) {
         GIDI::Map::BaseEntry const *entry = map[i1];
 
         std::string path = entry->path( GIDI::Map::BaseEntry::PathForm::cumulative );
 
-        if( entry->name( ) == GIDI_importMoniker ) {
+        if( entry->name( ) == GIDI_importChars ) {
             walk( path, pops ); }
-        else if( ( entry->name( ) == GIDI_protareMoniker ) || ( entry->name( ) == GIDI_TNSLMoniker ) ) {
+        else if( ( entry->name( ) == GIDI_protareChars ) || ( entry->name( ) == GIDI_TNSLChars ) ) {
             readProtare( path, pops, map.resolvedLibrary( ) ); }
         else {
             std::cerr << "    ERROR: unknown map entry name: " << entry->name( ) << std::endl;
@@ -96,9 +96,10 @@ void readProtare( std::string const &protareFilename, PoPI::Database const &pops
     GIDI::Protare *protare;
     try {
         GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, GIDI::Construction::PhotoMode::nuclearAndAtomic );
+        GIDI::ParticleSubstitution particleSubstitution;
         std::vector<std::string> libraries;
 
-        protare = new GIDI::ProtareSingle( construction, protareFilename, GIDI::FileType::XML, pops, libraries );
+        protare = new GIDI::ProtareSingle( construction, protareFilename, GIDI::FileType::XML, pops, particleSubstitution, libraries, GIDI_MapInteractionNuclearChars );
 
         GIDI::Map::ProtareBase const *protareEntry = mapRoot->findProtareEntry( protare->projectile( ).ID( ), protare->target( ).ID( ), "", protare->evaluation( ) );
         std::cout << "        library          = " << protareEntry->parent( )->library( ) << std::endl;

@@ -21,17 +21,15 @@
 #include <windows.h>
 char *realpath( char const *a_path, char *a_resolved ) {
 
-    char resolvedPath[PATH_MAX+1], *p1 = NULL;
+    char resolvedPath[PATH_MAX+1], *p1 = nullptr;
 
-    DWORD length = GetFullPathName( a_path, PATH_MAX, resolvedPath, NULL );
-    if( ( p1 = malloc( length + 1 ) ) == NULL ) return( NULL );
+    DWORD length = GetFullPathName( a_path, PATH_MAX, resolvedPath, nullptr );
+    if( ( p1 = malloc( length + 1 ) ) == nullptr ) return( nullptr );
     strcpy( p1, resolvedPath );
-    if( length == 0 ) return( NULL );
+    if( length == 0 ) return( nullptr );
     return( p1 );
 }
 #endif
-
-#define TNSLMapMoniker "TNSL"
 
 static std::string GIDI_basePath( char const *a_path );
 static std::string GIDI_basePath( std::string const a_path );
@@ -115,9 +113,8 @@ BaseEntry::BaseEntry( pugi::xml_node const &a_node, std::string const &a_basePat
         Ancestry( a_node.name( ) ),
         m_name( a_node.name( ) ),
         m_parent( a_parent ),
-        m_path( a_node.attribute( "path" ).value( ) ),
-        m_cumulativePath( GIDI_addPaths( a_basePath, m_path ) ),
-        m_realPath( realPath( m_cumulativePath ) ) {
+        m_path( a_node.attribute( GIDI_pathChars ).value( ) ),
+        m_cumulativePath( GIDI_addPaths( a_basePath, m_path ) ) {
 
 }
 
@@ -135,11 +132,11 @@ BaseEntry::~BaseEntry( ) {
  * @return                          The requested path.
  ***********************************************************************************************************/
 
-std::string const &BaseEntry::path( PathForm a_form ) const {
+std::string BaseEntry::path( PathForm a_form ) const {
 
     if( a_form == PathForm::entered ) return( m_path );
     if( a_form == PathForm::cumulative ) return( m_cumulativePath );
-    return( m_realPath );
+    return( realPath( m_cumulativePath ) );
 }
 
 /* *********************************************************************************************************//**
@@ -164,7 +161,7 @@ void BaseEntry::libraries( std::vector<std::string> &a_libraries ) const {
 
 Import::Import( pugi::xml_node const &a_node, PoPI::Database const &a_pops, std::string const &a_basePath, Map const *a_parent ) :
         BaseEntry( a_node, a_basePath, a_parent ),
-        m_map( NULL ) {
+        m_map( nullptr ) {
 
     m_map = new Map( path( BaseEntry::PathForm::cumulative ), a_pops, a_parent );
 }
@@ -238,7 +235,7 @@ void Import::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) co
 
     std::string attributes;
 
-    attributes  = a_writeInfo.addAttribute( "path", path( ) );
+    attributes  = a_writeInfo.addAttribute( GIDI_pathChars, path( ) );
     a_writeInfo.addNodeStarterEnder( a_indent, moniker( ), attributes );
 }
 
@@ -250,10 +247,10 @@ void Import::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) co
 
 ProtareBase::ProtareBase( pugi::xml_node const &a_node, std::string const &a_basePath, Map const *const a_parent ) :
         BaseEntry( a_node, a_basePath, a_parent ),
-        m_projectileID( a_node.attribute( "projectile" ).value( ) ),
-        m_targetID( a_node.attribute( "target" ).value( ) ),
-        m_evaluation( a_node.attribute( "evaluation" ).value( ) ),
-        m_interaction( a_node.attribute( "interaction" ).value( ) ) {
+        m_projectileID( a_node.attribute( GIDI_projectileChars ).value( ) ),
+        m_targetID( a_node.attribute( GIDI_targetChars ).value( ) ),
+        m_evaluation( a_node.attribute( GIDI_evaluationChars ).value( ) ),
+        m_interaction( a_node.attribute( GIDI_interactionChars ).value( ) ) {
 
 }
 
@@ -296,11 +293,11 @@ std::string const &ProtareBase::resolvedLibrary( ) const {
 ProtareBase const *ProtareBase::findProtareEntry( std::string const &a_projectileID, std::string const &a_targetID,
                 std::string const &a_library, std::string const &a_evaluation ) const {
 
-    if( a_projectileID != projectileID( ) ) return( NULL );
-    if( a_targetID != targetID( ) ) return( NULL );
-    if( ( a_library != "" ) && ( parent( )->library( ) != a_library ) ) return( NULL );
+    if( a_projectileID != projectileID( ) ) return( nullptr );
+    if( a_targetID != targetID( ) ) return( nullptr );
+    if( ( a_library != "" ) && ( parent( )->library( ) != a_library ) ) return( nullptr );
     if( ( a_evaluation == "" ) || ( a_evaluation == evaluation( ) ) ) return( this );
-    return( NULL );
+    return( nullptr );
 }
 
 /* *********************************************************************************************************//**
@@ -338,7 +335,10 @@ Protare::Protare( pugi::xml_node const &a_node, PoPI::Database const &a_pops, st
         m_isPhotoAtomic = target.isChemicalElement( );
     }
 
-    if( !m_isPhotoAtomic && ( interaction( ) == "" ) ) setInteraction( MapInteractionNuclearToken );
+    if( interaction( ) == "" ) {
+        setInteraction( GIDI_MapInteractionNuclearChars );
+        if( m_isPhotoAtomic ) setInteraction( GIDI_MapInteractionAtomicChars );
+    }
 }
 
 /* *********************************************************************************************************//**
@@ -349,17 +349,18 @@ Protare::~Protare( ) {
 }
 
 /* *********************************************************************************************************//**
- * @param a_construction    [in]    Used to pass user options to the constructor.
- * @param a_pops            [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
+ * @param a_construction            [in]    Used to pass user options to the constructor.
+ * @param a_pops                    [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
+ * @param a_particleSubstitution    [in]    Map of particles to substitute with another particles.
  *
  * @return                          Returns the Protare matching the TNSL protare.
  ***********************************************************************************************************/
 
-GIDI::Protare *Protare::protare( Construction::Settings const &a_construction, PoPI::Database const &a_pops ) const {
+GIDI::Protare *Protare::protare( Construction::Settings const &a_construction, PoPI::Database const &a_pops, ParticleSubstitution const &a_particleSubstitution ) const {
 
     std::vector<std::string> libraries1;
     libraries( libraries1 );
-    return( new ProtareSingle( a_construction, path( ), FileType::XML, a_pops, libraries1, true ) );
+    return( new ProtareSingle( a_construction, path( ), FileType::XML, a_pops, a_particleSubstitution, libraries1, interaction( ), true ) );
 }
 
 
@@ -374,11 +375,11 @@ void Protare::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) c
 
     std::string attributes;
 
-    attributes  = a_writeInfo.addAttribute( "projectile", projectileID( ) );
-    attributes += a_writeInfo.addAttribute( "target", targetID( ) );
-    attributes += a_writeInfo.addAttribute( "evaluation", evaluation( ) );
-    attributes += a_writeInfo.addAttribute( "path", path( PathForm::entered ) );
-    attributes += a_writeInfo.addAttribute( "interaction", interaction( ) );
+    attributes  = a_writeInfo.addAttribute( GIDI_projectileChars, projectileID( ) );
+    attributes += a_writeInfo.addAttribute( GIDI_targetChars, targetID( ) );
+    attributes += a_writeInfo.addAttribute( GIDI_evaluationChars, evaluation( ) );
+    attributes += a_writeInfo.addAttribute( GIDI_pathChars, path( PathForm::entered ) );
+    attributes += a_writeInfo.addAttribute( GIDI_interactionChars, interaction( ) );
     a_writeInfo.addNodeStarterEnder( a_indent, moniker( ), attributes );
 }
 /* *********************************************************************************************************//**
@@ -391,15 +392,15 @@ void Protare::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) c
 
 TNSL::TNSL( pugi::xml_node const &a_node, PoPI::Database const &a_pops, std::string const &a_basePath, Map const *const a_parent ) :
         ProtareBase( a_node, a_basePath, a_parent ),
-        m_standardTarget( a_node.attribute( "standardTarget" ).value( ) ),
-        m_standardEvaluation( a_node.attribute( "standardEvaluation" ).value( ) ) {
+        m_standardTarget( a_node.attribute( GIDI_standardTargetChars ).value( ) ),
+        m_standardEvaluation( a_node.attribute( GIDI_standardEvaluationChars ).value( ) ) {
 
-    setInteraction( MapInteractionTNSL_Token );
+    setInteraction( GIDI_TNSLChars );
 
-    pugi::xml_node const &protare = a_node.child( "protare" );              // Format 0.1 support. This format is deprecated.
+    pugi::xml_node const &protare = a_node.child( GIDI_protareChars );              // Format 0.1 support. This format is deprecated.
     if( protare.type( ) != pugi::node_null ) {
-        m_standardTarget = protare.attribute( "target" ).value( );
-        m_standardEvaluation = protare.attribute( "evaluation" ).value( );
+        m_standardTarget = protare.attribute( GIDI_targetChars ).value( );
+        m_standardEvaluation = protare.attribute( GIDI_evaluationChars ).value( );
     }
 }
 
@@ -411,24 +412,26 @@ TNSL::~TNSL( ) {
 }
 
 /* *********************************************************************************************************//**
- * @param a_construction    [in]    Used to pass user options to the constructor.
- * @param a_pops            [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
+ * @param a_construction            [in]    Used to pass user options to the constructor.
+ * @param a_pops                    [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
+ * @param a_particleSubstitution    [in]    Map of particles to substitute with another particles.
  *
  * @return                          Returns the Protare matching the TNSL protare.
  ***********************************************************************************************************/
 
-GIDI::Protare *TNSL::protare( Construction::Settings const &a_construction, PoPI::Database const &a_pops ) const {
+GIDI::Protare *TNSL::protare( Construction::Settings const &a_construction, PoPI::Database const &a_pops, ParticleSubstitution const &a_particleSubstitution ) const {
 
     Map const *map = parent( );
 
+    ParticleSubstitution particleSubstitution;
     std::vector<std::string> libraries1;
     libraries( libraries1 );
-    ProtareSingle *protare1 = new ProtareSingle( a_construction, path( ), FileType::XML, a_pops, libraries1, false );
+    ProtareSingle *protare1 = new ProtareSingle( a_construction, path( ), FileType::XML, a_pops, particleSubstitution, libraries1, GIDI_TNSLChars, false );
 
     while( true ) {
         Map const *parent = map->parent( );
 
-        if( parent == NULL ) break;
+        if( parent == nullptr ) break;
         map = parent;
     }
     ProtareSingle *protare2 = static_cast<ProtareSingle *>( map->protare( a_construction, a_pops, PoPI::IDs::neutron, m_standardTarget, "", m_standardEvaluation ) );
@@ -450,12 +453,12 @@ void TNSL::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) cons
 
     std::string attributes;
 
-    attributes  = a_writeInfo.addAttribute( "projectile", projectileID( ) );
-    attributes += a_writeInfo.addAttribute( "target", targetID( ) );
-    attributes += a_writeInfo.addAttribute( "evaluation", evaluation( ) );
-    attributes += a_writeInfo.addAttribute( "path", path( PathForm::entered ) );
-    attributes += a_writeInfo.addAttribute( "standardTarget", standardTarget( ) );
-    attributes += a_writeInfo.addAttribute( "standardEvaluation", standardEvaluation( ) );
+    attributes  = a_writeInfo.addAttribute( GIDI_projectileChars, projectileID( ) );
+    attributes += a_writeInfo.addAttribute( GIDI_targetChars, targetID( ) );
+    attributes += a_writeInfo.addAttribute( GIDI_evaluationChars, evaluation( ) );
+    attributes += a_writeInfo.addAttribute( GIDI_pathChars, path( PathForm::entered ) );
+    attributes += a_writeInfo.addAttribute( GIDI_standardTargetChars, standardTarget( ) );
+    attributes += a_writeInfo.addAttribute( GIDI_standardEvaluationChars, standardEvaluation( ) );
     a_writeInfo.addNodeStarterEnder( a_indent, moniker( ), attributes );
 }
 /* *********************************************************************************************************//**
@@ -466,24 +469,9 @@ void TNSL::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) cons
  ***********************************************************************************************************/
 
 Map::Map( std::string const &a_fileName, PoPI::Database const &a_pops, Map const *a_parent ) :
-        Ancestry( GIDI_mapMoniker ) {
+        Ancestry( GIDI_mapChars ) {
 
     initialize( a_fileName, a_pops, a_parent );
-}
-
-/* *********************************************************************************************************//**
- *
- * @param a_fileName    [in]    The path to the map file to parse to construct a Map instance.
- * @param a_pops        [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
- * @param a_parent      [in]    Pointer to the *Map* containing *this*.
- ***********************************************************************************************************/
-
-Map::Map( char const *a_fileName, PoPI::Database const &a_pops, Map const *a_parent ) :
-        Ancestry( GIDI_mapMoniker ) {
-
-    std::string const fileName( a_fileName );
-
-    initialize( fileName, a_pops, a_parent );
 }
 
 /* *********************************************************************************************************//**
@@ -512,11 +500,11 @@ void Map::initialize( std::string const &a_fileName, PoPI::Database const &a_pop
 
     pugi::xml_document doc;
     pugi::xml_parse_result result = doc.load_file( a_fileName.c_str( ) );
-    if( result.status != pugi::status_ok ) throw Exception( result.description( ) );
+    if( result.status != pugi::status_ok ) throw Exception( "ERROR reading file '" + a_fileName + "': " + result.description( ) );
 
     pugi::xml_node map = doc.first_child( );
 
-    if( strcmp( map.name( ), GIDI_mapMoniker ) != 0 ) throw Exception( "Invalid map file " + a_fileName );
+    if( strcmp( map.name( ), GIDI_mapChars ) != 0 ) throw Exception( "Invalid map file " + a_fileName );
 
     initialize( map, a_fileName, a_pops, a_parent );
 }
@@ -538,18 +526,18 @@ void Map::initialize( pugi::xml_node const &a_node, std::string const &a_fileNam
 
     std::string basePath = GIDI_basePath( m_realFileName );
 
-    std::string format = a_node.attribute( "format" ).value( );
-    if( format != GIDI_mapFormat ) {
-        if( format != "0.1" ) throw Exception( "Unsupported map format" );
+    std::string format = a_node.attribute( GIDI_formatChars ).value( );
+    if( format != GIDI_mapFormatVersion_0_2Chars ) {
+        if( format != GIDI_mapFormatVersion_0_1Chars ) throw Exception( "Unsupported map format" );
     }
 
-    m_library = a_node.attribute( "library" ).value( );
+    m_library = a_node.attribute( GIDI_libraryChars ).value( );
     for( pugi::xml_node child = a_node.first_child( ); child; child = child.next_sibling( ) ) {
-        if( strcmp( child.name( ), GIDI_importMoniker ) == 0 ) {
+        if( strcmp( child.name( ), GIDI_importChars ) == 0 ) {
             m_entries.push_back( new Import( child, a_pops, basePath, this ) ); }
-        else if( strcmp( child.name( ), GIDI_protareMoniker ) == 0 ) {
+        else if( strcmp( child.name( ), GIDI_protareChars ) == 0 ) {
             m_entries.push_back( new Protare( child, a_pops, basePath, this ) ); }
-        else if( strcmp( child.name( ), GIDI_TNSLMoniker ) == 0 ) {
+        else if( strcmp( child.name( ), GIDI_TNSLChars ) == 0 ) {
             m_entries.push_back( new TNSL( child, a_pops, basePath, this ) ); }
         else {
             throw Exception( std::string( "Invalid entry '" ) + child.name( ) + std::string( "' in map file " ) + a_fileName );
@@ -570,7 +558,7 @@ Map::~Map( ) {
 
 std::string const &Map::resolvedLibrary( ) const {
 
-    if( ( m_library == "" ) && ( m_parent != NULL ) ) return( m_parent->resolvedLibrary( ) );
+    if( ( m_library == "" ) && ( m_parent != nullptr ) ) return( m_parent->resolvedLibrary( ) );
     return( m_library );
 }
 
@@ -584,7 +572,7 @@ std::string const &Map::resolvedLibrary( ) const {
 void Map::libraries( std::vector<std::string> &a_libraries ) const {
 
     a_libraries.push_back( m_library );
-    if( m_parent != NULL ) m_parent->libraries( a_libraries );
+    if( m_parent != nullptr ) m_parent->libraries( a_libraries );
 }
 
 /* *********************************************************************************************************//**
@@ -602,11 +590,11 @@ void Map::libraries( std::vector<std::string> &a_libraries ) const {
 ProtareBase const *Map::findProtareEntry( std::string const &a_projectileID, std::string const &a_targetID, std::string const &a_library,
                 std::string const &a_evaluation ) const {
 
-    ProtareBase const *protareEntry = NULL;
+    ProtareBase const *protareEntry = nullptr;
 
     for( std::vector<BaseEntry *>::const_iterator iter = m_entries.begin( ); iter != m_entries.end( ); ++iter ) {
         protareEntry = (*iter)->findProtareEntry( a_projectileID, a_targetID, a_library, a_evaluation );
-        if( protareEntry != NULL ) break;
+        if( protareEntry != nullptr ) break;
     }
     return( protareEntry );
 }
@@ -628,8 +616,8 @@ std::string Map::protareFilename( std::string const &a_projectileID, std::string
 
     ProtareBase const *protareEntry = findProtareEntry( a_projectileID, a_targetID, a_library, a_evaluation );
 
-    if( protareEntry != NULL ) return( protareEntry->path( a_form ) );
-    return( GIDI_emptyFileName );
+    if( protareEntry != nullptr ) return( protareEntry->path( a_form ) );
+    return( GIDI_emptyFileNameChars );
 }
 
 /* *********************************************************************************************************//**
@@ -644,7 +632,7 @@ bool Map::isTNSL_target( std::string const &a_targetID ) const {
 
     ProtareBase const *protareEntry = findProtareEntry( PoPI::IDs::neutron, a_targetID );
 
-    if( protareEntry == NULL ) return( false );
+    if( protareEntry == nullptr ) return( false );
     if( protareEntry->entryType( ) == EntryType::TNSL ) return( true );
     return( false );
 }
@@ -662,7 +650,7 @@ std::vector<std::string> Map::availableEvaluations( std::string const &a_project
     std::vector<std::string> list;
 
     for( std::vector<BaseEntry *>::const_iterator iter1 = m_entries.begin( ); iter1 != m_entries.end( ); ++iter1 ) {
-        if( (*iter1)->name( ) == GIDI_importMoniker ) {
+        if( (*iter1)->name( ) == GIDI_importChars ) {
             Import *_mapEntry = dynamic_cast<Import *> (*iter1);
 
             std::vector<std::string> sub_list = _mapEntry->availableEvaluations( a_projectileID, a_targetID );
@@ -697,12 +685,13 @@ GIDI::Protare *Map::protare( Construction::Settings const &a_construction, PoPI:
     std::string targetID( a_targetID );
     std::string atomicTargetID;
 
-    GIDI::Protare *nuclear = NULL, *atomic = NULL, *protare;
+    ParticleSubstitution particleSubstitution;
+    GIDI::Protare *nuclear = nullptr, *atomic = nullptr, *protare;
 
     if( a_projectileID != PoPI::IDs::neutron ) {                // Check if targetID is for TNSL target. If so, and projectile is not a neutron, need to use standardTarget name.
         ProtareBase const *protareEntry = findProtareEntry( PoPI::IDs::neutron, targetID );
 
-        if( protareEntry != NULL ) {
+        if( protareEntry != nullptr ) {
             if( protareEntry->entryType( ) == EntryType::TNSL ) targetID = static_cast<TNSL const *>( protareEntry )->standardTarget( );
         }
     }
@@ -720,22 +709,26 @@ GIDI::Protare *Map::protare( Construction::Settings const &a_construction, PoPI:
                 atomicTargetID = popsBase->ID( );
             }
             ProtareBase const *protareEntry = findProtareEntry( a_projectileID, atomicTargetID, a_library, a_evaluation );
-            if( protareEntry != NULL ) atomic = protareEntry->protare( a_construction, a_pops );
+            if( protareEntry != nullptr ) {
+                particleSubstitution.insert( { atomicTargetID, ParticleInfo( targetID, a_pops, a_pops, true ) } );
+                atomic = protareEntry->protare( a_construction, a_pops, particleSubstitution );
+                particleSubstitution.clear( );
+            }
         }
         if( a_construction.photoMode( ) != Construction::PhotoMode::atomicOnly ) {
             if( popsBase->Class( ) != PoPI::Particle_class::unorthodox ) {                // Kludge to ignore 99120 and similar targers.
                 ProtareBase const *protareEntry = findProtareEntry( a_projectileID, targetID, a_library, a_evaluation );
-                if( protareEntry != NULL ) nuclear = protareEntry->protare( a_construction, a_pops );
+                if( protareEntry != nullptr ) nuclear = protareEntry->protare( a_construction, a_pops, particleSubstitution );
             }
         } }
     else {
         ProtareBase const *protareEntry = findProtareEntry( a_projectileID, targetID, a_library, a_evaluation );
-        if( protareEntry != NULL ) nuclear = protareEntry->protare( a_construction, a_pops );
+        if( protareEntry != nullptr ) nuclear = protareEntry->protare( a_construction, a_pops, particleSubstitution );
     }
 
-    if( nuclear == NULL ) {
+    if( nuclear == nullptr ) {
         protare = atomic; }
-    else if( atomic == NULL ) {
+    else if( atomic == nullptr ) {
         protare = nuclear; }
     else {
         ProtareComposite *protareComposite = new ProtareComposite( a_construction );
@@ -787,10 +780,10 @@ bool Map::walk( MapWalkCallBack a_mapWalkCallBack, void *a_userData, int a_level
 
         std::string path = entry->path( BaseEntry::PathForm::cumulative );
 
-        if( entry->name( ) == GIDI_importMoniker ) {
+        if( entry->name( ) == GIDI_importChars ) {
             Import const *mapEntry = static_cast<Import const *>( entry );
             if( !mapEntry->map( )->walk( a_mapWalkCallBack, a_userData, a_level + 1 ) ) return( true ); }
-        else if( ( entry->name( ) == GIDI_protareMoniker ) || ( entry->name( ) == GIDI_TNSLMoniker ) ) {
+        else if( ( entry->name( ) == GIDI_protareChars ) || ( entry->name( ) == GIDI_TNSLChars ) ) {
             if( !a_mapWalkCallBack( static_cast<ProtareBase const *>( entry ), m_library, a_userData, a_level ) ) return( true ); }
         else {
             std::cerr << "    ERROR: unknown map entry name: " << entry->name( ) << std::endl;
@@ -828,13 +821,13 @@ void Map::saveAs( std::string const &a_fileName ) const {
 void Map::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
-    std::string header = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+    std::string header = GNDS_XML_verionEncoding;
     std::string attributes;
 
     a_writeInfo.push_back( header );
 
-    attributes  = a_writeInfo.addAttribute( "library", m_library );
-    attributes += a_writeInfo.addAttribute( "format", GIDI_mapFormat );
+    attributes  = a_writeInfo.addAttribute( GIDI_libraryChars, m_library );
+    attributes += a_writeInfo.addAttribute( GIDI_formatChars, GIDI_mapFormatVersion_0_2Chars );
 
     a_writeInfo.addNodeStarter( a_indent, moniker( ), attributes );
     for( auto iter = m_entries.begin( ); iter != m_entries.end( ); ++iter ) (*iter)->toXMLList( a_writeInfo, indent2 );
@@ -858,7 +851,7 @@ static std::string GIDI_basePath( char const *a_path ) {
     char *p1, realPath[PATH_MAX+1];
 
     strcpy( realPath, a_path );
-    if( ( p1 = strrchr( realPath, '/' ) ) != NULL ) {
+    if( ( p1 = strrchr( realPath, '/' ) ) != nullptr ) {
         *p1 = 0; }
     else {
         strcpy( realPath, "." );
@@ -891,6 +884,6 @@ static std::string GIDI_addPaths( std::string const &a_base, std::string const &
 
     std::string path( a_path );
 
-    if( ( a_base.size( ) > 0 ) && ( path[0] != FILE_SEPARATOR[0] ) ) path = a_base + FILE_SEPARATOR + path;
+    if( ( a_base.size( ) > 0 ) && ( path[0] != GIDI_FILE_SEPARATOR[0] ) ) path = a_base + GIDI_FILE_SEPARATOR + path;
     return( path );
 }

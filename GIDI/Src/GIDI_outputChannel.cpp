@@ -16,12 +16,12 @@ namespace GIDI {
 */
 
 OutputChannel::OutputChannel( bool a_twoBody, bool a_fissions, std::string a_process ) :
-        Ancestry( outputChannelMoniker ),
+        Ancestry( GIDI_outputChannelChars ),
         m_twoBody( a_twoBody ),
         m_fissions( a_fissions ),
         m_process( a_process ),
-        m_Q( QMoniker ),
-        m_products( productsMoniker ),
+        m_Q( GIDI_QChars ),
+        m_products( GIDI_productsChars ),
         m_fissionFragmentData( ) {
 
     m_Q.setAncestor( this );
@@ -34,6 +34,7 @@ OutputChannel::OutputChannel( bool a_twoBody, bool a_fissions, std::string a_pro
  *
  * @param a_construction    [in]    Used to pass user options to the constructor.
  * @param a_node            [in]    The reaction pugi::xml_node to be parsed and used to construct the reaction.
+ * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops            [in]    The *external* PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs    [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
  *                                  This is the <**PoPs**> node under the <**reactionSuite**> node.
@@ -41,15 +42,15 @@ OutputChannel::OutputChannel( bool a_twoBody, bool a_fissions, std::string a_pro
  * @param a_isFission       [in]    Boolean indicating if output channel is a fission channel (true) or not (false).
  ***********************************************************************************************************/
 
-OutputChannel::OutputChannel( Construction::Settings const &a_construction, pugi::xml_node const &a_node, PoPI::Database const &a_pops, 
+OutputChannel::OutputChannel( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, 
                 PoPI::Database const &a_internalPoPs, Styles::Suite const *a_styles, bool a_isFission ) :
         Ancestry( a_node.name( ) ),
-        m_twoBody( std::string( a_node.attribute( "genre" ).value( ) ) == "twoBody" ),
+        m_twoBody( std::string( a_node.attribute( GIDI_genreChars ).value( ) ) == GIDI_twoBodyChars ),
         m_fissions( a_isFission ),
-        m_process( std::string( a_node.attribute( "process" ).value( ) ) ),
-        m_Q( a_construction, QMoniker, a_node, a_pops, a_internalPoPs, parseQSuite, a_styles ),
-        m_products( a_construction, productsMoniker, a_node, a_pops, a_internalPoPs, parseProductSuite, a_styles ),
-        m_fissionFragmentData( a_construction, a_node.child( fissionFragmentDataMoniker ), a_pops, a_internalPoPs, a_styles ) {
+        m_process( std::string( a_node.attribute( GIDI_processChars ).value( ) ) ),
+        m_Q( a_construction, GIDI_QChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseQSuite, a_styles ),
+        m_products( a_construction, GIDI_productsChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseProductSuite, a_styles ),
+        m_fissionFragmentData( a_construction, a_node.child( GIDI_fissionFragmentDataChars ), a_setupInfo, a_pops, a_internalPoPs, a_styles ) {
 
     m_Q.setAncestor( this );
     m_products.setAncestor( this );
@@ -85,35 +86,52 @@ int OutputChannel::depth( ) const {
 }
 
 /* *********************************************************************************************************//**
- * Used by Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or NULL if none exists.
+ * Only for internal use. Called by a ProtareTNSL instance to zero the lower energy multi-group data covered by the TNSL ProtareSingle.
+ *
+ * @param a_maximumTNSL_MultiGroupIndex     [in]    A map that contains labels for heated multi-group data and the last valid group boundary
+ *                                                  for the TNSL data for that boundary.
+ ***********************************************************************************************************/
+
+void OutputChannel::modifiedMultiGroupElasticForTNSL( std::map<std::string,std::size_t> a_maximumTNSL_MultiGroupIndex ) {
+
+        // No need to fix m_Q as it is all 0.0's for elastic scattering.
+    for( auto iter = m_products.begin( ); iter != m_products.end( ); ++iter ) {
+        Product *product = static_cast<Product *>( *iter );
+
+        product->modifiedMultiGroupElasticForTNSL( a_maximumTNSL_MultiGroupIndex );
+    }
+}
+
+/* *********************************************************************************************************//**
+ * Used by Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or nullptr if none exists.
  *
  * @param a_item    [in]    The name of the class member whose pointer is to be return.
- * @return                  The pointer to the class member or NULL if class does not have a member named a_item.
+ * @return                  The pointer to the class member or nullptr if class does not have a member named a_item.
  ***********************************************************************************************************/
 
 Ancestry *OutputChannel::findInAncestry3( std::string const &a_item ) {
 
-    if( a_item == QMoniker ) return( &m_Q );
-    if( a_item == productsMoniker ) return( &m_products );
-    if( a_item == fissionFragmentDataMoniker ) return( &m_fissionFragmentData );
+    if( a_item == GIDI_QChars ) return( &m_Q );
+    if( a_item == GIDI_productsChars ) return( &m_products );
+    if( a_item == GIDI_fissionFragmentDataChars ) return( &m_fissionFragmentData );
 
-    return( NULL );
+    return( nullptr );
 }
 
 /* *********************************************************************************************************//**
- * Used by Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or NULL if none exists.
+ * Used by Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or nullptr if none exists.
  *
  * @param a_item    [in]    The name of the class member whose pointer is to be return.
- * @return                  The pointer to the class member or NULL if class does not have a member named a_item.
+ * @return                  The pointer to the class member or nullptr if class does not have a member named a_item.
  ***********************************************************************************************************/
 
 Ancestry const *OutputChannel::findInAncestry3( std::string const &a_item ) const {
 
-    if( a_item == QMoniker ) return( &m_Q );
-    if( a_item == productsMoniker ) return( &m_products );
-    if( a_item == fissionFragmentDataMoniker ) return( &m_fissionFragmentData );
+    if( a_item == GIDI_QChars ) return( &m_Q );
+    if( a_item == GIDI_productsChars ) return( &m_products );
+    if( a_item == GIDI_fissionFragmentDataChars ) return( &m_fissionFragmentData );
 
-    return( NULL );
+    return( nullptr );
 }
 
 /* *********************************************************************************************************//**
@@ -381,12 +399,12 @@ void OutputChannel::toXMLList( WriteInfo &a_writeInfo, std::string const &a_inde
     std::string attributes;
 
     if( m_twoBody ) {
-        attributes = a_writeInfo.addAttribute( "genre", "twoBody" ); }
+        attributes = a_writeInfo.addAttribute( GIDI_genreChars, GIDI_twoBodyChars ); }
     else {
-        attributes = a_writeInfo.addAttribute( "genre", "NBody" );
+        attributes = a_writeInfo.addAttribute( GIDI_genreChars, GIDI_NBodyChars );
     }
 
-    if( m_process != "" ) attributes += a_writeInfo.addAttribute( "process", m_process );
+    if( m_process != "" ) attributes += a_writeInfo.addAttribute( GIDI_processChars, m_process );
 
     a_writeInfo.addNodeStarter( a_indent, moniker( ), attributes );
 

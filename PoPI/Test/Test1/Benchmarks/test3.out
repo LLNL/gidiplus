@@ -1,0 +1,40 @@
+photon -> photon  Z = 0 A = 0  ZA = 0
+   Z test: 0 0 0
+   A test: 0 0 0
+   ZA test: 0 0 0
+photon -> photon  Z = 0 A = 0  ZA = 0
+   Z test: 0 0 0
+   A test: 0 0 0
+   ZA test: 0 0 0
+n -> n  Z = 0 A = 1  ZA = 1
+   Z test: 0 0 0
+   A test: 1 1 1
+   ZA test: 1 1 1
+n -> n  Z = 0 A = 0  ZA = 0
+   Z test: 0 0 0
+   A test: 0 0 0
+   ZA test: 0 0 0
+p -> p  Z = 1 A = 1  ZA = 1001
+   Z test: 1 1 1
+   A test: 1 1 1
+   ZA test: 1001 1001 1001
+p -> p  Z = 0 A = 0  ZA = 0
+   Z test: 0 0 0
+   A test: 0 0 0
+   ZA test: 0 0 0
+H1 -> H1  Z = 1 A = 1  ZA = 1001
+   Z test: 1 1 1
+   A test: 1 1 1
+   ZA test: 1001 1001 1001
+O16 -> O16  Z = 8 A = 16  ZA = 8016
+   Z test: 8 8 8
+   A test: 16 16 16
+   ZA test: 8016 8016 8016
+Fe54 -> Fe54  Z = 26 A = 54  ZA = 26054
+   Z test: 26 26 26
+   A test: 54 54 54
+   ZA test: 26054 26054 26054
+Pu236 -> Pu236  Z = 94 A = 236  ZA = 94236
+   Z test: 94 94 94
+   A test: 236 236 236
+   ZA test: 94236 94236 94236

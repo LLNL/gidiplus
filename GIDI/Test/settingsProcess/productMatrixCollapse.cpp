@@ -58,7 +58,7 @@ void main2( int argc, char **argv ) {
     PoPI::Database pops;
     GIDI::Protare *protare = parseTestOptions.protare( pops, "../pops.xml", "../all.map", construction, PoPI::IDs::neutron, "O16" );
 
-    std::cout << protare->fileName( ) << std::endl;
+    std::cout << stripDirectoryBase( protare->fileName( ) ) << std::endl;
 
     GIDI::Styles::TemperatureInfos temperatures = protare->temperatures( );
     std::string label( temperatures[0].heatedMultiGroup( ) );

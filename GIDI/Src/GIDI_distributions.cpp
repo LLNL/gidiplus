@@ -34,13 +34,14 @@ Distribution::Distribution( std::string const &a_moniker, FormType a_type, std::
 /* *********************************************************************************************************//**
  *
  * @param a_node            [in]    The **pugi::xml_node** to be parsed and used to construct the distribution.
+ * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_type            [in]    The FormType for the distribution form.
  * @param a_parent          [in]    The **m_distribution** member of GIDI::Product this distribution form belongs to.
  ***********************************************************************************************************/
 
-Distribution::Distribution( pugi::xml_node const &a_node, FormType a_type, Suite *a_parent ) :
-        Form( a_node, a_type, a_parent ),
-        m_productFrame( parseFrame( a_node, "productFrame" ) ) {
+Distribution::Distribution( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, FormType a_type, Suite *a_parent ) :
+        Form( a_node, a_setupInfo, a_type, a_parent ),
+        m_productFrame( parseFrame( a_node, a_setupInfo, GIDI_productFrameChars ) ) {
 
 }
 
@@ -55,8 +56,8 @@ void Distribution::toXMLNodeStarter( WriteInfo &a_writeInfo, std::string const &
 
     std::string attributes;
 
-    attributes += a_writeInfo.addAttribute( "label", label( ) );
-    attributes += a_writeInfo.addAttribute( "productFrame", frameToString( m_productFrame ) );
+    attributes += a_writeInfo.addAttribute( GIDI_labelChars, label( ) );
+    attributes += a_writeInfo.addAttribute( GIDI_productFrameChars, frameToString( m_productFrame ) );
     a_writeInfo.addNodeStarter( a_indent, moniker( ), attributes );
 }
 
@@ -68,12 +69,13 @@ void Distribution::toXMLNodeStarter( WriteInfo &a_writeInfo, std::string const &
  *
  * @param a_construction        [in]    Used to pass user options to the constructor.
  * @param a_node                [in]    The **pugi::xml_node** to be parsed and used to construct the MultiGroup3d.
+ * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent              [in]    The **m_distribution** member of GIDI::Product this distribution form belongs to.
  ***********************************************************************************************************/
 
-MultiGroup3d::MultiGroup3d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, Suite *a_parent ) :
-    Distribution( a_node, FormType::multiGroup3d, a_parent ),
-    m_gridded3d( a_construction, a_node.child( "gridded3d" ) ) {
+MultiGroup3d::MultiGroup3d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+    Distribution( a_node, a_setupInfo, FormType::multiGroup3d, a_parent ),
+    m_gridded3d( a_construction, a_node.child( GIDI_gridded3dChars ), a_setupInfo ) {
 
 }
 
@@ -105,22 +107,23 @@ void MultiGroup3d::toXMLList( WriteInfo &a_writeInfo, std::string const &a_inden
  ***********************************************************************************************************/
 
 AngularTwoBody::AngularTwoBody( std::string const &a_label, Frame a_productFrame, Functions::Function2dForm *a_angular ) :
-        Distribution( angularTwoBodyMoniker, FormType::angularTwoBody, a_label, a_productFrame ),
+        Distribution( GIDI_angularTwoBodyChars, FormType::angularTwoBody, a_label, a_productFrame ),
         m_angular( a_angular ) {
 
-    if( a_angular != NULL ) a_angular->setAncestor( this );
+    if( a_angular != nullptr ) a_angular->setAncestor( this );
 }
 
 /* *********************************************************************************************************//**
  *
  * @param a_construction        [in]    Used to pass user options to the constructor.
  * @param a_node                [in]    The **pugi::xml_node** to be parsed and used to construct the AngularTwoBody.
+ * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent              [in]    The **m_distribution** member of GIDI::Product this distribution form belongs to.
  ***********************************************************************************************************/
 
-AngularTwoBody::AngularTwoBody( Construction::Settings const &a_construction, pugi::xml_node const &a_node, Suite *a_parent ) :
-        Distribution( a_node, FormType::angularTwoBody, a_parent ),
-        m_angular( data2dParse( a_construction, a_node.first_child( ), NULL ) ) {
+AngularTwoBody::AngularTwoBody( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+        Distribution( a_node, a_setupInfo, FormType::angularTwoBody, a_parent ),
+        m_angular( data2dParse( a_construction, a_node.first_child( ), a_setupInfo, nullptr ) ) {
 
 }
 
@@ -144,7 +147,7 @@ void AngularTwoBody::toXMLList( WriteInfo &a_writeInfo, std::string const &a_ind
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
 
     toXMLNodeStarter( a_writeInfo, a_indent );
-    if( m_angular != NULL ) m_angular->toXMLList( a_writeInfo, indent2 );
+    if( m_angular != nullptr ) m_angular->toXMLList( a_writeInfo, indent2 );
     a_writeInfo.addNodeEnder( moniker( ) );
 }
 
@@ -156,17 +159,18 @@ void AngularTwoBody::toXMLList( WriteInfo &a_writeInfo, std::string const &a_ind
  *
  * @param a_construction        [in]    Used to pass user options to the constructor.
  * @param a_node                [in]    The **pugi::xml_node** to be parsed and used to construct the KalbachMann.
+ * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent              [in]    The **m_distribution** member of GIDI::Product this distribution form belongs to.
  ***********************************************************************************************************/
 
-KalbachMann::KalbachMann( Construction::Settings const &a_construction, pugi::xml_node const &a_node, Suite *a_parent ) :
-        Distribution( a_node, FormType::KalbachMann, a_parent ),
-        m_f( data2dParse( a_construction, a_node.child( "f" ).first_child( ), NULL ) ),
-        m_r( data2dParse( a_construction, a_node.child( "r" ).first_child( ), NULL ) ),
-        m_a( NULL ) {
+KalbachMann::KalbachMann( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+        Distribution( a_node, a_setupInfo, FormType::KalbachMann, a_parent ),
+        m_f( data2dParse( a_construction, a_node.child( GIDI_fChars ).first_child( ), a_setupInfo, nullptr ) ),
+        m_r( data2dParse( a_construction, a_node.child( GIDI_rChars ).first_child( ), a_setupInfo, nullptr ) ),
+        m_a( nullptr ) {
 
-    pugi::xml_node const &aNode = a_node.child( "a" );
-    if( aNode.type( ) != pugi::node_null ) m_a = data2dParse( a_construction, aNode.first_child( ), NULL );
+    pugi::xml_node const &aNode = a_node.child( GIDI_aChars );
+    if( aNode.type( ) != pugi::node_null ) m_a = data2dParse( a_construction, aNode.first_child( ), a_setupInfo, nullptr );
 }
 
 /* *********************************************************************************************************//**
@@ -193,7 +197,7 @@ void KalbachMann::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent
     toXMLNodeStarter( a_writeInfo, a_indent );
     m_f->toXMLList( a_writeInfo, indent2 );
     m_r->toXMLList( a_writeInfo, indent2 );
-    if( m_a != NULL ) m_a->toXMLList( a_writeInfo, indent2 );
+    if( m_a != nullptr ) m_a->toXMLList( a_writeInfo, indent2 );
     a_writeInfo.addNodeEnder( moniker( ) );
 }
 
@@ -205,12 +209,13 @@ void KalbachMann::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent
  *
  * @param a_construction        [in]    Used to pass user options to the constructor.
  * @param a_node                [in]    The **pugi::xml_node** to be parsed and used to construct the EnergyAngular.
+ * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent              [in]    The **m_distribution** member of GIDI::Product this distribution form belongs to.
  ***********************************************************************************************************/
 
-EnergyAngular::EnergyAngular( Construction::Settings const &a_construction, pugi::xml_node const &a_node, Suite *a_parent ) :
-        Distribution( a_node, FormType::energyAngular, a_parent ),
-        m_energyAngular( data3dParse( a_construction, a_node.first_child( ), NULL ) ) {
+EnergyAngular::EnergyAngular( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+        Distribution( a_node, a_setupInfo, FormType::energyAngular, a_parent ),
+        m_energyAngular( data3dParse( a_construction, a_node.first_child( ), a_setupInfo, nullptr ) ) {
 
 }
 
@@ -246,13 +251,14 @@ void EnergyAngular::toXMLList( WriteInfo &a_writeInfo, std::string const &a_inde
  *
  * @param a_construction        [in]    Used to pass user options to the constructor.
  * @param a_node                [in]    The **pugi::xml_node** to be parsed and used to construct the EnergyAngularMC.
+ * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent              [in]    The **m_distribution** member of GIDI::Product this distribution form belongs to.
  ***********************************************************************************************************/
 
-EnergyAngularMC::EnergyAngularMC( Construction::Settings const &a_construction, pugi::xml_node const &a_node, Suite *a_parent ) :
-        Distribution( a_node, FormType::energyAngularMC, a_parent ),
-        m_energy( data2dParse( a_construction, a_node.child( "energy" ).first_child( ), NULL ) ),
-        m_energyAngular( data3dParse( a_construction, a_node.child( "energyAngular" ).first_child( ), NULL ) ) {
+EnergyAngularMC::EnergyAngularMC( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+        Distribution( a_node, a_setupInfo, FormType::energyAngularMC, a_parent ),
+        m_energy( data2dParse( a_construction, a_node.child( GIDI_energyChars ).first_child( ), a_setupInfo, nullptr ) ),
+        m_energyAngular( data3dParse( a_construction, a_node.child( GIDI_energyAngularChars ).first_child( ), a_setupInfo, nullptr ) ) {
 
 }
 
@@ -279,13 +285,13 @@ void EnergyAngularMC::toXMLList( WriteInfo &a_writeInfo, std::string const &a_in
 
     toXMLNodeStarter( a_writeInfo, a_indent );
 
-    a_writeInfo.addNodeStarter( indent2, "energy" );
+    a_writeInfo.addNodeStarter( indent2, GIDI_energyChars );
     m_energy->toXMLList( a_writeInfo, indent3 );
-    a_writeInfo.addNodeEnder( "energy" );
+    a_writeInfo.addNodeEnder( GIDI_energyChars );
 
-    a_writeInfo.addNodeStarter( indent2, "energyAngular" );
+    a_writeInfo.addNodeStarter( indent2, GIDI_energyAngularChars );
     m_energyAngular->toXMLList( a_writeInfo, indent3 );
-    a_writeInfo.addNodeEnder( "energyAngular" );
+    a_writeInfo.addNodeEnder( GIDI_energyAngularChars );
 
     a_writeInfo.addNodeEnder( moniker( ) );
 }
@@ -298,12 +304,13 @@ void EnergyAngularMC::toXMLList( WriteInfo &a_writeInfo, std::string const &a_in
  *
  * @param a_construction        [in]    Used to pass user options to the constructor.
  * @param a_node                [in]    The **pugi::xml_node** to be parsed and used to construct the AngularEnergy.
+ * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent              [in]    The **m_distribution** member of GIDI::Product this distribution form belongs to.
  ***********************************************************************************************************/
 
-AngularEnergy::AngularEnergy( Construction::Settings const &a_construction, pugi::xml_node const &a_node, Suite *a_parent ) :
-        Distribution( a_node, FormType::angularEnergy, a_parent ),
-        m_angularEnergy( data3dParse( a_construction, a_node.first_child( ), NULL ) ) {
+AngularEnergy::AngularEnergy( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+        Distribution( a_node, a_setupInfo, FormType::angularEnergy, a_parent ),
+        m_angularEnergy( data3dParse( a_construction, a_node.first_child( ), a_setupInfo, nullptr ) ) {
 
 }
 
@@ -339,13 +346,14 @@ void AngularEnergy::toXMLList( WriteInfo &a_writeInfo, std::string const &a_inde
  *
  * @param a_construction        [in]    Used to pass user options to the constructor.
  * @param a_node                [in]    The **pugi::xml_node** to be parsed and used to construct the AngularEnergyMC.
+ * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent              [in]    The **m_distribution** member of GIDI::Product this distribution form belongs to.
  ***********************************************************************************************************/
 
-AngularEnergyMC::AngularEnergyMC( Construction::Settings const &a_construction, pugi::xml_node const &a_node, Suite *a_parent ) :
-        Distribution( a_node, FormType::angularEnergyMC, a_parent ),
-        m_angular( data2dParse( a_construction, a_node.child( "angular" ).first_child( ), NULL ) ),
-        m_angularEnergy( data3dParse( a_construction, a_node.child( "angularEnergy" ).first_child( ), NULL ) ) {
+AngularEnergyMC::AngularEnergyMC( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+        Distribution( a_node, a_setupInfo, FormType::angularEnergyMC, a_parent ),
+        m_angular( data2dParse( a_construction, a_node.child( GIDI_angularChars ).first_child( ), a_setupInfo, nullptr ) ),
+        m_angularEnergy( data3dParse( a_construction, a_node.child( GIDI_angularEnergyChars ).first_child( ), a_setupInfo, nullptr ) ) {
 
 }
 
@@ -371,12 +379,12 @@ void AngularEnergyMC::toXMLList( WriteInfo &a_writeInfo, std::string const &a_in
     std::string indent3 = a_writeInfo.incrementalIndent( indent2 );
 
     toXMLNodeStarter( a_writeInfo, a_indent );
-    a_writeInfo.addNodeStarter( indent2, angularMoniker );
+    a_writeInfo.addNodeStarter( indent2, GIDI_angularChars );
     m_angular->toXMLList( a_writeInfo, indent3 );
-    a_writeInfo.addNodeEnder( angularMoniker );
-    a_writeInfo.addNodeStarter( indent2, angularEnergyMoniker );
+    a_writeInfo.addNodeEnder( GIDI_angularChars );
+    a_writeInfo.addNodeStarter( indent2, GIDI_angularEnergyChars );
     m_angularEnergy->toXMLList( a_writeInfo, indent3 );
-    a_writeInfo.addNodeEnder( angularEnergyMoniker );
+    a_writeInfo.addNodeEnder( GIDI_angularEnergyChars );
     a_writeInfo.addNodeEnder( moniker( ) );
 }
 
@@ -388,13 +396,14 @@ void AngularEnergyMC::toXMLList( WriteInfo &a_writeInfo, std::string const &a_in
  *
  * @param a_construction        [in]    Used to pass user options to the constructor.
  * @param a_node                [in]    The **pugi::xml_node** to be parsed and used to construct the Uncorrelated.
+ * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent              [in]    The **m_distribution** member of GIDI::Product this distribution form belongs to.
  ***********************************************************************************************************/
 
-Uncorrelated::Uncorrelated( Construction::Settings const &a_construction, pugi::xml_node const &a_node, Suite *a_parent ) :
-        Distribution( a_node, FormType::uncorrelated, a_parent ),
-        m_angular( data2dParse( a_construction, a_node.child( "angular" ).first_child( ), NULL ) ),
-        m_energy( data2dParse( a_construction, a_node.child( "energy" ).first_child( ), NULL ) ) {
+Uncorrelated::Uncorrelated( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+        Distribution( a_node, a_setupInfo, FormType::uncorrelated, a_parent ),
+        m_angular( data2dParse( a_construction, a_node.child( GIDI_angularChars ).first_child( ), a_setupInfo, nullptr ) ),
+        m_energy( data2dParse( a_construction, a_node.child( GIDI_energyChars ).first_child( ), a_setupInfo, nullptr ) ) {
 
 }
 
@@ -421,13 +430,13 @@ void Uncorrelated::toXMLList( WriteInfo &a_writeInfo, std::string const &a_inden
 
     toXMLNodeStarter( a_writeInfo, a_indent );
 
-    a_writeInfo.addNodeStarter( indent2, "angular", "" );
+    a_writeInfo.addNodeStarter( indent2, GIDI_angularChars, "" );
     m_angular->toXMLList( a_writeInfo, indent3 );
-    a_writeInfo.addNodeEnder( "angular" );
+    a_writeInfo.addNodeEnder( GIDI_angularChars );
 
-    a_writeInfo.addNodeStarter( indent2, "energy", "" );
+    a_writeInfo.addNodeStarter( indent2, GIDI_energyChars, "" );
     m_energy->toXMLList( a_writeInfo, indent3 );
-    a_writeInfo.addNodeEnder( "energy" );
+    a_writeInfo.addNodeEnder( GIDI_energyChars );
 
     a_writeInfo.addNodeEnder( moniker( ) );
 }
@@ -440,13 +449,14 @@ void Uncorrelated::toXMLList( WriteInfo &a_writeInfo, std::string const &a_inden
  *
  * @param a_construction        [in]    Used to pass user options to the constructor.
  * @param a_node                [in]    The **pugi::xml_node** to be parsed and used to construct the LLNLAngularEnergy.
+ * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent              [in]    The **m_distribution** member of GIDI::Product this distribution form belongs to.
  ***********************************************************************************************************/
 
-LLNLAngularEnergy::LLNLAngularEnergy( Construction::Settings const &a_construction, pugi::xml_node const &a_node, Suite *a_parent ) :
-        Distribution( a_node, FormType::LLNL_angularEnergy, a_parent ),
-        m_angular( data2dParse( a_construction, a_node.child( "LLNLAngularOfAngularEnergy" ).first_child( ), NULL ) ),
-        m_angularEnergy( data3dParse( a_construction, a_node.child( "LLNLAngularEnergyOfAngularEnergy" ).first_child( ), NULL ) ) {
+LLNLAngularEnergy::LLNLAngularEnergy( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+        Distribution( a_node, a_setupInfo, FormType::LLNL_angularEnergy, a_parent ),
+        m_angular( data2dParse( a_construction, a_node.child( GIDI_LLNLAngularOfAngularEnergyChars ).first_child( ), a_setupInfo, nullptr ) ),
+        m_angularEnergy( data3dParse( a_construction, a_node.child( GIDI_LLNLAngularEnergyOfAngularEnergyChars ).first_child( ), a_setupInfo, nullptr ) ) {
 
 }
 
@@ -472,12 +482,12 @@ void LLNLAngularEnergy::toXMLList( WriteInfo &a_writeInfo, std::string const &a_
     std::string indent3 = a_writeInfo.incrementalIndent( indent2 );
 
     toXMLNodeStarter( a_writeInfo, a_indent );
-    a_writeInfo.addNodeStarter( indent2, LLNLAngularOfAngularEnergyMoniker );
+    a_writeInfo.addNodeStarter( indent2, GIDI_LLNLAngularOfAngularEnergyChars );
     m_angular->toXMLList( a_writeInfo, indent3 );
-    a_writeInfo.addNodeEnder( LLNLAngularOfAngularEnergyMoniker );
-    a_writeInfo.addNodeStarter( indent2, LLNLAngularEnergyOfAngularEnergyMoniker );
+    a_writeInfo.addNodeEnder( GIDI_LLNLAngularOfAngularEnergyChars );
+    a_writeInfo.addNodeStarter( indent2, GIDI_LLNLAngularEnergyOfAngularEnergyChars );
     m_angularEnergy->toXMLList( a_writeInfo, indent3 );
-    a_writeInfo.addNodeEnder( LLNLAngularEnergyOfAngularEnergyMoniker );
+    a_writeInfo.addNodeEnder( GIDI_LLNLAngularEnergyOfAngularEnergyChars );
     a_writeInfo.addNodeEnder( moniker( ) );
 }
 
@@ -489,12 +499,14 @@ void LLNLAngularEnergy::toXMLList( WriteInfo &a_writeInfo, std::string const &a_
  *
  * @param a_construction        [in]    Used to pass user options to the constructor.
  * @param a_node                [in]    The **pugi::xml_node** to be parsed and used to construct the CoherentPhotoAtomicScattering.
+ * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent              [in]    The **m_distribution** member of GIDI::Product this distribution form belongs to.
  ***********************************************************************************************************/
 
-CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering( Construction::Settings const &a_construction, pugi::xml_node const &a_node, Suite *a_parent ) :
-        Distribution( a_node, FormType::coherentPhotonScattering, a_parent ),
-        m_href( a_node.attribute( hrefAttribute ).value( ) ) {
+CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering( Construction::Settings const &a_construction, pugi::xml_node const &a_node, 
+                SetupInfo &a_setupInfo, Suite *a_parent ) :
+        Distribution( a_node, a_setupInfo, FormType::coherentPhotonScattering, a_parent ),
+        m_href( a_node.attribute( GIDI_hrefChars ).value( ) ) {
 
 }
 
@@ -506,12 +518,14 @@ CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering( Construction::Sett
  *
  * @param a_construction        [in]    Used to pass user options to the constructor.
  * @param a_node                [in]    The **pugi::xml_node** to be parsed and used to construct the IncoherentPhotoAtomicScattering.
+ * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent              [in]    The **m_distribution** member of GIDI::Product this distribution form belongs to.
  ***********************************************************************************************************/
 
-IncoherentPhotoAtomicScattering::IncoherentPhotoAtomicScattering( Construction::Settings const &a_construction, pugi::xml_node const &a_node, Suite *a_parent ) :
-        Distribution( a_node, FormType::incoherentPhotonScattering, a_parent ),
-        m_href( a_node.attribute( hrefAttribute ).value( ) ) {
+IncoherentPhotoAtomicScattering::IncoherentPhotoAtomicScattering( Construction::Settings const &a_construction, pugi::xml_node const &a_node,
+                SetupInfo &a_setupInfo, Suite *a_parent ) :
+        Distribution( a_node, a_setupInfo, FormType::incoherentPhotonScattering, a_parent ),
+        m_href( a_node.attribute( GIDI_hrefChars ).value( ) ) {
 
 }
 
@@ -523,12 +537,14 @@ IncoherentPhotoAtomicScattering::IncoherentPhotoAtomicScattering( Construction::
  *
  * @param a_construction        [in]    Used to pass user options to the constructor.
  * @param a_node                [in]    The **pugi::xml_node** to be parsed and used to construct the ThermalNeutronScatteringLaw.
+ * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent              [in]    The **m_distribution** member of GIDI::Product this distribution form belongs to.
  ***********************************************************************************************************/
 
-ThermalNeutronScatteringLaw::ThermalNeutronScatteringLaw( Construction::Settings const &a_construction, pugi::xml_node const &a_node, Suite *a_parent ) :
-        Distribution( a_node, FormType::thermalNeutronScatteringLaw, a_parent ),
-        m_href( a_node.attribute( hrefAttribute ).value( ) ) {
+ThermalNeutronScatteringLaw::ThermalNeutronScatteringLaw( Construction::Settings const &a_construction, pugi::xml_node const &a_node, 
+                SetupInfo &a_setupInfo, Suite *a_parent ) :
+        Distribution( a_node, a_setupInfo, FormType::thermalNeutronScatteringLaw, a_parent ),
+        m_href( a_node.attribute( GIDI_hrefChars ).value( ) ) {
 
 }
 
@@ -540,11 +556,12 @@ ThermalNeutronScatteringLaw::ThermalNeutronScatteringLaw( Construction::Settings
  *
  * @param a_construction        [in]    Used to pass user options to the constructor.
  * @param a_node                [in]    The **pugi::xml_node** to be parsed and used to construct the Branching3d.
+ * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent              [in]    The **m_distribution** member of GIDI::Product this distribution form belongs to.
  ***********************************************************************************************************/
 
-Branching3d::Branching3d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, Suite *a_parent ) :
-        Distribution( a_node, FormType::branching3d, a_parent ) {
+Branching3d::Branching3d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+        Distribution( a_node, a_setupInfo, FormType::branching3d, a_parent ) {
 
 }
 
@@ -556,12 +573,13 @@ Branching3d::Branching3d( Construction::Settings const &a_construction, pugi::xm
  *
  * @param a_construction        [in]    Used to pass user options to the constructor.
  * @param a_node                [in]    The **pugi::xml_node** to be parsed and used to construct the Reference3d.
+ * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent              [in]    The **m_distribution** member of GIDI::Product this distribution form belongs to.
  ***********************************************************************************************************/
 
-Reference3d::Reference3d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, Suite *a_parent ) :
-        Distribution( a_node, FormType::reference3d, a_parent ),
-        m_href( a_node.attribute( hrefAttribute ).value( ) ) {
+Reference3d::Reference3d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+        Distribution( a_node, a_setupInfo, FormType::reference3d, a_parent ),
+        m_href( a_node.attribute( GIDI_hrefChars ).value( ) ) {
 
 }
 
@@ -576,8 +594,8 @@ void Reference3d::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent
 
     std::string attributes;
 
-    attributes += a_writeInfo.addAttribute( "label", label( ) );
-    attributes += a_writeInfo.addAttribute( "href", href( ) );
+    attributes += a_writeInfo.addAttribute( GIDI_labelChars, label( ) );
+    attributes += a_writeInfo.addAttribute( GIDI_hrefChars, href( ) );
     a_writeInfo.addNodeStarterEnder( a_indent, moniker( ), attributes );
 }
 
@@ -589,11 +607,12 @@ void Reference3d::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent
  *
  * @param a_construction        [in]    Used to pass user options to the constructor.
  * @param a_node                [in]    The **pugi::xml_node** to be parsed and used to construct the Unspecified.
+ * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent              [in]    The **m_distribution** member of GIDI::Product this distribution form belongs to.
  ***********************************************************************************************************/
 
-Unspecified::Unspecified( Construction::Settings const &a_construction, pugi::xml_node const &a_node, Suite *a_parent ) :
-        Distribution( a_node, FormType::unspecified, a_parent ) {
+Unspecified::Unspecified( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+        Distribution( a_node, a_setupInfo, FormType::unspecified, a_parent ) {
 
 }
 

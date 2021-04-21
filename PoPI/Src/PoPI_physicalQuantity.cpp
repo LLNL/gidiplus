@@ -15,15 +15,18 @@
 
 namespace PoPI {
 
+#define PoPI_valueChars "value"
+#define PoPI_unitChars "unit"
+
 /*
 =========================================================
 */
 PhysicalQuantity::PhysicalQuantity( pugi::xml_node const &a_node, PQ_class a_class ) :
         m_class( a_class ),
         m_tag( a_node.name( ) ),
-        m_label( a_node.attribute( "label" ).value( ) ),
-        m_valueString( a_node.attribute( "value" ).value( ) ),
-        m_unit( a_node.attribute( "unit" ).value( ) ) {
+        m_label( a_node.attribute( PoPI_labelChars ).value( ) ),
+        m_valueString( a_node.attribute( PoPI_valueChars ).value( ) ),
+        m_unit( a_node.attribute( PoPI_unitChars ).value( ) ) {
 
 }
 /*
@@ -94,7 +97,7 @@ std::string PQ_double::valueToString( void ) const {
 
     sprintf( str, "%.12g", m_value );
     if( fabs( m_value ) < 1e10 ) {
-        if( strchr( str, '.' ) == NULL ) sprintf( str, "%.1f", m_value );
+        if( strchr( str, '.' ) == nullptr ) sprintf( str, "%.1f", m_value );
     }
     std::string sValue( str );
     return( sValue );
@@ -105,7 +108,7 @@ std::string PQ_double::valueToString( void ) const {
 */
 PQ_integer::PQ_integer( pugi::xml_node const &a_node ) :
         PhysicalQuantity( a_node, PQ_class::integer ),
-        m_value( a_node.attribute( "value" ).as_int( ) ) {
+        m_value( a_node.attribute( PoPI_valueChars ).as_int( ) ) {
 }
 /*
 =========================================================

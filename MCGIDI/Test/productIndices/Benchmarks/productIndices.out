@@ -1,0 +1,2816 @@
+
+
+    transportables only = 1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 
+    transportables only = 1
+        18 H1 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H2 
+    transportables only = 1
+        20 H2 10
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H2 
+    transportables only = 1
+        18 H1 -1
+        20 H2 10
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H3 
+    transportables only = 1
+        22 H3 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H3 
+    transportables only = 1
+        18 H1 -1
+        22 H3 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H2 H3 
+    transportables only = 1
+        20 H2 10
+        22 H3 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H2 H3 
+    transportables only = 1
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+He3 
+    transportables only = 1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 He3 
+    transportables only = 1
+        18 H1 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H2 He3 
+    transportables only = 1
+        20 H2 10
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H2 He3 
+    transportables only = 1
+        18 H1 -1
+        20 H2 10
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H3 He3 
+    transportables only = 1
+        22 H3 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H3 He3 
+    transportables only = 1
+        18 H1 -1
+        22 H3 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H2 H3 He3 
+    transportables only = 1
+        20 H2 10
+        22 H3 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H2 H3 He3 
+    transportables only = 1
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+He4 
+    transportables only = 1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 He4 
+    transportables only = 1
+        18 H1 -1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H2 He4 
+    transportables only = 1
+        20 H2 10
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H2 He4 
+    transportables only = 1
+        18 H1 -1
+        20 H2 10
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H3 He4 
+    transportables only = 1
+        22 H3 -1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H3 He4 
+    transportables only = 1
+        18 H1 -1
+        22 H3 -1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H2 H3 He4 
+    transportables only = 1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H2 H3 He4 
+    transportables only = 1
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+He3 He4 
+    transportables only = 1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 He3 He4 
+    transportables only = 1
+        18 H1 -1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H2 He3 He4 
+    transportables only = 1
+        20 H2 10
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H2 He3 He4 
+    transportables only = 1
+        18 H1 -1
+        20 H2 10
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H3 He3 He4 
+    transportables only = 1
+        22 H3 -1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H3 He3 He4 
+    transportables only = 1
+        18 H1 -1
+        22 H3 -1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H2 H3 He3 He4 
+    transportables only = 1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H2 H3 He3 He4 
+    transportables only = 1
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+n 
+    transportables only = 1
+        6 n 0
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 n 
+    transportables only = 1
+        6 n 0
+        18 H1 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H2 n 
+    transportables only = 1
+        6 n 0
+        20 H2 10
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H2 n 
+    transportables only = 1
+        6 n 0
+        18 H1 -1
+        20 H2 10
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H3 n 
+    transportables only = 1
+        6 n 0
+        22 H3 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H3 n 
+    transportables only = 1
+        6 n 0
+        18 H1 -1
+        22 H3 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H2 H3 n 
+    transportables only = 1
+        6 n 0
+        20 H2 10
+        22 H3 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H2 H3 n 
+    transportables only = 1
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+He3 n 
+    transportables only = 1
+        6 n 0
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 He3 n 
+    transportables only = 1
+        6 n 0
+        18 H1 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H2 He3 n 
+    transportables only = 1
+        6 n 0
+        20 H2 10
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H2 He3 n 
+    transportables only = 1
+        6 n 0
+        18 H1 -1
+        20 H2 10
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H3 He3 n 
+    transportables only = 1
+        6 n 0
+        22 H3 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H3 He3 n 
+    transportables only = 1
+        6 n 0
+        18 H1 -1
+        22 H3 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H2 H3 He3 n 
+    transportables only = 1
+        6 n 0
+        20 H2 10
+        22 H3 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H2 H3 He3 n 
+    transportables only = 1
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+He4 n 
+    transportables only = 1
+        6 n 0
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 He4 n 
+    transportables only = 1
+        6 n 0
+        18 H1 -1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H2 He4 n 
+    transportables only = 1
+        6 n 0
+        20 H2 10
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H2 He4 n 
+    transportables only = 1
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H3 He4 n 
+    transportables only = 1
+        6 n 0
+        22 H3 -1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H3 He4 n 
+    transportables only = 1
+        6 n 0
+        18 H1 -1
+        22 H3 -1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H2 H3 He4 n 
+    transportables only = 1
+        6 n 0
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H2 H3 He4 n 
+    transportables only = 1
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+He3 He4 n 
+    transportables only = 1
+        6 n 0
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 He3 He4 n 
+    transportables only = 1
+        6 n 0
+        18 H1 -1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H2 He3 He4 n 
+    transportables only = 1
+        6 n 0
+        20 H2 10
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H2 He3 He4 n 
+    transportables only = 1
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H3 He3 He4 n 
+    transportables only = 1
+        6 n 0
+        22 H3 -1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H3 He3 He4 n 
+    transportables only = 1
+        6 n 0
+        18 H1 -1
+        22 H3 -1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H2 H3 He3 He4 n 
+    transportables only = 1
+        6 n 0
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H2 H3 He3 He4 n 
+    transportables only = 1
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+photon 
+    transportables only = 1
+        3 photon 11
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 photon 
+    transportables only = 1
+        3 photon 11
+        18 H1 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H2 photon 
+    transportables only = 1
+        3 photon 11
+        20 H2 10
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H2 photon 
+    transportables only = 1
+        3 photon 11
+        18 H1 -1
+        20 H2 10
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H3 photon 
+    transportables only = 1
+        3 photon 11
+        22 H3 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H3 photon 
+    transportables only = 1
+        3 photon 11
+        18 H1 -1
+        22 H3 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H2 H3 photon 
+    transportables only = 1
+        3 photon 11
+        20 H2 10
+        22 H3 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H2 H3 photon 
+    transportables only = 1
+        3 photon 11
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+He3 photon 
+    transportables only = 1
+        3 photon 11
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 He3 photon 
+    transportables only = 1
+        3 photon 11
+        18 H1 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H2 He3 photon 
+    transportables only = 1
+        3 photon 11
+        20 H2 10
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H2 He3 photon 
+    transportables only = 1
+        3 photon 11
+        18 H1 -1
+        20 H2 10
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H3 He3 photon 
+    transportables only = 1
+        3 photon 11
+        22 H3 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H3 He3 photon 
+    transportables only = 1
+        3 photon 11
+        18 H1 -1
+        22 H3 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H2 H3 He3 photon 
+    transportables only = 1
+        3 photon 11
+        20 H2 10
+        22 H3 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H2 H3 He3 photon 
+    transportables only = 1
+        3 photon 11
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+He4 photon 
+    transportables only = 1
+        3 photon 11
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 He4 photon 
+    transportables only = 1
+        3 photon 11
+        18 H1 -1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H2 He4 photon 
+    transportables only = 1
+        3 photon 11
+        20 H2 10
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H2 He4 photon 
+    transportables only = 1
+        3 photon 11
+        18 H1 -1
+        20 H2 10
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H3 He4 photon 
+    transportables only = 1
+        3 photon 11
+        22 H3 -1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H3 He4 photon 
+    transportables only = 1
+        3 photon 11
+        18 H1 -1
+        22 H3 -1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H2 H3 He4 photon 
+    transportables only = 1
+        3 photon 11
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H2 H3 He4 photon 
+    transportables only = 1
+        3 photon 11
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+He3 He4 photon 
+    transportables only = 1
+        3 photon 11
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 He3 He4 photon 
+    transportables only = 1
+        3 photon 11
+        18 H1 -1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H2 He3 He4 photon 
+    transportables only = 1
+        3 photon 11
+        20 H2 10
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H2 He3 He4 photon 
+    transportables only = 1
+        3 photon 11
+        18 H1 -1
+        20 H2 10
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H3 He3 He4 photon 
+    transportables only = 1
+        3 photon 11
+        22 H3 -1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H3 He3 He4 photon 
+    transportables only = 1
+        3 photon 11
+        18 H1 -1
+        22 H3 -1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H2 H3 He3 He4 photon 
+    transportables only = 1
+        3 photon 11
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H2 H3 He3 He4 photon 
+    transportables only = 1
+        3 photon 11
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+n photon 
+    transportables only = 1
+        3 photon 11
+        6 n 0
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 n photon 
+    transportables only = 1
+        3 photon 11
+        6 n 0
+        18 H1 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H2 n photon 
+    transportables only = 1
+        3 photon 11
+        6 n 0
+        20 H2 10
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H2 n photon 
+    transportables only = 1
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H3 n photon 
+    transportables only = 1
+        3 photon 11
+        6 n 0
+        22 H3 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H3 n photon 
+    transportables only = 1
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        22 H3 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H2 H3 n photon 
+    transportables only = 1
+        3 photon 11
+        6 n 0
+        20 H2 10
+        22 H3 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H2 H3 n photon 
+    transportables only = 1
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+He3 n photon 
+    transportables only = 1
+        3 photon 11
+        6 n 0
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 He3 n photon 
+    transportables only = 1
+        3 photon 11
+        6 n 0
+        18 H1 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H2 He3 n photon 
+    transportables only = 1
+        3 photon 11
+        6 n 0
+        20 H2 10
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H2 He3 n photon 
+    transportables only = 1
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H3 He3 n photon 
+    transportables only = 1
+        3 photon 11
+        6 n 0
+        22 H3 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H3 He3 n photon 
+    transportables only = 1
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        22 H3 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H2 H3 He3 n photon 
+    transportables only = 1
+        3 photon 11
+        6 n 0
+        20 H2 10
+        22 H3 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H2 H3 He3 n photon 
+    transportables only = 1
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+He4 n photon 
+    transportables only = 1
+        3 photon 11
+        6 n 0
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 He4 n photon 
+    transportables only = 1
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H2 He4 n photon 
+    transportables only = 1
+        3 photon 11
+        6 n 0
+        20 H2 10
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H2 He4 n photon 
+    transportables only = 1
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H3 He4 n photon 
+    transportables only = 1
+        3 photon 11
+        6 n 0
+        22 H3 -1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H3 He4 n photon 
+    transportables only = 1
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        22 H3 -1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H2 H3 He4 n photon 
+    transportables only = 1
+        3 photon 11
+        6 n 0
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H2 H3 He4 n photon 
+    transportables only = 1
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+He3 He4 n photon 
+    transportables only = 1
+        3 photon 11
+        6 n 0
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 He3 He4 n photon 
+    transportables only = 1
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H2 He3 He4 n photon 
+    transportables only = 1
+        3 photon 11
+        6 n 0
+        20 H2 10
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H2 He3 He4 n photon 
+    transportables only = 1
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H3 He3 He4 n photon 
+    transportables only = 1
+        3 photon 11
+        6 n 0
+        22 H3 -1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H3 He3 He4 n photon 
+    transportables only = 1
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        22 H3 -1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H2 H3 He3 He4 n photon 
+    transportables only = 1
+        3 photon 11
+        6 n 0
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1
+
+H1 H2 H3 He3 He4 n photon 
+    transportables only = 1
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+    transportables only = 0
+        3 photon 11
+        6 n 0
+        18 H1 -1
+        20 H2 10
+        22 H3 -1
+        37 He4 -1
+        85 Be9 -1
+        143 C12 -1
+        145 C13 -1
+        176 N14 -1
+        178 N15 -1
+        180 N16 -1
+        209 O15 -1
+        211 O16 -1
+        213 O17 -1

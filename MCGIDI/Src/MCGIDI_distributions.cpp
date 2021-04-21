@@ -10,7 +10,6 @@
 #include <math.h>
 
 #include "MCGIDI.hpp"
-#include "MCGIDI_declareMacro.hpp"
 
 static const double C0 = 1.0410423479, C1 = 3.9626339162e-4, C2 =-1.8654539193e-3, C3 = 1.0264818153e-4;
 
@@ -44,7 +43,7 @@ HOST_DEVICE Distribution::Distribution( ) :
 /* *********************************************************************************************************//**
  * @param a_type                [in]    The Type of the distribution.
  * @param a_distribution        [in]    The GIDI::Distributions::Distribution instance whose data is to be used to construct *this*.
- * @param a_setupInfo           in]    Used internally when constructing a Protare to pass information to other constructors.
+ * @param a_setupInfo           [in]    Used internally when constructing a Protare to pass information to other constructors.
  ***********************************************************************************************************/
 
 HOST Distribution::Distribution( Type a_type, GIDI::Distributions::Distribution const &a_distribution, SetupInfo &a_setupInfo ) :
@@ -678,9 +677,11 @@ HOST_DEVICE EnergyAngularMC::~EnergyAngularMC( ) {
 
 HOST_DEVICE void EnergyAngularMC::sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const {
 
+    double energyOut_1, energyOut_2;
+
     a_input.m_sampledType = Sampling::SampledType::uncorrelatedBody;
-    a_input.m_energyOut1 = m_energy->sample( a_X, a_userrng( a_rngState ), a_userrng, a_rngState );
-    a_input.m_mu = m_angularGivenEnergy->sample( a_X, a_input.m_energyOut1, a_userrng( a_rngState ), a_userrng, a_rngState );
+    a_input.m_energyOut1 = m_energy->sample2dOf3d( a_X, a_userrng( a_rngState ), a_userrng, a_rngState, &energyOut_1, &energyOut_2 );
+    a_input.m_mu = m_angularGivenEnergy->sample( a_X, energyOut_1, energyOut_2, a_userrng( a_rngState ), a_userrng, a_rngState );
     a_input.m_phi = 2. * M_PI * a_userrng( a_rngState );
     a_input.m_frame = productFrame( );
 }
@@ -804,9 +805,11 @@ HOST_DEVICE AngularEnergyMC::~AngularEnergyMC( ) {
 
 HOST_DEVICE void AngularEnergyMC::sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const {
 
+    double mu_1, mu_2;
+
     a_input.m_sampledType = Sampling::SampledType::uncorrelatedBody;
-    a_input.m_mu = m_angular->sample( a_X, a_userrng( a_rngState ), a_userrng, a_rngState );
-    a_input.m_energyOut1 = m_energyGivenAngular->sample( a_X, a_input.m_mu, a_userrng( a_rngState ), a_userrng, a_rngState );
+    a_input.m_mu = m_angular->sample2dOf3d( a_X, a_userrng( a_rngState ), a_userrng, a_rngState, &mu_1, &mu_2 );
+    a_input.m_energyOut1 = m_energyGivenAngular->sample( a_X, mu_1, mu_2, a_userrng( a_rngState ), a_userrng, a_rngState );
     a_input.m_phi = 2. * M_PI * a_userrng( a_rngState );
     a_input.m_frame = productFrame( );
 }
@@ -830,7 +833,7 @@ HOST_DEVICE double AngularEnergyMC::angleBiasing( Reaction const *a_reaction, do
 
     if( productFrame( ) != GIDI::Frame::lab ) THROW( "AngularEnergyMC::angleBiasing: center-of-mass not supported." );
 
-    a_energy_out = m_energyGivenAngular->sample( a_energy_in, a_mu_lab, a_userrng( a_rngState), a_userrng, a_rngState );
+    a_energy_out = m_energyGivenAngular->sample( a_energy_in, a_mu_lab, a_mu_lab, a_userrng( a_rngState), a_userrng, a_rngState );
     return( m_angular->evaluate( a_energy_in, a_mu_lab ) );
 }
 
@@ -1199,7 +1202,7 @@ HOST_DEVICE CoherentPhotoAtomicScattering::~CoherentPhotoAtomicScattering( ) {
 HOST_DEVICE double CoherentPhotoAtomicScattering::evaluate( double a_energyIn, double a_mu ) const {
 
     double probability;
-    MCGIDI_VectorSizeType lowerIndexEnergy = binarySearchVector( a_energyIn, m_energies );
+    MCGIDI_VectorSizeType lowerIndexEnergy = binarySearchVector( a_energyIn, m_energies );      // FIXME - need to handle case where lowerIndexEnergy = 0 like in evaluateScatteringFunction.
     double _a = m_a[lowerIndexEnergy];
     double _a_2 = _a * _a;
     double X1 = m_energies[lowerIndexEnergy];
@@ -1249,7 +1252,8 @@ HOST_DEVICE double CoherentPhotoAtomicScattering::evaluateFormFactor( double a_e
     double X = a_energyIn * sqrt( 0.5 * ( 1 - a_mu ) );
     MCGIDI_VectorSizeType lowerIndex = binarySearchVector( X, m_energies );
 
-    if( lowerIndex < 0 ) {
+    if( lowerIndex < 1 ) {
+        if( lowerIndex == 0 ) return( m_formFactor[0] );
         if( lowerIndex == -2 ) return( m_formFactor[0] );               // This should never happend for proper a_energyIn and a_mu.
         return( m_formFactor.back( ) );
     }
@@ -1446,33 +1450,6 @@ HOST_DEVICE void CoherentPhotoAtomicScattering::serialize( DataBuffer &a_buffer,
     }
 }
 
-/* *********************************************************************************************************//**
- * This method counts the number of bytes of memory allocated by *this*. That is the member needed by *this* that is greater than
- * sizeof( *this );
- ***********************************************************************************************************/
-
-HOST_DEVICE long CoherentPhotoAtomicScattering::internalSize( ) const {
-
-    long size = (long) ( m_energies.internalSize( ) + m_formFactor.internalSize( ) + m_a.internalSize( ) 
-            + m_integratedFormFactor.internalSize( ) + m_integratedFormFactorSquared.internalSize( )
-            + m_probabilityNorm1_1.internalSize( )  + m_probabilityNorm1_3.internalSize( )  + m_probabilityNorm1_5.internalSize( )
-            + m_probabilityNorm2_1.internalSize( ) + m_probabilityNorm2_3.internalSize( ) + m_probabilityNorm2_5.internalSize( ) );
-
-    if( m_anomalousDataPresent ) size += m_realAnomalousFactor->sizeOf( ) + m_imaginaryAnomalousFactor->sizeOf( );
-
-    return( size );
-}
-
-/* *********************************************************************************************************//**
- * This method counts the number of bytes of memory allocated by *this*. That is the member needed by *this* that is greater than
- * sizeof( *this );
- ***********************************************************************************************************/
-
-HOST_DEVICE long CoherentPhotoAtomicScattering::sizeOf( ) const {
-
-    return( sizeof( *this ) );
-}
-
 /*! \class IncoherentPhotoAtomicScattering
  * This class represents the distribution for an outgoing photon via incoherent photo-atomic elastic scattering.
  */
@@ -1588,7 +1565,7 @@ HOST_DEVICE IncoherentPhotoAtomicScattering::~IncoherentPhotoAtomicScattering( )
 
 HOST_DEVICE double IncoherentPhotoAtomicScattering::energyRatio( double a_energyIn, double a_mu ) const {
 
-    double relativeEnergy = a_energyIn / MCGIDI_electronMass_c2;
+    double relativeEnergy = a_energyIn / PoPI_electronMass_MeV_c2;
 
     return( 1.0 / ( 1.0 + relativeEnergy * ( 1.0 - a_mu ) ) );
 }
@@ -1602,7 +1579,7 @@ HOST_DEVICE double IncoherentPhotoAtomicScattering::energyRatio( double a_energy
 
 HOST_DEVICE double IncoherentPhotoAtomicScattering::evaluateKleinNishina( double a_energyIn, double a_mu ) const {
 
-    double relativeEnergy = a_energyIn / MCGIDI_electronMass_c2;
+    double relativeEnergy = a_energyIn / PoPI_electronMass_MeV_c2;
     double _energyRatio = energyRatio( a_energyIn, a_mu );
     double one_minus_mu = 1.0 - a_mu;
 
@@ -1644,7 +1621,7 @@ HOST_DEVICE double IncoherentPhotoAtomicScattering::evaluateScatteringFunction( 
 
 HOST_DEVICE void IncoherentPhotoAtomicScattering::sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const {
 
-    double k1 = a_X / MCGIDI_electronMass_c2;
+    double k1 = a_X / PoPI_electronMass_MeV_c2;
     double energyOut, mu, scatteringFunction;
 
     if( a_X >= m_energies.back( ) ) {
@@ -1658,7 +1635,7 @@ HOST_DEVICE void IncoherentPhotoAtomicScattering::sample( double a_X, Sampling::
     }
 
     a_input.m_sampledType = Sampling::SampledType::uncorrelatedBody;
-    a_input.m_energyOut1 = energyOut * MCGIDI_electronMass_c2;
+    a_input.m_energyOut1 = energyOut * PoPI_electronMass_MeV_c2;
     a_input.m_mu = mu;
     a_input.m_phi = 2.0 * M_PI * a_userrng( a_rngState );
     a_input.m_frame = productFrame( );
@@ -1687,9 +1664,9 @@ HOST_DEVICE double IncoherentPhotoAtomicScattering::angleBiasing( Reaction const
     double norm = M_PI * MCGIDI_classicalElectronRadius * MCGIDI_classicalElectronRadius / sigma;
 
     double one_minus_mu = 1.0 - a_mu_lab;
-    double k_in = a_energy_in / MCGIDI_electronMass_c2;
+    double k_in = a_energy_in / PoPI_electronMass_MeV_c2;
     a_energy_out = a_energy_in / ( 1.0 + k_in * one_minus_mu );
-    double k_out = a_energy_out / MCGIDI_electronMass_c2;
+    double k_out = a_energy_out / PoPI_electronMass_MeV_c2;
 
     double k_ratio = k_out / k_in;
     double probability = evaluateScatteringFunction( a_energy_in * sqrt( 0.5 * one_minus_mu ) );
@@ -1714,28 +1691,6 @@ HOST_DEVICE void IncoherentPhotoAtomicScattering::serialize( DataBuffer &a_buffe
     DATA_MEMBER_VECTOR_DOUBLE( m_scatteringFunction, a_buffer, a_mode );
     DATA_MEMBER_VECTOR_DOUBLE( m_a, a_buffer, a_mode );
 
-}
-
-/* *********************************************************************************************************//**
- * This method counts the number of bytes of memory allocated by *this*. That is the member needed by *this* that is greater than
- * sizeof( *this );
- ***********************************************************************************************************/
-
-HOST_DEVICE long IncoherentPhotoAtomicScattering::internalSize( ) const {
-
-    long size = (long) ( m_energies.internalSize( ) + m_scatteringFunction.internalSize( ) + m_a.internalSize( ) );
-
-    return( size );
-}
-
-/* *********************************************************************************************************//**
- * This method counts the number of bytes of memory allocated by *this*. That is the member needed by *this* that is greater than
- * sizeof( *this );
- ***********************************************************************************************************/
-
-HOST_DEVICE long IncoherentPhotoAtomicScattering::sizeOf( ) const {
-
-    return( sizeof( *this ) );
 }
 
 /*! \class PairProductionGamma
@@ -1786,7 +1741,7 @@ HOST_DEVICE void PairProductionGamma::sample( double a_X, Sampling::Input &a_inp
         a_input.m_phi += M_PI;
     }
     a_input.m_sampledType = Sampling::SampledType::uncorrelatedBody;
-    a_input.m_energyOut1 = MCGIDI_electronMass_c2;
+    a_input.m_energyOut1 = PoPI_electronMass_MeV_c2;
     a_input.m_frame = productFrame( );
 }
 
@@ -1807,7 +1762,7 @@ HOST_DEVICE void PairProductionGamma::sample( double a_X, Sampling::Input &a_inp
 HOST_DEVICE double PairProductionGamma::angleBiasing( Reaction const *a_reaction, double a_energy_in, double a_mu_lab, 
                 double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const {
 
-    a_energy_out = MCGIDI_electronMass_c2;
+    a_energy_out = PoPI_electronMass_MeV_c2;
     return( 1.0 );                          // 1.0 as there are two photons.
 }
 

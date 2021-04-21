@@ -21,12 +21,13 @@ namespace Functions {
  *
  * @param a_construction    [in]    Used to pass user options for parsing.
  * @param a_node            [in]    The **pugi::xml_node** to be parsed and used to construct the XYs2d.
+ * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-Branching1d::Branching1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, Suite *a_parent ) :
-        Function1dForm( a_construction, a_node, FormType::branching1d, a_parent ),
-        m_pids( a_node.child( pidsMoniker ), NULL ),
+Branching1d::Branching1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+        Function1dForm( a_construction, a_node, a_setupInfo, FormType::branching1d, a_parent ),
+        m_pids( a_node.child( GIDI_pidsChars ), a_setupInfo, nullptr ),
         m_multiplicity( 0.0 ) {
 
 }
@@ -75,15 +76,18 @@ double Branching1d::evaluate( double a_x1 ) const {
 
 /*
 =========================================================
+ * This class is deprecated and should not be being used.
  *
- * @param a_node
- * @param a_parent
+ * @param a_node            [in]    The **pugi::xml_node** to be parsed and used to construct the XYs2d.
+ * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
+ * @param a_parent          [in]    The parent GIDI::Suite.
+ *
  * @return
  */
-Branching1dPids::Branching1dPids( pugi::xml_node const &a_node, Suite *a_parent ) :
-        Form( a_node, FormType::branching1dPids, a_parent ),
-        m_initial( a_node.attribute( initialAttribute ).value( ) ),
-        m_final( a_node.attribute( finalAttribute ).value( ) ) {
+Branching1dPids::Branching1dPids( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+        Form( a_node, a_setupInfo, FormType::branching1dPids, a_parent ),
+        m_initial( a_node.attribute( GIDI_initialChars ).value( ) ),
+        m_final( a_node.attribute( GIDI_finalChars ).value( ) ) {
 
 }
 /*

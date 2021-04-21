@@ -49,7 +49,13 @@ HOST OutputChannel::OutputChannel( GIDI::OutputChannel const *a_outputChannel, S
         m_channelType = a_outputChannel->twoBody( ) ? ChannelType::twoBody : ChannelType::uncorrelatedBodies;
         m_isFission = a_outputChannel->isFission( );
 
-        m_Q = Functions::parseFunction1d( a_settings, a_outputChannel->Q( ) );
+        m_Q = Functions::parseFunction1d( a_outputChannel->Q( ).get<GIDI::Functions::Function1dForm>( 0 ) );
+        if( a_setupInfo.m_isPairProduction ) {
+            double domainMin = m_Q->domainMin( ), domainMax = m_Q->domainMax( );
+
+            delete m_Q;
+            m_Q = new Functions::Constant1d( domainMin, domainMax, 0.0 );
+        }
         a_setupInfo.m_Q = m_Q->evaluate( 0 );                                  // Needed for NBodyPhaseSpace.
 
         GIDI::Suite const &products = a_outputChannel->products( );
@@ -330,6 +336,10 @@ HOST_DEVICE void OutputChannel::serialize( DataBuffer &a_buffer, DataBuffer::Mod
             }
         }
     }
+    if( a_mode == DataBuffer::Mode::Memory ) {
+        a_buffer.m_placement += m_products.internalSize();
+        a_buffer.incrementPlacement( sizeof(Product)*vectorSize);
+    }
     for( std::size_t vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
         m_products[vectorIndex]->serialize( a_buffer, a_mode );
     }
@@ -352,33 +362,13 @@ HOST_DEVICE void OutputChannel::serialize( DataBuffer &a_buffer, DataBuffer::Mod
             }
         }
     }
+    if( a_mode == DataBuffer::Mode::Memory ) {
+        a_buffer.m_placement += m_delayedNeutrons.internalSize();
+        a_buffer.incrementPlacement(sizeof( DelayedNeutron ) * vectorSize);
+    }
     for( std::size_t vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
         m_delayedNeutrons[vectorIndex]->serialize( a_buffer, a_mode );
     }
-}
-
-/* *********************************************************************************************************//**
- * This method counts the number of bytes of memory allocated by *this*. That is the member needed by *this* that is greater than
- * sizeof( *this );
- ***********************************************************************************************************/
-
-HOST_DEVICE long OutputChannel::internalSize( ) const {
-
-    long size = 0;
-
-    if( m_Q != nullptr ) size += m_Q->sizeOf( ) + m_Q->internalSize( );
-    size += m_products.internalSize( );
-    for( MCGIDI_VectorSizeType productIndex = 0; productIndex < m_products.size( ); ++productIndex ) {
-        size += sizeof( *m_products[productIndex] ) + m_products[productIndex]->internalSize( );
-    }
-
-    if( m_totalDelayedNeutronMultiplicity != nullptr ) size += m_totalDelayedNeutronMultiplicity->sizeOf( ) + m_totalDelayedNeutronMultiplicity->internalSize( );
-    size += m_delayedNeutrons.internalSize( );
-    for( MCGIDI_VectorSizeType delayedNeutronIndex = 0; delayedNeutronIndex < m_delayedNeutrons.size( ); ++delayedNeutronIndex ) {
-        size += sizeof( *m_delayedNeutrons[delayedNeutronIndex] ) + m_delayedNeutrons[delayedNeutronIndex]->internalSize( );
-    }
-
-    return( size );
 }
 
 }

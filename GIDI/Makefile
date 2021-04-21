@@ -7,13 +7,12 @@ SHELL = /bin/ksh
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
+.PHONY: default include lib bin clean realclean docs doDIRS
+
 DIRS = Src include lib Test bin Doc Examples
 
-POPs_PATH = $(abspath ../PoPI)
-SMR_PATH = $(abspath ../statusMessageReporting)
-NF_PATH = $(abspath ../numericalFunctions)
-
-.PHONY: default include lib bin clean realclean
+GIDI_PLUS_PATH ?= $(abspath ..)
+export GIDI_PLUS_PATH
 
 default: include lib
 	cd Test; $(MAKE) default
@@ -23,13 +22,13 @@ include:
 	cd include; $(MAKE)
 
 lib:
-	cd lib; $(MAKE) CXX=$(CXX) CXXFLAGS='$(CXXFLAGS)' POPs_PATH='$(POPs_PATH)' SMR_PATH='$(SMR_PATH)' NF_PATH='$(NF_PATH)'
+	cd lib; $(MAKE)
 
 bin:
-	cd bin; $(MAKE) CXX=$(CXX) CXXFLAGS='$(CXXFLAGS)' POPs_PATH='$(POPs_PATH)' SMR_PATH='$(SMR_PATH)' NF_PATH='$(NF_PATH)' bin
+	cd bin; $(MAKE) bin
 
 check:
-	cd Test; $(MAKE) CXX=$(CXX) CXXFLAGS='$(CXXFLAGS)' POPs_PATH='$(POPs_PATH)' SMR_PATH='$(SMR_PATH)' NF_PATH='$(NF_PATH)' check
+	cd Test; $(MAKE) check
 
 clean:
 	$(MAKE) doDIRS _DIRS="$(DIRS)" _TARGET=clean

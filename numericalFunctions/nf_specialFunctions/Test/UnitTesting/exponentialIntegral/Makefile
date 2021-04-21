@@ -9,7 +9,7 @@ SHELL = /bin/sh
 
 TARGETS = exponentialIntegralTest
 
-SMR_PATH = ../../../../../statusMessageReporting
+SMR_PATH = ../../../../statusMessageReporting
 NUMERICALFUNCTIONS_PATH = ../../../..
 
 ptwXYCFLAGS = -I$(NUMERICALFUNCTIONS_PATH)/include -L$(NUMERICALFUNCTIONS_PATH)/lib -lnumericalfunctions \

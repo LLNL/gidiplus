@@ -39,7 +39,7 @@ HOST DelayedNeutron::DelayedNeutron( int a_index, GIDI::DelayedNeutron const *a_
         m_rate( 0.0 ),
         m_product( &a_delayedNeutron->product( ), a_setupInfo, a_settings, a_particles, false ) {
 
-    GIDI::Rate const *rate = a_delayedNeutron->rate( ).get<GIDI::Rate>( 0 );
+    GIDI::PhysicalQuantity const *rate = a_delayedNeutron->rate( ).get<GIDI::PhysicalQuantity>( 0 );
     m_rate = rate->value( );
 }
 
@@ -75,16 +75,6 @@ HOST_DEVICE void DelayedNeutron::serialize( DataBuffer &a_buffer, DataBuffer::Mo
     DATA_MEMBER_INT( m_delayedNeutronIndex, a_buffer, a_mode );
     DATA_MEMBER_FLOAT( m_rate, a_buffer, a_mode );
     m_product.serialize( a_buffer, a_mode );
-}
-
-/* *********************************************************************************************************//**
- * This method counts the number of bytes of memory allocated by *this*. That is the member needed by *this* that is greater than
- * sizeof( *this );
- ***********************************************************************************************************/
-
-HOST_DEVICE long DelayedNeutron::internalSize( ) const {
-
-    return( m_product.internalSize( ) );
 }
 
 }

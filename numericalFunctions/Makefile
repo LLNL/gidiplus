@@ -12,10 +12,10 @@ PYTHON = python
 SOURCE_DIRS = ptwC ptwX ptwXY nf_Legendre nf_specialFunctions nf_integration
 SUB_DIRS = include lib $(SOURCE_DIRS) Doc _Src
 
-.PHONY: default purgeIncludeAndLib includeAndLib $(SOURCE_DIRS) python utilities check checke checkPython checkePython \
-	collectSources clean realclean doTarget
+.PHONY: default purgeIncludeAndLib includeAndLib $(SOURCE_DIRS) python utilities docs check checke checkPython checkePython \
+	collectSources clean realclean doTarget statusMessageReporting
 
-SMR_PATH = $(abspath ../statusMessageReporting)
+SMR_PATH = $(abspath ./statusMessageReporting)
 SMR_INCLUDE_PATH = $(SMR_PATH)/include
 SMR_LIB_PATH = $(SMR_PATH)/lib
 
@@ -24,7 +24,7 @@ MAKEFLAGS += SMR_PATH=$(SMR_PATH)
 default: purgeIncludeAndLib $(SOURCE_DIRS)
 	$(MAKE) utilities
 
-purgeIncludeAndLib:
+purgeIncludeAndLib: 
 	cd include; $(MAKE) realclean
 	cd lib; $(MAKE) realclean
 
@@ -32,7 +32,12 @@ includeAndLib:
 	cd include; $(MAKE) NFUPDATING_PATH=$(NFUPDATING_PATH)
 	cd lib; $(MAKE) NFUPDATING_PATH=$(NFUPDATING_PATH)
 
-ptwC:
+statusMessageReporting:
+	cd statusMessageReporting; $(MAKE)
+	cp statusMessageReporting/include/*.h include
+	cp statusMessageReporting/lib/*.a lib
+
+ptwC: statusMessageReporting
 	cd ptwC; $(MAKE)
 	$(MAKE) includeAndLib NFUPDATING_PATH=../ptwC
 
@@ -62,6 +67,8 @@ python:
 utilities:
 	$(MAKE) doTarget MODE=utilities SUB_DIRS="$(SOURCE_DIRS)"
 
+docs:
+
 check:
 	$(MAKE) doTarget MODE=check SUB_DIRS="$(SOURCE_DIRS)"
 
@@ -79,12 +86,14 @@ collectSources:
 
 clean:
 	rm -rf build
+	cd statusMessageReporting; $(MAKE) clean
 	$(MAKE) doTarget MODE=clean
 
 realclean:
 	rm -rf build *.pyc __pycache__
+	cd statusMessageReporting; $(MAKE) realclean
 	$(MAKE) doTarget MODE=realclean
 
-doTarget:
+doTarget: 
 	SAVED_PWD=`pwd`; \
 	for directory in $(SUB_DIRS); do cd $$directory; $(MAKE) $(MODE); cd $$SAVED_PWD; done

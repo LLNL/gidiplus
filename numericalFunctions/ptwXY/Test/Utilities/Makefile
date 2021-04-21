@@ -11,7 +11,7 @@ SHELL = /bin/sh
 
 ARFLAGS = rc
 
-SMR_PATH = ../../../../statusMessageReporting
+SMR_PATH = ../../../statusMessageReporting
 NUMERICALFUNCTIONS_PATH = ../../..
 
 localCFLAGS = $(CFLAGS) -I$(NUMERICALFUNCTIONS_PATH)/include -I$(SMR_PATH)/include

@@ -104,7 +104,7 @@ int main( int argc, char **argv ) {
     protares[0] = MCProtare;
     MCGIDI::URR_protareInfos URR_protare_infos( protares );
 
-    MCGIDI::MultiGroupHash multiGroupHash( *protare );
+    MCGIDI::MultiGroupHash multiGroupHash( *protare, temperatures[0] );
 
     for( MCGIDI_VectorSizeType i1 = 0; i1 < (MCGIDI_VectorSizeType) MCProtare->numberOfReactions( ); ++i1 ) {
         MCGIDI::Reaction const &reaction = *MCProtare->reaction( i1 );

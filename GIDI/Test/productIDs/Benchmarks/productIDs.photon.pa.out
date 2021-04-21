@@ -1,0 +1,17 @@
+/.../GIDI/Test/Data/MG_MC/photo-atomic/photoat-008_O_000.xml
+
+All particle IDs in protare:  photon O16 e-
+
+Transportable particle IDs in protare:  photon
+
+All particle IDs by reaction:
+    O + photon [coherent]:  photon O16
+    O + photon [incoherent]:  photon O16
+    e- + O [photo-electric]:  O16 e-
+    O + photon [pair production: electron field]:  photon O16
+
+Transportable particle IDs by reaction:
+    O + photon [coherent]:  photon
+    O + photon [incoherent]:  photon
+    e- + O [photo-electric]: 
+    O + photon [pair production: electron field]:  photon

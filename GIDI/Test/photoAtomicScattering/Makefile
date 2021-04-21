@@ -7,44 +7,13 @@ SHELL = /bin/ksh
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
-.PHONY: default coherentPhotonScattering clean realclean
+GIDI_PLUS_PATH ?= $(abspath ../../..)
+CppSource = $(sort $(wildcard *.cpp))
 
-PUGIXML_PATH = ../../../pugixml
-PUGIXML_INCLUDE = $(PUGIXML_PATH)/include
-PUGIXML_LIB = $(PUGIXML_PATH)/lib
+include ../../Makefile.paths
+include ../Makefile.check
 
-POPs_PATH = ../../../PoPI
-POPs_INCLUDE = $(POPs_PATH)/include
-POPs_LIB = $(POPs_PATH)/lib
-
-SMR_PATH = ../../../statusMessageReporting
-SMR_INCLUDE = $(SMR_PATH)/include
-SMR_LIB = $(SMR_PATH)/lib
-
-NF_PATH = ../../../numericalFunctions
-NF_INCLUDE = $(NF_PATH)/include
-NF_LIB = $(NF_PATH)/lib
-
-local_CXXFLAGS = $(CXXFLAGS) -I../../include -L../../lib \
-		-I../Utilities -L../Utilities \
-		-I$(POPs_INCLUDE) -L$(POPs_LIB) \
-		-I$(SMR_INCLUDE) -L$(SMR_LIB) \
-		-I$(NF_INCLUDE) -L$(NF_LIB) \
-        -I$(PUGIXML_INCLUDE) -L$(PUGIXML_LIB)
-
-LIBS = -lGIDI_testUtilities -lGIDI -lPoPI -lstatusMessageReporting -lnumericalfunctions -lpugixml
-
-default: coherentPhotonScattering
-
-coherentPhotonScattering: coherentPhotonScattering.cpp
-	$(CXX) $(local_CXXFLAGS) -o coherentPhotonScattering coherentPhotonScattering.cpp $(LIBS)
-
-check: coherentPhotonScattering
-	./coherentPhotonScattering > o1
-	python ../Utilities/diff.py photoAtomicScattering/coherentPhotonScattering coherentPhotonScattering.out o1
-
-clean:
-	rm -f coherentPhotonScattering o[0-9]*
-
-realclean: clean
-	rm -rf *.dSYM
+check: $(Executables)
+	if [ ! -e Outputs ]; then mkdir Outputs; fi
+	./coherentPhotonScattering > Outputs/coherentPhotonScattering.out
+	python ../Utilities/diff.py photoAtomicScattering/coherentPhotonScattering Benchmarks/coherentPhotonScattering.out Outputs/coherentPhotonScattering.out

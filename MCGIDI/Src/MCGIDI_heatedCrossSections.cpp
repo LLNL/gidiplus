@@ -17,6 +17,8 @@
 
 namespace MCGIDI {
 
+static void writeVector( FILE *a_file, std::string const &a_prefix, int a_offset, Vector<double> const &a_vector );
+
 /*
 ============================================================
 ======= HeatedReactionCrossSectionContinuousEnergy =========
@@ -84,20 +86,6 @@ HOST_DEVICE void HeatedReactionCrossSectionContinuousEnergy::serialize( DataBuff
     m_URR_probabilityTables = serializeProbability2d( a_buffer, a_mode, m_URR_probabilityTables );
 }
 
-/* *********************************************************************************************************//**
- * This method counts the number of bytes of memory allocated by *this*. That is the member needed by *this* that is greater than
- * sizeof( *this );
- ***********************************************************************************************************/
-
-HOST_DEVICE long HeatedReactionCrossSectionContinuousEnergy::sizeOf( ) const { 
-
-    long size = (long) ( sizeof( *this ) + m_crossSection.internalSize( ) );
-
-    if( m_URR_probabilityTables != nullptr ) size += m_URR_probabilityTables->sizeOf( ) + m_URR_probabilityTables->internalSize( );
-
-    return( size );
-}
-
 /*
 ============================================================
 =================== ContinuousEnergyGain ===================
@@ -157,16 +145,6 @@ HOST_DEVICE void ContinuousEnergyGain::serialize( DataBuffer &a_buffer, DataBuff
     DATA_MEMBER_VECTOR_DOUBLE( m_gain, a_buffer, a_mode );
 }
 
-/* *********************************************************************************************************//**
- * This method counts the number of bytes of memory allocated by *this*. That is the member needed by *this* that is greater than
- * sizeof( *this );
- ***********************************************************************************************************/
-
-HOST_DEVICE long ContinuousEnergyGain::sizeOf( ) const {
-
-    return( sizeof( *this ) + m_gain.internalSize( ) );
-}
-
 /*
 ============================================================
 =========== HeatedCrossSectionContinuousEnergy =============
@@ -184,12 +162,23 @@ HOST_DEVICE HeatedCrossSectionContinuousEnergy::HeatedCrossSectionContinuousEner
         m_reactionCrossSections( ) {
 
 }
-/*
-============================================================
-*/
-HOST HeatedCrossSectionContinuousEnergy::HeatedCrossSectionContinuousEnergy( SetupInfo &a_setupInfo, Transporting::MC const &a_settings, GIDI::Transporting::Particles const &a_particles, 
-                DomainHash const &a_domainHash, GIDI::Styles::TemperatureInfo const &a_temperatureInfo, std::vector<GIDI::Reaction const *> const &a_reactions,
-                bool a_fixedGrid ) :
+
+/* *********************************************************************************************************//**
+ * Fills in *this* with the requested temperature data.
+ *
+ * @param a_setupInfo                   [in]    Used internally when constructing a Protare to pass information to other components.
+ * @param a_settings                    [in]    Used to pass user options to the *this* to instruct it which data are desired.
+ * @param a_particles                   [in]    List of transporting particles and their information (e.g., multi-group boundaries and fluxes).
+ * @param a_domainHash                  [in]    The hash data used when looking up a cross section.
+ * @param a_temperatureInfo             [in]    The list of temperatures to use.
+ * @param a_reactions                   [in]    The list of reactions to use.
+ * @param a_orphanProducts              [in]    The list of orphan products to use.
+ * @param a_fixedGrid                   [in]    If true, the specified fixed grid is used; otherwise, grid in the file is used.
+ ***********************************************************************************************************/
+
+HOST HeatedCrossSectionContinuousEnergy::HeatedCrossSectionContinuousEnergy( SetupInfo &a_setupInfo, Transporting::MC const &a_settings, 
+                GIDI::Transporting::Particles const &a_particles, DomainHash const &a_domainHash, GIDI::Styles::TemperatureInfo const &a_temperatureInfo, 
+                std::vector<GIDI::Reaction const *> const &a_reactions, std::vector<GIDI::Reaction const *> const &a_orphanProducts, bool a_fixedGrid ) :
         m_hashIndices( ),
         m_energies( ),
         m_totalCrossSection( ),
@@ -203,7 +192,6 @@ HOST HeatedCrossSectionContinuousEnergy::HeatedCrossSectionContinuousEnergy( Set
     std::string label( a_temperatureInfo.griddedCrossSection( ) );
     std::string URR_label( a_temperatureInfo.URR_probabilityTables( ) );
 
-// BRB6
     GIDI::Styles::GriddedCrossSection const &griddedCrossSectionStyle = 
             static_cast<GIDI::Styles::GriddedCrossSection const &>( *a_settings.styles( )->get<GIDI::Styles::Base>( label ) );
     GIDI::Grid const &grid = griddedCrossSectionStyle.grid( );
@@ -292,37 +280,54 @@ HOST HeatedCrossSectionContinuousEnergy::HeatedCrossSectionContinuousEnergy( Set
     }
 
     std::vector< std::vector<double> > gains( a_particles.particles( ).size( ) );
-    reactionIndex = 0;
-    for( std::vector<GIDI::Reaction const *>::const_iterator reactionIter = a_reactions.begin( ); reactionIter != a_reactions.end( ); ++reactionIter, ++reactionIndex ) {
-        HeatedReactionCrossSectionContinuousEnergy &MCGIDI_reaction_cross_section = *m_reactionCrossSections[reactionIndex];
-        int offset = MCGIDI_reaction_cross_section.offset( );
+    for( std::size_t reactionIndex = 0; reactionIndex < a_reactions.size( ) + a_orphanProducts.size( ); ++reactionIndex ) {
 
-        GIDI::Functions::Function1dForm const &available_energy = *(*reactionIter)->availableEnergy( ).get<GIDI::Functions::Function1dForm>( 0 );
-        GIDI::Functions::Function1dForm const &available_momentum = *(*reactionIter)->availableMomentum( ).get<GIDI::Functions::Function1dForm>( 0 );
-
+        int offset = 0;
         std::vector<double> deposition_energy( m_energies.size( ), 0.0 );
         std::vector<double> deposition_momentum( m_energies.size( ), 0.0 );
         std::vector<double> production_energy( m_energies.size( ), 0.0 );
         for( std::size_t i1 = 0; i1 < gains.size( ); ++i1 ) gains[i1] = std::vector<double>( m_energies.size( ), 0.0 );
 
+        HeatedReactionCrossSectionContinuousEnergy *MCGIDI_reaction_cross_section = nullptr;
+        GIDI::Reaction const *reaction = nullptr;
+        GIDI::Functions::Ys1d const *reactionCrossSection = nullptr;
+        GIDI::Functions::Function1dForm const *available_energy = nullptr;
+        GIDI::Functions::Function1dForm const *available_momentum = nullptr;
+        if( reactionIndex < a_reactions.size( ) ) {
+            reaction = a_reactions[reactionIndex];
+            available_energy = reaction->availableEnergy( ).get<GIDI::Functions::Function1dForm>( 0 );
+            available_momentum = reaction->availableMomentum( ).get<GIDI::Functions::Function1dForm>( 0 );
+            MCGIDI_reaction_cross_section = m_reactionCrossSections[reactionIndex];
+            offset = MCGIDI_reaction_cross_section->offset( ); }
+        else {
+            reaction = a_orphanProducts[reactionIndex-a_reactions.size( )];
+            GIDI::Suite const &reactionCrossSectionSuite = reaction->crossSection( );
+            reactionCrossSection = reactionCrossSectionSuite.get<GIDI::Functions::Ys1d>( label );
+            offset = reactionCrossSection->start( );
+        }
+
         for( int energy_index = offset; energy_index < m_energies.size( ); ++energy_index ) {
             double energy = m_energies[energy_index];
 
-            deposition_energy[energy_index] = available_energy.evaluate( energy );
-            deposition_momentum[energy_index] = available_momentum.evaluate( energy );
-            production_energy[energy_index] = deposition_energy[energy_index] - energy;
+            if( reactionCrossSection == nullptr ) {
+                deposition_energy[energy_index] = available_energy->evaluate( energy );
+                deposition_momentum[energy_index] = available_momentum->evaluate( energy );
+                production_energy[energy_index] = deposition_energy[energy_index] - energy;
+            }
 
             int i1 = 0;
             for( std::map<std::string, GIDI::Transporting::Particle>::const_iterator particle = a_particles.particles( ).begin( ); particle != a_particles.particles( ).end( ); 
                     ++particle, ++i1 ) {
                 double product_energy, product_momentum, product_gain;
 
-                if( (*reactionIter)->isPairProduction( ) && ( particle->first == PoPI::IDs::photon ) ) {
-                    product_energy = 2 * PoPI_electronMass_MeV_c2;
+                if( ( reactionCrossSection != nullptr ) && ( particle->first != PoPI::IDs::photon ) ) continue;
+
+                if( reaction->isPairProduction( ) && ( particle->first == PoPI::IDs::photon ) ) {
+                    product_energy = 0.0;
                     product_momentum = 0.0;
                     product_gain = 2.0; }
                 else {
-                    (*reactionIter)->continuousEnergyProductData( particle->first, energy, product_energy, product_momentum, product_gain );
+                    reaction->continuousEnergyProductData( particle->first, energy, product_energy, product_momentum, product_gain );
                 }
                 if( i1 == projectileGainIndex ) --product_gain;
 
@@ -332,8 +337,13 @@ HOST HeatedCrossSectionContinuousEnergy::HeatedCrossSectionContinuousEnergy( Set
             }
         }
 
+        double cross_section = 0.0;
         for( int energy_index = offset; energy_index < m_energies.size( ); ++energy_index ) {
-            double cross_section = MCGIDI_reaction_cross_section.crossSection( energy_index - offset );
+            if( reactionCrossSection == nullptr ) {
+                cross_section = MCGIDI_reaction_cross_section->crossSection( energy_index ); }
+            else {
+                cross_section = (*reactionCrossSection)[energy_index-offset];
+            }
 
             m_depositionEnergy[energy_index] += cross_section * deposition_energy[energy_index];
             m_depositionMomentum[energy_index] += cross_section * deposition_momentum[energy_index];
@@ -615,6 +625,7 @@ HOST_DEVICE void HeatedCrossSectionContinuousEnergy::serialize( DataBuffer &a_bu
     vectorSize = (MCGIDI_VectorSizeType) vectorSizeInt;
 
     if( a_mode == DataBuffer::Mode::Unpack ) m_reactionCrossSections.resize( vectorSize, &a_buffer.m_placement );
+    if( a_mode == DataBuffer::Mode::Memory ) a_buffer.m_placement += m_reactionCrossSections.internalSize();
     for( MCGIDI_VectorSizeType memberIndex = 0; memberIndex < vectorSize; ++memberIndex ) {
         if( a_mode == DataBuffer::Mode::Unpack ) {
             if( a_buffer.m_placement != nullptr ) {
@@ -624,6 +635,9 @@ HOST_DEVICE void HeatedCrossSectionContinuousEnergy::serialize( DataBuffer &a_bu
                 m_reactionCrossSections[memberIndex] = new HeatedReactionCrossSectionContinuousEnergy;
             }
         }
+        if( a_mode == DataBuffer::Mode::Memory ) {
+            a_buffer.incrementPlacement( sizeof( HeatedReactionCrossSectionContinuousEnergy ) );
+        }
         m_reactionCrossSections[memberIndex]->serialize( a_buffer, a_mode );
     }
 
@@ -632,22 +646,10 @@ HOST_DEVICE void HeatedCrossSectionContinuousEnergy::serialize( DataBuffer &a_bu
     DATA_MEMBER_INT( vectorSizeInt, a_buffer, a_mode );
     vectorSize = (MCGIDI_VectorSizeType) vectorSizeInt;
     if( a_mode == DataBuffer::Mode::Unpack ) m_gains.resize( vectorSize, &a_buffer.m_placement );
+    if( a_mode == DataBuffer::Mode::Memory ) a_buffer.m_placement += m_gains.internalSize();
     for( MCGIDI_VectorSizeType memberIndex = 0; memberIndex < vectorSize; ++memberIndex ) {
         m_gains[memberIndex].serialize( a_buffer, a_mode );
     }
-}
-/*
-=========================================================
-*/
-HOST_DEVICE long HeatedCrossSectionContinuousEnergy::sizeOf( ) const {
-
-    long size = (long) ( sizeof( *this ) + m_hashIndices.internalSize( ) + m_energies.internalSize( ) + 
-            m_totalCrossSection.internalSize( ) + m_depositionEnergy.internalSize( ) + m_depositionMomentum.internalSize( ) + 
-            m_productionEnergy.internalSize( ) + m_reactionCrossSections.internalSize( ) + m_reactionsInURR_region.size( ) );
-
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < m_reactionCrossSections.size( ); ++i1 ) size += m_reactionCrossSections[i1]->sizeOf( );
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < m_gains.size( ); ++i1 ) size += m_gains[i1].sizeOf( );
-    return( size );
 }
 
 /*
@@ -669,9 +671,20 @@ HOST_DEVICE HeatedCrossSectionsContinuousEnergy::~HeatedCrossSectionsContinuousE
 
     for( Vector<HeatedCrossSectionContinuousEnergy *>::const_iterator iter = m_heatedCrossSections.begin( ); iter != m_heatedCrossSections.end( ); ++iter ) delete *iter;
 }
-/*
-=========================================================
-*/
+
+/* *********************************************************************************************************//**
+ * Fills in *this* with the requested temperature data.
+ *
+ * @param a_setupInfo                   [in]    Used internally when constructing a Protare to pass information to other components.
+ * @param a_settings                    [in]    Used to pass user options to the *this* to instruct it which data are desired.
+ * @param a_particles                   [in]    List of transporting particles and their information (e.g., multi-group boundaries and fluxes).
+ * @param a_domainHash                  [in]    The hash data used when looking up a cross section.
+ * @param a_temperatureInfos            [in]    The list of temperatures to use.
+ * @param a_reactions                   [in]    The list of reactions to use.
+ * @param a_orphanProducts              [in]    The list of orphan products to use.
+ * @param a_fixedGrid                   [in]    If true, the specified fixed grid is used; otherwise, grid in the file is used.
+ ***********************************************************************************************************/
+
 HOST void HeatedCrossSectionsContinuousEnergy::update( SetupInfo &a_setupInfo, Transporting::MC const &a_settings, GIDI::Transporting::Particles const &a_particles, 
                 DomainHash const &a_domainHash, GIDI::Styles::TemperatureInfos const &a_temperatureInfos, std::vector<GIDI::Reaction const *> const &a_reactions, 
                 std::vector<GIDI::Reaction const *> const &a_orphanProducts, bool a_fixedGrid ) {
@@ -681,7 +694,7 @@ HOST void HeatedCrossSectionsContinuousEnergy::update( SetupInfo &a_setupInfo, T
 
     for( GIDI::Styles::TemperatureInfos::const_iterator iter = a_temperatureInfos.begin( ); iter != a_temperatureInfos.end( ); ++iter ) {
         m_temperatures.push_back( iter->temperature( ).value( ) );
-        m_heatedCrossSections.push_back( new HeatedCrossSectionContinuousEnergy( a_setupInfo, a_settings, a_particles, a_domainHash, *iter, a_reactions, a_fixedGrid ) );
+        m_heatedCrossSections.push_back( new HeatedCrossSectionContinuousEnergy( a_setupInfo, a_settings, a_particles, a_domainHash, *iter, a_reactions, a_orphanProducts, a_fixedGrid ) );
     }
 
     m_thresholds.resize( m_heatedCrossSections[0]->numberOfReactions( ) );
@@ -708,6 +721,46 @@ HOST_DEVICE double HeatedCrossSectionsContinuousEnergy::crossSection( URR_protar
 
     return( cross_section );
 }
+
+/* *********************************************************************************************************//**
+ * Adds the energy dependent, total cross section corresponding to the temperature *a_temperature* multiplied by *a_userFactor* to *a_crossSectionVector*.
+ * This function only works for fixed-grid data.
+ *
+ * @param   a_temperature               [in]        Specifies the temperature of the material.
+ * @param   a_userFactor                [in]        User factor which all cross sections are multiplied by.
+ * @param   a_numberAllocated           [in]        The length of memory allocated for *a_crossSectionVector*.
+ * @param   a_crossSectionVector        [in/out]    The energy dependent, total cross section to add cross section data to.
+ ***********************************************************************************************************/
+ 
+HOST_DEVICE void HeatedCrossSectionsContinuousEnergy::crossSectionVector( double a_temperature, double a_userFactor, int a_numberAllocated, 
+        double *a_crossSectionVector ) const {
+
+    int number_of_temperatures = static_cast<int>( m_temperatures.size( ) );
+    int index1 = 0, index2 = 0;
+    double fraction = 0.0;
+
+    if( a_temperature <= m_temperatures[0] ) { 
+        }
+    else if( a_temperature >= m_temperatures.back( ) ) {
+        index1 = index2 = number_of_temperatures - 1;
+        fraction = 1.0; }
+    else {
+        for( ; index2 < number_of_temperatures; ++index2 ) if( a_temperature < m_temperatures[index2] ) break;
+        index1 = index2 - 1;
+        fraction = ( a_temperature - m_temperatures[index1] ) / ( m_temperatures[index2] - m_temperatures[index1] );
+    }
+
+    Vector<double> &totalCrossSection1 = m_heatedCrossSections[index1]->totalCrossSection( );
+    Vector<double> &totalCrossSection2 = m_heatedCrossSections[index2]->totalCrossSection( );
+    MCGIDI_VectorSizeType size = totalCrossSection1.size( );
+    double factor1 = a_userFactor * ( 1.0 - fraction ), factor2 = a_userFactor * fraction;
+
+    if( a_numberAllocated < totalCrossSection1.size( ) ) THROW( "HeatedCrossSectionsContinuousEnergy::crossSectionVector: a_numberAllocated too small." );
+    for( MCGIDI_VectorSizeType i1 = 0; i1 < size; ++i1 ) {
+        a_crossSectionVector[i1] += factor1 * totalCrossSection1[i1] + factor2 * totalCrossSection2[i1];
+    }
+}
+
 /*
 =========================================================
 */
@@ -950,6 +1003,7 @@ HOST_DEVICE void HeatedCrossSectionsContinuousEnergy::serialize( DataBuffer &a_b
     vectorSize = (MCGIDI_VectorSizeType) vectorSizeInt;
 
     if( a_mode == DataBuffer::Mode::Unpack ) m_heatedCrossSections.resize( vectorSize, &a_buffer.m_placement );
+    if( a_mode == DataBuffer::Mode::Memory ) a_buffer.m_placement += m_heatedCrossSections.internalSize();
     for( MCGIDI_VectorSizeType memberIndex = 0; memberIndex < vectorSize; ++memberIndex ) {
         if( a_mode == DataBuffer::Mode::Unpack ) {
             if( a_buffer.m_placement != nullptr ) {
@@ -959,22 +1013,13 @@ HOST_DEVICE void HeatedCrossSectionsContinuousEnergy::serialize( DataBuffer &a_b
                 m_heatedCrossSections[memberIndex] = new HeatedCrossSectionContinuousEnergy;
             }
         }
+        if( a_mode == DataBuffer::Mode::Memory ) {
+            a_buffer.incrementPlacement( sizeof( HeatedCrossSectionContinuousEnergy ) );
+        }
         m_heatedCrossSections[memberIndex]->serialize( a_buffer, a_mode );
     }
 }
 
-/* *********************************************************************************************************//**
- * This method counts the number of bytes of memory allocated by *this*. That is the member needed by *this* that is greater than
- * sizeof( *this );
- ***********************************************************************************************************/
-
-HOST_DEVICE long HeatedCrossSectionsContinuousEnergy::internalSize( ) const {
-
-    long size = (long) ( m_temperatures.internalSize( ) + m_thresholds.internalSize( ) + m_heatedCrossSections.internalSize( ) );
-
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < m_heatedCrossSections.size( ); ++i1 ) size += m_heatedCrossSections[i1]->sizeOf( );
-    return( size );
-}
 
 /*! \class MultiGroupGain
  * This class store a particles index and gain for a protare.
@@ -1027,6 +1072,19 @@ HOST_DEVICE void MultiGroupGain::serialize( DataBuffer &a_buffer, DataBuffer::Mo
     DATA_MEMBER_VECTOR_DOUBLE( m_gain, a_buffer, a_mode );
 }
 
+/* *********************************************************************************************************//**
+ * This method writes the multi-group data.
+ *
+ * @param a_file                [in]    The buffer to read or write data to depending on *a_mode*.
+ ***********************************************************************************************************/
+
+HOST void MultiGroupGain::write( FILE *a_file ) const {
+
+    char buffer[64];
+
+    sprintf( buffer, "Gain for particle %d (%d)", m_particleIndex, m_userParticleIndex );
+    writeVector( a_file, buffer, 0, m_gain );
+}
 
 /*
 ============================================================
@@ -1039,14 +1097,14 @@ HOST_DEVICE HeatedReactionCrossSectionMultiGroup::HeatedReactionCrossSectionMult
 /*
 =========================================================
 */
-HOST HeatedReactionCrossSectionMultiGroup::HeatedReactionCrossSectionMultiGroup( SetupInfo &a_setupInfo, Transporting::MC const &a_settings, int a_offset, std::vector<double> const &a_crossSection, 
-            double a_threshold ) :
+HOST HeatedReactionCrossSectionMultiGroup::HeatedReactionCrossSectionMultiGroup( SetupInfo &a_setupInfo, Transporting::MC const &a_settings, 
+                int a_offset, std::vector<double> const &a_crossSection, double a_threshold ) :
         m_threshold( a_threshold ),
         m_offset( a_offset ),
         m_crossSection( a_crossSection ),
         m_augmentedThresholdCrossSection( 0.0 ) {
 
-    Vector<double> const &boundaries = a_setupInfo.m_protare.projectileMultiGroupBoundaries( );
+    Vector<double> const &boundaries = a_setupInfo.m_protare.projectileMultiGroupBoundariesCollapsed( );
 
     if( ( a_offset > 0 ) && ( boundaries[a_offset] < a_threshold ) ) {  // This uses the linear rejection above threshold in the group m_offset.
         if( ( boundaries[a_offset] < a_threshold ) && ( a_threshold < boundaries[a_offset+1] ) ) {
@@ -1073,6 +1131,19 @@ HOST_DEVICE void HeatedReactionCrossSectionMultiGroup::serialize( DataBuffer &a_
     DATA_MEMBER_FLOAT( m_augmentedThresholdCrossSection, a_buffer, a_mode  );
 }
 
+/* *********************************************************************************************************//**
+ * This method writes the multi-group data.
+ *
+ * @param a_file                [in]    The buffer to read or write data to depending on *a_mode*.
+ ***********************************************************************************************************/
+
+HOST void HeatedReactionCrossSectionMultiGroup::write( FILE *a_file, int a_reactionIndex ) const {
+
+    char buffer[64];
+    sprintf( buffer, "Reaction cross section (%3d)", a_reactionIndex );
+    writeVector( a_file, buffer, m_offset, m_crossSection );
+}
+
 /*
 ============================================================
 ============= HeatedCrossSectionMultiGroup ================
@@ -1095,34 +1166,49 @@ HOST HeatedCrossSectionMultiGroup::HeatedCrossSectionMultiGroup( GIDI::ProtareSi
 
     GIDI::Axes axes;
     std::vector<double> dummy;
-    GIDI::Functions::Ys1d totalCrossSection( axes, ptwXY_interpolationLinLin, 0, dummy );
+    GIDI::Vector totalCrossSection;
+    GIDI::Vector vector;
 
     m_reactionCrossSections.reserve( a_reactions.size( ) );
     int index = 0;                                      // Only used for debugging.
+    GIDI::Transporting::MG MG_settings( a_settings.projectileID( ), GIDI::Transporting::Mode::multiGroup, a_settings.delayedNeutrons( ) );
     for( std::vector<GIDI::Reaction const *>::const_iterator reactionIter = a_reactions.begin( ); reactionIter != a_reactions.end( ); ++reactionIter, ++index ) {
-        GIDI::Suite const &reactionCrossSectionSuite = (*reactionIter)->crossSection( );
-        GIDI::Functions::Gridded1d const *reactionCrossSection3 = reactionCrossSectionSuite.get<GIDI::Functions::Gridded1d>( a_label );
+        GIDI::Vector crossSectionVector = (*reactionIter)->multiGroupCrossSection( MG_settings, a_temperatureInfo );
 
-        GIDI::Vector vector = GIDI::collapse( reactionCrossSection3->data( ), a_settings, a_particles, 0.0 );
-        GIDI::Functions::Ys1d ys1d = GIDI::vector2GIDI_Ys1d( reactionCrossSection3->axes( ), vector );
+        vector = GIDI::collapse( crossSectionVector, a_settings, a_particles, 0.0 );
 
-        m_reactionCrossSections.push_back( new HeatedReactionCrossSectionMultiGroup( a_setupInfo, a_settings, ys1d.start( ), ys1d.Ys( ), (*reactionIter)->crossSectionThreshold( ) ) );
+        std::size_t start = 0;
+        for( ; start < vector.size( ); ++start ) {
+            if( vector[start] != 0.0 ) break;
+        }
+        std::vector<double> data;
+        for( std::size_t i1 = start; i1 < vector.size( ); ++i1 ) data.push_back( vector[i1] );
+        int offset = static_cast<int>( start );
+    
+        m_reactionCrossSections.push_back( new HeatedReactionCrossSectionMultiGroup( a_setupInfo, a_settings, offset, data, 
+                (*reactionIter)->crossSectionThreshold( ) ) );
 
-        totalCrossSection += ys1d;
+        totalCrossSection += vector;
     }
 
-    m_totalCrossSection.resize( totalCrossSection.length( ), 0.0 );
-    std::vector<double> const &Ys = totalCrossSection.Ys( );
-    for( std::size_t i1 = 0; i1 < Ys.size( ); ++i1 ) m_totalCrossSection[i1+totalCrossSection.start( )] = Ys[i1];
+    m_totalCrossSection = totalCrossSection.data( );
 
-    m_augmentedCrossSection.resize( totalCrossSection.length( ) );
+    m_augmentedCrossSection.resize( totalCrossSection.size( ) );
     for( MCGIDI_VectorSizeType i1 = 0; i1 < m_augmentedCrossSection.size( ); ++i1 ) m_augmentedCrossSection[i1] = 0;
     for( MCGIDI_VectorSizeType i1 = 0; i1 < m_reactionCrossSections.size( ); ++i1 )
         m_augmentedCrossSection[m_reactionCrossSections[i1]->offset( )] += m_reactionCrossSections[i1]->augmentedThresholdCrossSection( );
 
-    m_depositionEnergy = GIDI_VectorDoublesToMCGIDI_VectorDoubles( a_protare.multiGroupDepositionEnergy( multi_group_settings, a_temperatureInfo, a_particles ) );
-    m_depositionMomentum = GIDI_VectorDoublesToMCGIDI_VectorDoubles( a_protare.multiGroupDepositionMomentum( multi_group_settings, a_temperatureInfo, a_particles ) );
-    m_productionEnergy = GIDI_VectorDoublesToMCGIDI_VectorDoubles( a_protare.multiGroupQ( multi_group_settings, a_temperatureInfo, true ) );
+    vector = a_protare.multiGroupDepositionEnergy( multi_group_settings, a_temperatureInfo, a_particles );
+    vector = GIDI::collapse( vector, a_settings, a_particles, 0.0 );
+    m_depositionEnergy = GIDI_VectorDoublesToMCGIDI_VectorDoubles( vector );
+
+    vector = a_protare.multiGroupDepositionMomentum( multi_group_settings, a_temperatureInfo, a_particles );
+    vector = GIDI::collapse( vector, a_settings, a_particles, 0.0 );
+    m_depositionMomentum = GIDI_VectorDoublesToMCGIDI_VectorDoubles( vector );
+
+    vector = a_protare.multiGroupQ( multi_group_settings, a_temperatureInfo, true );
+    vector = GIDI::collapse( vector, a_settings, a_particles, 0.0 );
+    m_productionEnergy = GIDI_VectorDoublesToMCGIDI_VectorDoubles( vector );
 
     std::map<std::string, GIDI::Transporting::Particle> particles = a_particles.particles( );
     m_gains.resize( particles.size( ) );
@@ -1130,7 +1216,9 @@ HOST HeatedCrossSectionMultiGroup::HeatedCrossSectionMultiGroup( GIDI::ProtareSi
     for( std::map<std::string, GIDI::Transporting::Particle>::const_iterator particle = particles.begin( ); particle != particles.end( ); ++particle, ++i1 ) {
         int particleIndex = a_setupInfo.m_particleIndices[particle->first];
 
-        m_gains[i1] = MultiGroupGain( particleIndex, a_protare.multiGroupGain( multi_group_settings, a_temperatureInfo, particle->first ) );
+        vector = a_protare.multiGroupGain( multi_group_settings, a_temperatureInfo, particle->first );
+        vector = GIDI::collapse( vector, a_settings, a_particles, 0.0 );
+        m_gains[i1] = MultiGroupGain( particleIndex, vector );
     }
 }
 
@@ -1212,6 +1300,7 @@ HOST_DEVICE void HeatedCrossSectionMultiGroup::serialize( DataBuffer &a_buffer, 
     vectorSize = (MCGIDI_VectorSizeType) vectorSizeInt;
 
     if( a_mode == DataBuffer::Mode::Unpack ) m_reactionCrossSections.resize( vectorSize, &a_buffer.m_placement );
+    if( a_mode == DataBuffer::Mode::Memory ) a_buffer.m_placement += m_reactionCrossSections.internalSize();
     for( MCGIDI_VectorSizeType memberIndex = 0; memberIndex < vectorSize; ++memberIndex ) {
         if( a_mode == DataBuffer::Mode::Unpack ) {
             if( a_buffer.m_placement != nullptr ) {
@@ -1221,6 +1310,9 @@ HOST_DEVICE void HeatedCrossSectionMultiGroup::serialize( DataBuffer &a_buffer, 
                 m_reactionCrossSections[memberIndex] = new HeatedReactionCrossSectionMultiGroup;
             }
         }
+        if( a_mode == DataBuffer::Mode::Memory ) {
+            a_buffer.incrementPlacement( sizeof( HeatedReactionCrossSectionMultiGroup ) );
+        }
         m_reactionCrossSections[memberIndex]->serialize( a_buffer, a_mode );
     }
 
@@ -1229,23 +1321,32 @@ HOST_DEVICE void HeatedCrossSectionMultiGroup::serialize( DataBuffer &a_buffer, 
     DATA_MEMBER_INT( vectorSizeInt, a_buffer, a_mode );
     vectorSize = (MCGIDI_VectorSizeType) vectorSizeInt;
     if( a_mode == DataBuffer::Mode::Unpack ) m_gains.resize( vectorSize, &a_buffer.m_placement );
+    if( a_mode == DataBuffer::Mode::Memory ) a_buffer.m_placement += m_gains.internalSize();
     for( MCGIDI_VectorSizeType memberIndex = 0; memberIndex < vectorSize; ++memberIndex ) {
         m_gains[memberIndex].serialize( a_buffer, a_mode );
     }
 }
-/*
-=========================================================
-*/
-HOST_DEVICE long HeatedCrossSectionMultiGroup::sizeOf( ) const {
 
-    long size = (long) ( sizeof( *this ) + m_totalCrossSection.internalSize( ) + m_augmentedCrossSection.internalSize( ) + 
-            m_depositionEnergy.internalSize( ) + m_depositionMomentum.internalSize( ) + m_productionEnergy.internalSize( ) + 
-            m_reactionCrossSections.internalSize( ) );
+/* *********************************************************************************************************//**
+ * This method writes the multi-group data.
+ *
+ * @param a_file                [in]    The buffer to read or write data to depending on *a_mode*.
+ ***********************************************************************************************************/
 
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < m_reactionCrossSections.size( ); ++i1 ) size += m_reactionCrossSections[i1]->sizeOf( );
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < m_gains.size( ); ++i1 ) size += m_gains[i1].sizeOf( );
+HOST void HeatedCrossSectionMultiGroup::write( FILE *a_file ) const {
 
-    return( size );
+    writeVector( a_file, "Total cross section", 0, m_totalCrossSection );
+    writeVector( a_file, "Augmented cross section", 0, m_augmentedCrossSection );
+    writeVector( a_file, "Deposition energy", 0, m_depositionEnergy );
+    writeVector( a_file, "Deposition momentum", 0, m_depositionMomentum );
+    writeVector( a_file, "Production energy", 0, m_productionEnergy );
+
+    for( Vector<MultiGroupGain>::const_iterator iter = m_gains.begin( ); iter != m_gains.end( ); ++iter ) iter->write( a_file );
+    int reactionIndex = 0;
+    for( Vector<HeatedReactionCrossSectionMultiGroup *>::const_iterator iter = m_reactionCrossSections.begin( ); iter < m_reactionCrossSections.end( ); ++iter ) {
+        (*iter)->write( a_file, reactionIndex );
+        ++reactionIndex;
+    }
 }
 
 /*! \class Protare
@@ -1302,7 +1403,7 @@ HOST void HeatedCrossSectionsMultiGroup::update( GIDI::ProtareSingle const &a_pr
         if( m_thresholds[i1] > 0 ) m_multiGroupThresholdIndex[i1] = m_heatedCrossSections[0]->thresholdOffset( i1 );
     }
 
-    m_projectileMultiGroupBoundaries = a_setupInfo.m_protare.projectileMultiGroupBoundaries( );
+    m_projectileMultiGroupBoundariesCollapsed = a_setupInfo.m_protare.projectileMultiGroupBoundariesCollapsed( );
 }
 
 /* *********************************************************************************************************//**
@@ -1331,6 +1432,44 @@ HOST_DEVICE double HeatedCrossSectionsMultiGroup::crossSection( int a_hashIndex,
     }
 
     return( cross_section );
+}
+
+/* *********************************************************************************************************//**
+ * Adds the energy dependent, total cross section corresponding to the temperature *a_temperature* multiplied by *a_userFactor* to *a_crossSectionVector*.
+ *
+ * @param   a_temperature                   [in]        Specifies the temperature of the material.
+ * @param   a_userFactor                    [in]        User factor which all cross sections are multiplied by.
+ * @param   a_numberAllocated               [in]        The length of memory allocated for *a_crossSectionVector*.
+ * @param   a_crossSectionVector            [in/out]    The energy dependent, total cross section to add cross section data to.
+ ***********************************************************************************************************/
+ 
+HOST_DEVICE void HeatedCrossSectionsMultiGroup::crossSectionVector( double a_temperature, double a_userFactor, int a_numberAllocated, 
+        double *a_crossSectionVector ) const {
+
+    int number_of_temperatures = static_cast<int>( m_temperatures.size( ) );
+    int index1 = 0, index2 = 0;
+    double fraction = 0.0;
+
+    if( a_temperature <= m_temperatures[0] ) { 
+        }
+    else if( a_temperature >= m_temperatures.back( ) ) {
+        index1 = index2 = number_of_temperatures - 1;
+        fraction = 1.0; }
+    else {
+        for( ; index2 < number_of_temperatures; ++index2 ) if( a_temperature < m_temperatures[index2] ) break;
+        index1 = index2 - 1;
+        fraction = ( a_temperature - m_temperatures[index1] ) / ( m_temperatures[index2] - m_temperatures[index1] );
+    }
+
+    Vector<double> &totalCrossSection1 = m_heatedCrossSections[index1]->totalCrossSection( );
+    Vector<double> &totalCrossSection2 = m_heatedCrossSections[index2]->totalCrossSection( );
+    MCGIDI_VectorSizeType size = totalCrossSection1.size( );
+    double factor1 = a_userFactor * ( 1.0 - fraction ), factor2 = a_userFactor * fraction;
+
+    if( a_numberAllocated < totalCrossSection1.size( ) ) THROW( "HeatedCrossSectionsMultiGroup::crossSectionVector: a_numberAllocated too small." );
+    for( MCGIDI_VectorSizeType i1 = 0; i1 < size; ++i1 ) {
+        a_crossSectionVector[i1] += factor1 * totalCrossSection1[i1] + factor2 * totalCrossSection2[i1];
+    }
 }
 
 /* *********************************************************************************************************//**
@@ -1371,11 +1510,11 @@ HOST_DEVICE double HeatedCrossSectionsMultiGroup::reactionCrossSection( int a_re
 
 HOST_DEVICE double HeatedCrossSectionsMultiGroup::reactionCrossSection( int a_reactionIndex, double a_temperature, double a_energy_in ) const {
 
-    int energyIndex = static_cast<int>( binarySearchVector( a_energy_in, m_projectileMultiGroupBoundaries ) );
+    int energyIndex = static_cast<int>( binarySearchVector( a_energy_in, m_projectileMultiGroupBoundariesCollapsed ) );
 
     if( energyIndex < 0 ) {
         energyIndex = 0;
-        if( energyIndex == -1 ) energyIndex = static_cast<int>( m_projectileMultiGroupBoundaries.size( ) ) - 2;
+        if( energyIndex == -1 ) energyIndex = static_cast<int>( m_projectileMultiGroupBoundariesCollapsed.size( ) ) - 2;
     }
 
     return( reactionCrossSection( a_reactionIndex, energyIndex, a_temperature, false ) );
@@ -1437,7 +1576,7 @@ HOST_DEVICE int HeatedCrossSectionsMultiGroup::sampleReaction( int a_hashIndex, 
     if( m_multiGroupThresholdIndex[sampled_reaction_index] == a_hashIndex ) {
         double energyAboveThreshold = a_energy - m_thresholds[sampled_reaction_index];
 
-        if( energyAboveThreshold <= ( a_userrng( a_rngState ) * ( m_projectileMultiGroupBoundaries[a_hashIndex+1] - m_thresholds[sampled_reaction_index] ) ) )
+        if( energyAboveThreshold <= ( a_userrng( a_rngState ) * ( m_projectileMultiGroupBoundariesCollapsed[a_hashIndex+1] - m_thresholds[sampled_reaction_index] ) ) )
             return( MCGIDI_nullReaction );
     }
 
@@ -1583,7 +1722,7 @@ HOST_DEVICE void HeatedCrossSectionsMultiGroup::serialize( DataBuffer &a_buffer,
     DATA_MEMBER_VECTOR_DOUBLE( m_temperatures, a_buffer, a_mode );
     DATA_MEMBER_VECTOR_DOUBLE( m_thresholds, a_buffer, a_mode );
     DATA_MEMBER_VECTOR_INT( m_multiGroupThresholdIndex, a_buffer, a_mode );
-    DATA_MEMBER_VECTOR_DOUBLE( m_projectileMultiGroupBoundaries, a_buffer, a_mode );
+    DATA_MEMBER_VECTOR_DOUBLE( m_projectileMultiGroupBoundariesCollapsed, a_buffer, a_mode );
 
     MCGIDI_VectorSizeType vectorSize = m_heatedCrossSections.size( );
     int vectorSizeInt = (int) vectorSize;
@@ -1591,6 +1730,7 @@ HOST_DEVICE void HeatedCrossSectionsMultiGroup::serialize( DataBuffer &a_buffer,
     vectorSize = (MCGIDI_VectorSizeType) vectorSizeInt;
 
     if( a_mode == DataBuffer::Mode::Unpack ) m_heatedCrossSections.resize( vectorSize, &a_buffer.m_placement );
+    if( a_mode == DataBuffer::Mode::Memory ) a_buffer.m_placement += m_heatedCrossSections.internalSize();
     for( MCGIDI_VectorSizeType memberIndex = 0; memberIndex < vectorSize; ++memberIndex ) {
         if( a_mode == DataBuffer::Mode::Unpack ) {
             if( a_buffer.m_placement != nullptr ) {
@@ -1600,22 +1740,45 @@ HOST_DEVICE void HeatedCrossSectionsMultiGroup::serialize( DataBuffer &a_buffer,
                 m_heatedCrossSections[memberIndex] = new HeatedCrossSectionMultiGroup;
             }
         }
+        if( a_mode == DataBuffer::Mode::Memory ) {
+            a_buffer.incrementPlacement( sizeof( HeatedCrossSectionMultiGroup ) );
+        }
         m_heatedCrossSections[memberIndex]->serialize( a_buffer, a_mode );
     }
 }
 
 /* *********************************************************************************************************//**
- * This method counts the number of bytes of memory allocated by *this*. That is the member needed by *this* that is greater than
- * sizeof( *this );
+ * This method writes the multi-group data at temperature index *a_temperatureIndex* to *a_file*.
+ *
+ * @param a_file                [in]    The buffer to read or write data to depending on *a_mode*.
+ * @param a_temperatureIndex    [in]    The index of the temperature whose data are written.
  ***********************************************************************************************************/
 
-HOST_DEVICE long HeatedCrossSectionsMultiGroup::internalSize( ) const {
+HOST void HeatedCrossSectionsMultiGroup::write( FILE *a_file, int a_temperatureIndex ) const {
 
-    long size = (long) ( m_temperatures.internalSize( ) + m_thresholds.internalSize( ) + m_multiGroupThresholdIndex.internalSize( ) + 
-            m_projectileMultiGroupBoundaries.internalSize( ) + m_heatedCrossSections.internalSize( ) );
+    if( a_temperatureIndex < 0 ) return;
+    if( a_temperatureIndex >= m_temperatures.size( ) ) return;
 
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < m_heatedCrossSections.size( ); ++i1 ) size += m_heatedCrossSections[i1]->sizeOf( );
-    return( size );
+    printf( "HeatedCrossSectionsMultiGroup::write for temperature %.4e\n", m_temperatures[a_temperatureIndex] );
+    writeVector( a_file, "boundaries", 0, m_projectileMultiGroupBoundariesCollapsed );
+    m_heatedCrossSections[a_temperatureIndex]->write( a_file );
+}
+
+/* *********************************************************************************************************//**
+ * @param a_file                [in]    The buffer to read or write data to depending on *a_mode*.
+ * @param a_prefix              [in]    The prefix that starts the beginning of the line that the vector data are written to.
+ * @param a_vector              [in]    The vector to write.
+ ***********************************************************************************************************/
+
+static void writeVector( FILE *a_file, std::string const &a_prefix, int a_offset, Vector<double> const &a_vector ) {
+
+    char fmt[32];
+    std::string indent( 20 * a_offset, ' ' );
+
+    sprintf( fmt, "    %%-%ds (%%4d) :: %%s", 40 );
+    fprintf( a_file, fmt, a_prefix.c_str( ), (int) a_vector.size( ), indent.c_str( ) );
+    for( Vector<double>::const_iterator iter = a_vector.begin( ); iter != a_vector.end( ); ++iter ) fprintf( a_file, " %19.11e", *iter );
+    fprintf( a_file, "\n" );
 }
 
 }

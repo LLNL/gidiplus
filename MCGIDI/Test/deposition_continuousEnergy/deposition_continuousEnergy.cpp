@@ -98,6 +98,7 @@ void main2( int argc, char **argv ) {
 
     MCGIDI::Vector<MCGIDI::Protare *> protares( 1 );
     protares[0] = MCProtare;
+    MCGIDI::URR_protareInfos URR_protare_infos( protares );
 
     for( MCGIDI_VectorSizeType i1 = 0; i1 < (MCGIDI_VectorSizeType) MCProtare->numberOfReactions( ); ++i1 ) {
         MCGIDI::Reaction const &reaction = *MCProtare->reaction( i1 );
@@ -106,14 +107,16 @@ void main2( int argc, char **argv ) {
                 "  threshold = " << std::setw( 12 ) << reaction.crossSectionThreshold( ) << std::endl;
     }
 
+    std::cout << "List of reactions:" << std::endl;
     for( MCGIDI_VectorSizeType i1 = 0; i1 < (MCGIDI_VectorSizeType) MCProtare->numberOfReactions( ); ++i1 ) {
         MCGIDI::Reaction const &reaction = *MCProtare->reaction( i1 );
 
         std::cout << "    reaction: " << reaction.label( ).c_str( ) << std::endl;
     }
 
+
     for( double temperature = 1e-8; temperature < 2e-3; temperature *= 100.0 ) {
-        std::cout << "temperature = " << doubleToString2( "%8.1e", temperature ) << "                       deposition energy  deposition momentum  production energy";
+        std::cout << "temperature = " << doubleToString2( "%8.1e", temperature ) << "                          cross section deposition energy  deposition momentum  production energy";
         if( particles.hasParticle( PoPI::IDs::neutron ) ) std::cout << "      neutron gain";
         if( particles.hasParticle( PoPI::IDs::photon ) ) std::cout << "         photon gain";
         std::cout << std::endl;
@@ -121,6 +124,7 @@ void main2( int argc, char **argv ) {
             int hashIndex = domainHash.index( energy );
 
             std::cout << "    energy = " << std::setw( 16 ) << energy << " index = " << std::setw( 6 ) << hashIndex;
+            std::cout << doubleToString2( " %16.8e",    MCProtare->crossSection( URR_protare_infos, hashIndex, temperature, energy ) );
             std::cout << doubleToString2( " %16.8e",    MCProtare->depositionEnergy( hashIndex, temperature, energy ) );
             std::cout << doubleToString2( "    %16.8e", MCProtare->depositionMomentum( hashIndex, temperature, energy ) );
             std::cout << doubleToString2( "    %16.8e", MCProtare->productionEnergy( hashIndex, temperature, energy ) );

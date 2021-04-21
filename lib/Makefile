@@ -7,9 +7,9 @@ SHELL = /bin/bash
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
-.PHONY: default headers clean realclean
+.PHONY: default headers docs clean realclean
 
-DIRS = statusMessageReporting GIDI MCGIDI PoPI numericalFunctions pugixml
+DIRS = GIDI MCGIDI PoPI numericalFunctions pugixml
 
 default: libs
 
@@ -19,6 +19,10 @@ libs:
 	archives=`/bin/ls *.a`; for archive in $$archives; do $(AR) -x $$archive; done
 	$(AR) -cr libgidiplus.a *.o
 	rm -rf *.o
+
+docs:
+
+check:
 
 clean:
 	rm -f *.a *.o

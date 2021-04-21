@@ -20,13 +20,14 @@ namespace GIDI {
 
 /* *********************************************************************************************************//**
  *
- * @param a_node            [in]     The **pugi::xml_node** to be parsed and used to construct the Array3d.
+ * @param a_node                [in]     The **pugi::xml_node** to be parsed and used to construct the Array3d.
+ * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_useSystem_strtod    [in]    Flag passed to the function nfu_stringToListOfDoubles.
  ***********************************************************************************************************/
 
-Array3d::Array3d( pugi::xml_node const &a_node, int a_useSystem_strtod ) :
-        Form( a_node, FormType::array3d ),
-        m_array( a_node, 3, a_useSystem_strtod ) {
+Array3d::Array3d( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, int a_useSystem_strtod ) :
+        Form( a_node, a_setupInfo, FormType::array3d ),
+        m_array( a_node, a_setupInfo, 3, a_useSystem_strtod ) {
 
 }
 
@@ -36,6 +37,22 @@ Array3d::Array3d( pugi::xml_node const &a_node, int a_useSystem_strtod ) :
 Array3d::~Array3d( ) {
 
 }
+
+/* *********************************************************************************************************//**
+ * Only for internal use. Called by ProtareTNSL instance to zero the lower energy multi-group data covered by the ProtareSingle that
+ * contains the TNSL data covers the lower energy multi-group data.
+ *
+ * @param a_maxTNSL_index           [in]    All elements up to "row" *a_maxTNSL_index* exclusive are zero-ed.
+ ***********************************************************************************************************/
+
+void Array3d::modifiedMultiGroupElasticForTNSL( int a_maxTNSL_index ) {
+
+    std::vector<int> const &m_shape = m_array.shape( );
+    int maxFlatIndex = a_maxTNSL_index * m_shape[1] * m_shape[2];
+
+    m_array.setToValueInFlatRange( 0, maxFlatIndex, 0.0 );
+}
+
 
 /* *********************************************************************************************************//**
  * Returns the matrix that represents the specified 3rd dimension. That is the matrix M[i][j] for all i, j of A2d[i][j][*a_index*].

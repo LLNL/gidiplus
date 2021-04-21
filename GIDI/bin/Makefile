@@ -7,27 +7,27 @@ SHELL = /bin/ksh
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
-DIRS = Src
+.PHONY: default bin compile check clean realclean doDirs
 
-.PHONY: default bin compile check clean realclean
+DIRS = Src
 
 default: compile
 
 bin:
-	$(MAKE) doDirs TARGET=bin CXX=$(CXX) CXXFLAGS="$(CXXFLAGS)"
+	$(MAKE) doDirs TARGET=bin
 
 compile:
-	$(MAKE) doDirs TARGET=default CXX=$(CXX) CXXFLAGS="$(CXXFLAGS)"
+	$(MAKE) doDirs TARGET=default
 
 check:
 
 clean:
-	$(MAKE) doDirs TARGET=clean CXX=$(CXX) CXXFLAGS="$(CXXFLAGS)"
+	$(MAKE) doDirs TARGET=clean
 	rm -f readAllProtaresInMapFile directory reactions toXML
 
 realclean:
-	$(MAKE) doDirs TARGET=realclean CXX=$(CXX) CXXFLAGS="$(CXXFLAGS)"
-	rm -f readAllProtaresInMapFile directory toXML reactions
+	$(MAKE) doDirs TARGET=realclean
+	rm -f readAllProtaresInMapFile directory toXML reactions GNDS_FileType
 
 doDirs:
-	for dir in $(DIRS); do cd $$dir; $(MAKE) $(TARGET) CXX=$(CXX) CXXFLAGS="$(CXXFLAGS)"; cd ../; done
+	for dir in $(DIRS); do cd $$dir; $(MAKE) $(TARGET); cd ../; done

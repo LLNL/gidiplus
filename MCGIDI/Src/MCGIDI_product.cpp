@@ -29,9 +29,6 @@ HOST_DEVICE Product::Product( ) :
         m_neutronIndex( 0 ),
         m_multiplicity( nullptr ),
         m_distribution( nullptr ),
-        m_angleBiasingEnergy( 0.0 ),
-        m_angleBiasingSpeed( 0.0 ),
-        m_angleBiasingPDFValue( 0.0 ),
         m_outputChannel( nullptr ) {
 
 }
@@ -56,9 +53,6 @@ HOST Product::Product( GIDI::Product const *a_product, SetupInfo &a_setupInfo, T
         m_neutronIndex( a_settings.neutronIndex( ) ),
         m_multiplicity( Functions::parseMultiplicityFunction1d( a_setupInfo, a_settings, a_product->multiplicity( ) ) ),
         m_distribution( nullptr ),
-        m_angleBiasingEnergy( 0.0 ),
-        m_angleBiasingSpeed( 0.0 ),
-        m_angleBiasingPDFValue( 0.0 ),
         m_outputChannel( nullptr ) {
 
     a_setupInfo.m_product1Mass = mass( );                           // Includes nuclear excitation energy.
@@ -91,9 +85,6 @@ HOST Product::Product( PoPI::Database const &a_pops, std::string const &a_ID, st
         m_neutronIndex( a_pops[PoPI::IDs::neutron] ),
         m_multiplicity( nullptr ),
         m_distribution( nullptr ),
-        m_angleBiasingEnergy( 0.0 ),
-        m_angleBiasingSpeed( 0.0 ),
-        m_angleBiasingPDFValue( 0.0 ),
         m_outputChannel( nullptr ) {
 
 }
@@ -225,19 +216,6 @@ HOST_DEVICE void Product::angleBiasing( Reaction const *a_reaction, int a_pid, d
             a_energy_out = energy_out;
         }
     }
-}
-
-/*
-=========================================================
-*/
-HOST_DEVICE void Product::evaluate_angular_pdf(double E_in_lab, double mu, double &pdf_val){
-    m_distribution->evaluate_pdf(E_in_lab, mu, pdf_val);
-}
-/*
-=========================================================
-*/
-HOST_DEVICE void Product::evaluate_angular_pdf(double E_in_lab, double E_out, double mu, double &pdf_val){
-    m_distribution->evaluate_pdf(E_in_lab, E_out, mu, pdf_val);
 }
 
 /* *********************************************************************************************************//**
@@ -401,6 +379,39 @@ HOST_DEVICE void Product::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mo
              break;
         }
     }
+    if( a_mode == DataBuffer::Mode::Memory ) {
+        switch( distributionType ) {
+        case 0 :
+            break;
+        case 1 :
+            a_buffer.incrementPlacement( sizeof( Distributions::Unspecified ) );
+            break;
+        case 2 :
+            a_buffer.incrementPlacement( sizeof( Distributions::AngularTwoBody ) );
+            break;
+        case 3 :
+            a_buffer.incrementPlacement( sizeof( Distributions::KalbachMann ) );
+            break;
+        case 4 :
+            a_buffer.incrementPlacement( sizeof( Distributions::Uncorrelated ) );
+            break;
+        case 5 :
+            a_buffer.incrementPlacement( sizeof( Distributions::EnergyAngularMC ) );
+            break;
+        case 6 :
+            a_buffer.incrementPlacement( sizeof( Distributions::AngularEnergyMC ) );
+            break;
+        case 7 :
+             a_buffer.incrementPlacement( sizeof( Distributions::CoherentPhotoAtomicScattering ) );
+             break;
+        case 8 :
+             a_buffer.incrementPlacement( sizeof( Distributions::IncoherentPhotoAtomicScattering ) );
+             break;
+        case 9 :
+             a_buffer.incrementPlacement( sizeof( Distributions::PairProductionGamma ) );
+             break;
+        }
+    }
     if( m_distribution != nullptr ) m_distribution->serialize( a_buffer, a_mode );
 
     bool haveChannel = m_outputChannel != nullptr;
@@ -414,22 +425,11 @@ HOST_DEVICE void Product::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mo
             m_outputChannel = new OutputChannel();
         }
     }
+    if( haveChannel && a_mode == DataBuffer::Mode::Memory ) {
+        a_buffer.incrementPlacement( sizeof(OutputChannel));
+    }
     if( haveChannel ) m_outputChannel->serialize( a_buffer, a_mode );
 
-}
-
-/* *********************************************************************************************************//**
- * This method counts the number of bytes of memory allocated by *this*. That is the member needed by *this* that is greater than
- * sizeof( *this );
- ***********************************************************************************************************/
-
-HOST_DEVICE long Product::internalSize( ) const {
-
-    long size = (long) ( m_ID.internalSize() + m_label.internalSize() );
-    if (m_multiplicity != nullptr) size += m_multiplicity->sizeOf() + m_multiplicity->internalSize();
-    if (m_distribution != nullptr) size += m_distribution->sizeOf() + m_distribution->internalSize();
-    if (m_outputChannel != nullptr) size += sizeof(*m_outputChannel) + m_outputChannel->internalSize();
-    return size;
 }
 
 }

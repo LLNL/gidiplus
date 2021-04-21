@@ -25,7 +25,7 @@ namespace Functions {
  ***********************************************************************************************************/
 
 XYs2d::XYs2d( Axes const &a_axes, ptwXY_interpolation a_interpolation, int a_index, double a_outerDomainValue ) :
-        Function2dForm( XYs2dMoniker, FormType::XYs2d, a_axes, a_interpolation, a_index, a_outerDomainValue ) {
+        Function2dForm( GIDI_XYs2dChars, FormType::XYs2d, a_axes, a_interpolation, a_index, a_outerDomainValue ) {
 
 }
 
@@ -33,21 +33,28 @@ XYs2d::XYs2d( Axes const &a_axes, ptwXY_interpolation a_interpolation, int a_ind
  *
  * @param a_construction    [in]    Used to pass user options for parsing.
  * @param a_node            [in]    The **pugi::xml_node** to be parsed and used to construct the XYs2d.
+ * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-XYs2d::XYs2d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, Suite *a_parent ) :
-        Function2dForm( a_construction, a_node, FormType::XYs2d, a_parent ),
-        m_interpolationQualifier( a_node.attribute( "interpolationQualifier" ).value( ) ) {
+XYs2d::XYs2d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+        Function2dForm( a_construction, a_node, a_setupInfo, FormType::XYs2d, a_parent ),
+        m_interpolationQualifier( a_node.attribute( GIDI_interpolationQualifierChars ).value( ) ) {
+
+    if( a_setupInfo.m_formatVersion.format( ) != GNDS_formatVersion_1_10Chars ) {
+        data1dListParse( a_construction, a_node.child( GIDI_function1dsChars ), a_setupInfo, m_function1ds );
+        checkOuterDomainValues1d( m_function1ds, m_Xs );
+        return;                                     // Need to add uncertainty parsing.
+    }
 
     for( pugi::xml_node child = a_node.first_child( ); child; child = child.next_sibling( ) ) {
         std::string name( child.name( ) );
 
-        if( name == "axes" ) continue;
-        if( name == "uncertainty" ) continue;
+        if( name == GIDI_axesChars ) continue;
+        if( name == GIDI_uncertaintyChars ) continue;
 
-        Function1dForm *_form = data1dParse( a_construction, child, NULL );
-        if( _form == NULL ) throw Exception( "XYs2d::XYs2d: data1dParse returned NULL." );
+        Function1dForm *_form = data1dParse( a_construction, child, a_setupInfo, nullptr );
+        if( _form == nullptr ) throw Exception( "XYs2d::XYs2d: data1dParse returned nullptr." );
         if( m_Xs.size( ) > 0 ) {
             if( _form->outerDomainValue( ) <= m_Xs[m_Xs.size( )-1] ) throw Exception( "XYs2d::XYs2d: next outerDomainValue <= current outerDomainValue." );
         }
@@ -141,16 +148,16 @@ void XYs2d::toXMLList_func( WriteInfo &a_writeInfo, std::string const &a_indent,
     std::string attributes;
 
     if( a_embedded ) {
-        attributes += a_writeInfo.addAttribute( "outerDomainValue", doubleToShortestString( outerDomainValue( ) ) ); }
+        attributes += a_writeInfo.addAttribute( GIDI_outerDomainValueChars, doubleToShortestString( outerDomainValue( ) ) ); }
     else {
         if( a_inRegions ) {
-            attributes = a_writeInfo.addAttribute( "index", intToString( index( ) ) ); }
+            attributes = a_writeInfo.addAttribute( GIDI_indexChars, intToString( index( ) ) ); }
         else {
-            if( label( ) != "" ) attributes = a_writeInfo.addAttribute( "label", label( ) );
+            if( label( ) != "" ) attributes = a_writeInfo.addAttribute( GIDI_labelChars, label( ) );
         }
     }
 
-    if( m_interpolationQualifier != "" ) attributes = a_writeInfo.addAttribute( "interpolationQualifier", m_interpolationQualifier );
+    if( m_interpolationQualifier != "" ) attributes = a_writeInfo.addAttribute( GIDI_interpolationQualifierChars, m_interpolationQualifier );
 
     a_writeInfo.addNodeStarter( a_indent, moniker( ), attributes );
     if( !a_embedded ) axes( ).toXMLList( a_writeInfo, indent2 );

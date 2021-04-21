@@ -53,6 +53,8 @@ HOST Protare *protareFromGIDIProtare( GIDI::Protare const &a_protare, PoPI::Data
  */
 
 /* *********************************************************************************************************//**
+ * @param a_protareType         [in]    The enum for the type of Protare (i.e., single, composite or TNSL).
+ *
  * Default constructor used when broadcasting a Protare as needed by MPI or GPUs.
  ***********************************************************************************************************/
 
@@ -82,6 +84,7 @@ HOST_DEVICE Protare::Protare( ProtareType a_protareType ) :
 /* *********************************************************************************************************//**
  * Default base Protare constructor.
  *
+ * @param a_protareType         [in]    The enum for the type of Protare (i.e., single, composite or TNSL).
  * @param a_protare             [in]    The GIDI::Protare whose data is to be used to construct *this*.
  * @param a_pops                [in]    A PoPs Database instance used to get particle indices and possibly other particle information.
  * @param a_settings            [in]    Used to pass user options to the *this* to instruct it which data are desired.
@@ -197,7 +200,7 @@ HOST void Protare::setUserParticleIndex( int a_particleIndex, int a_userParticle
 HOST_DEVICE void Protare::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     int protareType = 0;
-    if( a_mode == DataBuffer::Mode::Pack ) {
+    if( a_mode != DataBuffer::Mode::Unpack ) {
         switch( m_protareType ) {
         case ProtareType::single :
             break;
@@ -256,15 +259,16 @@ HOST_DEVICE void Protare::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mo
 }
 
 /* *********************************************************************************************************//**
- * This method counts the number of bytes of memory allocated by *this*. That is the member needed by *this* that is greater than
- * sizeof( *this );
+ * This method counts the number of bytes of memory allocated by *this*. 
+ * This should be an improvement to the internalSize() method of getting memory size.
  ***********************************************************************************************************/
+HOST_DEVICE long Protare::memorySize( ) {
 
-HOST_DEVICE long Protare::internalSize( ) const {
-
-    return( projectileID( ).internalSize( ) + targetID( ).internalSize( ) + evaluation( ).internalSize( ) +
-            m_productIndices.internalSize( ) + m_productIndicesTransportable.internalSize( ) + m_userProductIndices.internalSize( ) + 
-            m_userProductIndicesTransportable.internalSize( ) );
+    DataBuffer buf;
+    // Written this way for debugger to modify buf.m_placementStart here for easier double checking.
+    buf.m_placement = buf.m_placementStart + sizeOf();
+    serialize(buf, DataBuffer::Mode::Memory);
+    return buf.m_placement - buf.m_placementStart;
 }
 
 /*! \class ProtareSingle
@@ -284,6 +288,7 @@ HOST_DEVICE ProtareSingle::ProtareSingle( ) :
         m_URR_domainMin( -1.0 ),
         m_URR_domainMax( -1.0 ),
         m_projectileMultiGroupBoundaries( 0 ),
+        m_projectileMultiGroupBoundariesCollapsed( 0 ),
         m_projectileFixedGrid( 0 ),
         m_reactions( 0 ),
         m_orphanProducts( 0 ) {
@@ -308,9 +313,11 @@ HOST ProtareSingle::ProtareSingle( GIDI::ProtareSingle const &a_protare, PoPI::D
         Protare( ProtareType::single, a_protare, a_pops, a_settings ),
         m_URR_index( -1 ),
         m_hasURR_probabilityTables( false ),
+        m_interaction( a_protare.interaction( ).c_str( ) ),
         m_URR_domainMin( -1.0 ),
         m_URR_domainMax( -1.0 ),
         m_projectileMultiGroupBoundaries( 0 ),
+        m_projectileMultiGroupBoundariesCollapsed( 0 ),
         m_projectileFixedGrid( 0 ),
         m_reactions( 0 ),
         m_orphanProducts( 0 ),
@@ -318,12 +325,17 @@ HOST ProtareSingle::ProtareSingle( GIDI::ProtareSingle const &a_protare, PoPI::D
         m_heatedMultigroupCrossSections( ) {
 
     SetupInfo setupInfo( *this );
+    setupInfo.m_formatVersion = a_protare.formatVersion( );
+
+    GIDI::Transporting::Particles particles;
     for( std::map<std::string, GIDI::Transporting::Particle>::const_iterator particle = a_particles.particles( ).begin( ); particle != a_particles.particles( ).end( ); ++particle ) {
         setupInfo.m_particleIndices[particle->first] = a_pops[particle->first];
+
+        if( ( m_interaction == GIDI_MapInteractionAtomicChars ) && ( particle->first != PoPI::IDs::photon ) ) continue;
+        particles.add( particle->second );
     }
 
     GIDI::Transporting::MG multiGroupSettings( a_settings.projectileID( ), GIDI::Transporting::Mode::MonteCarloContinuousEnergy, a_settings.delayedNeutrons( ) );
-    GIDI::Transporting::Particles particles;
 
     setupInfo.m_distributionLabel = a_temperatureInfos[0].griddedCrossSection( );
     if( setupInfo.m_distributionLabel == "" ) a_temperatureInfos[0].heatedMultiGroup( );
@@ -348,14 +360,22 @@ HOST ProtareSingle::ProtareSingle( GIDI::ProtareSingle const &a_protare, PoPI::D
     if( ( a_settings.crossSectionLookupMode( ) == Transporting::LookupMode::Data1d::multiGroup ) || 
         ( a_settings.other1dDataLookupMode( ) == Transporting::LookupMode::Data1d::multiGroup ) ) {
 
-        std::vector<GIDI::Suite::const_iterator> tags = a_protare.styles( ).findAllOfMoniker( multiGroupStyleMoniker );
+        GIDI::Suite const *transportables = nullptr;
+        if( setupInfo.m_formatVersion.major( ) > 1 ) {
+            GIDI::Styles::HeatedMultiGroup const &heatedMultiGroup = *a_protare.styles( ).get<GIDI::Styles::HeatedMultiGroup>( a_settings.label( ) );
+           transportables = &heatedMultiGroup.transportables( ); }
+        else {
+            std::vector<GIDI::Suite::const_iterator> tags = a_protare.styles( ).findAllOfMoniker( GIDI_multiGroupStyleChars );
 
-        if( tags.size( ) != 1 ) THROW( "Protare::Protare: What is going on here?" );
-        GIDI::Styles::MultiGroup const &multiGroup = static_cast<GIDI::Styles::MultiGroup const &>( **tags[0] );
+            if( tags.size( ) != 1 ) THROW( "MCGIDI::ProtareSingle::ProtareSingle: What is going on here?" );
+            GIDI::Styles::MultiGroup const &multiGroup = static_cast<GIDI::Styles::MultiGroup const &>( **tags[0] );
+            transportables = &multiGroup.transportables( );
+        }
 
-        GIDI::Suite const &transportables = multiGroup.transportables( );
-        GIDI::Transportable const transportable = *transportables.get<GIDI::Transportable>( a_protare.projectile( ).ID( ) );
+        GIDI::Transportable const transportable = *transportables->get<GIDI::Transportable>( a_protare.projectile( ).ID( ) );
         m_projectileMultiGroupBoundaries = transportable.groupBoundaries( );
+        GIDI::Transporting::Particle const *particle = a_particles.particle( a_protare.projectile( ).ID( ) );
+        m_projectileMultiGroupBoundariesCollapsed = particle->multiGroup( ).boundaries( );
     }
 
     std::vector<GIDI::Reaction const *> GIDI_reactions;
@@ -374,15 +394,16 @@ HOST ProtareSingle::ProtareSingle( GIDI::ProtareSingle const &a_protare, PoPI::D
             if( GIDI_reaction->crossSectionThreshold( ) >= a_settings.energyDomainMax( ) ) continue; }
         else {
             GIDI::Vector multi_group_cross_section = GIDI_reaction->multiGroupCrossSection( multiGroupSettings, a_temperatureInfos[0] );
+            GIDI::Vector vector = GIDI::collapse( multi_group_cross_section, a_settings, a_particles, 0.0 );
 
             std::size_t i1 = 0;
-            for( ; i1 < multi_group_cross_section.size( ); ++i1 ) if( multi_group_cross_section[i1] != 0.0 ) break;
-            if( i1 == multi_group_cross_section.size( ) ) continue;
+            for( ; i1 < vector.size( ); ++i1 ) if( vector[i1] != 0.0 ) break;
+            if( i1 == vector.size( ) ) continue;
         }
         if( a_settings.ignoreENDF_MT5( ) && ( GIDI_reaction->ENDF_MT( ) == 5 ) && ( a_reactionsToExclude.size( ) == 0 ) ) continue;
 
-        GIDI_reaction->productIDs( product_ids, a_particles, false );
-        GIDI_reaction->productIDs( product_ids_transportable, a_particles, true );
+        GIDI_reaction->productIDs( product_ids, particles, false );
+        GIDI_reaction->productIDs( product_ids_transportable, particles, true );
 
         GIDI_reactions.push_back( GIDI_reaction );
     }
@@ -392,7 +413,7 @@ HOST ProtareSingle::ProtareSingle( GIDI::ProtareSingle const &a_protare, PoPI::D
     for( auto GIDI_reaction = GIDI_reactions.begin( ); GIDI_reaction != GIDI_reactions.end( ); ++GIDI_reaction ) {
         setupInfo.m_reaction = *GIDI_reaction;
         setupInfo.m_isPairProduction = (*GIDI_reaction)->isPairProduction( );
-        Reaction *reaction2 = new Reaction( **GIDI_reaction, setupInfo, a_settings, a_particles, a_temperatureInfos );
+        Reaction *reaction2 = new Reaction( **GIDI_reaction, setupInfo, a_settings, particles, a_temperatureInfos );
         reaction2->updateProtareSingleInfo( this, static_cast<int>( m_reactions.size( ) ) );
         m_reactions.push_back( reaction2 );
     }
@@ -403,7 +424,7 @@ HOST ProtareSingle::ProtareSingle( GIDI::ProtareSingle const &a_protare, PoPI::D
     for( std::set<std::string>::iterator iter = product_ids_transportable.begin( ); iter != product_ids_transportable.end( ); ++iter ) product_indices_transportable.insert( a_pops[*iter] );
     productIndices( product_indices, product_indices_transportable );
 
-    if( a_settings.sampleNonTransportingParticles( ) || a_particles.hasParticle( PoPI::IDs::photon ) ) {
+    if( a_settings.sampleNonTransportingParticles( ) || particles.hasParticle( PoPI::IDs::photon ) ) {
         setupInfo.m_reactionType = Transporting::Reaction::Type::OrphanProducts;
         m_orphanProducts.reserve( a_protare.orphanProducts( ).size( ) );
         for( std::size_t reactionIndex = 0; reactionIndex < a_protare.orphanProducts( ).size( ); ++reactionIndex ) {
@@ -412,7 +433,7 @@ HOST ProtareSingle::ProtareSingle( GIDI::ProtareSingle const &a_protare, PoPI::D
             if( GIDI_reaction->crossSectionThreshold( ) >= a_settings.energyDomainMax( ) ) continue;
 
             setupInfo.m_reaction = GIDI_reaction;
-            Reaction *reaction2 = new Reaction( *GIDI_reaction, setupInfo, a_settings, a_particles, a_temperatureInfos );
+            Reaction *reaction2 = new Reaction( *GIDI_reaction, setupInfo, a_settings, particles, a_temperatureInfos );
             reaction2->updateProtareSingleInfo( this, static_cast<int>( m_orphanProducts.size( ) ) );
             m_orphanProducts.push_back( reaction2 );
 
@@ -422,7 +443,7 @@ HOST ProtareSingle::ProtareSingle( GIDI::ProtareSingle const &a_protare, PoPI::D
             if( ancestry == nullptr ) THROW( "Could not find xlink for orphan product - 1." );
             ancestry = ancestry->ancestor( );
             if( ancestry == nullptr ) THROW( "Could not find xlink for orphan product - 2." );
-            if( ancestry->moniker( ) != crossSectionSumMoniker ) {
+            if( ancestry->moniker( ) != GIDI_crossSectionSumChars ) {
                 ancestry = ancestry->ancestor( );
                 if( ancestry == nullptr ) THROW( "Could not find xlink for orphan product - 3." );
             }
@@ -450,23 +471,30 @@ HOST ProtareSingle::ProtareSingle( GIDI::ProtareSingle const &a_protare, PoPI::D
         }
     }
 
+    for( std::size_t reactionIndex = 0; reactionIndex < a_protare.orphanProducts( ).size( ); ++reactionIndex ) {
+        GIDI::Reaction const *GIDI_reaction = a_protare.orphanProduct( reactionIndex );
+
+        if( GIDI_reaction->crossSectionThreshold( ) >= a_settings.energyDomainMax( ) ) continue;
+        GIDI_orphanProducts.push_back( GIDI_reaction );
+    }
+
     if( m_continuousEnergy ) {
-        m_heatedCrossSections.update( setupInfo, a_settings, a_particles, a_domainHash, a_temperatureInfos, GIDI_reactions, GIDI_orphanProducts, m_fixedGrid );
+        m_heatedCrossSections.update( setupInfo, a_settings, particles, a_domainHash, a_temperatureInfos, GIDI_reactions, GIDI_orphanProducts, m_fixedGrid );
         m_hasURR_probabilityTables = m_heatedCrossSections.hasURR_probabilityTables( );
         m_URR_domainMin = m_heatedCrossSections.URR_domainMin( );
         m_URR_domainMax = m_heatedCrossSections.URR_domainMax( ); }
     else {
-        m_heatedMultigroupCrossSections.update( a_protare, setupInfo, a_settings, a_particles, a_temperatureInfos, GIDI_reactions, GIDI_orphanProducts );
+        m_heatedMultigroupCrossSections.update( a_protare, setupInfo, a_settings, particles, a_temperatureInfos, GIDI_reactions, GIDI_orphanProducts );
     }
 
     if( ( photonIndex( ) != projectileIndex( ) ) && ( a_settings.upscatterModel( ) == Sampling::Upscatter::Model::A ) ) {
-        GIDI::Styles::MultiGroup const *multiGroup = a_protare.styles( ).multiGroup( a_settings.upscatterModelALabel( ) );
-        if( multiGroup == nullptr ) THROW( "No such upscatter model A label" );
+        GIDI::Styles::Base const *style = a_protare.styles( ).get<GIDI::Styles::Base>( a_settings.upscatterModelALabel( ) );
 
-        GIDI::Transportable const *transportable = multiGroup->transportables( ).get<GIDI::Transportable>( a_protare.projectile( ).ID( ) );
-        GIDI::Group const &group = transportable->group( );
-        GIDI::Grid const &grid = group.grid( );
-        std::vector<double> const &boundaries = grid.data( );
+        if( style->moniker( ) == GIDI_SnElasticUpScatterStyleChars ) style = a_protare.styles( ).get<GIDI::Styles::Base>( style->derivedStyle( ) );
+        if( style->moniker( ) != GIDI_heatedMultiGroupStyleChars ) throw GIDI::Exception( "Label does not yield a heatedMultiGroup style." );
+
+        GIDI::Styles::HeatedMultiGroup const &heatedMultiGroup = *static_cast<GIDI::Styles::HeatedMultiGroup const *>( style );
+        std::vector<double> const &boundaries = heatedMultiGroup.groupBoundaries( a_protare.projectile( ).ID( ) );
 
         m_upscatterModelAGroupVelocities.resize( boundaries.size( ) );
         for( std::size_t i1 = 0; i1 < boundaries.size( ); ++i1 ) m_upscatterModelAGroupVelocities[i1] = MCGIDI_particleBeta( projectileMass( ), boundaries[i1] );
@@ -659,6 +687,25 @@ HOST_DEVICE double ProtareSingle::crossSection( URR_protareInfos const &a_URR_pr
 }
 
 /* *********************************************************************************************************//**
+ * Adds the energy dependent, total cross section corresponding to the temperature *a_temperature* multiplied by *a_userFactor* to *a_crossSectionVector*.
+ * 
+ * @param   a_temperature               [in]        Specifies the temperature of the material.
+ * @param   a_userFactor                [in]        User factor which all cross sections are multiplied by.
+ * @param   a_numberAllocated           [in]        The length of memory allocated for *a_crossSectionVector*.
+ * @param   a_crossSectionVector        [in/out]   The energy dependent, total cross section to add cross section data to.
+ ***********************************************************************************************************/
+ 
+HOST_DEVICE void ProtareSingle::crossSectionVector( double a_temperature, double a_userFactor, int a_numberAllocated, double *a_crossSectionVector ) const {
+
+    if( m_continuousEnergy ) {
+        if( !m_fixedGrid ) THROW( "ProtareSingle::crossSectionVector: continuous energy cannot be supported." );
+        m_heatedCrossSections.crossSectionVector( a_temperature, a_userFactor, a_numberAllocated, a_crossSectionVector ); }
+    else {
+        m_heatedMultigroupCrossSections.crossSectionVector( a_temperature, a_userFactor, a_numberAllocated, a_crossSectionVector );
+    }
+}
+
+/* *********************************************************************************************************//**
  * Returns the reaction's cross section for the reaction at index *a_reactionIndex*, for target temperature *a_temperature* and projectile energy *a_energy*. 
  * *a_sampling* is only used for multi-group cross section look up.
  *
@@ -797,9 +844,11 @@ HOST_DEVICE void ProtareSingle::serialize( DataBuffer &a_buffer, DataBuffer::Mod
 
     DATA_MEMBER_INT( m_URR_index, a_buffer, a_mode );
     DATA_MEMBER_CAST( m_hasURR_probabilityTables, a_buffer, a_mode, bool );
+    DATA_MEMBER_STRING( m_interaction, a_buffer, a_mode );
     DATA_MEMBER_FLOAT( m_URR_domainMin, a_buffer, a_mode );
     DATA_MEMBER_FLOAT( m_URR_domainMax, a_buffer, a_mode );
     DATA_MEMBER_VECTOR_DOUBLE( m_projectileMultiGroupBoundaries, a_buffer, a_mode );
+    DATA_MEMBER_VECTOR_DOUBLE( m_projectileMultiGroupBoundariesCollapsed, a_buffer, a_mode );
     DATA_MEMBER_VECTOR_DOUBLE( m_projectileFixedGrid, a_buffer, a_mode );
     DATA_MEMBER_VECTOR_DOUBLE( m_upscatterModelAGroupVelocities, a_buffer, a_mode );
 
@@ -819,6 +868,10 @@ HOST_DEVICE void ProtareSingle::serialize( DataBuffer &a_buffer, DataBuffer::Mod
                 m_nuclideGammaBranchStateInfos[vectorIndex] = new NuclideGammaBranchStateInfo;
             }
         }
+    }
+    if( a_mode == DataBuffer::Mode::Memory ) {
+        a_buffer.m_placement += m_nuclideGammaBranchStateInfos.internalSize();
+        a_buffer.incrementPlacement( sizeof( NuclideGammaBranchStateInfo ) * vectorSize );
     }
     for( MCGIDI_VectorSizeType vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
         m_nuclideGammaBranchStateInfos[vectorIndex]->serialize( *workingBuffer, a_mode );
@@ -841,6 +894,10 @@ HOST_DEVICE void ProtareSingle::serialize( DataBuffer &a_buffer, DataBuffer::Mod
             }
         }
     }
+    if( a_mode == DataBuffer::Mode::Memory ) {
+        a_buffer.m_placement += m_branches.internalSize();
+        workingBuffer->incrementPlacement( sizeof( NuclideGammaBranchInfo ) * vectorSize );
+    }
     for( MCGIDI_VectorSizeType vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
         m_branches[vectorIndex]->serialize( *workingBuffer, a_mode );
     }
@@ -861,6 +918,10 @@ HOST_DEVICE void ProtareSingle::serialize( DataBuffer &a_buffer, DataBuffer::Mod
                 m_reactions[vectorIndex] = new Reaction;
             }
         }
+    }
+    if( a_mode == DataBuffer::Mode::Memory ) {
+        a_buffer.m_placement += m_reactions.internalSize();
+        a_buffer.incrementPlacement( sizeof(Reaction) * vectorSize);
     }
     for( MCGIDI_VectorSizeType vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
         m_reactions[vectorIndex]->serialize( *workingBuffer, a_mode );
@@ -884,6 +945,12 @@ HOST_DEVICE void ProtareSingle::serialize( DataBuffer &a_buffer, DataBuffer::Mod
             }
         }
     }
+
+    if( a_mode == DataBuffer::Mode::Memory ) {
+        a_buffer.m_placement += m_orphanProducts.internalSize( );
+        a_buffer.incrementPlacement( sizeof( Reaction ) * vectorSize );
+    }
+
     for( MCGIDI_VectorSizeType vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
         m_orphanProducts[vectorIndex]->serialize( *workingBuffer, a_mode );
         m_orphanProducts[vectorIndex]->updateProtareSingleInfo( this, static_cast<int>( vectorIndex ) );
@@ -901,43 +968,6 @@ HOST_DEVICE void ProtareSingle::serialize( DataBuffer &a_buffer, DataBuffer::Mod
     DATA_MEMBER_CAST( m_fixedGrid, *workingBuffer, a_mode, bool );
     m_heatedCrossSections.serialize( *workingBuffer, a_mode );
     m_heatedMultigroupCrossSections.serialize( *workingBuffer, a_mode );
-}
-
-/* *********************************************************************************************************//**
- * This method counts the number of bytes of memory allocated by *this*. That is the member needed by *this* that is greater than
- * sizeof( *this );
- ***********************************************************************************************************/
-
-HOST_DEVICE long ProtareSingle::internalSize( ) const {
-
-    long size = Protare::internalSize( ) + m_nuclideGammaBranchStateInfos.internalSize( );
-
-    for( MCGIDI_VectorSizeType index = 0; index < m_nuclideGammaBranchStateInfos.size(); ++index ) {
-        size += sizeof( *m_nuclideGammaBranchStateInfos[index] ) + m_nuclideGammaBranchStateInfos[index]->internalSize( );
-    }
-
-    size += m_branches.internalSize( );
-    for( MCGIDI_VectorSizeType index = 0; index < m_branches.size(); ++index ) {
-        size += sizeof( *m_branches[index] ) + m_branches[index]->internalSize( );
-    }
-
-    size += m_reactions.internalSize( );
-    for( MCGIDI_VectorSizeType reactionIndex = 0; reactionIndex < m_reactions.size(); ++reactionIndex ) {
-        size += sizeof( *m_reactions[reactionIndex] ) + m_reactions[reactionIndex]->internalSize( );
-    }
-
-    size += m_orphanProducts.internalSize();
-    for( MCGIDI_VectorSizeType reactionIndex = 0; reactionIndex < m_orphanProducts.size(); ++reactionIndex ) {
-        size += sizeof(*m_orphanProducts[reactionIndex]) + m_orphanProducts[reactionIndex]->internalSize();
-    }
-
-    size += m_heatedCrossSections.internalSize( );
-    size += m_heatedMultigroupCrossSections.internalSize( );
-    size += m_projectileMultiGroupBoundaries.internalSize( );
-    size += m_projectileFixedGrid.internalSize( );
-    size += m_upscatterModelAGroupVelocities.internalSize( );
-
-    return( size );
 }
 
 }
