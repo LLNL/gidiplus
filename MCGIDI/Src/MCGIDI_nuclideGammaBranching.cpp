@@ -51,7 +51,7 @@ NuclideGammaBranchInfo::NuclideGammaBranchInfo( PoPI::NuclideGammaBranchInfo con
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void NuclideGammaBranchInfo::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void NuclideGammaBranchInfo::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     DataBuffer *workingBuffer = &a_buffer;
 
@@ -105,7 +105,7 @@ NuclideGammaBranchStateInfo::NuclideGammaBranchStateInfo( PoPI::NuclideGammaBran
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void NuclideGammaBranchStateInfo::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void NuclideGammaBranchStateInfo::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     DataBuffer *workingBuffer = &a_buffer;
 

@@ -1,0 +1,4 @@
+ERROR 1500 in ArgumentParser::add: name 'name' already present.
+ERROR 1510 in ArgumentParser::addAlias: name '-t' already present.
+ERROR 1510 in ArgumentParser::addAlias: name '-t' already present.
+ERROR 1520 in ArgumentParser::addAlias: no such argument named '--True'.

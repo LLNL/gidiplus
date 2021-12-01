@@ -1,0 +1,25 @@
+# <<BEGIN-copyright>>
+# <<END-copyright>>
+
+.PHONY: default bin clean realclean
+
+local_CXXFLAGS += $(LIB_PATHS)
+
+LIBS = -lPoPI -lpugixml -lLUPI -lHAPI -lnumericalfunctions -lstatusMessageReporting
+
+EXES = $(CppSources:.cpp=)
+
+default: bin
+
+%: %.cpp
+	echo "    "$@
+	$(CXX) $(local_CXXFLAGS) $< -o $@ $(LIBS)
+
+bin: $(EXES)
+	cp $(EXES) ../..
+
+clean:
+	rm -f $(EXES)
+
+realclean: clean
+	rm -rf *.dSYM

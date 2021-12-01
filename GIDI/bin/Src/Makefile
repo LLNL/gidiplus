@@ -7,21 +7,24 @@ SHELL = /bin/ksh
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
-.PHONY: default bin compile check clean realclean doDirs
+DIRS = readAllProtaresInMapFile directory toXML reactions GNDS_FileType incompleteParticles HAPI_ReadAllProtaresInMapFile mapTiming
 
-DIRS = readAllProtaresInMapFile directory toXML reactions GNDS_FileType
+.PHONY: default bin compile check clean realclean doDirs $(DIRS)
 
 default: compile
 
 bin:
 	echo ""
 	echo "  -- GIDI/bin/Src --"
-	$(MAKE) doDirs TARGET=bin
+	$(MAKE) $(DIRS)
 
 compile:
 	$(MAKE) doDirs TARGET=bin
 
 check:
+
+$(DIRS):
+	cd $@; $(MAKE) bin
 
 clean:
 	$(MAKE) doDirs TARGET=clean

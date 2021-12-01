@@ -423,7 +423,7 @@ bool ProtareComposite::hasFission( ) const {
  * @return                          List of multi-group boundaries.
  ***********************************************************************************************************/
 
-std::vector<double> const &ProtareComposite::groupBoundaries( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
+std::vector<double> const ProtareComposite::groupBoundaries( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
 
     return( m_protares[0]->groupBoundaries( a_settings, a_temperatureInfo, a_productID ) );
 }
@@ -759,6 +759,19 @@ DelayedNeutronProducts ProtareComposite::delayedNeutronProducts( ) const {
     }
 
     return( delayedNeutronProducts1 );
+}
+
+/* *********************************************************************************************************//**
+ * Calls the **incompleteParticles** method for each **ProtareSingle** in *this*.
+ *
+ * @param       a_incompleteParticles   [out]   The list of particles whose **completeParticle** method returns *false*.
+ ***********************************************************************************************************/
+
+void ProtareComposite::incompleteParticles( Transporting::Settings const &a_settings, std::set<std::string> &a_incompleteParticles ) const {
+
+    for( std::size_t i1 = 0; i1 < m_protares.size( ); ++i1 ) {
+        m_protares[i1]->incompleteParticles( a_settings, a_incompleteParticles );
+    }
 }
 
 }

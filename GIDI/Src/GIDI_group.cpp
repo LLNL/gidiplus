@@ -8,6 +8,7 @@
 */
 
 #include "GIDI.hpp"
+#include <HAPI.hpp>
 
 namespace GIDI {
 
@@ -17,12 +18,12 @@ namespace GIDI {
 
 /* *********************************************************************************************************//**
  * @param a_construction    [in]    Used to pass user options to the constructor.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed to construct a Group instance.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed to construct a Group instance.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops            [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
  ***********************************************************************************************************/
 
-Group::Group( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops ) :
+Group::Group( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops ) :
         Form( a_node, a_setupInfo, FormType::group ),
         m_grid( a_node.child( GIDI_gridChars ), a_setupInfo, a_construction.useSystem_strtod( ) ) {
 
@@ -86,11 +87,9 @@ Groups::Groups( std::string const &a_fileName ) :
 
 void Groups::addFile( std::string const &a_fileName ) {
 
-    pugi::xml_document doc;
-    pugi::xml_parse_result result = doc.load_file( a_fileName.c_str( ) );
-    if( result.status != pugi::status_ok ) throw Exception( result.description( ) );
+    HAPI::PugiXMLFile *doc = new HAPI::PugiXMLFile( a_fileName.c_str( ) );
 
-    pugi::xml_node groups = doc.first_child( );
+    HAPI::Node groups = doc->first_child( );
 
     std::string name( groups.name( ) );
     if( name != GIDI_groupsChars ) throw Exception( "Invalid groups node file: file node name is '" + name + "'." );
@@ -100,18 +99,19 @@ void Groups::addFile( std::string const &a_fileName ) {
 
     SetupInfo setupInfo( nullptr );
 
-    std::string formatVersionString = groups.attribute( GIDI_formatChars ).value( );
+    std::string formatVersionString = groups.attribute_as_string( GIDI_formatChars );
     if( formatVersionString == "" ) formatVersionString = GNDS_formatVersion_1_10Chars;
     FormatVersion formatVersion;
     formatVersion.setFormat( formatVersionString );
     if( !formatVersion.supported( ) ) throw Exception( "unsupport GND format version" );
     setupInfo.m_formatVersion = formatVersion;
 
-    for( pugi::xml_node child = groups.first_child( ); child; child = child.next_sibling( ) ) {
+    for( HAPI::Node child = groups.first_child( ); !child.empty( ); child.to_next_sibling( ) ) {
         Group *group = new Group( construction, child, setupInfo, pops );
 
         add( group );
     }
+    delete doc;
 }
 
 }

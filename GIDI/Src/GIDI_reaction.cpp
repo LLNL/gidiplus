@@ -8,6 +8,7 @@
 */
 
 #include "GIDI.hpp"
+#include <HAPI.hpp>
 
 namespace GIDI {
 
@@ -33,7 +34,7 @@ Reaction::Reaction( int a_ENDF_MT, std::string a_fissionGenre ) :
  * Parses a <**reaction**> node.
  *
  * @param a_construction    [in]    Used to pass user options to the constructor.
- * @param a_node            [in]    The reaction pugi::xml_node to be parsed and used to construct the reaction.
+ * @param a_node            [in]    The reaction HAPI::Node to be parsed and used to construct the reaction.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops            [in]    The *external* PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs    [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
@@ -42,14 +43,14 @@ Reaction::Reaction( int a_ENDF_MT, std::string a_fissionGenre ) :
  * @param a_styles          [in]    The <**styles**> node under the <**reactionSuite**> node.
  ***********************************************************************************************************/
 
-Reaction::Reaction( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, 
+Reaction::Reaction( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, 
                 PoPI::Database const &a_internalPoPs, Protare const &a_protare, Styles::Suite const *a_styles ) :
         Form( a_node, a_setupInfo, FormType::reaction ),
         m_active( true ),
-        m_ENDF_MT( a_node.attribute( GIDI_ENDF_MT_Chars ).as_int( ) ),
+        m_ENDF_MT( a_node.attribute_as_int( GIDI_ENDF_MT_Chars ) ),
         m_ENDL_C( 0 ),
         m_ENDL_S( 0 ),
-        m_fissionGenre( a_node.attribute( GIDI_fissionGenreChars ).value( ) ),
+        m_fissionGenre( a_node.attribute_as_string( GIDI_fissionGenreChars ) ),
         m_QThreshold( 0.0 ),
         m_crossSectionThreshold( 0.0 ),
         m_doubleDifferentialCrossSection( a_construction, GIDI_doubleDifferentialCrossSectionChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseDoubleDifferentialCrossSectionSuite, a_styles ),
@@ -469,6 +470,17 @@ void Reaction::delayedNeutronProducts( DelayedNeutronProducts &a_delayedNeutronP
 }
 
 /* *********************************************************************************************************//**
+ * If *this* has an output channel, this output channel's **incompleteParticles* is called.
+ *
+ * @param       a_incompleteParticles   [out]   The list of particles whose **completeParticle** method returns *false*.
+ ***********************************************************************************************************/
+
+void Reaction::incompleteParticles( Transporting::Settings const &a_settings, std::set<std::string> &a_incompleteParticles ) const {
+
+    if( m_outputChannel != nullptr ) m_outputChannel->incompleteParticles( a_settings, a_incompleteParticles );
+}
+
+/* *********************************************************************************************************//**
  * Returns, via arguments, the average energy and momentum, and gain for product with particle id *a_particleID*.
  *
  * @param a_particleID          [in]    The particle id of the product.
@@ -487,6 +499,84 @@ void Reaction::continuousEnergyProductData( std::string const &a_particleID, dou
 //    if( ENDF_MT( ) == 516 ) return;             // FIXME, may be something wrong with the way FUDGE converts ENDF to GNDS.
 
     if( m_outputChannel != nullptr ) m_outputChannel->continuousEnergyProductData( a_particleID, a_energy, a_productEnergy, a_productMomentum, a_productGain );
+}
+
+/* *********************************************************************************************************//**
+ * This method calculates
+ *
+ *          result = a_offset + a_slope * source
+ *
+ * where *source* is the data in the **crossSection** node specified by the label *a_source* and the result
+ * is added to the **crossSection** node with label *a_result*. The data specified by *a_source* must be a
+ * **heated** style (i.e., the label returned by **Styles::TemperatureInfo::heatedCrossSection( )**. The style
+ * for *a_result* must be a **modifiedHeated** style.
+ *
+ * The domains of *a_offset* and *a_slope* must at least span the domain of the source.
+ * 
+ * @param       a_source        [in]    The label for a **GNDS** **heated** style in the **crossSection** node whose data will be used as the source.
+ * @param       a_result        [in]    The label for a **GNDS** **heated** style to add to the **crossSection** node.
+ * @param       a_offset        [in]    An XYs1d function for the offset.
+ * @param       a_slope         [in]    An XYs1d function for the slope.
+ ***********************************************************************************************************/
+
+void Reaction::modifiedCrossSection( Functions::XYs1d const &a_offset, Functions::XYs1d const &a_slope ) {
+
+    ProtareSingle &protare( dynamic_cast<ProtareSingle &>( *root( ) ) );
+    Styles::Suite const &styles = protare.styles( );
+    Suite &crossSectionSuite = crossSection( );
+
+    if( a_offset.size( ) == 0 ) throw Exception( "GIDI::Reaction::modifiedCrossSection: offset has ho points." );
+    if( a_slope.size( )  == 0 ) throw Exception( "GIDI::Reaction::modifiedCrossSection: slope has no points." );
+
+    double domainMin = a_offset.domainMin( ), domainMax = a_offset.domainMax( );
+
+    if( domainMin != a_slope.domainMin( ) ) throw Exception( "GIDI::Reaction::modifiedCrossSection: offset and slope domainMins differ." );
+    if( domainMax != a_slope.domainMax( ) ) throw Exception( "GIDI::Reaction::modifiedCrossSection: offset and slope domainMaxs differ." );
+
+    Styles::TemperatureInfos temperatureInfos = protare.temperatures( );
+
+    Functions::XYs1d *xys1d = crossSectionSuite.get<Functions::XYs1d>( temperatureInfos[0].heatedCrossSection( ) );
+    if( ( xys1d->domainMin( ) >= domainMax ) || ( xys1d->domainMax( ) <= domainMin ) ) return;
+
+    double crossSectionDomainMax = xys1d->domainMax( );
+    if( xys1d->domainMin( ) > domainMin ) domainMin = xys1d->domainMin( );
+    if( crossSectionDomainMax < domainMax ) domainMax = crossSectionDomainMax;
+
+    Functions::XYs1d offset = a_offset.domainSlice( domainMin, domainMax, true );
+    Functions::XYs1d slope  = a_slope.domainSlice( domainMin, domainMax, true );
+
+    for( auto temperatureInfo = temperatureInfos.begin( ); temperatureInfo != temperatureInfos.end( ); ++temperatureInfo ) {
+        Functions::XYs1d *xys1d = crossSectionSuite.get<Functions::XYs1d>( temperatureInfo->heatedCrossSection( ) );
+        Functions::XYs1d xys1dSliced = xys1d->domainSlice( domainMin, domainMax, true );
+        Functions::XYs1d modified = offset + slope * xys1dSliced;
+
+        int64_t index1;
+        ptwXYPoint *p1;
+        ptwXYPoints *ptwXY = xys1d->ptwXY( );
+        int64_t length = ptwXY_length( nullptr, ptwXY );
+        for( index1 = 0, p1 = ptwXY->points; index1 < length; ++index1, ++p1 ) {
+            if( p1->x  < domainMin ) continue;
+            if( p1->x >= domainMax ) {
+                if( ( p1->x != domainMax ) || ( p1->x != crossSectionDomainMax ) ) break;
+            }
+            p1->y = modified.evaluate( p1->x );
+        }
+
+        Functions::Ys1d *ys1d = crossSectionSuite.get<Functions::Ys1d>( temperatureInfo->griddedCrossSection( ) );
+        std::vector<double> &Ys = ys1d->Ys( );
+        Styles::GriddedCrossSection const griddedCrossSection = *styles.get<Styles::GriddedCrossSection>( temperatureInfo->griddedCrossSection( ) );
+        nf_Buffer<double> const &grid = griddedCrossSection.grid( ).values( );
+        std::size_t start = ys1d->start( ), size = ys1d->size( ), index2;
+        for( index2 = 0; index2 < size; ++index2, ++start ) {
+            double xValue = grid[start];
+
+            if( xValue  < domainMin ) continue;
+            if( xValue >= domainMax ) {
+                if( ( xValue != domainMax ) || ( xValue != crossSectionDomainMax ) ) break;
+            }
+            Ys[index2] = modified.evaluate( xValue );
+        }
+    }
 }
 
 /* *********************************************************************************************************//**
@@ -567,6 +657,8 @@ int ENDL_CFromENDF_MT( int ENDF_MT, int *ENDL_C, int *ENDL_S ) {
         else if( ( ENDF_MT >= 515 ) && ( ENDF_MT <= 517 ) ) {
             *ENDL_C = 74; }
         else if( ENDF_MT == 522 ) {
+            *ENDL_C = 73; }
+        else if( ( ENDF_MT >= 534 ) && ( ENDF_MT <= 572 ) ) {
             *ENDL_C = 73; } }
     else if( ENDF_MT >= 600 ) {
         if( ENDF_MT < 650 ) {

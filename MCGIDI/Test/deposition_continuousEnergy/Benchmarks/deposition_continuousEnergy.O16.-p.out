@@ -32,7 +32,8 @@
                             O17 + photon  threshold =            0  threshold =            0
                   n + He4 + C12 + photon  threshold =      7.61359  threshold =      7.61359
                        n + 4He4 + photon  threshold =      15.3472  threshold =      15.3472
-                     2He4 + Be9 + photon  threshold =      13.6743  threshold =      13.6743
+                     2He4 + Be9 + photon  threshold =      13.6744  threshold =      13.6744
+            sumOfRemainingOutputChannels  threshold =            0  threshold =            0
 List of reactions:
     reaction: n + O16
     reaction: n + (O16_e1 -> O16)
@@ -69,6 +70,7 @@ List of reactions:
     reaction: n + He4 + C12 + photon
     reaction: n + 4He4 + photon
     reaction: 2He4 + Be9 + photon
+    reaction: sumOfRemainingOutputChannels
 temperature =  1.0e-08                          cross section deposition energy  deposition momentum  production energy      neutron gain         photon gain
     energy =            1e-12 index =      0   5.56183357e+01   1.51900405e-05      7.17204110e-03      3.95951146e-02     -9.55344548e-03      2.72655334e-02
     energy =            2e-12 index =      0   5.56183357e+01   1.51900405e-05      7.17204110e-03      3.95951146e-02     -9.55344548e-03      2.72655334e-02
@@ -115,7 +117,7 @@ temperature =  1.0e-08                          cross section deposition energy 
     energy =          4.39805 index =   3842   2.09691777e+00   7.03848789e-01      1.11280818e+02     -8.58040325e-02     -3.90371320e-02      2.85399999e-04
     energy =          8.79609 index =   3976   1.38538716e+00   1.62946780e+00      1.45123297e+02     -4.22403862e-01     -1.90963289e-01      4.94022918e-01
     energy =          17.5922 index =   4001   1.64510960e+00   2.99681815e+00      1.41696234e+02     -2.45353725e+00     -1.01677359e-01      5.24202285e-01
-    energy =          35.1844 index =   4001   1.01021200e+00   3.94666076e-01      2.43173422e+01      0.00000000e+00      0.00000000e+00      0.00000000e+00
+    energy =          35.1844 index =   4001   1.47601915e+00   1.03334934e+01      1.18874278e+02      0.00000000e+00     -3.46747536e-02      2.82615883e-01
 temperature =  1.0e-06                          cross section deposition energy  deposition momentum  production energy      neutron gain         photon gain
     energy =            1e-12 index =      0   3.45180892e+02   1.51936468e-05      4.45110236e-02      3.96036726e-02     -9.55551034e-03      2.72714265e-02
     energy =            2e-12 index =      0   3.45180892e+02   1.51936468e-05      4.45110236e-02      3.96036726e-02     -9.55551034e-03      2.72714265e-02
@@ -162,7 +164,7 @@ temperature =  1.0e-06                          cross section deposition energy 
     energy =          4.39805 index =   3842   2.09728690e+00   7.04007400e-01      1.11304676e+02     -8.58263095e-02     -3.90471925e-02      2.85399919e-04
     energy =          8.79609 index =   3976   1.38534401e+00   1.62992050e+00      1.45116436e+02     -4.22419185e-01     -1.90970210e-01      4.93967068e-01
     energy =          17.5922 index =   4001   1.64510162e+00   2.99677688e+00      1.41694563e+02     -2.45344878e+00     -1.01671232e-01      5.24195928e-01
-    energy =          35.1844 index =   4001   1.01021180e+00   3.94665995e-01      2.43173372e+01      0.00000000e+00      0.00000000e+00      0.00000000e+00
+    energy =          35.1844 index =   4001   1.47601996e+00   1.03335149e+01      1.18874480e+02      0.00000000e+00     -3.46748304e-02      2.82616501e-01
 temperature =  1.0e-04                          cross section deposition energy  deposition momentum  production energy      neutron gain         photon gain
     energy =            1e-12 index =      0   3.45162836e+03   1.57917468e-05      4.45086256e-01      4.11536792e-02     -9.92949345e-03      2.83387743e-02
     energy =            2e-12 index =      0   3.45162836e+03   1.57917468e-05      4.45086256e-01      4.11536792e-02     -9.92949345e-03      2.83387743e-02
@@ -209,4 +211,4 @@ temperature =  1.0e-04                          cross section deposition energy 
     energy =          4.39805 index =   3842   2.10143168e+00   7.05643361e-01      1.11531650e+02     -8.62664503e-02     -3.92459792e-02      2.85414533e-04
     energy =          8.79609 index =   3976   1.38379419e+00   1.62717363e+00      1.44966899e+02     -4.22330276e-01     -1.90930088e-01      4.94116743e-01
     energy =          17.5922 index =   4001   1.64531942e+00   2.99764487e+00      1.41711091e+02     -2.45339495e+00     -1.01744386e-01      5.24232403e-01
-    energy =          35.1844 index =   4001   1.01022259e+00   3.94670208e-01      2.43175996e+01      0.00000000e+00      0.00000000e+00      0.00000000e+00
+    energy =          35.1844 index =   4001   1.47604161e+00   1.03337495e+01      1.18876943e+02      0.00000000e+00     -3.46756497e-02      2.82623096e-01

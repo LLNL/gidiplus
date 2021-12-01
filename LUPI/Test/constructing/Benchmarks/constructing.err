@@ -1,0 +1,5 @@
+ERROR 1000 in ArgumentBase::ArgumentBase: m_minimumNeeded must not be negative.
+ERROR 1010 in ArgumentBase::ArgumentBase: for argument '-a' m_maximumNeeded less than m_minimumNeeded.
+ERROR 1020 in ArgumentBase::ArgumentBase: positional argument name '-a' cannot start with a '-'.
+ERROR 1110 in ArgumentBase::addAlias: name 'a' not a valid optional name.
+ERROR 1100 in ArgumentBase::addAlias: cannot add a name to a positional argument.

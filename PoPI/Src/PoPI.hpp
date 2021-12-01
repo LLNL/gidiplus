@@ -20,7 +20,7 @@
 #include <fstream>
 #include <exception>
 
-#include "pugixml.hpp"
+#include <HAPI.hpp>
 
 namespace PoPI {
 
@@ -159,8 +159,8 @@ class Suite {
     public:
         Suite( std::string const &a_label ) : m_label( a_label ) { };
         ~Suite( );
-        void appendFromParentNode( pugi::xml_node const &a_node, Database *a_DB, T2 *a_parent );
-        void appendFromParentNode2( pugi::xml_node const &a_node, T2 *a_parent );
+        void appendFromParentNode( HAPI::Node const &a_node, Database *a_DB, T2 *a_parent );
+        void appendFromParentNode2( HAPI::Node const &a_node, T2 *a_parent );
 
         std::string::size_type size( void ) const { return( m_items.size( ) ); }
         T &operator[]( int a_index ) const { return( *m_items[a_index] ); }
@@ -185,9 +185,9 @@ Suite<T, T2>::~Suite( ) {
 =========================================================
 */
 template <class T, class T2>
-void Suite<T, T2>::appendFromParentNode( pugi::xml_node const &a_node, Database *a_DB, T2 *a_parent ) {
+void Suite<T, T2>::appendFromParentNode( HAPI::Node const &a_node, Database *a_DB, T2 *a_parent ) {
 
-    for( pugi::xml_node child = a_node.first_child( ); child; child = child.next_sibling( ) ) {
+    for( HAPI::Node child = a_node.first_child( ); !child.empty( ); child = child.next_sibling( ) ) {
         T *item = new T( child, a_DB, a_parent );
         m_items.push_back( item );
     }
@@ -196,9 +196,9 @@ void Suite<T, T2>::appendFromParentNode( pugi::xml_node const &a_node, Database 
 =========================================================
 */
 template <class T, class T2>
-void Suite<T, T2>::appendFromParentNode2( pugi::xml_node const &a_node, T2 *a_parent ) {
+void Suite<T, T2>::appendFromParentNode2( HAPI::Node const &a_node, T2 *a_parent ) {
 
-    for( pugi::xml_node child = a_node.first_child( ); child; child = child.next_sibling( ) ) {
+    for( HAPI::Node child = a_node.first_child( ); !child.empty( ); child = child.next_sibling( ) ) {
         T *item = new T( child, a_parent );
         m_items.push_back( item );
     }
@@ -236,7 +236,7 @@ class PhysicalQuantity {
         std::string m_unit;
 
     public:
-        PhysicalQuantity( pugi::xml_node const &a_node, PQ_class a_class );
+        PhysicalQuantity( HAPI::Node const &a_node, PQ_class a_class );
         virtual ~PhysicalQuantity( );
 
         PQ_class Class( void ) const { return( m_class ); }
@@ -260,8 +260,8 @@ class PQ_double : public PhysicalQuantity {
         double m_value;
 
     public:
-        PQ_double( pugi::xml_node const &a_node );
-        PQ_double( pugi::xml_node const &a_node, PQ_class a_class );
+        PQ_double( HAPI::Node const &a_node );
+        PQ_double( HAPI::Node const &a_node, PQ_class a_class );
         void initialize( );
         virtual ~PQ_double( );
 
@@ -282,7 +282,7 @@ class PQ_integer : public PhysicalQuantity {
         int m_value;
 
     public:
-        PQ_integer ( pugi::xml_node const &a_node );
+        PQ_integer ( HAPI::Node const &a_node );
         virtual ~PQ_integer( );
 
         int value( void ) const { return( m_value ); }
@@ -299,7 +299,7 @@ class PQ_integer : public PhysicalQuantity {
 class PQ_fraction : public PhysicalQuantity {
 
     public:
-        PQ_fraction( pugi::xml_node const &a_node );
+        PQ_fraction( HAPI::Node const &a_node );
         virtual ~PQ_fraction( );
 
         std::string value( void ) const ;
@@ -316,7 +316,7 @@ class PQ_fraction : public PhysicalQuantity {
 class PQ_string : public PhysicalQuantity {
 
     public:
-        PQ_string( pugi::xml_node const &a_node );
+        PQ_string( HAPI::Node const &a_node );
         virtual ~PQ_string( );
 
         std::string value( void ) const { return( valueString( ) ); }
@@ -333,7 +333,7 @@ class PQ_string : public PhysicalQuantity {
 class PQ_shell : public PQ_double {
 
     public:
-        PQ_shell( pugi::xml_node const &a_node );
+        PQ_shell( HAPI::Node const &a_node );
         ~PQ_shell( );
 };
 
@@ -348,7 +348,7 @@ class PQ_suite : public std::vector<PhysicalQuantity *> {
         std::string m_label;
 
     public:
-        PQ_suite( pugi::xml_node const &a_node );
+        PQ_suite( HAPI::Node const &a_node );
         ~PQ_suite( );
 
         std::string &label( void ) { return( m_label ); }
@@ -441,7 +441,7 @@ class Base {
 
     public:
         Base( std::string const &a_id, Particle_class a_class );
-        Base( pugi::xml_node const &a_node, std::string const &a_label, Particle_class a_class );
+        Base( HAPI::Node const &a_node, std::string const &a_label, Particle_class a_class );
         virtual ~Base( );
 
         std::string const &ID( void ) const { return( m_id ); }
@@ -471,7 +471,7 @@ class IDBase : public Base {
 
     public:
         IDBase( std::string const &a_id, Particle_class a_class );
-        IDBase( pugi::xml_node const &a_node, Particle_class a_class );
+        IDBase( HAPI::Node const &a_node, Particle_class a_class );
         virtual ~IDBase( );       // BRB This should be virtual but I cannot get it to work without crashing.
 
         int addToDatabase( Database *a_DB );
@@ -485,7 +485,7 @@ class IDBase : public Base {
 class SymbolBase : public Base {
 
     public:
-        SymbolBase( pugi::xml_node const &a_node, Particle_class a_class );
+        SymbolBase( HAPI::Node const &a_node, Particle_class a_class );
         ~SymbolBase( );
 
         std::string const &symbol( ) const { return( ID( ) ); }
@@ -507,7 +507,7 @@ class Product {
         std::string m_label;
 
     public:
-        Product( pugi::xml_node const &a_node, Decay *a_DB );
+        Product( HAPI::Node const &a_node, Decay *a_DB );
         ~Product( );
 
         int ID( ) const { return( m_id ); }
@@ -529,7 +529,7 @@ class Decay {
         Suite<Product, Decay> m_products;
 
     public:
-        Decay( pugi::xml_node const &a_node, DecayMode const *a_decayMode );
+        Decay( HAPI::Node const &a_node, DecayMode const *a_decayMode );
         ~Decay( );
 
         int index( void ) const { return( m_index ); }
@@ -552,7 +552,7 @@ class DecayMode {
         Suite<Decay, DecayMode> m_decayPath;
 
     public:
-        DecayMode( pugi::xml_node const &a_node, DecayData const *a_decayData );
+        DecayMode( HAPI::Node const &a_node, DecayData const *a_decayData );
         ~DecayMode( );
 
         std::string const &label( ) const { return( m_label ); }
@@ -576,7 +576,7 @@ class DecayData {
         Suite<DecayMode, DecayData> m_decayModes;
 
     public:
-        DecayData( pugi::xml_node const &a_node );
+        DecayData( HAPI::Node const &a_node );
         ~DecayData( );
 
         Suite<DecayMode, DecayData> const &decayModes( void ) const { return( m_decayModes ); }
@@ -603,7 +603,7 @@ class Particle : public IDBase {
         DecayData m_decayData;
 
     public:
-        Particle( pugi::xml_node const &a_node, Particle_class a_class, std::string const &a_family, int a_hasNucleus = 0 );
+        Particle( HAPI::Node const &a_node, Particle_class a_class, std::string const &a_family, int a_hasNucleus = 0 );
         virtual ~Particle( );
 
         std::string const &family( void ) const { return( m_family ); }
@@ -632,7 +632,7 @@ class Particle : public IDBase {
 class GaugeBoson : public Particle {
 
     public:
-        GaugeBoson( pugi::xml_node const &a_node, Database *a_DB, Database *a_parent );
+        GaugeBoson( HAPI::Node const &a_node, Database *a_DB, Database *a_parent );
         virtual ~GaugeBoson( );
 };
 
@@ -647,7 +647,7 @@ class Lepton : public Particle {
         std::string m_generation;
 
     public:
-        Lepton( pugi::xml_node const &a_node, Database *a_DB, Database *a_parent );
+        Lepton( HAPI::Node const &a_node, Database *a_DB, Database *a_parent );
         virtual ~Lepton( );
 
         std::string const &generation( void ) const { return( m_generation ); }
@@ -664,7 +664,7 @@ class Baryon : public Particle {
     private:
 
     public:
-        Baryon( pugi::xml_node const &a_node, Database *a_DB, Database *a_parent );
+        Baryon( HAPI::Node const &a_node, Database *a_DB, Database *a_parent );
         virtual ~Baryon( );
 };
 
@@ -678,7 +678,7 @@ class Unorthodox : public Particle {
     private:
 
     public:
-        Unorthodox( pugi::xml_node const &a_node, Database *a_DB, Database *a_parent );
+        Unorthodox( HAPI::Node const &a_node, Database *a_DB, Database *a_parent );
         virtual ~Unorthodox( );
 };
 
@@ -698,7 +698,7 @@ class Nucleus : public Particle {
         PQ_suite m_energy;
 
     public:
-        Nucleus( pugi::xml_node const &node, Database *a_DB, Nuclide *a_parent );
+        Nucleus( HAPI::Node const &node, Database *a_DB, Nuclide *a_parent );
         virtual ~Nucleus( );
 
         int Z( void ) const { return( m_Z ); }
@@ -726,7 +726,7 @@ class Nuclide : public Particle {
         Nucleus m_nucleus;
 
     public:
-        Nuclide( pugi::xml_node const &a_node, Database *a_DB, Isotope *a_parent );
+        Nuclide( HAPI::Node const &a_node, Database *a_DB, Isotope *a_parent );
         virtual ~Nuclide( );
 
         int Z( void ) const;
@@ -761,7 +761,7 @@ class Isotope : public SymbolBase {
         Suite<Nuclide, Isotope> m_nuclides;
 
     public:
-        Isotope( pugi::xml_node const &a_node, Database *a_DB, ChemicalElement *a_parent );
+        Isotope( HAPI::Node const &a_node, Database *a_DB, ChemicalElement *a_parent );
         virtual ~Isotope( );
 
         ChemicalElement const *chemicalElement( ) const { return( m_chemicalElement ); }
@@ -786,7 +786,7 @@ class ChemicalElement : public SymbolBase {
         Suite<Isotope, ChemicalElement> m_isotopes;
 
     public:
-       ChemicalElement( pugi::xml_node const &a_node, Database *a_DB, Database *a_parent );
+       ChemicalElement( HAPI::Node const &a_node, Database *a_DB, Database *a_parent );
         virtual ~ChemicalElement( );
 
         int Z( void ) const { return( m_Z ); }
@@ -810,7 +810,7 @@ class Alias : public IDBase {
         int m_pidIndex;
 
     public:
-        Alias( pugi::xml_node const &a_node, Database *a_DB, Particle_class a_class = Particle_class::alias );
+        Alias( HAPI::Node const &a_node, Database *a_DB, Particle_class a_class = Particle_class::alias );
         virtual ~Alias( );
 
         std::string const &pid( void ) const { return( m_pid ); }
@@ -830,7 +830,7 @@ class MetaStable : public Alias {
         int m_metaStableIndex;
 
     public:
-        MetaStable( pugi::xml_node const &a_node, Database *a_DB );
+        MetaStable( HAPI::Node const &a_node, Database *a_DB );
         virtual ~MetaStable( );
 
         int metaStableIndex( void ) const { return( m_metaStableIndex ); }
@@ -865,7 +865,7 @@ class Database {
     public:
         Database( );
         Database( std::string const &a_fileName );
-        Database( pugi::xml_node const &a_database );
+        Database( HAPI::Node const &a_database );
         ~Database( );
 
         FormatVersion const &formatVersion( void ) const { return( m_formatVersion ); }
@@ -877,7 +877,7 @@ class Database {
         void addFile( char const *a_fileName, bool a_warnIfDuplicate );
         void addFile( std::string const &a_fileName, bool a_warnIfDuplicate );
         void addDatabase( std::string const &a_string, bool a_warnIfDuplicate );
-        void addDatabase( pugi::xml_node const &a_database, bool a_warnIfDuplicate );
+        void addDatabase( HAPI::Node const &a_database, bool a_warnIfDuplicate );
         void addAlias( Alias *a_alias ) { m_aliases.push_back( a_alias ); }
 
         std::string::size_type size( void ) const { return( m_list.size( ) ); }

@@ -21,7 +21,7 @@ namespace MCGIDI {
  * Default constructor used when broadcasting a Protare as needed by MPI or GPUs.
  ***********************************************************************************************************/
 
-HOST_DEVICE DomainHash::DomainHash( ) :
+MCGIDI_HOST_DEVICE DomainHash::DomainHash( ) :
         m_bins( 0 ),
         m_domainMin( 0.0 ),
         m_domainMax( 0.0 ),
@@ -37,7 +37,7 @@ HOST_DEVICE DomainHash::DomainHash( ) :
  * @param a_domainMax           [in]    The maximum value of the energy domain for the hash function.
  ***********************************************************************************************************/
 
-HOST_DEVICE DomainHash::DomainHash( int a_bins, double a_domainMin, double a_domainMax ) :
+MCGIDI_HOST_DEVICE DomainHash::DomainHash( int a_bins, double a_domainMin, double a_domainMax ) :
         m_bins( a_bins ),
         m_domainMin( a_domainMin ),
         m_domainMax( a_domainMax ),
@@ -51,7 +51,7 @@ HOST_DEVICE DomainHash::DomainHash( int a_bins, double a_domainMin, double a_dom
  * @param a_domainHash          [in]    The DomainHash instance to copy.
  ***********************************************************************************************************/
 
-HOST_DEVICE DomainHash::DomainHash( DomainHash const &a_domainHash ) :
+MCGIDI_HOST_DEVICE DomainHash::DomainHash( DomainHash const &a_domainHash ) :
         m_bins( a_domainHash.bins( ) ),
         m_domainMin( a_domainHash.domainMin( ) ),
         m_domainMax( a_domainHash.domainMax( ) ), 
@@ -70,7 +70,7 @@ HOST_DEVICE DomainHash::DomainHash( DomainHash const &a_domainHash ) :
  * @return                              The hash index.
  ***********************************************************************************************************/
 
-HOST_DEVICE int DomainHash::index( double a_domain ) const {
+MCGIDI_HOST_DEVICE int DomainHash::index( double a_domain ) const {
 
     if( a_domain < m_domainMin ) return( 0 );
     if( a_domain > m_domainMax ) return( m_bins + 1 );
@@ -86,7 +86,7 @@ HOST_DEVICE int DomainHash::index( double a_domain ) const {
  * @return                              The hash indices.
  ***********************************************************************************************************/
 
-HOST_DEVICE Vector<int> DomainHash::map( Vector<double> &a_domainValues ) const {
+MCGIDI_HOST_DEVICE Vector<int> DomainHash::map( Vector<double> &a_domainValues ) const {
 
     std::size_t i1, size( a_domainValues.size( ) );
     Vector<int> indices( m_bins + 2, 0 );
@@ -113,7 +113,7 @@ HOST_DEVICE Vector<int> DomainHash::map( Vector<double> &a_domainValues ) const 
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void DomainHash::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void DomainHash::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     DATA_MEMBER_INT( m_bins, a_buffer, a_mode );
     DATA_MEMBER_FLOAT( m_domainMin, a_buffer, a_mode );
@@ -129,7 +129,7 @@ HOST_DEVICE void DomainHash::serialize( DataBuffer &a_buffer, DataBuffer::Mode a
  * @param a_printValues         [in]    If true, the domain values that divide the hash indices are also printed.
  ***********************************************************************************************************/
 
-HOST_DEVICE void DomainHash::print( bool a_printValues ) const {
+MCGIDI_HOST void DomainHash::print( bool a_printValues ) const {
 #ifndef __CUDA_ARCH__
     std::cout << "bins = " << m_bins << std::endl;
     std::cout << "    m_domainMin = " << m_domainMin << "  << m_domainMax = " << m_domainMax << std::endl;
@@ -204,7 +204,7 @@ void MultiGroupHash::initialize( GIDI::Protare const &a_protare, GIDI::Styles::T
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void MultiGroupHash::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void MultiGroupHash::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     DATA_MEMBER_VECTOR_DOUBLE( m_boundaries, a_buffer, a_mode );
 }

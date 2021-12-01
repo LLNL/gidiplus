@@ -12,7 +12,7 @@ SHELL = /bin/ksh
 DIRS = Utilities domainHash crossSection sampleReactions sampleProducts \
 		crossSection_multiGroup sampleReactions_multiGroup sampleProducts_multiGroup deposition_multiGroup \
 		deposition_continuousEnergy productIndices samplePhotoAtomic sampleTerrellPromptNeutronDistribution \
-		excludeReactions TNSL memoryCheck print_multiGroup gpuTest
+		excludeReactions TNSL memoryCheck print_multiGroup modifiedCrossSection gpuTest
 
 default:
 	cd Utilities; $(MAKE)

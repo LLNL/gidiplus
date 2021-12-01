@@ -1,0 +1,28 @@
+/.../GIDI/Test/Data/MG_MC.XML/neutrons/n-090_Th_227.xml
+
+crossSectionSum labels:
+    total
+    (z,n)
+
+multiplicitySum labels:
+    delayed fission neutron multiplicity
+    total fission neutron multiplicity
+    n + (Th227_e1 -> Th227 + photon) total gamma multiplicity
+    n + (Th227_e2 -> Th227 + photon) total gamma multiplicity
+    n + (Th227_e3 -> Th227 + photon) total gamma multiplicity
+    n + (Th227_e4 -> Th227 + photon) total gamma multiplicity
+    n + (Th227_e5 -> Th227 + photon) total gamma multiplicity
+    n + (Th227_e6 -> Th227 + photon) total gamma multiplicity
+    n + (Th227_e7 -> Th227 + photon) total gamma multiplicity
+    n + (Th227_e8 -> Th227 + photon) total gamma multiplicity
+    n + (Th227_e9 -> Th227 + photon) total gamma multiplicity
+    n + (Th227_e10 -> Th227 + photon) total gamma multiplicity
+    n + (Th227_e11 -> Th227 + photon) total gamma multiplicity
+    n + (Th227_e12 -> Th227 + photon) total gamma multiplicity
+    n + (Th227_e13 -> Th227 + photon) total gamma multiplicity
+    n + (Th227_e14 -> Th227 + photon) total gamma multiplicity
+    n + (Th227 -> Th227 + photon) [continuum] total gamma multiplicity
+    2n + Th226 + photon total gamma multiplicity
+    3n + Th225 + photon total gamma multiplicity
+    4n + Th224 + photon total gamma multiplicity
+    Th228 + photon total gamma multiplicity

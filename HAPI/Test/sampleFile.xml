@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<reactionSuite projectile="n" target="U233" evaluation="ENDF/B-8.0" format="1.9" projectileFrame="lab">
+  <styles>
+    <evaluated label="eval" date="2010-01-01" library="ENDF/B" version="8.0.1">
+      <temperature value="0.0" unit="K"/>
+      <projectileEnergyDomain min="1e-05" max="20000000.0" unit="eV"/></evaluated>
+    <crossSectionReconstructed label="recon" derivedFrom="eval" date="2016-11-06"></crossSectionReconstructed></styles>
+  <documentations>
+    <documentation name="endfDoc"><![CDATA[Sample documentation]]></documentation></documentations>
+  <externalFiles>
+    <externalFile label="covariances" path="test.endf6-covar.xml"/></externalFiles>
+  <reactions>
+    <reaction label="2n + U232" ENDF_MT="16">
+      <crossSection>
+        <XYs1d interpolation="log-log">
+            <axes>
+              <axis index="1" label="energy_in" unit="eV"/>
+              <axis index="0" label="crossSection" unit="b"/></axes>
+            <values>8.6e+6 0.0 9e+6 1.3e-03 1e+7 3.5177e+0 2e+7 2.45e+0</values></XYs1d></crossSection>
+      <outputChannel genre="twoBody">
+        <Q>
+          <constant1d label="eval" constant="0" domainMin="1e-5" domainMax="2e7">
+            <axes>
+              <axis index="1" label="energy_in" unit="eV"/>
+              <axis index="0" label="Q" unit="eV"/></axes></constant1d></Q>
+        <products>
+          <product pid="n" label="n">
+            <multiplicity>
+              <constant1d label="eval" constant="1" domainMin="1e-5" domainMax="2e7">
+                <axes>
+                  <axis index="1" label="energy_in" unit="eV"/>
+                  <axis index="0" label="multiplicity" unit=""/></axes></constant1d></multiplicity>
+            <distribution>
+              <angularTwoBody label="eval" productFrame="centerOfMass">
+                <XYs2d>
+                  <axes>
+                    <axis index="2" label="energy_in" unit="eV"/>
+                    <axis index="1" label="mu" unit=""/>
+                    <axis index="0" label="P(mu|energy_in)" unit=""/></axes>
+                  <Legendre value="1e-05"><values>1 0 0</values></Legendre>
+                  <Legendre value="20000000.0"><values>1 0.947981 0.883181 0.8149 0.741643 0.666035 0.592239 0.522477 0.456899 0.394572 0.333992 0.274396 0.215229 0.158924 0.110948 0.0735498 0.0454177 0.0253193 0.0124704 5.5175e-3 2.12412e-3 7.02427e-4 1.85935e-4 2.94787e-5 0</values></Legendre>
+                  <uncertainty>
+                    <covariance href="$covariances#/covarianceSuite/covarianceSections/section[@label='n + U233 [angular distribution] L1 vs. L1']/covarianceMatrix[@label='eval']"/></uncertainty></XYs2d></angularTwoBody></distribution></product>
+          <product pid="U233" label="U233">
+            <multiplicity>
+              <constant1d label="eval" constant="1" domainMin="1e-5" domainMax="2e7">
+                <axes>
+                  <axis index="1" label="energy_in" unit="eV"/>
+                  <axis index="0" label="multiplicity" unit=""/></axes></constant1d></multiplicity>
+            <distribution>
+              <angularTwoBody label="eval" productFrame="centerOfMass">
+                <recoil href="../../../../product[@label='n']/distribution/angularTwoBody[@label='eval']"/></angularTwoBody></distribution></product></products></outputChannel></reaction></reactions>
+</reactionSuite>

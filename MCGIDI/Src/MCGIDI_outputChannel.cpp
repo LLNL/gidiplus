@@ -20,7 +20,7 @@ namespace MCGIDI {
  * Default constructor used when broadcasting a Protare as needed by MPI or GPUs.
  ***********************************************************************************************************/
 
-HOST_DEVICE OutputChannel::OutputChannel( ) :
+MCGIDI_HOST_DEVICE OutputChannel::OutputChannel( ) :
         m_channelType( ChannelType::none ),
         m_isFission( false ),
         m_neutronIndex( 0 ),
@@ -37,7 +37,7 @@ HOST_DEVICE OutputChannel::OutputChannel( ) :
  * @param a_particles           [in]    List of transporting particles and their information (e.g., multi-group boundaries and fluxes).
  ***********************************************************************************************************/
 
-HOST OutputChannel::OutputChannel( GIDI::OutputChannel const *a_outputChannel, SetupInfo &a_setupInfo, Transporting::MC const &a_settings, GIDI::Transporting::Particles const &a_particles ) :
+MCGIDI_HOST OutputChannel::OutputChannel( GIDI::OutputChannel const *a_outputChannel, SetupInfo &a_setupInfo, Transporting::MC const &a_settings, GIDI::Transporting::Particles const &a_particles ) :
         m_channelType( ChannelType::none ),
         m_isFission( false ),
         m_neutronIndex( a_settings.neutronIndex( ) ),
@@ -86,13 +86,13 @@ HOST OutputChannel::OutputChannel( GIDI::OutputChannel const *a_outputChannel, S
             std::string label = ID;
 
             Product *product = new Product( a_settings.pops( ), ID, label );
-            product->multiplicity( new Functions::Constant1d( a_setupInfo.m_domainMin, a_setupInfo.m_domainMax, 1.0, 0.0 ) );
+            product->setMultiplicity( new Functions::Constant1d( a_setupInfo.m_domainMin, a_setupInfo.m_domainMax, 1.0, 0.0 ) );
             product->distribution( new Distributions::PairProductionGamma( a_setupInfo, true ) );
             m_products.push_back( product );
 
             label += "__a";
             product = new Product( a_settings.pops( ), ID, label );
-            product->multiplicity( new Functions::Constant1d( a_setupInfo.m_domainMin, a_setupInfo.m_domainMax, 1.0, 0.0 ) );
+            product->setMultiplicity( new Functions::Constant1d( a_setupInfo.m_domainMin, a_setupInfo.m_domainMax, 1.0, 0.0 ) );
             product->distribution( new Distributions::PairProductionGamma( a_setupInfo, false ) );
             m_products.push_back( product );
         }
@@ -153,7 +153,7 @@ HOST OutputChannel::OutputChannel( GIDI::OutputChannel const *a_outputChannel, S
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE OutputChannel::~OutputChannel( ) {
+MCGIDI_HOST_DEVICE OutputChannel::~OutputChannel( ) {
 
     delete m_Q;
     for( MCGIDI_VectorSizeType i1 = 0; i1 < m_products.size( ); ++i1 ) delete m_products[i1];
@@ -170,7 +170,7 @@ HOST_DEVICE OutputChannel::~OutputChannel( ) {
  * @return                              The Q-value at product energy *a_x1*.
  ***********************************************************************************************************/
 
-HOST_DEVICE double OutputChannel::finalQ( double a_x1 ) const {
+MCGIDI_HOST_DEVICE double OutputChannel::finalQ( double a_x1 ) const {
 
     double final_Q = m_Q->evaluate( a_x1 );
 
@@ -184,7 +184,7 @@ HOST_DEVICE double OutputChannel::finalQ( double a_x1 ) const {
  * @return                              *true* if *this* or any sub-output channel is a fission channel and *false* otherwise.
  ***********************************************************************************************************/
 
-HOST_DEVICE bool OutputChannel::hasFission( ) const {
+MCGIDI_HOST_DEVICE bool OutputChannel::hasFission( ) const {
 
     if( m_isFission ) return( true );
     for( MCGIDI_VectorSizeType i1 = 0; i1 < m_products.size( ); ++i1 ) {
@@ -200,10 +200,35 @@ HOST_DEVICE bool OutputChannel::hasFission( ) const {
  * @param a_userParticleIndex   [in]    The particle id specified by the user.
  ***********************************************************************************************************/
 
-HOST void OutputChannel::setUserParticleIndex( int a_particleIndex, int a_userParticleIndex ) {
+MCGIDI_HOST void OutputChannel::setUserParticleIndex( int a_particleIndex, int a_userParticleIndex ) {
 
     for( auto iter = m_products.begin( ); iter != m_products.end( ); ++iter ) (*iter)->setUserParticleIndex( a_particleIndex, a_userParticleIndex );
     for( auto iter = m_delayedNeutrons.begin( ); iter != m_delayedNeutrons.end( ); ++iter ) (*iter)->setUserParticleIndex( a_particleIndex, a_userParticleIndex );
+}
+
+/* *********************************************************************************************************//**
+ * Returns the energy dependent multiplicity for outgoing particle with pops id *a_id*. The returned value may not
+ * be an integer. Energy dependent multiplicity mainly occurs for photons and fission neutrons.
+ *
+ * @param a_id                      [in]    The PoPs id of the requested particle.
+ * @param a_projectileEnergy        [in]    The energy of the projectile.
+ *
+ * @return                                  The multiplicity value for the requested particle.
+ ***********************************************************************************************************/
+
+MCGIDI_HOST_DEVICE double OutputChannel::productAverageMultiplicity( int a_index, double a_projectileEnergy ) const {
+
+    double multiplicity = 0.0;
+
+    for( Vector<Product *>::const_iterator iter = m_products.begin( ); iter != m_products.end( ); ++iter ) {
+        multiplicity += (*iter)->productAverageMultiplicity( a_index, a_projectileEnergy );
+    }
+
+    if( m_totalDelayedNeutronMultiplicity != nullptr ) {
+        if( a_index == m_neutronIndex ) multiplicity += m_totalDelayedNeutronMultiplicity->evaluate( a_projectileEnergy );
+    }
+
+    return( multiplicity );
 }
 
 /* *********************************************************************************************************//**
@@ -217,7 +242,7 @@ HOST void OutputChannel::setUserParticleIndex( int a_particleIndex, int a_userPa
  * @param a_products                [in]    The object to add all sampled products to.
  ***********************************************************************************************************/
 
-HOST_DEVICE void OutputChannel::sampleProducts( Protare const *a_protare, double a_projectileEnergy, Sampling::Input &a_input, 
+MCGIDI_HOST_DEVICE void OutputChannel::sampleProducts( Protare const *a_protare, double a_projectileEnergy, Sampling::Input &a_input, 
                 double (*a_userrng)( void * ), void *a_rngState, Sampling::ProductHandler &a_products ) const {
 
     for( Vector<Product *>::const_iterator iter = m_products.begin( ); iter != m_products.end( ); ++iter )
@@ -262,7 +287,7 @@ HOST_DEVICE void OutputChannel::sampleProducts( Protare const *a_protare, double
  * @param a_cumulative_weight       [in]    The sum of the multiplicity for other outgoing particles with index *a_pid*.
  ***********************************************************************************************************/
 
-HOST_DEVICE void OutputChannel::angleBiasing( Reaction const *a_reaction, int a_pid, double a_energy_in, double a_mu_lab, double &a_weight, double &a_energy_out,
+MCGIDI_HOST_DEVICE void OutputChannel::angleBiasing( Reaction const *a_reaction, int a_pid, double a_energy_in, double a_mu_lab, double &a_weight, double &a_energy_out,
                 double (*a_userrng)( void * ), void *a_rngState, double &a_cumulative_weight ) const {
 
     for( Vector<Product *>::const_iterator iter = m_products.begin( ); iter != m_products.end( ); ++iter )
@@ -286,7 +311,7 @@ HOST_DEVICE void OutputChannel::angleBiasing( Reaction const *a_reaction, int a_
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void OutputChannel::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void OutputChannel::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     int channelType = 0;
     switch( m_channelType ) {

@@ -3,15 +3,9 @@
 
 .PHONY: default bin clean realclean
 
-local_CXXFLAGS = $(CXXFLAGS) \
-        -I$(GIDI_PATH)/include -L$(GIDI_PATH)/lib \
-        -I$(GIDI_PATH)/Test/Utilities -L$(GIDI_PATH)/Test/Utilities \
-        -I$(POPI_INCLUDE) -L$(POPI_LIB) \
-        -I$(SMR_INCLUDE) -L$(SMR_LIB) \
-        -I$(NF_INCLUDE) -L$(NF_LIB) \
-        -I$(PUGIXML_INCLUDE) -L$(PUGIXML_LIB)
+local_CXXFLAGS += $(LIB_PATHS) -I$(GIDI_PATH)/Test/Utilities -L$(GIDI_PATH)/Test/Utilities
 
-LIBS = -lGIDI_testUtilities -lGIDI -lPoPI -lstatusMessageReporting -lnumericalfunctions -lexpat -lpugixml
+LIBS = -lGIDI_testUtilities -lGIDI -lPoPI -lLUPI -lHAPI -lnumericalfunctions -lstatusMessageReporting -lexpat -lpugixml -lm $(HDF5_LIBS)
 
 EXES = $(CppSources:.cpp=)
 

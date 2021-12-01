@@ -5,20 +5,11 @@
 
 Executables = $(CppSource:.cpp=)
 
-local_CXXFLAGS = $(CXXFLAGS) \
-		-I$(MCGIDI_PATH)/include 		-I$(MCGIDI_PATH)/Test/Utilities 	-I$(MCGIDI_PATH)/Speeds/Utilities \
-		-I$(GIDI_PATH)/include 			-I$(GIDI_PATH)/Test/Utilities 		-I$(POPI_INCLUDE) \
-		-I$(SMR_INCLUDE) 				-I$(NF_INCLUDE) 					-I$(PUGIXML_INCLUDE)
+local_CXXFLAGS += $(LIB_PATHS) -I$(GIDI_PATH)/Test/Utilities -L$(GIDI_PATH)/Test/Utilities \
+        -I$(MCGIDI_PATH)/Test/Utilities -L$(MCGIDI_PATH)/Test/Utilities -I$(MCGIDI_PATH)/Speeds/Utilities -L$(MCGIDI_PATH)/Speeds/Utilities
 
-LIBS =  -L$(GIDI_PATH)/Test/Utilities -lGIDI_testUtilities \
-		-L$(MCGIDI_PATH)/Test/Utilities -lMCGIDI_testUtilities \
-		-L$(MCGIDI_PATH)/Speeds/Utilities -lutilities4Speed\
-		-L$(MCGIDI_PATH)/lib -lMCGIDI \
-		-L$(GIDI_PATH)/lib -lGIDI \
-		-L$(POPI_LIB) -lPoPI \
-		-L$(SMR_LIB) -lstatusMessageReporting \
-		-L$(NF_LIB) -lnumericalfunctions \
-		-L$(PUGIXML_LIB) -lpugixml -lexpat
+LIBS =  -lGIDI_testUtilities -lMCGIDI_testUtilities -lutilities4Speed -lMCGIDI -lGIDI -lPoPI -lHAPI -lLUPI \
+		-lnumericalfunctions -lstatusMessageReporting -lpugixml -lexpat -lm $(HDF5_LIBS)
 
 default: $(Executables)
 

@@ -3,10 +3,10 @@ label = MultiGroup_000  temperature = 0
 MCGIDI temperatures:
     0
 
-                   O + photon [coherent]  threshold =            0  threshold =            0
-                 O + photon [incoherent]  threshold =            0  threshold =            0
-                 e- + O [photo-electric]  threshold =            0  threshold =            0
-O + photon [pair production: electron field]  threshold =        1.022  threshold =        1.022
+                   O + photon [coherent]  threshold =            0
+                 O + photon [incoherent]  threshold =            0
+                 e- + O [photo-electric]  threshold =            0
+O + photon [pair production: electron field]  threshold =        1.022
 
 List of reactions
     reaction: O + photon [coherent]

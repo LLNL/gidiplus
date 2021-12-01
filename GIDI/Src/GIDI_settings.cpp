@@ -24,7 +24,8 @@ namespace Transporting {
 
 Settings::Settings( std::string const &a_projectileID, DelayedNeutrons a_delayedNeutrons ) :
     m_projectileID( a_projectileID ),
-    m_delayedNeutrons( a_delayedNeutrons ) {
+    m_delayedNeutrons( a_delayedNeutrons ),
+    m_nuclearPlusCoulombInterferenceOnly( false ) {
 
 }
 

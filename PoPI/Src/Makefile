@@ -7,9 +7,9 @@ SHELL = /bin/ksh
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
-include ../Makefile.paths
+GIDI_PLUS_PATH ?= $(abspath ../..)
 
-local_CXXFLAGS = $(CXXFLAGS) -I$(PUGIXML_INCLUDE)
+include $(GIDI_PLUS_PATH)/Makefile.paths
 
 .PHONY: default clean realclean
 
@@ -33,6 +33,6 @@ $(Archive): $(CppObjs)
 $(CppSources): PoPI.hpp
 
 clean:
-	rm -f *.o $(Archive)
+	rm -f $(CppObjs) $(Archive)
 
 realclean: clean

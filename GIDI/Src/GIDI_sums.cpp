@@ -9,6 +9,7 @@
 
 #include <stdlib.h>
 #include "GIDI.hpp"
+#include <HAPI.hpp>
 
 namespace GIDI {
 
@@ -23,8 +24,8 @@ namespace Sums {
 
 Sums::Sums( ) :
         Ancestry( GIDI_sumsChars ),
-        m_crossSections( GIDI_sumsCrossSectionsChars ),
-        m_multiplicities( GIDI_sumsMultiplicitiesChars ) {
+        m_crossSectionSums( GIDI_sumsCrossSectionsChars ),
+        m_multiplicitySums( GIDI_sumsMultiplicitiesChars ) {
 
 }
 
@@ -39,21 +40,30 @@ Sums::~Sums( ) {
  * The Sums method to parse its sub-nodes.
  *
  * @param a_construction    [in]    Used to pass user options to the constructor.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops            [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs    [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
  *                                  This is the <**PoPs**> node under the <**reactionSuite**> node.
  ***********************************************************************************************************/
 
-void Sums::parse( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, 
-                PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs ) {
+void Sums::parse( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs ) {
 
-    m_crossSections.parse( a_construction, a_node.child( GIDI_sumsCrossSectionsChars ), a_setupInfo, a_pops, a_internalPoPs, parseSumsCrossSectionsSuite, nullptr );
-    m_multiplicities.parse( a_construction, a_node.child( GIDI_sumsMultiplicitiesChars ), a_setupInfo, a_pops, a_internalPoPs, parseSumsMultiplicitiesSuite, nullptr );
+    if( a_node.child( GIDI_crossSectionSumsChars ).empty( ) ) {
+        m_crossSectionSums.parse( a_construction, a_node.child( GIDI_sumsCrossSectionsChars ), a_setupInfo, a_pops, a_internalPoPs, parseSumsCrossSectionsSuite, nullptr ); }
+    else {
+        m_crossSectionSums.parse( a_construction, a_node.child( GIDI_crossSectionSumsChars ), a_setupInfo, a_pops, a_internalPoPs, parseSumsCrossSectionsSuite, nullptr );
+    }
 
-    m_crossSections.setAncestor( this );
-    m_multiplicities.setAncestor( this );
+    if( a_node.child( GIDI_multiplicitySumsChars ).empty( ) ) {
+        m_multiplicitySums.parse( a_construction, a_node.child( GIDI_sumsMultiplicitiesChars ), a_setupInfo, a_pops, a_internalPoPs, parseSumsMultiplicitiesSuite, nullptr ); }
+    else {
+        m_multiplicitySums.parse( a_construction, a_node.child( GIDI_multiplicitySumsChars ), a_setupInfo, a_pops, a_internalPoPs, parseSumsMultiplicitiesSuite, nullptr );
+    }
+
+    m_crossSectionSums.setAncestor( this );
+    m_multiplicitySums.setAncestor( this );
 }
 
 /* *********************************************************************************************************//**
@@ -65,8 +75,11 @@ void Sums::parse( Construction::Settings const &a_construction, pugi::xml_node c
 
 Ancestry *Sums::findInAncestry3( std::string const &a_item ) {
 
-    if( a_item == GIDI_sumsCrossSectionsChars ) return( &m_crossSections );
-    if( a_item == GIDI_sumsMultiplicitiesChars ) return( &m_multiplicities );
+    if( a_item == GIDI_crossSectionSumsChars ) return( &m_crossSectionSums );
+    if( a_item == GIDI_multiplicitySumsChars ) return( &m_multiplicitySums );
+
+    if( a_item == GIDI_sumsCrossSectionsChars ) return( &m_crossSectionSums );      // GNDS 1.10.
+    if( a_item == GIDI_sumsMultiplicitiesChars ) return( &m_multiplicitySums );      // GNDS 1.10.
 
     return( nullptr );
 }
@@ -80,8 +93,11 @@ Ancestry *Sums::findInAncestry3( std::string const &a_item ) {
 
 Ancestry const *Sums::findInAncestry3( std::string const &a_item ) const {
 
-    if( a_item == GIDI_sumsCrossSectionsChars ) return( &m_crossSections );
-    if( a_item == GIDI_sumsMultiplicitiesChars ) return( &m_multiplicities );
+    if( a_item == GIDI_crossSectionSumsChars ) return( &m_crossSectionSums );
+    if( a_item == GIDI_multiplicitySumsChars ) return( &m_multiplicitySums );
+
+    if( a_item == GIDI_sumsCrossSectionsChars ) return( &m_crossSectionSums );      // GNDS 1.10.
+    if( a_item == GIDI_sumsMultiplicitiesChars ) return( &m_multiplicitySums );      // GNDS 1.10.
 
     return( nullptr );
 }
@@ -98,8 +114,8 @@ void Sums::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) cons
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
 
     a_writeInfo.addNodeStarter( a_indent, moniker( ), "" );
-    m_crossSections.toXMLList( a_writeInfo, indent2 );
-    m_multiplicities.toXMLList( a_writeInfo, indent2 );
+    m_crossSectionSums.toXMLList( a_writeInfo, indent2 );
+    m_multiplicitySums.toXMLList( a_writeInfo, indent2 );
     a_writeInfo.addNodeEnder( moniker( ) );
 }
 
@@ -109,7 +125,7 @@ void Sums::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) cons
 
 /* *********************************************************************************************************//**
  * @param a_construction    [in]    Used to pass user options to the constructor.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops            [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs    [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
@@ -117,11 +133,10 @@ void Sums::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) cons
  * @param a_type            [in]    Type for the node.
  ***********************************************************************************************************/
 
-Base::Base( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, 
-                PoPI::Database const &a_internalPoPs,
-                FormType a_type ) :
+Base::Base( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops,
+		PoPI::Database const &a_internalPoPs, FormType a_type ) :
         Form( a_node, a_setupInfo, a_type ),
-        m_ENDF_MT( a_node.attribute( GIDI_ENDF_MT_Chars ).as_int( ) ),
+        m_ENDF_MT( a_node.attribute_as_int( GIDI_ENDF_MT_Chars ) ),
         m_summands( a_construction, a_node.child( GIDI_sumsSummandsChars ), a_setupInfo ) {
 
         m_summands.setAncestor( this );
@@ -133,15 +148,15 @@ Base::Base( Construction::Settings const &a_construction, pugi::xml_node const &
 
 /* *********************************************************************************************************//**
  * @param a_construction    [in]    Used to pass user options to the constructor.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops            [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs    [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
  *                                  This is the <**PoPs**> node under the <**reactionSuite**> node.
  ***********************************************************************************************************/
 
-CrossSectionSum::CrossSectionSum( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, 
-                PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs ) :
+CrossSectionSum::CrossSectionSum( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs ) :
         Base( a_construction, a_node, a_setupInfo, a_pops, a_internalPoPs, FormType::crossSectionSum ),
         m_Q( a_construction, GIDI_QChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseQSuite, nullptr ),
         m_crossSection( a_construction, GIDI_crossSectionChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseCrossSectionSuite, nullptr ) {
@@ -210,15 +225,15 @@ void CrossSectionSum::toXMLList( WriteInfo &a_writeInfo, std::string const &a_in
 
 /* *********************************************************************************************************//**
  * @param a_construction    [in]    Used to pass user options to the constructor.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops            [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs    [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
  *                                  This is the <**PoPs**> node under the <**reactionSuite**> node.
  ***********************************************************************************************************/
 
-MultiplicitySum::MultiplicitySum( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, 
-                PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs ) :
+MultiplicitySum::MultiplicitySum( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs ) :
         Base( a_construction, a_node, a_setupInfo, a_pops, a_internalPoPs, FormType::multiplicitySum ),
         m_multiplicity( a_construction, GIDI_multiplicityChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseMultiplicitySuite, nullptr ) {
 
@@ -254,14 +269,14 @@ void MultiplicitySum::toXMLList( WriteInfo &a_writeInfo, std::string const &a_in
 
 /* *********************************************************************************************************//**
  * @param a_construction    [in]    Used to pass user options to the constructor.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  ***********************************************************************************************************/
 
-Summands::Summands( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo ) :
+Summands::Summands( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo ) :
         Form( a_node, a_setupInfo, FormType::summands ) {
 
-    for( pugi::xml_node child = a_node.first_child( ); child; child = child.next_sibling( ) ) {
+    for( HAPI::Node child = a_node.first_child( ); !child.empty( ); child.to_next_sibling( ) ) {
         std::string name( child.name( ) );
 
         if( name == GIDI_sumsAddChars ) {
@@ -307,13 +322,13 @@ namespace Summand {
 
 /* *********************************************************************************************************//**
  * @param a_construction    [in]    Used to pass user options to the constructor.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  ***********************************************************************************************************/
 
-Base::Base( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo ) :
+Base::Base( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo ) :
         Ancestry( a_node.name( ) ),
-        m_href( a_node.attribute( GIDI_hrefChars ).value( ) ) {
+        m_href( a_node.attribute_as_string( GIDI_hrefChars ) ) {
 
 }
 /*
@@ -346,11 +361,11 @@ void Base::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) cons
 
 /* *********************************************************************************************************//**
  * @param a_construction    [in]    Used to pass user options to the constructor.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  ***********************************************************************************************************/
 
-Add::Add( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo ) :
+Add::Add( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo ) :
         Base( a_construction, a_node, a_setupInfo ) {
 
 }

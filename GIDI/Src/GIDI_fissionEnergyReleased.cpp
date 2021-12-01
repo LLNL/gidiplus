@@ -8,6 +8,7 @@
 */
 
 #include "GIDI.hpp"
+#include <HAPI.hpp>
 
 namespace GIDI {
 
@@ -19,12 +20,12 @@ namespace Functions {
 
 /* *********************************************************************************************************//**
  * @param a_construction        [in]    Used to pass user options for parsing.
- * @param a_node                [in]    The pugi::xml_node to be parsed to construct the instance.
+ * @param a_node                [in]    The HAPI::Node to be parsed to construct the instance.
  * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent              [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-FissionEnergyRelease::FissionEnergyRelease( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+FissionEnergyRelease::FissionEnergyRelease( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
         Function1dForm( a_construction, a_node, a_setupInfo, FormType::fissionEnergyRelease1d, a_parent ) {
 
     m_promptProductKE = data1dParse( a_construction, a_node.child( GIDI_promptProductKEChars ).first_child( ), a_setupInfo, nullptr );

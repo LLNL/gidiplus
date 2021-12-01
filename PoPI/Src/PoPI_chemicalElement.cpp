@@ -18,7 +18,7 @@ namespace PoPI {
 /*
 =========================================================
 */
-ChemicalElement::ChemicalElement( pugi::xml_node const &a_node, Database *a_DB, Database *a_parent ) :
+ChemicalElement::ChemicalElement( HAPI::Node const &a_node, Database *a_DB, Database *a_parent ) :
         SymbolBase( a_node, Particle_class::chemicalElement ),
         m_Z( a_node.attribute( PoPI_Z_Chars ).as_int( ) ),
         m_name( a_node.attribute( PoPI_nameChars ).value( ) ),

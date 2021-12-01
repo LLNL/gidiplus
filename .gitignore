@@ -30,4 +30,15 @@
 *.exe
 *.app
 
+# build artifacts:
+include/*.h
+include/*.hpp
+*/include/*.h
+*/include/*.hpp
+*/*/include/*.h
+lib/*.a
+lib/__.SYMDEF
+lib/__.SYMDEF\ SORTED
+*/lib/__.SYMDEF\ SORTED
+
 pugixml*

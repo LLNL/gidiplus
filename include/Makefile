@@ -1,4 +1,4 @@
-SHELL = /bin/bash
+SHELL = /bin/ksh
 
 # <<BEGIN-copyright>>
 # Copyright 2019, Lawrence Livermore National Security, LLC.
@@ -9,7 +9,7 @@ SHELL = /bin/bash
 
 .PHONY: default include docs check clean realclean
 
-DIRS = pugixml numericalFunctions PoPI GIDI MCGIDI
+DIRS = pugixml numericalFunctions HAPI PoPI GIDI MCGIDI
 
 default: include
 

@@ -1,4 +1,4 @@
-SHELL = /bin/bash
+SHELL = /bin/ksh
 
 # <<BEGIN-copyright>>
 # Copyright 2019, Lawrence Livermore National Security, LLC.
@@ -10,7 +10,7 @@ SHELL = /bin/bash
 GIDI_PLUS_PATH ?= $(abspath ../../..)
 CppSource = $(sort $(wildcard *.cpp))
 
-include ../../Makefile.paths
+include $(GIDI_PLUS_PATH)/Makefile.paths
 include ../Makefile.check
 
 check: $(Executables)

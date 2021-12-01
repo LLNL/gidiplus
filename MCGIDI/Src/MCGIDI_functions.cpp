@@ -22,7 +22,7 @@ namespace Functions {
 ======================= FunctionBase =====================
 ============================================================
 */
-HOST_DEVICE FunctionBase::FunctionBase( ) :
+MCGIDI_HOST_DEVICE FunctionBase::FunctionBase( ) :
         m_dimension( 0 ),
         m_domainMin( 0.0 ),
         m_domainMax( 0.0 ),
@@ -33,7 +33,7 @@ HOST_DEVICE FunctionBase::FunctionBase( ) :
 /*
 ============================================================
 */
-HOST FunctionBase::FunctionBase( GIDI::Functions::FunctionForm const &a_function ) :
+MCGIDI_HOST FunctionBase::FunctionBase( GIDI::Functions::FunctionForm const &a_function ) :
         m_dimension( a_function.dimension( ) ),
         m_domainMin( a_function.domainMin( ) ),
         m_domainMax( a_function.domainMax( ) ),
@@ -44,7 +44,7 @@ HOST FunctionBase::FunctionBase( GIDI::Functions::FunctionForm const &a_function
 /*
 ============================================================
 */
-HOST_DEVICE FunctionBase::FunctionBase( int a_dimension, double a_domainMin, double a_domainMax, Interpolation a_interpolation, double a_outerDomainValue ) :
+MCGIDI_HOST_DEVICE FunctionBase::FunctionBase( int a_dimension, double a_domainMin, double a_domainMax, Interpolation a_interpolation, double a_outerDomainValue ) :
         m_dimension( a_dimension ),
         m_domainMin( a_domainMin ),
         m_domainMax( a_domainMax ),
@@ -56,7 +56,7 @@ HOST_DEVICE FunctionBase::FunctionBase( int a_dimension, double a_domainMin, dou
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE FunctionBase::~FunctionBase( ) {
+MCGIDI_HOST_DEVICE FunctionBase::~FunctionBase( ) {
 
 }
 
@@ -68,7 +68,7 @@ HOST_DEVICE FunctionBase::~FunctionBase( ) {
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void FunctionBase::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void FunctionBase::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     DATA_MEMBER_INT( m_dimension, a_buffer, a_mode );
     DATA_MEMBER_FLOAT( m_domainMin, a_buffer, a_mode );
@@ -128,14 +128,14 @@ HOST_DEVICE void FunctionBase::serialize( DataBuffer &a_buffer, DataBuffer::Mode
 ========================= Function1d =======================
 ============================================================
 */
-HOST_DEVICE Function1d::Function1d( ) :
+MCGIDI_HOST_DEVICE Function1d::Function1d( ) :
         m_type( Function1dType::none ) {
 
 }
 /*
 ============================================================
 */
-HOST_DEVICE Function1d::Function1d( double a_domainMin, double a_domainMax, Interpolation a_interpolation, double a_outerDomainValue ) :
+MCGIDI_HOST_DEVICE Function1d::Function1d( double a_domainMin, double a_domainMax, Interpolation a_interpolation, double a_outerDomainValue ) :
         FunctionBase( 1, a_domainMin, a_domainMax, a_interpolation, a_outerDomainValue ),
         m_type( Function1dType::none ) {
 
@@ -144,13 +144,13 @@ HOST_DEVICE Function1d::Function1d( double a_domainMin, double a_domainMax, Inte
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE Function1d::~Function1d( ) {
+MCGIDI_HOST_DEVICE Function1d::~Function1d( ) {
 
 }
 /*
 ============================================================
 */
-HOST_DEVICE int Function1d::sampleBoundingInteger( double a_x1, double (*rng)( void * ), void *rngState ) const {
+MCGIDI_HOST_DEVICE int Function1d::sampleBoundingInteger( double a_x1, double (*rng)( void * ), void *rngState ) const {
 
     double d_value = evaluate( a_x1 );
     int iValue = (int) d_value;
@@ -167,7 +167,7 @@ HOST_DEVICE int Function1d::sampleBoundingInteger( double a_x1, double (*rng)( v
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void Function1d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void Function1d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     FunctionBase::serialize( a_buffer, a_mode ); 
 
@@ -234,7 +234,7 @@ HOST_DEVICE void Function1d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a
 ======================== Constant1d ========================
 ============================================================
 */
-HOST_DEVICE Constant1d::Constant1d( ) :
+MCGIDI_HOST_DEVICE Constant1d::Constant1d( ) :
         m_value( 0.0 ) {
 
     m_type = Function1dType::constant;
@@ -242,7 +242,7 @@ HOST_DEVICE Constant1d::Constant1d( ) :
 /*
 ============================================================
 */
-HOST_DEVICE Constant1d::Constant1d( double a_domainMin, double a_domainMax, double a_value, double a_outerDomainValue ) :
+MCGIDI_HOST_DEVICE Constant1d::Constant1d( double a_domainMin, double a_domainMax, double a_value, double a_outerDomainValue ) :
         Function1d( a_domainMin, a_domainMax, Interpolation::FLAT, a_outerDomainValue ),
         m_value( a_value ) {
 
@@ -251,7 +251,7 @@ HOST_DEVICE Constant1d::Constant1d( double a_domainMin, double a_domainMax, doub
 /*
 ============================================================
 */
-HOST Constant1d::Constant1d( GIDI::Functions::Constant1d const &a_form1d ) :
+MCGIDI_HOST Constant1d::Constant1d( GIDI::Functions::Constant1d const &a_form1d ) :
         Function1d( a_form1d.domainMin( ), a_form1d.domainMax( ), Interpolation::FLAT, a_form1d.outerDomainValue( ) ),
         m_value( a_form1d.value( ) ) {
 
@@ -261,7 +261,7 @@ HOST Constant1d::Constant1d( GIDI::Functions::Constant1d const &a_form1d ) :
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE Constant1d::~Constant1d( ) {
+MCGIDI_HOST_DEVICE Constant1d::~Constant1d( ) {
 
 }
 
@@ -273,7 +273,7 @@ HOST_DEVICE Constant1d::~Constant1d( ) {
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void Constant1d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void Constant1d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     Function1d::serialize( a_buffer, a_mode );
     DATA_MEMBER_FLOAT( m_value, a_buffer, a_mode );
@@ -284,7 +284,7 @@ HOST_DEVICE void Constant1d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a
 =========================== XYs1d ==========================
 ============================================================
 */
-HOST_DEVICE XYs1d::XYs1d( ) :
+MCGIDI_HOST_DEVICE XYs1d::XYs1d( ) :
         m_Xs( ),
         m_Ys( ) {
 
@@ -293,7 +293,7 @@ HOST_DEVICE XYs1d::XYs1d( ) :
 /*
 ============================================================
 */
-HOST XYs1d::XYs1d( Interpolation a_interpolation, Vector<double> a_Xs, Vector<double> a_Ys, double a_outerDomainValue ) :
+MCGIDI_HOST XYs1d::XYs1d( Interpolation a_interpolation, Vector<double> a_Xs, Vector<double> a_Ys, double a_outerDomainValue ) :
         Function1d( a_Xs[0], a_Xs.back( ), a_interpolation, a_outerDomainValue ),
         m_Xs( a_Xs ),
         m_Ys( a_Ys ) {
@@ -303,7 +303,7 @@ HOST XYs1d::XYs1d( Interpolation a_interpolation, Vector<double> a_Xs, Vector<do
 /*
 ============================================================
 */
-HOST XYs1d::XYs1d( GIDI::Functions::XYs1d const &a_XYs1d ) :
+MCGIDI_HOST XYs1d::XYs1d( GIDI::Functions::XYs1d const &a_XYs1d ) :
         Function1d( a_XYs1d.domainMin( ), a_XYs1d.domainMax( ), GIDI2MCGIDI_interpolation( a_XYs1d.interpolation( ) ),
             a_XYs1d.outerDomainValue( ) ){
 
@@ -322,13 +322,13 @@ HOST XYs1d::XYs1d( GIDI::Functions::XYs1d const &a_XYs1d ) :
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE XYs1d::~XYs1d( ) {
+MCGIDI_HOST_DEVICE XYs1d::~XYs1d( ) {
 
 }
 /*
 ============================================================
 */
-HOST_DEVICE double XYs1d::evaluate( double a_x1 ) const {
+MCGIDI_HOST_DEVICE double XYs1d::evaluate( double a_x1 ) const {
 
     MCGIDI_VectorSizeType lower = binarySearchVector( a_x1, m_Xs );
 
@@ -360,7 +360,7 @@ HOST_DEVICE double XYs1d::evaluate( double a_x1 ) const {
             double fraction = log( x2 / a_x1 ) / log( x2 / x1 );
             evaluatedValue = exp( fraction * log( y1 ) + ( 1 - fraction ) * log( y2 ) ); }
         else {
-            THROW( "XYs1d::evaluate: unsupport interpolation." );
+            MCGIDI_THROW( "XYs1d::evaluate: unsupport interpolation." );
         }
     }
 
@@ -375,7 +375,7 @@ HOST_DEVICE double XYs1d::evaluate( double a_x1 ) const {
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void XYs1d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void XYs1d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     Function1d::serialize( a_buffer, a_mode );
     DATA_MEMBER_VECTOR_DOUBLE( m_Xs, a_buffer, a_mode );
@@ -387,7 +387,7 @@ HOST_DEVICE void XYs1d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode
 ======================= Polynomial1d =======================
 ============================================================
 */
-HOST_DEVICE Polynomial1d::Polynomial1d( ) :
+MCGIDI_HOST_DEVICE Polynomial1d::Polynomial1d( ) :
         m_coefficients( ),
         m_coefficientsReversed( ) {
 
@@ -396,7 +396,7 @@ HOST_DEVICE Polynomial1d::Polynomial1d( ) :
 /*
 ============================================================
 */
-HOST Polynomial1d::Polynomial1d( double a_domainMin, double a_domainMax, Vector<double> const &a_coefficients, double a_outerDomainValue ) :
+MCGIDI_HOST Polynomial1d::Polynomial1d( double a_domainMin, double a_domainMax, Vector<double> const &a_coefficients, double a_outerDomainValue ) :
         Function1d( a_domainMin, a_domainMax, Interpolation::LINLIN, a_outerDomainValue ),
         m_coefficients( a_coefficients ) {
 
@@ -409,7 +409,7 @@ HOST Polynomial1d::Polynomial1d( double a_domainMin, double a_domainMax, Vector<
 /*
 ============================================================
 */
-HOST Polynomial1d::Polynomial1d( GIDI::Functions::Polynomial1d const &a_polynomial1d ) :
+MCGIDI_HOST Polynomial1d::Polynomial1d( GIDI::Functions::Polynomial1d const &a_polynomial1d ) :
         Function1d( a_polynomial1d.domainMin( ), a_polynomial1d.domainMax( ), Interpolation::LINLIN, a_polynomial1d.outerDomainValue( ) ) {
 
     m_type = Function1dType::polyomial;
@@ -423,13 +423,13 @@ HOST Polynomial1d::Polynomial1d( GIDI::Functions::Polynomial1d const &a_polynomi
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE Polynomial1d::~Polynomial1d( ) {
+MCGIDI_HOST_DEVICE Polynomial1d::~Polynomial1d( ) {
 
 }
 /*
 ============================================================
 */
-HOST_DEVICE double Polynomial1d::evaluate( double a_x1 ) const {
+MCGIDI_HOST_DEVICE double Polynomial1d::evaluate( double a_x1 ) const {
 
     double d_value = 0;
 
@@ -448,7 +448,7 @@ HOST_DEVICE double Polynomial1d::evaluate( double a_x1 ) const {
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void Polynomial1d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void Polynomial1d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     Function1d::serialize( a_buffer, a_mode );
     DATA_MEMBER_VECTOR_DOUBLE( m_coefficients, a_buffer, a_mode );
@@ -460,7 +460,7 @@ HOST_DEVICE void Polynomial1d::serialize( DataBuffer &a_buffer, DataBuffer::Mode
 ========================= Gridded1d ========================
 ============================================================
 */
-HOST_DEVICE Gridded1d::Gridded1d( ) :
+MCGIDI_HOST_DEVICE Gridded1d::Gridded1d( ) :
         m_grid( ),
         m_data( ) {
 
@@ -469,7 +469,7 @@ HOST_DEVICE Gridded1d::Gridded1d( ) :
 /*
 ============================================================
 */
-HOST Gridded1d::Gridded1d( GIDI::Functions::Gridded1d const &a_gridded1d ) :
+MCGIDI_HOST Gridded1d::Gridded1d( GIDI::Functions::Gridded1d const &a_gridded1d ) :
         Function1d( a_gridded1d.domainMin( ), a_gridded1d.domainMax( ), Interpolation::FLAT, a_gridded1d.outerDomainValue( ) ) {
 
     m_type = Function1dType::gridded;
@@ -486,13 +486,13 @@ HOST Gridded1d::Gridded1d( GIDI::Functions::Gridded1d const &a_gridded1d ) :
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE Gridded1d::~Gridded1d( ) {
+MCGIDI_HOST_DEVICE Gridded1d::~Gridded1d( ) {
 
 }
 /*
 ============================================================
 */
-HOST_DEVICE double Gridded1d::evaluate( double a_x1 ) const {
+MCGIDI_HOST_DEVICE double Gridded1d::evaluate( double a_x1 ) const {
 
     return( m_data[binarySearchVector( a_x1, m_grid, true )] );
 }
@@ -505,7 +505,7 @@ HOST_DEVICE double Gridded1d::evaluate( double a_x1 ) const {
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void Gridded1d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void Gridded1d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     Function1d::serialize( a_buffer, a_mode );
     DATA_MEMBER_VECTOR_DOUBLE( m_grid, a_buffer, a_mode );
@@ -517,7 +517,7 @@ HOST_DEVICE void Gridded1d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_
 ========================= Regions1d ========================
 ============================================================
 */
-HOST_DEVICE Regions1d::Regions1d( ) :
+MCGIDI_HOST_DEVICE Regions1d::Regions1d( ) :
         m_Xs( ),
         m_functions1d( ) {
 
@@ -526,7 +526,7 @@ HOST_DEVICE Regions1d::Regions1d( ) :
 /*
 ============================================================
 */
-HOST Regions1d::Regions1d( GIDI::Functions::Regions1d const &a_regions1d ) :
+MCGIDI_HOST Regions1d::Regions1d( GIDI::Functions::Regions1d const &a_regions1d ) :
         Function1d( a_regions1d.domainMin( ), a_regions1d.domainMax( ), Interpolation::LINLIN, a_regions1d.outerDomainValue( ) ) {
 
     m_type = Function1dType::regions;
@@ -539,14 +539,14 @@ HOST Regions1d::Regions1d( GIDI::Functions::Regions1d const &a_regions1d ) :
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE Regions1d::~Regions1d( ) {
+MCGIDI_HOST_DEVICE Regions1d::~Regions1d( ) {
 
     for( MCGIDI_VectorSizeType i1 = 0; i1 < m_functions1d.size( ); ++i1 ) delete m_functions1d[i1];
 }
 /*
 ============================================================
 */
-HOST_DEVICE void Regions1d::append( Function1d *a_function1d ) {
+MCGIDI_HOST_DEVICE void Regions1d::append( Function1d *a_function1d ) {
 
     if( m_functions1d.size( ) == 0 ) m_Xs.push_back( a_function1d->domainMin( ) );
     m_Xs.push_back( a_function1d->domainMax( ) );
@@ -556,7 +556,7 @@ HOST_DEVICE void Regions1d::append( Function1d *a_function1d ) {
 /*
 ============================================================
 */
-HOST_DEVICE double Regions1d::evaluate( double a_x1 ) const {
+MCGIDI_HOST_DEVICE double Regions1d::evaluate( double a_x1 ) const {
 
     MCGIDI_VectorSizeType lower = binarySearchVector( a_x1, m_Xs );
 
@@ -578,7 +578,7 @@ HOST_DEVICE double Regions1d::evaluate( double a_x1 ) const {
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void Regions1d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void Regions1d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     Function1d::serialize( a_buffer, a_mode );
     DATA_MEMBER_VECTOR_DOUBLE( m_Xs, a_buffer, a_mode );
@@ -599,7 +599,7 @@ HOST_DEVICE void Regions1d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_
 ======================== Branching1d =======================
 ============================================================
 */
-HOST_DEVICE Branching1d::Branching1d( ) {
+MCGIDI_HOST_DEVICE Branching1d::Branching1d( ) {
 
 }
 
@@ -615,7 +615,7 @@ HOST_DEVICE Branching1d::Branching1d( ) {
 /*
 ============================================================
 */
-HOST Branching1d::Branching1d( SetupInfo &a_setupInfo, GIDI::Functions::Branching1d const &a_form1d ) :
+MCGIDI_HOST Branching1d::Branching1d( SetupInfo &a_setupInfo, GIDI::Functions::Branching1d const &a_form1d ) :
         Function1d( a_form1d.domainMin( ), a_form1d.domainMax( ), Interpolation::FLAT, 0.0 ),
         m_initialStateIndex( -1 ) {
 
@@ -624,20 +624,23 @@ HOST Branching1d::Branching1d( SetupInfo &a_setupInfo, GIDI::Functions::Branchin
     GIDI::Functions::Branching1dPids const &pids = a_form1d.pids( );
 
     std::map<std::string,int>::iterator iter = a_setupInfo.m_stateNamesToIndices.find( pids.initial( ) );
-    if( iter == a_setupInfo.m_stateNamesToIndices.end( ) ) THROW( "Branching1d: initial state not found." );
+    if( iter == a_setupInfo.m_stateNamesToIndices.end( ) ) {
+        std::string message( "Branching1d: initial state not found: pid = " + pids.initial( ) + "." );
+        throw std::runtime_error( message.c_str( ) );
+    }
     m_initialStateIndex = iter->second;
 }
 
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE Branching1d::~Branching1d( ) {
+MCGIDI_HOST_DEVICE Branching1d::~Branching1d( ) {
 
 }
 /*
 ============================================================
 */
-HOST_DEVICE double Branching1d::evaluate( double a_x1 ) const {
+MCGIDI_HOST_DEVICE double Branching1d::evaluate( double a_x1 ) const {
 
     return( 0.0 );              // FIXME
 }
@@ -650,7 +653,7 @@ HOST_DEVICE double Branching1d::evaluate( double a_x1 ) const {
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void Branching1d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void Branching1d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     Function1d::serialize( a_buffer, a_mode );
     DATA_MEMBER_INT( m_initialStateIndex, a_buffer, a_mode );
@@ -662,7 +665,7 @@ HOST_DEVICE void Branching1d::serialize( DataBuffer &a_buffer, DataBuffer::Mode 
 ============================================================
 */
 
-HOST_DEVICE TerrellFissionNeutronMultiplicityModel::TerrellFissionNeutronMultiplicityModel( ) :
+MCGIDI_HOST_DEVICE TerrellFissionNeutronMultiplicityModel::TerrellFissionNeutronMultiplicityModel( ) :
     m_multiplicity( nullptr ) {
 
     m_type = Function1dType::TerrellFissionNeutronMultiplicityModel;
@@ -671,7 +674,7 @@ HOST_DEVICE TerrellFissionNeutronMultiplicityModel::TerrellFissionNeutronMultipl
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST TerrellFissionNeutronMultiplicityModel::TerrellFissionNeutronMultiplicityModel( double a_width, Function1d *a_multiplicity ) :
+MCGIDI_HOST TerrellFissionNeutronMultiplicityModel::TerrellFissionNeutronMultiplicityModel( double a_width, Function1d *a_multiplicity ) :
         Function1d( a_multiplicity->domainMin( ), a_multiplicity->domainMax( ), a_multiplicity->interpolation( ), a_multiplicity->outerDomainValue( ) ),
         m_width( a_width ),
         m_multiplicity( a_multiplicity ) {
@@ -683,7 +686,7 @@ HOST TerrellFissionNeutronMultiplicityModel::TerrellFissionNeutronMultiplicityMo
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE TerrellFissionNeutronMultiplicityModel::~TerrellFissionNeutronMultiplicityModel( ) {
+MCGIDI_HOST_DEVICE TerrellFissionNeutronMultiplicityModel::~TerrellFissionNeutronMultiplicityModel( ) {
 
     delete m_multiplicity;
 }
@@ -752,14 +755,14 @@ void TerrellFissionNeutronMultiplicityModel::serialize( DataBuffer &a_buffer, Da
 ======================== Function2d ========================
 ============================================================
 */
-HOST_DEVICE Function2d::Function2d( ) :
+MCGIDI_HOST_DEVICE Function2d::Function2d( ) :
         m_type( Function2dType::none ) {
 
 }
 /*
 ============================================================
 */
-HOST Function2d::Function2d( double a_domainMin, double a_domainMax, Interpolation a_interpolation, double a_outerDomainValue ) :
+MCGIDI_HOST Function2d::Function2d( double a_domainMin, double a_domainMax, Interpolation a_interpolation, double a_outerDomainValue ) :
         FunctionBase( 2, a_domainMin, a_domainMax, a_interpolation, a_outerDomainValue ),
         m_type( Function2dType::none ) {
 
@@ -768,7 +771,7 @@ HOST Function2d::Function2d( double a_domainMin, double a_domainMax, Interpolati
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE Function2d::~Function2d( ) {
+MCGIDI_HOST_DEVICE Function2d::~Function2d( ) {
 
 }
 
@@ -780,7 +783,7 @@ HOST_DEVICE Function2d::~Function2d( ) {
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void Function2d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void Function2d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     FunctionBase::serialize( a_buffer, a_mode ); 
 
@@ -812,7 +815,7 @@ HOST_DEVICE void Function2d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a
 ========================== XYs2d ===========================
 ============================================================
 */
-HOST_DEVICE XYs2d::XYs2d( ) :
+MCGIDI_HOST_DEVICE XYs2d::XYs2d( ) :
         m_Xs( ),
         m_functions1d( ) {
 
@@ -821,7 +824,7 @@ HOST_DEVICE XYs2d::XYs2d( ) :
 /*
 ============================================================
 */
-HOST XYs2d::XYs2d( GIDI::Functions::XYs2d const &a_XYs2d ) :
+MCGIDI_HOST XYs2d::XYs2d( GIDI::Functions::XYs2d const &a_XYs2d ) :
         Function2d( a_XYs2d.domainMin( ), a_XYs2d.domainMax( ), GIDI2MCGIDI_interpolation( a_XYs2d.interpolation( ) ), a_XYs2d.outerDomainValue( ) ),
         m_Xs( a_XYs2d.Xs( ) ) {
 
@@ -835,14 +838,14 @@ HOST XYs2d::XYs2d( GIDI::Functions::XYs2d const &a_XYs2d ) :
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE XYs2d::~XYs2d( ) {
+MCGIDI_HOST_DEVICE XYs2d::~XYs2d( ) {
 
     for( MCGIDI_VectorSizeType i1 = 0; i1 < m_functions1d.size( ); ++i1 ) delete m_functions1d[i1];
 }
 /*
 ============================================================
 */
-HOST_DEVICE double XYs2d::evaluate( double a_x2, double a_x1 ) const {
+MCGIDI_HOST_DEVICE double XYs2d::evaluate( double a_x2, double a_x1 ) const {
 
     MCGIDI_VectorSizeType lower = binarySearchVector( a_x2, m_Xs );
     double evaluatedValue;
@@ -876,7 +879,7 @@ HOST_DEVICE double XYs2d::evaluate( double a_x2, double a_x1 ) const {
                 double fraction = log( x2 / a_x2 ) / log( x2 / x1 );
                 evaluatedValue = exp( fraction * log( y1 ) + ( 1 - fraction ) * log( y2 ) ); }
             else {
-                THROW( "XYs1d::evaluate: unsupport interpolation." );
+                MCGIDI_THROW( "XYs2d::evaluate: unsupport interpolation." );
             }
         }
     }
@@ -892,7 +895,7 @@ HOST_DEVICE double XYs2d::evaluate( double a_x2, double a_x1 ) const {
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void XYs2d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void XYs2d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     Function2d::serialize( a_buffer, a_mode );
     DATA_MEMBER_VECTOR_DOUBLE( m_Xs, a_buffer, a_mode );
@@ -914,7 +917,7 @@ HOST_DEVICE void XYs2d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode
 ========================== others ==========================
 ============================================================
 */
-HOST Function1d *parseMultiplicityFunction1d( SetupInfo &a_setupInfo, Transporting::MC const &a_settings, GIDI::Suite const &a_suite ) {
+MCGIDI_HOST Function1d *parseMultiplicityFunction1d( SetupInfo &a_setupInfo, Transporting::MC const &a_settings, GIDI::Suite const &a_suite ) {
 
     GIDI::Functions::Function1dForm const *form1d( a_suite.get<GIDI::Functions::Function1dForm>( 0 ) );
 
@@ -926,7 +929,7 @@ HOST Function1d *parseMultiplicityFunction1d( SetupInfo &a_setupInfo, Transporti
 /*
 ============================================================
 */
-HOST Function1d *parseFunction1d( GIDI::Functions::Function1dForm const *a_form1d ) {
+MCGIDI_HOST Function1d *parseFunction1d( GIDI::Functions::Function1dForm const *a_form1d ) {
 
     GIDI::FormType type = a_form1d->type( );
 
@@ -944,7 +947,7 @@ HOST Function1d *parseFunction1d( GIDI::Functions::Function1dForm const *a_form1
     case GIDI::FormType::reference1d :
         std::cout << "parseFunction1d: Unsupported Function1d reference1d.";
     default :
-        THROW( "Functions::parseFunction1d: Unsupported Function1d" );
+        throw std::runtime_error( "Functions::parseFunction1d: Unsupported Function1d" );
     }
 
     return( nullptr );
@@ -953,7 +956,7 @@ HOST Function1d *parseFunction1d( GIDI::Functions::Function1dForm const *a_form1
 /*
 ============================================================
 */
-HOST Function2d *parseFunction2d( GIDI::Functions::Function2dForm const *form2d ) {
+MCGIDI_HOST Function2d *parseFunction2d( GIDI::Functions::Function2dForm const *form2d ) {
 
     GIDI::FormType type = form2d->type( );
 
@@ -961,7 +964,7 @@ HOST Function2d *parseFunction2d( GIDI::Functions::Function2dForm const *form2d 
     case GIDI::FormType::XYs2d :
         return( new XYs2d( *static_cast<GIDI::Functions::XYs2d const *>( form2d ) ) );
     default :
-        THROW( "Functions::parseFunction2d: Unsupported Function2d" );
+        throw std::runtime_error( "Functions::parseFunction2d: Unsupported Function2d" );
     }
 
     return( nullptr );
@@ -978,29 +981,29 @@ HOST Function2d *parseFunction2d( GIDI::Functions::Function2dForm const *form2d 
 */
 namespace Probabilities {
 
-HOST static nfu_status MCGIDI_NBodyPhaseSpacePDF_callback( statusMessageReporting *smr, double X, double *Y, void *argList );
-HOST static ProbabilityBase1d *ptwXY_To_Xs_pdf_cdf1d( ptwXYPoints *pdfXY );
+MCGIDI_HOST static nfu_status MCGIDI_NBodyPhaseSpacePDF_callback( statusMessageReporting *smr, double X, double *Y, void *argList );
+MCGIDI_HOST static ProbabilityBase1d *ptwXY_To_Xs_pdf_cdf1d( ptwXYPoints *pdfXY );
 
 /*
 ============================================================
 ===================== ProbabilityBase ======================
 ============================================================
 */
-HOST_DEVICE ProbabilityBase::ProbabilityBase( ) :
+MCGIDI_HOST_DEVICE ProbabilityBase::ProbabilityBase( ) :
         m_Xs( ) {
 
 }
 /*
 ============================================================
 */
-HOST ProbabilityBase::ProbabilityBase( GIDI::Functions::FunctionForm const &a_probability ) :
+MCGIDI_HOST ProbabilityBase::ProbabilityBase( GIDI::Functions::FunctionForm const &a_probability ) :
         Functions::FunctionBase( a_probability ) {
 
 }
 /*
 ============================================================
 */
-HOST ProbabilityBase::ProbabilityBase( GIDI::Functions::FunctionForm const &a_probability, Vector<double> const &a_Xs ) :
+MCGIDI_HOST ProbabilityBase::ProbabilityBase( GIDI::Functions::FunctionForm const &a_probability, Vector<double> const &a_Xs ) :
         Functions::FunctionBase( a_probability ),
         m_Xs( a_Xs ) {
 
@@ -1009,7 +1012,7 @@ HOST ProbabilityBase::ProbabilityBase( GIDI::Functions::FunctionForm const &a_pr
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE ProbabilityBase::~ProbabilityBase( ) {
+MCGIDI_HOST_DEVICE ProbabilityBase::~ProbabilityBase( ) {
 
 }
 
@@ -1021,7 +1024,7 @@ HOST_DEVICE ProbabilityBase::~ProbabilityBase( ) {
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void ProbabilityBase::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void ProbabilityBase::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     Functions::FunctionBase::serialize( a_buffer, a_mode );
     DATA_MEMBER_VECTOR_DOUBLE( m_Xs, a_buffer, a_mode );
@@ -1032,14 +1035,14 @@ HOST_DEVICE void ProbabilityBase::serialize( DataBuffer &a_buffer, DataBuffer::M
 ===================== ProbabilityBase1d ====================
 ============================================================
 */
-HOST_DEVICE ProbabilityBase1d::ProbabilityBase1d( ) :
+MCGIDI_HOST_DEVICE ProbabilityBase1d::ProbabilityBase1d( ) :
         m_type( ProbabilityBase1dType::none ) {
 
 }
 /*
 ============================================================
 */
-HOST ProbabilityBase1d::ProbabilityBase1d( GIDI::Functions::FunctionForm const &a_probability, Vector<double> const &a_Xs ) :
+MCGIDI_HOST ProbabilityBase1d::ProbabilityBase1d( GIDI::Functions::FunctionForm const &a_probability, Vector<double> const &a_Xs ) :
         ProbabilityBase( a_probability, a_Xs ),
         m_type( ProbabilityBase1dType::none ) {
 
@@ -1048,7 +1051,7 @@ HOST ProbabilityBase1d::ProbabilityBase1d( GIDI::Functions::FunctionForm const &
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE ProbabilityBase1d::~ProbabilityBase1d( ) {
+MCGIDI_HOST_DEVICE ProbabilityBase1d::~ProbabilityBase1d( ) {
 
 }
 
@@ -1060,7 +1063,7 @@ HOST_DEVICE ProbabilityBase1d::~ProbabilityBase1d( ) {
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void ProbabilityBase1d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void ProbabilityBase1d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     ProbabilityBase::serialize( a_buffer, a_mode ); 
 
@@ -1095,7 +1098,7 @@ HOST_DEVICE void ProbabilityBase1d::serialize( DataBuffer &a_buffer, DataBuffer:
 ======================= Xs_pdf_cdf1d =======================
 ============================================================
 */
-HOST_DEVICE Xs_pdf_cdf1d::Xs_pdf_cdf1d( ) :
+MCGIDI_HOST_DEVICE Xs_pdf_cdf1d::Xs_pdf_cdf1d( ) :
         m_pdf( ),
         m_cdf( ) {
 
@@ -1104,7 +1107,7 @@ HOST_DEVICE Xs_pdf_cdf1d::Xs_pdf_cdf1d( ) :
 /*
 ============================================================
 */
-HOST Xs_pdf_cdf1d::Xs_pdf_cdf1d( GIDI::Functions::Xs_pdf_cdf1d const &a_xs_pdf_cdf1d ) :
+MCGIDI_HOST Xs_pdf_cdf1d::Xs_pdf_cdf1d( GIDI::Functions::Xs_pdf_cdf1d const &a_xs_pdf_cdf1d ) :
         ProbabilityBase1d( a_xs_pdf_cdf1d, a_xs_pdf_cdf1d.Xs( ) ),
         m_pdf( a_xs_pdf_cdf1d.pdf( ) ),
         m_cdf( a_xs_pdf_cdf1d.cdf( ) ) {
@@ -1115,13 +1118,13 @@ HOST Xs_pdf_cdf1d::Xs_pdf_cdf1d( GIDI::Functions::Xs_pdf_cdf1d const &a_xs_pdf_c
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE Xs_pdf_cdf1d::~Xs_pdf_cdf1d( ) {
+MCGIDI_HOST_DEVICE Xs_pdf_cdf1d::~Xs_pdf_cdf1d( ) {
 
 }
 /*
 ============================================================
 */
-HOST_DEVICE double Xs_pdf_cdf1d::evaluate( double a_x1 ) const {
+MCGIDI_HOST_DEVICE double Xs_pdf_cdf1d::evaluate( double a_x1 ) const {
 
     MCGIDI_VectorSizeType lower = binarySearchVector( a_x1, m_Xs );
 
@@ -1136,14 +1139,14 @@ HOST_DEVICE double Xs_pdf_cdf1d::evaluate( double a_x1 ) const {
 /*
 ============================================================
 */
-HOST_DEVICE double Xs_pdf_cdf1d::sample( double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const {
+MCGIDI_HOST_DEVICE double Xs_pdf_cdf1d::sample( double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const {
 
     MCGIDI_VectorSizeType lower = binarySearchVector( a_rngValue, m_cdf );
     double domainValue = 0;
 
 
     if( lower < 0 ) {                                   // This should never happen.
-        THROW( "Xs_pdf_cdf1d::sample: lower < 0." );
+        MCGIDI_THROW( "Xs_pdf_cdf1d::sample: lower < 0." );
     }
 
     if( interpolation( ) == Interpolation::FLAT ) {
@@ -1184,7 +1187,7 @@ HOST_DEVICE double Xs_pdf_cdf1d::sample( double a_rngValue, double (*a_userrng)(
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void Xs_pdf_cdf1d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void Xs_pdf_cdf1d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     ProbabilityBase1d::serialize( a_buffer, a_mode );
     DATA_MEMBER_VECTOR_DOUBLE( m_pdf, a_buffer, a_mode );
@@ -1196,14 +1199,14 @@ HOST_DEVICE void Xs_pdf_cdf1d::serialize( DataBuffer &a_buffer, DataBuffer::Mode
 ===================== ProbabilityBase2d ====================
 ============================================================
 */
-HOST_DEVICE ProbabilityBase2d::ProbabilityBase2d( ) :
+MCGIDI_HOST_DEVICE ProbabilityBase2d::ProbabilityBase2d( ) :
         m_type( ProbabilityBase2dType::none ) {
 
 }
 /*
 ============================================================
 */
-HOST ProbabilityBase2d::ProbabilityBase2d( GIDI::Functions::FunctionForm const &a_probability ) :
+MCGIDI_HOST ProbabilityBase2d::ProbabilityBase2d( GIDI::Functions::FunctionForm const &a_probability ) :
         ProbabilityBase( a_probability ),
         m_type( ProbabilityBase2dType::none ) {
 
@@ -1211,7 +1214,7 @@ HOST ProbabilityBase2d::ProbabilityBase2d( GIDI::Functions::FunctionForm const &
 /*
 ============================================================
 */
-HOST ProbabilityBase2d::ProbabilityBase2d( GIDI::Functions::FunctionForm const &a_probability, Vector<double> const &a_Xs ) :
+MCGIDI_HOST ProbabilityBase2d::ProbabilityBase2d( GIDI::Functions::FunctionForm const &a_probability, Vector<double> const &a_Xs ) :
         ProbabilityBase( a_probability, a_Xs ),
         m_type( ProbabilityBase2dType::none ) {
 
@@ -1220,7 +1223,7 @@ HOST ProbabilityBase2d::ProbabilityBase2d( GIDI::Functions::FunctionForm const &
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE ProbabilityBase2d::~ProbabilityBase2d( ) {
+MCGIDI_HOST_DEVICE ProbabilityBase2d::~ProbabilityBase2d( ) {
 
 }
 
@@ -1235,9 +1238,9 @@ HOST_DEVICE ProbabilityBase2d::~ProbabilityBase2d( ) {
  * @param a_x1_2                [in]        The upper value of the x1 value.
  ***********************************************************************************************************/
 
-HOST_DEVICE double ProbabilityBase2d::sample2dOf3d( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState, double *a_x1_1, double *a_x1_2 ) const {
+MCGIDI_HOST_DEVICE double ProbabilityBase2d::sample2dOf3d( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState, double *a_x1_1, double *a_x1_2 ) const {
 
-    THROW( "ProbabilityBase2d::sample2dOf3d: not implemented." );
+    MCGIDI_THROW( "ProbabilityBase2d::sample2dOf3d: not implemented." );
 
     return( 0.0 );
 }
@@ -1250,7 +1253,7 @@ HOST_DEVICE double ProbabilityBase2d::sample2dOf3d( double a_x2, double a_rngVal
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void ProbabilityBase2d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void ProbabilityBase2d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     ProbabilityBase::serialize( a_buffer, a_mode );
 }
@@ -1260,7 +1263,7 @@ HOST_DEVICE void ProbabilityBase2d::serialize( DataBuffer &a_buffer, DataBuffer:
 ========================== XYs2d ===========================
 ============================================================
 */
-HOST_DEVICE XYs2d::XYs2d( ) :
+MCGIDI_HOST_DEVICE XYs2d::XYs2d( ) :
         m_probabilities( ) {
 
     m_type = ProbabilityBase2dType::XYs;
@@ -1268,7 +1271,7 @@ HOST_DEVICE XYs2d::XYs2d( ) :
 /*
 ============================================================
 */
-HOST XYs2d::XYs2d( GIDI::Functions::XYs2d const &a_XYs2d ) :
+MCGIDI_HOST XYs2d::XYs2d( GIDI::Functions::XYs2d const &a_XYs2d ) :
         ProbabilityBase2d( a_XYs2d, a_XYs2d.Xs( ) ) {
 
     m_type = ProbabilityBase2dType::XYs;
@@ -1281,14 +1284,14 @@ HOST XYs2d::XYs2d( GIDI::Functions::XYs2d const &a_XYs2d ) :
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE XYs2d::~XYs2d( ) {
+MCGIDI_HOST_DEVICE XYs2d::~XYs2d( ) {
 
     for( MCGIDI_VectorSizeType i1 = 0; i1 < m_probabilities.size( ); ++i1 ) delete m_probabilities[i1];
 }
 /*
 ============================================================
 */
-HOST_DEVICE double XYs2d::evaluate( double a_x2, double a_x1 ) const {
+MCGIDI_HOST_DEVICE double XYs2d::evaluate( double a_x2, double a_x1 ) const {
 
     MCGIDI_VectorSizeType lower = binarySearchVector( a_x2, m_Xs );
 
@@ -1304,7 +1307,7 @@ HOST_DEVICE double XYs2d::evaluate( double a_x2, double a_x1 ) const {
 /*
 ============================================================
 */
-HOST_DEVICE double XYs2d::sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const {
+MCGIDI_HOST_DEVICE double XYs2d::sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const {
 /*
 C    Samples from a pdf(x1|x2). First determine which pdf(s) to sample from given x2.
 C    Then use rngValue to sample from pdf1(x1) and maybe pdf2(x1) and interpolate to
@@ -1338,7 +1341,7 @@ C    determine x1.
                 double fraction = log( m_Xs[lower+1] / a_x2 ) / log( m_Xs[lower+1] / m_Xs[lower] );
                 sampledValue = sampled2 * pow( sampled2 / sampled1, fraction ); }
             else {                                                              // This should never happen.
-                THROW( "XYs2d::sample: unsupported interpolation." );
+                MCGIDI_THROW( "XYs2d::sample: unsupported interpolation." );
             }
         }
     }
@@ -1356,7 +1359,7 @@ C    determine x1.
  * @param a_x1_2                [in]        The upper value of the x1 value.
  ***********************************************************************************************************/
 
-HOST_DEVICE double XYs2d::sample2dOf3d( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState, double *a_x1_1, double *a_x1_2 ) const {
+MCGIDI_HOST_DEVICE double XYs2d::sample2dOf3d( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState, double *a_x1_1, double *a_x1_2 ) const {
 /*
 C   Samples from a pdf(x1|x2). First determine which pdf(s) to sample from given x2. Then use rngValue to sample from pdf1(x1) 
 C   and maybe pdf2(x1) and interpolate to determine x1.
@@ -1391,7 +1394,7 @@ C   and maybe pdf2(x1) and interpolate to determine x1.
                 double fraction = log( m_Xs[lower+1] / a_x2 ) / log( m_Xs[lower+1] / m_Xs[lower] );
                 sampledValue = *a_x1_2 * pow( *a_x1_2 / *a_x1_1 , fraction ); }
             else {                                                              // This should never happen.
-                THROW( "XYs2d::sample: unsupported interpolation." );
+                MCGIDI_THROW( "XYs2d::sample: unsupported interpolation." );
             }
         }
     }
@@ -1406,7 +1409,7 @@ C   and maybe pdf2(x1) and interpolate to determine x1.
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void XYs2d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void XYs2d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     ProbabilityBase2d::serialize( a_buffer, a_mode );
 
@@ -1470,7 +1473,7 @@ HOST_DEVICE void XYs2d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode
 ======================== Regions2d =========================
 ============================================================
 */
-HOST_DEVICE Regions2d::Regions2d( ) :
+MCGIDI_HOST_DEVICE Regions2d::Regions2d( ) :
         m_probabilities( ) {
 
     m_type = ProbabilityBase2dType::regions;
@@ -1478,7 +1481,7 @@ HOST_DEVICE Regions2d::Regions2d( ) :
 /*
 ============================================================
 */
-HOST Regions2d::Regions2d( GIDI::Functions::Regions2d const &a_regions2d ) :
+MCGIDI_HOST Regions2d::Regions2d( GIDI::Functions::Regions2d const &a_regions2d ) :
         ProbabilityBase2d( a_regions2d, a_regions2d.Xs( ) ) {
 
     m_type = ProbabilityBase2dType::regions;
@@ -1491,14 +1494,14 @@ HOST Regions2d::Regions2d( GIDI::Functions::Regions2d const &a_regions2d ) :
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE Regions2d::~Regions2d( ) {
+MCGIDI_HOST_DEVICE Regions2d::~Regions2d( ) {
 
     for( MCGIDI_VectorSizeType i1 = 0; i1 < m_probabilities.size( ); ++i1 ) delete m_probabilities[i1];
 }
 /*
 ============================================================
 */
-HOST_DEVICE double Regions2d::evaluate( double a_x2, double a_x1 ) const {
+MCGIDI_HOST_DEVICE double Regions2d::evaluate( double a_x2, double a_x1 ) const {
 
     MCGIDI_VectorSizeType lower = binarySearchVector( a_x2, m_Xs );
 
@@ -1514,7 +1517,7 @@ HOST_DEVICE double Regions2d::evaluate( double a_x2, double a_x1 ) const {
 /*
 ============================================================
 */
-HOST_DEVICE double Regions2d::sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const {
+MCGIDI_HOST_DEVICE double Regions2d::sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const {
 
     MCGIDI_VectorSizeType lower = binarySearchVector( a_x2, m_Xs );
 
@@ -1536,7 +1539,7 @@ HOST_DEVICE double Regions2d::sample( double a_x2, double a_rngValue, double (*a
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void Regions2d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void Regions2d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     ProbabilityBase2d::serialize( a_buffer, a_mode );
 
@@ -1558,14 +1561,14 @@ HOST_DEVICE void Regions2d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_
 ======================== Isotropic2d =======================
 ============================================================
 */
-HOST_DEVICE Isotropic2d::Isotropic2d( ) {
+MCGIDI_HOST_DEVICE Isotropic2d::Isotropic2d( ) {
 
     m_type = ProbabilityBase2dType::isotropic;
 }
 /*
 ============================================================
 */
-HOST Isotropic2d::Isotropic2d( GIDI::Functions::Isotropic2d const &a_isotropic2d ) :
+MCGIDI_HOST Isotropic2d::Isotropic2d( GIDI::Functions::Isotropic2d const &a_isotropic2d ) :
         ProbabilityBase2d( a_isotropic2d ) {
 
     m_type = ProbabilityBase2dType::isotropic;
@@ -1574,7 +1577,7 @@ HOST Isotropic2d::Isotropic2d( GIDI::Functions::Isotropic2d const &a_isotropic2d
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE Isotropic2d::~Isotropic2d( ) {
+MCGIDI_HOST_DEVICE Isotropic2d::~Isotropic2d( ) {
 
 }
 
@@ -1583,14 +1586,14 @@ HOST_DEVICE Isotropic2d::~Isotropic2d( ) {
 ====================== DiscreteGamma2d =====================
 ============================================================
 */
-HOST_DEVICE DiscreteGamma2d::DiscreteGamma2d( ) {
+MCGIDI_HOST_DEVICE DiscreteGamma2d::DiscreteGamma2d( ) {
 
     m_type = ProbabilityBase2dType::discreteGamma;
 }
 /*
 ============================================================
 */
-HOST DiscreteGamma2d::DiscreteGamma2d( GIDI::Functions::DiscreteGamma2d const &a_discreteGamma2d ) :
+MCGIDI_HOST DiscreteGamma2d::DiscreteGamma2d( GIDI::Functions::DiscreteGamma2d const &a_discreteGamma2d ) :
         ProbabilityBase2d( a_discreteGamma2d ),
         m_value( a_discreteGamma2d.value( ) ) {
 
@@ -1600,7 +1603,7 @@ HOST DiscreteGamma2d::DiscreteGamma2d( GIDI::Functions::DiscreteGamma2d const &a
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE DiscreteGamma2d::~DiscreteGamma2d( ) {
+MCGIDI_HOST_DEVICE DiscreteGamma2d::~DiscreteGamma2d( ) {
 
 }
 
@@ -1612,7 +1615,7 @@ HOST_DEVICE DiscreteGamma2d::~DiscreteGamma2d( ) {
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void DiscreteGamma2d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void DiscreteGamma2d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     ProbabilityBase2d::serialize( a_buffer, a_mode );
     DATA_MEMBER_FLOAT( m_value, a_buffer, a_mode );
@@ -1623,7 +1626,7 @@ HOST_DEVICE void DiscreteGamma2d::serialize( DataBuffer &a_buffer, DataBuffer::M
 ====================== PrimaryGamma2d =====================
 ============================================================
 */
-HOST_DEVICE PrimaryGamma2d::PrimaryGamma2d( ) :
+MCGIDI_HOST_DEVICE PrimaryGamma2d::PrimaryGamma2d( ) :
         m_primaryEnergy( 0.0 ),
         m_massFactor( 0.0 ) {
 
@@ -1632,7 +1635,7 @@ HOST_DEVICE PrimaryGamma2d::PrimaryGamma2d( ) :
 /*
 ============================================================
 */
-HOST PrimaryGamma2d::PrimaryGamma2d( GIDI::Functions::PrimaryGamma2d const &a_primaryGamma2d, SetupInfo *a_setupInfo ) :
+MCGIDI_HOST PrimaryGamma2d::PrimaryGamma2d( GIDI::Functions::PrimaryGamma2d const &a_primaryGamma2d, SetupInfo *a_setupInfo ) :
         ProbabilityBase2d( a_primaryGamma2d ),
         m_primaryEnergy( a_primaryGamma2d.value( ) ),
         m_massFactor( a_setupInfo->m_protare.targetMass( ) / ( a_setupInfo->m_protare.projectileMass( ) + a_setupInfo->m_protare.targetMass( ) ) ) {
@@ -1643,13 +1646,13 @@ HOST PrimaryGamma2d::PrimaryGamma2d( GIDI::Functions::PrimaryGamma2d const &a_pr
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE PrimaryGamma2d::~PrimaryGamma2d( ) {
+MCGIDI_HOST_DEVICE PrimaryGamma2d::~PrimaryGamma2d( ) {
 
 }
 /*
 ============================================================
 */
-HOST_DEVICE double PrimaryGamma2d::evaluate( double a_x2, double a_x1 ) const {
+MCGIDI_HOST_DEVICE double PrimaryGamma2d::evaluate( double a_x2, double a_x1 ) const {
 
     double energy_out = m_primaryEnergy + a_x2 * m_massFactor;
 
@@ -1666,7 +1669,7 @@ HOST_DEVICE double PrimaryGamma2d::evaluate( double a_x2, double a_x1 ) const {
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void PrimaryGamma2d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void PrimaryGamma2d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     ProbabilityBase2d::serialize( a_buffer, a_mode );
     DATA_MEMBER_FLOAT( m_primaryEnergy, a_buffer, a_mode );
@@ -1678,7 +1681,7 @@ HOST_DEVICE void PrimaryGamma2d::serialize( DataBuffer &a_buffer, DataBuffer::Mo
 ========================= Recoil2d =========================
 ============================================================
 */
-HOST_DEVICE Recoil2d::Recoil2d( ) :
+MCGIDI_HOST_DEVICE Recoil2d::Recoil2d( ) :
         m_xlink( ) {
 
     m_type = ProbabilityBase2dType::recoil;
@@ -1686,7 +1689,7 @@ HOST_DEVICE Recoil2d::Recoil2d( ) :
 /*
 ============================================================
 */
-HOST Recoil2d::Recoil2d( GIDI::Functions::Recoil2d const &a_recoil2d ) :
+MCGIDI_HOST Recoil2d::Recoil2d( GIDI::Functions::Recoil2d const &a_recoil2d ) :
         ProbabilityBase2d( a_recoil2d ),
         m_xlink( a_recoil2d.xlink( ).c_str( ) ) {
 
@@ -1696,16 +1699,16 @@ HOST Recoil2d::Recoil2d( GIDI::Functions::Recoil2d const &a_recoil2d ) :
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE Recoil2d::~Recoil2d( ) {
+MCGIDI_HOST_DEVICE Recoil2d::~Recoil2d( ) {
 
 }
 /*
 ============================================================
 */
-HOST_DEVICE double Recoil2d::evaluate( double a_x2, double a_x1 ) const {
+MCGIDI_HOST_DEVICE double Recoil2d::evaluate( double a_x2, double a_x1 ) const {
 
 #ifndef __NVCC__
-    THROW( "Recoil2d::evaluate: not implemented." );
+    MCGIDI_THROW( "Recoil2d::evaluate: not implemented." );
 #endif
 
     return( 0.0 );
@@ -1713,10 +1716,10 @@ HOST_DEVICE double Recoil2d::evaluate( double a_x2, double a_x1 ) const {
 /*
 ============================================================
 */
-HOST_DEVICE double Recoil2d::sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const {
+MCGIDI_HOST_DEVICE double Recoil2d::sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const {
 
 #ifndef __NVCC__
-    THROW( "Recoil2d::sample: not implemented." );
+    MCGIDI_THROW( "Recoil2d::sample: not implemented." );
 #endif
 
     return( 0.0 );
@@ -1731,7 +1734,7 @@ HOST_DEVICE double Recoil2d::sample( double a_x2, double a_rngValue, double (*a_
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void Recoil2d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void Recoil2d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     ProbabilityBase2d::serialize( a_buffer, a_mode );
     DATA_MEMBER_STRING( m_xlink, a_buffer, a_mode );
@@ -1742,7 +1745,7 @@ HOST_DEVICE void Recoil2d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_m
 ==================== NBodyPhaseSpace2d =====================
 ============================================================
 */
-HOST_DEVICE NBodyPhaseSpace2d::NBodyPhaseSpace2d( ) :
+MCGIDI_HOST_DEVICE NBodyPhaseSpace2d::NBodyPhaseSpace2d( ) :
         m_numberOfProducts( 0 ),
         m_mass( 0.0 ),
         m_energy_in_COMFactor( 0.0 ),
@@ -1755,7 +1758,7 @@ HOST_DEVICE NBodyPhaseSpace2d::NBodyPhaseSpace2d( ) :
 /*
 ============================================================
 */
-HOST NBodyPhaseSpace2d::NBodyPhaseSpace2d( GIDI::Functions::NBodyPhaseSpace2d const &a_NBodyPhaseSpace2d, SetupInfo *a_setupInfo ) :
+MCGIDI_HOST NBodyPhaseSpace2d::NBodyPhaseSpace2d( GIDI::Functions::NBodyPhaseSpace2d const &a_NBodyPhaseSpace2d, SetupInfo *a_setupInfo ) :
         ProbabilityBase2d( a_NBodyPhaseSpace2d ),
         m_numberOfProducts( a_NBodyPhaseSpace2d.numberOfProducts( ) ),
         m_mass( PoPI_AMU2MeV_c2 * a_NBodyPhaseSpace2d.mass( ).value( ) ),
@@ -1769,7 +1772,7 @@ HOST NBodyPhaseSpace2d::NBodyPhaseSpace2d( GIDI::Functions::NBodyPhaseSpace2d co
     ptwXYPoints *pdf = nullptr;
 
     pdf = ptwXY_createFromFunction( nullptr, 2, xs, MCGIDI_NBodyPhaseSpacePDF_callback, (void *) &m_numberOfProducts, 1e-3, 0, 16 );
-    if( pdf == nullptr ) THROW( "NBodyPhaseSpace2d::NBodyPhaseSpace2d: ptwXY_createFromFunction returned nullptr" );
+    if( pdf == nullptr ) throw std::runtime_error( "NBodyPhaseSpace2d::NBodyPhaseSpace2d: ptwXY_createFromFunction returned nullptr" );
 
     m_dist = ptwXY_To_Xs_pdf_cdf1d( pdf );
     ptwXY_free( pdf );
@@ -1778,14 +1781,14 @@ HOST NBodyPhaseSpace2d::NBodyPhaseSpace2d( GIDI::Functions::NBodyPhaseSpace2d co
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE NBodyPhaseSpace2d::~NBodyPhaseSpace2d( ) {
+MCGIDI_HOST_DEVICE NBodyPhaseSpace2d::~NBodyPhaseSpace2d( ) {
 
     delete m_dist;
 }
 /*
 ============================================================
 */
-HOST static nfu_status MCGIDI_NBodyPhaseSpacePDF_callback( statusMessageReporting *smr, double X, double *Y, void *argList ) {
+MCGIDI_HOST static nfu_status MCGIDI_NBodyPhaseSpacePDF_callback( statusMessageReporting *smr, double X, double *Y, void *argList ) {
 
     int numberOfProducts = *((int *) argList);
     double exponent = 0.5 * ( 3 * numberOfProducts - 8 );
@@ -1796,7 +1799,7 @@ HOST static nfu_status MCGIDI_NBodyPhaseSpacePDF_callback( statusMessageReportin
 /*
 ============================================================
 */
-HOST_DEVICE double NBodyPhaseSpace2d::evaluate( double a_x2, double a_x1 ) const {
+MCGIDI_HOST_DEVICE double NBodyPhaseSpace2d::evaluate( double a_x2, double a_x1 ) const {
 
     double EMax = ( m_energy_in_COMFactor * a_x2 + m_Q ) * m_massFactor;
     double x1 = a_x1 / EMax;
@@ -1806,7 +1809,7 @@ HOST_DEVICE double NBodyPhaseSpace2d::evaluate( double a_x2, double a_x1 ) const
 /*
 ============================================================
 */
-HOST_DEVICE double NBodyPhaseSpace2d::sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const {
+MCGIDI_HOST_DEVICE double NBodyPhaseSpace2d::sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const {
 
     return( ( m_energy_in_COMFactor * a_x2 + m_Q ) * m_massFactor * m_dist->sample( a_rngValue, a_userrng, a_rngState ) );
 }
@@ -1819,7 +1822,7 @@ HOST_DEVICE double NBodyPhaseSpace2d::sample( double a_x2, double a_rngValue, do
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void NBodyPhaseSpace2d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void NBodyPhaseSpace2d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     ProbabilityBase2d::serialize( a_buffer, a_mode );
     DATA_MEMBER_INT( m_numberOfProducts, a_buffer, a_mode );
@@ -1836,7 +1839,7 @@ HOST_DEVICE void NBodyPhaseSpace2d::serialize( DataBuffer &a_buffer, DataBuffer:
 ====================== Evaporation2d =======================
 ============================================================
 */
-HOST_DEVICE Evaporation2d::Evaporation2d( ) :
+MCGIDI_HOST_DEVICE Evaporation2d::Evaporation2d( ) :
         m_U( 0.0 ),
         m_theta( nullptr ) {
 
@@ -1845,7 +1848,7 @@ HOST_DEVICE Evaporation2d::Evaporation2d( ) :
 /*
 ============================================================
 */
-HOST Evaporation2d::Evaporation2d( GIDI::Functions::Evaporation2d const &a_evaporation2d ) :
+MCGIDI_HOST Evaporation2d::Evaporation2d( GIDI::Functions::Evaporation2d const &a_evaporation2d ) :
         ProbabilityBase2d( a_evaporation2d ),
         m_U( a_evaporation2d.U( ) ),
         m_theta( Functions::parseFunction1d( a_evaporation2d.theta( ) ) ) {
@@ -1856,14 +1859,14 @@ HOST Evaporation2d::Evaporation2d( GIDI::Functions::Evaporation2d const &a_evapo
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE Evaporation2d::~Evaporation2d( ) {
+MCGIDI_HOST_DEVICE Evaporation2d::~Evaporation2d( ) {
 
     delete m_theta;
 }
 /*
 ============================================================
 */
-HOST_DEVICE double Evaporation2d::evaluate( double a_x2, double a_x1 ) const {
+MCGIDI_HOST_DEVICE double Evaporation2d::evaluate( double a_x2, double a_x1 ) const {
 
     double theta = m_theta->evaluate( a_x2 );
     double E_U_theta = ( a_x2 - m_U ) / theta;
@@ -1875,8 +1878,8 @@ HOST_DEVICE double Evaporation2d::evaluate( double a_x2, double a_x1 ) const {
 /*
 ============================================================
 */
-HOST_DEVICE static double MCGIDI_sampleEvaporation( double a_xMax, double a_rngValue );
-HOST_DEVICE double Evaporation2d::sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const {
+MCGIDI_HOST_DEVICE static double MCGIDI_sampleEvaporation( double a_xMax, double a_rngValue );
+MCGIDI_HOST_DEVICE double Evaporation2d::sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const {
 
     double theta = m_theta->evaluate( a_x2 );
 
@@ -1885,7 +1888,7 @@ HOST_DEVICE double Evaporation2d::sample( double a_x2, double a_rngValue, double
 /*
 ============================================================
 */
-HOST_DEVICE static double MCGIDI_sampleEvaporation( double a_xMax, double a_rngValue ) {
+MCGIDI_HOST_DEVICE static double MCGIDI_sampleEvaporation( double a_xMax, double a_rngValue ) {
 
     double b1, c1, xMid, norm, xMin = 0.;
 
@@ -1911,7 +1914,7 @@ HOST_DEVICE static double MCGIDI_sampleEvaporation( double a_xMax, double a_rngV
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void Evaporation2d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void Evaporation2d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     ProbabilityBase2d::serialize( a_buffer, a_mode );
     DATA_MEMBER_FLOAT( m_U, a_buffer, a_mode );
@@ -1924,7 +1927,7 @@ HOST_DEVICE void Evaporation2d::serialize( DataBuffer &a_buffer, DataBuffer::Mod
 =================== GeneralEvaporation2d ===================
 ============================================================
 */
-HOST_DEVICE GeneralEvaporation2d::GeneralEvaporation2d( ) :
+MCGIDI_HOST_DEVICE GeneralEvaporation2d::GeneralEvaporation2d( ) :
         m_theta( nullptr ),
         m_g( nullptr ) {
 
@@ -1933,7 +1936,7 @@ HOST_DEVICE GeneralEvaporation2d::GeneralEvaporation2d( ) :
 /*
 ============================================================
 */
-HOST GeneralEvaporation2d::GeneralEvaporation2d( GIDI::Functions::GeneralEvaporation2d const &a_generalEvaporation2d ) :
+MCGIDI_HOST GeneralEvaporation2d::GeneralEvaporation2d( GIDI::Functions::GeneralEvaporation2d const &a_generalEvaporation2d ) :
         ProbabilityBase2d( a_generalEvaporation2d ),
         m_theta( Functions::parseFunction1d( a_generalEvaporation2d.theta( ) ) ),
         m_g( parseProbability1d( a_generalEvaporation2d.g( ) ) ) {
@@ -1944,7 +1947,7 @@ HOST GeneralEvaporation2d::GeneralEvaporation2d( GIDI::Functions::GeneralEvapora
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE GeneralEvaporation2d::~GeneralEvaporation2d( ) {
+MCGIDI_HOST_DEVICE GeneralEvaporation2d::~GeneralEvaporation2d( ) {
 
     delete m_theta;
     delete m_g;
@@ -1952,14 +1955,14 @@ HOST_DEVICE GeneralEvaporation2d::~GeneralEvaporation2d( ) {
 /*
 ============================================================
 */
-HOST_DEVICE double GeneralEvaporation2d::evaluate( double a_x2, double a_x1 ) const {
+MCGIDI_HOST_DEVICE double GeneralEvaporation2d::evaluate( double a_x2, double a_x1 ) const {
 
     return( m_g->evaluate( a_x1 / m_theta->evaluate( a_x2 ) ) );
 }
 /*
 ============================================================
 */
-HOST_DEVICE double GeneralEvaporation2d::sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const {
+MCGIDI_HOST_DEVICE double GeneralEvaporation2d::sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const {
 
     return( m_theta->evaluate( a_x2 ) * m_g->sample( a_rngValue, a_userrng, a_rngState ) );
 }
@@ -1972,7 +1975,7 @@ HOST_DEVICE double GeneralEvaporation2d::sample( double a_x2, double a_rngValue,
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void GeneralEvaporation2d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void GeneralEvaporation2d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     ProbabilityBase2d::serialize( a_buffer, a_mode );
     m_theta = serializeFunction1d( a_buffer, a_mode, m_theta );
@@ -1984,7 +1987,7 @@ HOST_DEVICE void GeneralEvaporation2d::serialize( DataBuffer &a_buffer, DataBuff
 ================ SimpleMaxwellianFission2d =================
 ============================================================
 */
-HOST_DEVICE SimpleMaxwellianFission2d::SimpleMaxwellianFission2d( ) :
+MCGIDI_HOST_DEVICE SimpleMaxwellianFission2d::SimpleMaxwellianFission2d( ) :
         m_U( 0.0 ),
         m_theta( nullptr ) {
 
@@ -1993,7 +1996,7 @@ HOST_DEVICE SimpleMaxwellianFission2d::SimpleMaxwellianFission2d( ) :
 /*
 ============================================================
 */
-HOST SimpleMaxwellianFission2d::SimpleMaxwellianFission2d( GIDI::Functions::SimpleMaxwellianFission2d const &a_simpleMaxwellianFission2d ) :
+MCGIDI_HOST SimpleMaxwellianFission2d::SimpleMaxwellianFission2d( GIDI::Functions::SimpleMaxwellianFission2d const &a_simpleMaxwellianFission2d ) :
         ProbabilityBase2d( a_simpleMaxwellianFission2d ),
         m_U( a_simpleMaxwellianFission2d.U( ) ),
         m_theta( Functions::parseFunction1d( a_simpleMaxwellianFission2d.theta( ) ) ) {
@@ -2004,14 +2007,14 @@ HOST SimpleMaxwellianFission2d::SimpleMaxwellianFission2d( GIDI::Functions::Simp
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE SimpleMaxwellianFission2d::~SimpleMaxwellianFission2d( ) {
+MCGIDI_HOST_DEVICE SimpleMaxwellianFission2d::~SimpleMaxwellianFission2d( ) {
 
     delete m_theta;
 }
 /*
 ============================================================
 */
-HOST_DEVICE double SimpleMaxwellianFission2d::evaluate( double a_x2, double a_x1 ) const {
+MCGIDI_HOST_DEVICE double SimpleMaxwellianFission2d::evaluate( double a_x2, double a_x1 ) const {
 
     double theta = m_theta->evaluate( a_x2 );
     double E_U_theta = ( a_x2 - m_U ) / theta;
@@ -2026,8 +2029,8 @@ HOST_DEVICE double SimpleMaxwellianFission2d::evaluate( double a_x2, double a_x1
 /*
 ============================================================
 */
-HOST_DEVICE static double MCGIDI_sampleSimpleMaxwellianFission( double a_xMax, double a_rngValue );
-HOST_DEVICE double SimpleMaxwellianFission2d::sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const {
+MCGIDI_HOST_DEVICE static double MCGIDI_sampleSimpleMaxwellianFission( double a_xMax, double a_rngValue );
+MCGIDI_HOST_DEVICE double SimpleMaxwellianFission2d::sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const {
 
     double theta = m_theta->evaluate( a_x2 );
 
@@ -2036,7 +2039,7 @@ HOST_DEVICE double SimpleMaxwellianFission2d::sample( double a_x2, double a_rngV
 /*
 ============================================================
 */
-HOST_DEVICE static double MCGIDI_sampleSimpleMaxwellianFission( double a_xMax, double a_rngValue ) {
+MCGIDI_HOST_DEVICE static double MCGIDI_sampleSimpleMaxwellianFission( double a_xMax, double a_rngValue ) {
 
     double b1, c1, xMid, norm, xMin = 0., sqrt_xMid, sqrt_pi_2 = 0.5 * sqrt( M_PI );
 
@@ -2064,7 +2067,7 @@ HOST_DEVICE static double MCGIDI_sampleSimpleMaxwellianFission( double a_xMax, d
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void SimpleMaxwellianFission2d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void SimpleMaxwellianFission2d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     ProbabilityBase2d::serialize( a_buffer, a_mode );
     DATA_MEMBER_FLOAT( m_U, a_buffer, a_mode );
@@ -2076,7 +2079,7 @@ HOST_DEVICE void SimpleMaxwellianFission2d::serialize( DataBuffer &a_buffer, Dat
 ========================= Watt2d ===========================
 ============================================================
 */
-HOST_DEVICE Watt2d::Watt2d( ) :
+MCGIDI_HOST_DEVICE Watt2d::Watt2d( ) :
         m_a( nullptr ),
         m_b( nullptr ) {
 
@@ -2085,7 +2088,7 @@ HOST_DEVICE Watt2d::Watt2d( ) :
 /*
 ============================================================
 */
-HOST Watt2d::Watt2d( GIDI::Functions::Watt2d const &a_Watt2d ) :
+MCGIDI_HOST Watt2d::Watt2d( GIDI::Functions::Watt2d const &a_Watt2d ) :
         ProbabilityBase2d( a_Watt2d ),
         m_U( a_Watt2d.U( ) ),
         m_a( Functions::parseFunction1d( a_Watt2d.a( ) ) ),
@@ -2097,7 +2100,7 @@ HOST Watt2d::Watt2d( GIDI::Functions::Watt2d const &a_Watt2d ) :
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE Watt2d::~Watt2d( ) {
+MCGIDI_HOST_DEVICE Watt2d::~Watt2d( ) {
 
     delete m_a;
     delete m_b;
@@ -2105,7 +2108,7 @@ HOST_DEVICE Watt2d::~Watt2d( ) {
 /*
 ============================================================
 */
-HOST_DEVICE double Watt2d::evaluate( double a_x2, double a_x1 ) const {
+MCGIDI_HOST_DEVICE double Watt2d::evaluate( double a_x2, double a_x1 ) const {
 
     double Watt_a = m_a->evaluate( a_x2 );
     double E_U_a = ( a_x2 - m_U ) / Watt_a;
@@ -2123,7 +2126,7 @@ HOST_DEVICE double Watt2d::evaluate( double a_x2, double a_x1 ) const {
 /*
 ============================================================
 */
-HOST_DEVICE double Watt2d::sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const {
+MCGIDI_HOST_DEVICE double Watt2d::sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const {
 /*
 *   From MCAPM via Sample Watt Spectrum as in TART ( Kalos algorithm ).
 */
@@ -2152,7 +2155,7 @@ HOST_DEVICE double Watt2d::sample( double a_x2, double a_rngValue, double (*a_us
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void Watt2d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void Watt2d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     ProbabilityBase2d::serialize( a_buffer, a_mode );
     DATA_MEMBER_FLOAT( m_U, a_buffer, a_mode );
@@ -2165,7 +2168,7 @@ HOST_DEVICE void Watt2d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mod
 =================== WeightedFunctionals2d ==================
 ============================================================
 */
-HOST_DEVICE WeightedFunctionals2d::WeightedFunctionals2d( ) :
+MCGIDI_HOST_DEVICE WeightedFunctionals2d::WeightedFunctionals2d( ) :
         m_weight( ),
         m_energy( ) {
 
@@ -2174,7 +2177,7 @@ HOST_DEVICE WeightedFunctionals2d::WeightedFunctionals2d( ) :
 /*
 ============================================================
 */
-HOST WeightedFunctionals2d::WeightedFunctionals2d( GIDI::Functions::WeightedFunctionals2d const &a_weightedFunctionals2d ) :
+MCGIDI_HOST WeightedFunctionals2d::WeightedFunctionals2d( GIDI::Functions::WeightedFunctionals2d const &a_weightedFunctionals2d ) :
         ProbabilityBase2d( a_weightedFunctionals2d ) {
 
     m_type = ProbabilityBase2dType::weightedFunctionals;
@@ -2191,7 +2194,7 @@ HOST WeightedFunctionals2d::WeightedFunctionals2d( GIDI::Functions::WeightedFunc
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE WeightedFunctionals2d::~WeightedFunctionals2d( ) {
+MCGIDI_HOST_DEVICE WeightedFunctionals2d::~WeightedFunctionals2d( ) {
 
     for( MCGIDI_VectorSizeType i1 = 0; i1 < m_weight.size( ); ++i1 ) delete m_weight[i1];
     for( MCGIDI_VectorSizeType i1 = 0; i1 < m_energy.size( ); ++i1 ) delete m_energy[i1];
@@ -2199,7 +2202,7 @@ HOST_DEVICE WeightedFunctionals2d::~WeightedFunctionals2d( ) {
 /*
 ============================================================
 */
-HOST_DEVICE double WeightedFunctionals2d::evaluate( double a_x2, double a_x1 ) const {
+MCGIDI_HOST_DEVICE double WeightedFunctionals2d::evaluate( double a_x2, double a_x1 ) const {
 
     MCGIDI_VectorSizeType n1 = m_weight.size( );
     double evalutedValue = 0;
@@ -2212,7 +2215,7 @@ HOST_DEVICE double WeightedFunctionals2d::evaluate( double a_x2, double a_x1 ) c
 /*
 ============================================================
 */
-HOST_DEVICE double WeightedFunctionals2d::sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const {
+MCGIDI_HOST_DEVICE double WeightedFunctionals2d::sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const {
 /*
 c   This routine assumes that the weights sum to 1.
 */
@@ -2235,7 +2238,7 @@ c   This routine assumes that the weights sum to 1.
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void WeightedFunctionals2d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void WeightedFunctionals2d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     ProbabilityBase2d::serialize( a_buffer, a_mode );
 
@@ -2266,14 +2269,14 @@ HOST_DEVICE void WeightedFunctionals2d::serialize( DataBuffer &a_buffer, DataBuf
 ===================== ProbabilityBase3d ====================
 ============================================================
 */
-HOST_DEVICE ProbabilityBase3d::ProbabilityBase3d( ) :
+MCGIDI_HOST_DEVICE ProbabilityBase3d::ProbabilityBase3d( ) :
         m_type( ProbabilityBase3dType::none ) {
 
 }
 /*
 ============================================================
 */
-HOST ProbabilityBase3d::ProbabilityBase3d( GIDI::Functions::FunctionForm const &a_probability, Vector<double> const &a_Xs ) :
+MCGIDI_HOST ProbabilityBase3d::ProbabilityBase3d( GIDI::Functions::FunctionForm const &a_probability, Vector<double> const &a_Xs ) :
         ProbabilityBase( a_probability, a_Xs ),
         m_type( ProbabilityBase3dType::none ) {
 
@@ -2282,7 +2285,7 @@ HOST ProbabilityBase3d::ProbabilityBase3d( GIDI::Functions::FunctionForm const &
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE ProbabilityBase3d::~ProbabilityBase3d( ) {
+MCGIDI_HOST_DEVICE ProbabilityBase3d::~ProbabilityBase3d( ) {
 
 }
 
@@ -2294,7 +2297,7 @@ HOST_DEVICE ProbabilityBase3d::~ProbabilityBase3d( ) {
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void ProbabilityBase3d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void ProbabilityBase3d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     ProbabilityBase::serialize( a_buffer, a_mode ); 
 
@@ -2326,7 +2329,7 @@ HOST_DEVICE void ProbabilityBase3d::serialize( DataBuffer &a_buffer, DataBuffer:
 ========================== XYs3d ===========================
 ============================================================
 */
-HOST_DEVICE XYs3d::XYs3d( ) :
+MCGIDI_HOST_DEVICE XYs3d::XYs3d( ) :
         m_probabilities( ) {
 
     m_type = ProbabilityBase3dType::XYs;
@@ -2334,7 +2337,7 @@ HOST_DEVICE XYs3d::XYs3d( ) :
 /*
 ============================================================
 */
-HOST XYs3d::XYs3d( GIDI::Functions::XYs3d const &a_XYs3d ) :
+MCGIDI_HOST XYs3d::XYs3d( GIDI::Functions::XYs3d const &a_XYs3d ) :
         ProbabilityBase3d( a_XYs3d, a_XYs3d.Xs( ) ) {
 
     m_type = ProbabilityBase3dType::XYs;
@@ -2347,14 +2350,14 @@ HOST XYs3d::XYs3d( GIDI::Functions::XYs3d const &a_XYs3d ) :
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE XYs3d::~XYs3d( ) {
+MCGIDI_HOST_DEVICE XYs3d::~XYs3d( ) {
 
     for( MCGIDI_VectorSizeType i1 = 0; i1 < m_probabilities.size( ); ++i1 ) delete m_probabilities[i1];
 }
 /*
 ============================================================
 */
-HOST_DEVICE double XYs3d::evaluate( double a_x3, double a_x2, double a_x1 ) const {
+MCGIDI_HOST_DEVICE double XYs3d::evaluate( double a_x3, double a_x2, double a_x1 ) const {
 
     MCGIDI_VectorSizeType lower = binarySearchVector( a_x3, m_Xs );
     double evaluatedValue;
@@ -2384,7 +2387,7 @@ HOST_DEVICE double XYs3d::evaluate( double a_x3, double a_x2, double a_x1 ) cons
                 double fraction = log( m_Xs[lower+1] / a_x3 ) / log( m_Xs[lower+1] / m_Xs[lower] );
                 evaluatedValue = value2 * pow( value2 / value1, fraction ); }
             else {                                                              // This should never happen.
-                THROW( "XYs3d::evaluate: unsupported interpolation." );
+                MCGIDI_THROW( "XYs3d::evaluate: unsupported interpolation." );
             }
         }
     }
@@ -2394,7 +2397,7 @@ HOST_DEVICE double XYs3d::evaluate( double a_x3, double a_x2, double a_x1 ) cons
 /*
 ============================================================
 */
-HOST_DEVICE double XYs3d::sample( double a_x3, double a_x2_1, double a_x2_2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const {
+MCGIDI_HOST_DEVICE double XYs3d::sample( double a_x3, double a_x2_1, double a_x2_2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const {
 /*
 C    Samples from a pdf(x1|x3,x2). First determine which pdf(s) to sample from given x3
 C    Then use rngValue to sample from pdf2_1(x2) and maybe pdf2_2(x2) and interpolate to
@@ -2428,7 +2431,7 @@ C    determine x1.
                 double fraction = log( m_Xs[lower+1] / a_x3 ) / log( m_Xs[lower+1] / m_Xs[lower] );
                 sampledValue = sampled2 * pow( sampled2 / sampled1, fraction ); }
             else {                                                              // This should never happen.
-                THROW( "XYs3d::sample: unsupported interpolation." );
+                MCGIDI_THROW( "XYs3d::sample: unsupported interpolation." );
             }
         }
     }
@@ -2444,7 +2447,7 @@ C    determine x1.
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void XYs3d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void XYs3d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     ProbabilityBase3d::serialize( a_buffer, a_mode );
 
@@ -2469,7 +2472,7 @@ HOST_DEVICE void XYs3d::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode
 /*
 ============================================================
 */
-HOST ProbabilityBase1d *parseProbability1d( GIDI::Functions::Function1dForm const *a_form1d ) {
+MCGIDI_HOST ProbabilityBase1d *parseProbability1d( GIDI::Functions::Function1dForm const *a_form1d ) {
 
     GIDI::FormType type = a_form1d->type( );
 
@@ -2477,7 +2480,7 @@ HOST ProbabilityBase1d *parseProbability1d( GIDI::Functions::Function1dForm cons
     case GIDI::FormType::xs_pdf_cdf1d :
         return( new Xs_pdf_cdf1d( *static_cast<GIDI::Functions::Xs_pdf_cdf1d const *>( a_form1d ) ) );
     default :
-        THROW( "Probabilities::parseProbability1d: Unsupported Function1d" );
+        throw std::runtime_error( "Probabilities::parseProbability1d: Unsupported Function1d" );
     }
 
     return( nullptr );
@@ -2485,7 +2488,7 @@ HOST ProbabilityBase1d *parseProbability1d( GIDI::Functions::Function1dForm cons
 /*
 ============================================================
 */
-HOST ProbabilityBase2d *parseProbability2d( GIDI::Functions::Function2dForm const *form2d, SetupInfo *a_setupInfo ) {
+MCGIDI_HOST ProbabilityBase2d *parseProbability2d( GIDI::Functions::Function2dForm const *form2d, SetupInfo *a_setupInfo ) {
 
     GIDI::FormType type = form2d->type( );
 
@@ -2515,7 +2518,7 @@ HOST ProbabilityBase2d *parseProbability2d( GIDI::Functions::Function2dForm cons
     case GIDI::FormType::weightedFunctionals2d :
         return( new WeightedFunctionals2d( *static_cast<GIDI::Functions::WeightedFunctionals2d const *>( form2d ) ) );
     default :
-        THROW( "Probabilities::parseProbability2d: Unsupported Function2d" );
+        throw std::runtime_error( "Probabilities::parseProbability2d: Unsupported Function2d" );
     }
 
     return( nullptr );
@@ -2523,7 +2526,7 @@ HOST ProbabilityBase2d *parseProbability2d( GIDI::Functions::Function2dForm cons
 /*
 ============================================================
 */
-HOST ProbabilityBase3d *parseProbability3d( GIDI::Functions::Function3dForm const *form3d ) {
+MCGIDI_HOST ProbabilityBase3d *parseProbability3d( GIDI::Functions::Function3dForm const *form3d ) {
 
     GIDI::FormType type = form3d->type( );
 
@@ -2531,7 +2534,7 @@ HOST ProbabilityBase3d *parseProbability3d( GIDI::Functions::Function3dForm cons
     case GIDI::FormType::XYs3d :
         return( new XYs3d( *static_cast<GIDI::Functions::XYs3d const *>( form3d ) ) );
     default :
-        THROW( "Probabilities::parseProbability3d: Unsupported Function3d" );
+        throw std::runtime_error( "Probabilities::parseProbability3d: Unsupported Function3d" );
     }
 
     return( nullptr );
@@ -2540,16 +2543,16 @@ HOST ProbabilityBase3d *parseProbability3d( GIDI::Functions::Function3dForm cons
 /*
 ============================================================
 */
-HOST static ProbabilityBase1d *ptwXY_To_Xs_pdf_cdf1d( ptwXYPoints *pdfXY ) {
+MCGIDI_HOST static ProbabilityBase1d *ptwXY_To_Xs_pdf_cdf1d( ptwXYPoints *pdfXY ) {
 
     ptwXPoints *cdfX = nullptr;
     ptwXYPoint *point;
     MCGIDI_VectorSizeType n1 = (MCGIDI_VectorSizeType) ptwXY_length( nullptr, pdfXY );
     std::vector<double> Xs( n1 ), pdf( n1 ), cdf( n1 );
 
-    if( ( cdfX = ptwXY_runningIntegral( nullptr, pdfXY ) ) == nullptr ) THROW( "ptwXY_To_Xs_pdf_cdf1d: ptwXY_runningIntegral returned error." );
+    if( ( cdfX = ptwXY_runningIntegral( nullptr, pdfXY ) ) == nullptr ) throw std::runtime_error( "ptwXY_To_Xs_pdf_cdf1d: ptwXY_runningIntegral returned error." );
     double norm = ptwX_getPointAtIndex_Unsafely( cdfX, n1 - 1 );
-    if( norm <= 0 ) THROW( "ptwXY_To_Xs_pdf_cdf1d: norm <= 0." );
+    if( norm <= 0 ) throw std::runtime_error( "ptwXY_To_Xs_pdf_cdf1d: norm <= 0." );
 
     norm = 1. / norm;
     for( MCGIDI_VectorSizeType i1 = 0; i1 < n1; ++i1 ) {
@@ -2576,7 +2579,7 @@ HOST static ProbabilityBase1d *ptwXY_To_Xs_pdf_cdf1d( ptwXYPoints *pdfXY ) {
 ========================== others ==========================
 ============================================================
 */
-HOST_DEVICE Interpolation GIDI2MCGIDI_interpolation( ptwXY_interpolation a_interpolation ) {
+MCGIDI_HOST_DEVICE Interpolation GIDI2MCGIDI_interpolation( ptwXY_interpolation a_interpolation ) {
 
     if( a_interpolation == ptwXY_interpolationLinLin ) return( Interpolation::LINLIN );
     if( a_interpolation == ptwXY_interpolationLogLin ) return( Interpolation::LOGLIN );
@@ -2588,7 +2591,7 @@ HOST_DEVICE Interpolation GIDI2MCGIDI_interpolation( ptwXY_interpolation a_inter
 /*
 ============================================================
 */
-HOST_DEVICE Function1dType Function1dClass( Functions::Function1d *a_function ) {
+MCGIDI_HOST_DEVICE Function1dType Function1dClass( Functions::Function1d *a_function ) {
 
     if( a_function == nullptr ) return( Function1dType::none );
     return( a_function->type( ) );
@@ -2596,7 +2599,7 @@ HOST_DEVICE Function1dType Function1dClass( Functions::Function1d *a_function ) 
 /*
 ============================================================
 */
-HOST_DEVICE Functions::Function1d *serializeFunction1d( DataBuffer &a_buffer, DataBuffer::Mode a_mode, Functions::Function1d *a_function1d ) {
+MCGIDI_HOST_DEVICE Functions::Function1d *serializeFunction1d( DataBuffer &a_buffer, DataBuffer::Mode a_mode, Functions::Function1d *a_function1d ) {
 
     int type = 0;
 
@@ -2731,7 +2734,7 @@ HOST_DEVICE Functions::Function1d *serializeFunction1d( DataBuffer &a_buffer, Da
 /*
 ============================================================
 */
-HOST_DEVICE Function2dType Function2dClass( Functions::Function2d *a_function ) {
+MCGIDI_HOST_DEVICE Function2dType Function2dClass( Functions::Function2d *a_function ) {
 
     if( a_function == nullptr ) return( Function2dType::none );
     return( a_function->type( ) );
@@ -2740,7 +2743,7 @@ HOST_DEVICE Function2dType Function2dClass( Functions::Function2d *a_function ) 
 /*
 ============================================================
 */
-HOST_DEVICE Functions::Function2d *serializeFunction2d( DataBuffer &a_buffer, DataBuffer::Mode a_mode, Functions::Function2d *a_function2d ) {
+MCGIDI_HOST_DEVICE Functions::Function2d *serializeFunction2d( DataBuffer &a_buffer, DataBuffer::Mode a_mode, Functions::Function2d *a_function2d ) {
 
     int type = 0;
 
@@ -2791,7 +2794,7 @@ HOST_DEVICE Functions::Function2d *serializeFunction2d( DataBuffer &a_buffer, Da
 /*
 ============================================================
 */
-HOST_DEVICE ProbabilityBase1dType ProbabilityBase1dClass( Probabilities::ProbabilityBase1d *a_function ) {
+MCGIDI_HOST_DEVICE ProbabilityBase1dType ProbabilityBase1dClass( Probabilities::ProbabilityBase1d *a_function ) {
 
     if( a_function == nullptr ) return( ProbabilityBase1dType::none );
     return( a_function->type( ) );
@@ -2800,7 +2803,7 @@ HOST_DEVICE ProbabilityBase1dType ProbabilityBase1dClass( Probabilities::Probabi
 /*
 ============================================================
 */
-HOST_DEVICE Probabilities::ProbabilityBase1d *serializeProbability1d( DataBuffer &a_buffer, DataBuffer::Mode a_mode, Probabilities::ProbabilityBase1d *a_probability1d ) {
+MCGIDI_HOST_DEVICE Probabilities::ProbabilityBase1d *serializeProbability1d( DataBuffer &a_buffer, DataBuffer::Mode a_mode, Probabilities::ProbabilityBase1d *a_probability1d ) {
 
     int type = 0;
 
@@ -2851,7 +2854,7 @@ HOST_DEVICE Probabilities::ProbabilityBase1d *serializeProbability1d( DataBuffer
 /*
 ============================================================
 */
-HOST_DEVICE ProbabilityBase2dType ProbabilityBase2dClass( Probabilities::ProbabilityBase2d *a_function ) {
+MCGIDI_HOST_DEVICE ProbabilityBase2dType ProbabilityBase2dClass( Probabilities::ProbabilityBase2d *a_function ) {
 
     if( a_function == nullptr ) return( ProbabilityBase2dType::none );
     return( a_function->type( ) );
@@ -2859,7 +2862,7 @@ HOST_DEVICE ProbabilityBase2dType ProbabilityBase2dClass( Probabilities::Probabi
 /*
 ============================================================
 */
-HOST_DEVICE Probabilities::ProbabilityBase2d *serializeProbability2d( DataBuffer &a_buffer, DataBuffer::Mode a_mode, Probabilities::ProbabilityBase2d *a_probability2d ) {
+MCGIDI_HOST_DEVICE Probabilities::ProbabilityBase2d *serializeProbability2d( DataBuffer &a_buffer, DataBuffer::Mode a_mode, Probabilities::ProbabilityBase2d *a_probability2d ) {
 
     int type = 0;
 
@@ -3064,7 +3067,7 @@ HOST_DEVICE Probabilities::ProbabilityBase2d *serializeProbability2d( DataBuffer
 /*
 ============================================================
 */
-HOST_DEVICE ProbabilityBase3dType ProbabilityBase3dClass( Probabilities::ProbabilityBase3d *a_function ) {
+MCGIDI_HOST_DEVICE ProbabilityBase3dType ProbabilityBase3dClass( Probabilities::ProbabilityBase3d *a_function ) {
 
     if( a_function == nullptr ) return( ProbabilityBase3dType::none );
     return( a_function->type( ) );
@@ -3073,7 +3076,7 @@ HOST_DEVICE ProbabilityBase3dType ProbabilityBase3dClass( Probabilities::Probabi
 /*
 ============================================================
 */
-HOST_DEVICE Probabilities::ProbabilityBase3d *serializeProbability3d( DataBuffer &a_buffer, DataBuffer::Mode a_mode, Probabilities::ProbabilityBase3d *a_probability3d ) {
+MCGIDI_HOST_DEVICE Probabilities::ProbabilityBase3d *serializeProbability3d( DataBuffer &a_buffer, DataBuffer::Mode a_mode, Probabilities::ProbabilityBase3d *a_probability3d ) {
 
     int type = 0;
 

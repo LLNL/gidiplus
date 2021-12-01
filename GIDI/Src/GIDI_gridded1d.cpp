@@ -8,6 +8,7 @@
 */
 
 #include "GIDI.hpp"
+#include <HAPI.hpp>
 
 namespace GIDI {
 
@@ -20,16 +21,16 @@ namespace Functions {
 /* *********************************************************************************************************//**
  *
  * @param a_construction    [in]    Used to pass user options to the constructor.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed and used to construct the XYs2d.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed and used to construct the XYs2d.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-Gridded1d::Gridded1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+Gridded1d::Gridded1d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
         Function1dForm( a_construction, a_node, a_setupInfo, FormType::gridded1d, a_parent ) {
 
     Grid const *axis = dynamic_cast<Grid const *>( axes( )[0] );
-    m_grid = axis->data( );
+    m_grid = axis->data( ).vector();
 
     parseFlattened1d( a_construction, a_node.child( GIDI_arrayChars ), a_setupInfo, m_data );
 }

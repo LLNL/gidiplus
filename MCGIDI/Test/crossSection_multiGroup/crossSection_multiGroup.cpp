@@ -12,6 +12,7 @@
 #include <iomanip>
 #include <set>
 
+#include "LUPI.hpp"
 #include "MCGIDI.hpp"
 
 #include "MCGIDI_testUtilities.hpp"
@@ -109,8 +110,8 @@ int main( int argc, char **argv ) {
     for( MCGIDI_VectorSizeType i1 = 0; i1 < (MCGIDI_VectorSizeType) MCProtare->numberOfReactions( ); ++i1 ) {
         MCGIDI::Reaction const &reaction = *MCProtare->reaction( i1 );
 
-        std::cout << std::setw( 40 ) << reaction.label( ).c_str( ) << "  threshold = " << std::setw( 12 ) << reaction.crossSectionThreshold( ) <<
-                "  threshold = " << std::setw( 12 ) << reaction.crossSectionThreshold( ) << std::endl;
+        std::cout << std::setw( 40 ) << reaction.label( ).c_str( ) << "  threshold = " 
+                << LUPI::Misc::doubleToString3( "%12.6g", reaction.crossSectionThreshold( ), true ) << std::endl;
     }
     std::cout << std::endl;
 

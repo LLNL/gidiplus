@@ -58,7 +58,7 @@ void readProtare( PoPI::Database const &a_pops, GIDI::Map::Map const &a_map, GID
 
     GIDI::Protare *protare = a_map.protare( construction, a_pops, a_pid, a_tid );
 
-    std::cout << stripDirectoryBase( protare->fileName( ), "GIDI/Test" ) << std::endl;
+    std::cout << stripDirectoryBase( protare->fileName( ), "/GIDI/Test/" ) << std::endl;
     std::cout << "    projectile = " << protare->projectile( ).ID( ) << ";    target = " << protare->target( ).ID( ) << ";    evaluation = " << protare->evaluation( ) << std::endl;
 
     bool isTNSL = protare->protareType( ) == GIDI::ProtareType::TNSL;

@@ -8,6 +8,7 @@
 */
 
 #include "GIDI.hpp"
+#include <HAPI.hpp>
 
 namespace GIDI {
 
@@ -59,16 +60,16 @@ std::string const *Suite::findLabelInLineage( GIDI::Suite const &a_suite, std::s
 
 /* *********************************************************************************************************//**
  *
- * @param a_node        [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node        [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo   [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent      [in]    The parent GIDI::Suite.
  * @return
  ***********************************************************************************************************/
 
-Base::Base( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent ) : 
+Base::Base( HAPI::Node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent ) : 
         Form( a_node, a_setupInfo, FormType::style, a_parent ),
-        m_date( a_node.attribute( GIDI_dateChars ).value( ) ),
-        m_derivedStyle( a_node.attribute( GIDI_derivedFromChars ).value( ) ) {
+        m_date( a_node.attribute_as_string( GIDI_dateChars ) ),
+        m_derivedStyle( a_node.attribute_as_string( GIDI_derivedFromChars ) ) {
 }
 
 /* *********************************************************************************************************//**
@@ -125,15 +126,15 @@ std::string Base::baseXMLAttributes( WriteInfo &a_writeInfo ) const {
 
 /* *********************************************************************************************************//**
  *
- * @param a_node        [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node        [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo   [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent      [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-Evaluated::Evaluated( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent ) :
+Evaluated::Evaluated( HAPI::Node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent ) :
         Base( a_node, a_setupInfo, a_parent ),
-        m_library( a_node.attribute( GIDI_libraryChars ).value( ) ),
-        m_version( a_node.attribute( GIDI_versionChars ).value( ) ),
+        m_library( a_node.attribute_as_string( GIDI_libraryChars ) ),
+        m_version( a_node.attribute_as_string( GIDI_versionChars ) ),
         m_temperature( a_node.child( GIDI_temperatureChars ), a_setupInfo ),
         m_projectileEnergyDomain( a_node.child( GIDI_projectileEnergyDomainChars ), a_setupInfo ) {
 
@@ -167,12 +168,12 @@ void Evaluated::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent )
 
 /* *********************************************************************************************************//**
  *
- * @param a_node        [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node        [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo   [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent      [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-CrossSectionReconstructed::CrossSectionReconstructed( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent ) :
+CrossSectionReconstructed::CrossSectionReconstructed( HAPI::Node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent ) :
         Base( a_node, a_setupInfo, a_parent ) {
 }
 
@@ -209,14 +210,14 @@ PhysicalQuantity const &CrossSectionReconstructed::temperature( ) const {
 
 /* *********************************************************************************************************//**
  *
- * @param a_node        [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node        [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo   [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent      [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-CoulombPlusNuclearElasticMuCutoff::CoulombPlusNuclearElasticMuCutoff( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent ) :
+CoulombPlusNuclearElasticMuCutoff::CoulombPlusNuclearElasticMuCutoff( HAPI::Node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent ) :
         Base( a_node, a_setupInfo, a_parent ),
-        m_muCutoff( a_node.attribute( GIDI_muCutoffChars ).as_double( ) ) {
+        m_muCutoff( a_node.attribute_as_double( GIDI_muCutoffChars ) ) {
 
 }
 
@@ -256,12 +257,12 @@ void CoulombPlusNuclearElasticMuCutoff::toXMLList( WriteInfo &a_writeInfo, std::
 
 /* *********************************************************************************************************//**
  *
- * @param a_node        [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node        [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo   [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent      [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-Realization::Realization( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent ) :
+Realization::Realization( HAPI::Node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent ) :
         Base( a_node, a_setupInfo, a_parent ) {
 
 }
@@ -301,12 +302,12 @@ void Realization::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent
 
 /* *********************************************************************************************************//**
  *
- * @param a_node        [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node        [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo   [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent      [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-AverageProductData::AverageProductData( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent ) :
+AverageProductData::AverageProductData( HAPI::Node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent ) :
         Base( a_node, a_setupInfo, a_parent ) {
 
 }
@@ -344,12 +345,12 @@ void AverageProductData::toXMLList( WriteInfo &a_writeInfo, std::string const &a
 
 /* *********************************************************************************************************//**
  *
- * @param a_node        [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node        [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo   [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent      [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-TNSL::TNSL( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent ) :
+TNSL::TNSL( HAPI::Node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent ) :
         Base( a_node, a_setupInfo, a_parent ),
         m_temperature( a_node.child( GIDI_temperatureChars ), a_setupInfo ) {
 }
@@ -376,12 +377,12 @@ void TNSL::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) cons
 
 /* *********************************************************************************************************//**
  *
- * @param a_node        [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node        [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo   [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent      [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-Heated::Heated( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent ) :
+Heated::Heated( HAPI::Node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent ) :
         Base( a_node, a_setupInfo, a_parent ),
         m_temperature( a_node.child( GIDI_temperatureChars ), a_setupInfo ) {
 }
@@ -408,13 +409,13 @@ void Heated::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) co
 
 /* *********************************************************************************************************//**
  *
- * @param a_node        [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node        [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo   [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent      [in]    The parent GIDI::Suite.
  * @return
  ***********************************************************************************************************/
 
-MonteCarlo_cdf::MonteCarlo_cdf( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent ) :
+MonteCarlo_cdf::MonteCarlo_cdf( HAPI::Node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent ) :
         Base( a_node, a_setupInfo, a_parent ) {
 
 }
@@ -453,7 +454,7 @@ void MonteCarlo_cdf::toXMLList( WriteInfo &a_writeInfo, std::string const &a_ind
 /* *********************************************************************************************************//**
  *
  * @param a_construction    [in]    Used to pass user options to the constructor.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops            [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs    [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
@@ -461,10 +462,10 @@ void MonteCarlo_cdf::toXMLList( WriteInfo &a_writeInfo, std::string const &a_ind
  * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-MultiGroup::MultiGroup( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops,
-                PoPI::Database const &a_internalPoPs, GIDI::Suite *a_parent ) : 
+MultiGroup::MultiGroup( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops,
+		PoPI::Database const &a_internalPoPs, GIDI::Suite *a_parent ) : 
         Base( a_node, a_setupInfo, a_parent ),
-        m_maximumLegendreOrder( a_node.attribute( GIDI_lMaxChars ).as_int( ) ),
+        m_maximumLegendreOrder( a_node.attribute_as_int( GIDI_lMaxChars ) ),
         m_transportables( a_construction, GIDI_transportablesChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseTransportablesSuite, nullptr ) {
 
     m_transportables.setAncestor( this );
@@ -498,7 +499,7 @@ PhysicalQuantity const &MultiGroup::temperature( ) const {
  * @return                              The multi-group boundaries.
  ***********************************************************************************************************/
 
-std::vector<double> const &MultiGroup::groupBoundaries( std::string const &a_productID ) const {
+std::vector<double> const MultiGroup::groupBoundaries( std::string const &a_productID ) const {
 
     for( std::size_t index = 0; index < m_transportables.size( ); ++index ) {
         Transportable const &transportable1 = *m_transportables.get<Transportable>( index );
@@ -535,26 +536,26 @@ void MultiGroup::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent 
 /* *********************************************************************************************************//**
  *
  * @param a_construction    [in]    Used to pass user options to the constructor.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops            [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-HeatedMultiGroup::HeatedMultiGroup( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, 
+HeatedMultiGroup::HeatedMultiGroup( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, 
                 PoPI::Database const &a_pops, GIDI::Suite *a_parent ) : 
         Base( a_node, a_setupInfo, a_parent ),
         m_href( "" ),
         m_transportables( a_construction, GIDI_transportablesChars, a_node, a_setupInfo, a_pops, a_pops, parseTransportablesSuite, nullptr ),
         m_flux( a_construction, a_node.child( GIDI_fluxNodeChars ), a_setupInfo ),
         m_inverseSpeed( a_construction, a_node.child( GIDI_inverseSpeedChars ).child( GIDI_gridded1dChars ), a_setupInfo, nullptr ),
-        m_parameters( a_node.attribute( GIDI_parametersChars ).value( ) ) {
+        m_parameters( a_node.attribute_as_string( GIDI_parametersChars ) ) {
 
     m_transportables.setAncestor( this );
     m_flux.setAncestor( this );
     m_inverseSpeed.setAncestor( this );
 
-    set_href( a_node.attribute( GIDI_hrefChars ).value( ) );
+    set_href( a_node.attribute_as_string( GIDI_hrefChars ) );
 
     if( ( m_transportables.size( ) == 0 ) && ( a_setupInfo.m_multiGroup != nullptr ) ) {
         GIDI::Suite const &transportables1 = a_setupInfo.m_multiGroup->transportables( );
@@ -618,7 +619,7 @@ void HeatedMultiGroup::set_href( std::string const &a_href ) {
  * @return                              The multi-group boundaries.
  ***********************************************************************************************************/
 
-std::vector<double> const &HeatedMultiGroup::groupBoundaries( std::string const &a_productID ) const {
+std::vector<double> const HeatedMultiGroup::groupBoundaries( std::string const &a_productID ) const {
 
     Transportable const &transportable = *m_transportables.get<Transportable>( a_productID );
 
@@ -654,15 +655,15 @@ void HeatedMultiGroup::toXMLList( WriteInfo &a_writeInfo, std::string const &a_i
 
 /* *********************************************************************************************************//**
  *
- * @param a_node        [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node        [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo   [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops        [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_parent      [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-SnElasticUpScatter::SnElasticUpScatter( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, GIDI::Suite *a_parent ) :
+SnElasticUpScatter::SnElasticUpScatter( HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, GIDI::Suite *a_parent ) :
         Base( a_node, a_setupInfo, a_parent ),
-        m_upperCalculatedGroup( a_node.attribute( GIDI_upperCalculatedGroupChars ).as_int( ) ) {
+        m_upperCalculatedGroup( a_node.attribute_as_int( GIDI_upperCalculatedGroupChars ) ) {
 
 }
 
@@ -710,13 +711,13 @@ void SnElasticUpScatter::toXMLList( WriteInfo &a_writeInfo, std::string const &a
 /* *********************************************************************************************************//**
  *
  * @param a_construction    [in]    Used to pass user options to the constructor.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops            [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-GriddedCrossSection::GriddedCrossSection( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, GIDI::Suite *a_parent ) :
+GriddedCrossSection::GriddedCrossSection( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, GIDI::Suite *a_parent ) :
         Base( a_node, a_setupInfo, a_parent ),
         m_grid( a_node.child( GIDI_gridChars ), a_setupInfo, a_construction.useSystem_strtod( ) ) {
 
@@ -766,13 +767,13 @@ void GriddedCrossSection::toXMLList( WriteInfo &a_writeInfo, std::string const &
 /* *********************************************************************************************************//**
  *
  * @param a_construction    [in]    Used to pass user options to the constructor.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops            [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-URR_probabilityTables::URR_probabilityTables( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, GIDI::Suite *a_parent ) :
+URR_probabilityTables::URR_probabilityTables( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, GIDI::Suite *a_parent ) :
         Base( a_node, a_setupInfo, a_parent ) {
 
 }

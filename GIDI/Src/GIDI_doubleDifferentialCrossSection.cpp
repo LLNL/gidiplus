@@ -8,6 +8,7 @@
 */
 
 #include "GIDI.hpp"
+#include <HAPI.hpp>
 
 namespace GIDI {
 
@@ -18,13 +19,13 @@ namespace DoubleDifferentialCrossSection {
  */
 
 /* *********************************************************************************************************//**
- * @param a_node            [in]    The **pugi::xml_node** to be parsed and used to construct the Base.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed and used to construct the Base.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_type            [in]    The FormType for the DoubleDifferentialCrossSection form.
  * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-Base::Base( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, FormType a_type, Suite *a_parent ) :
+Base::Base( HAPI::Node const &a_node, SetupInfo &a_setupInfo, FormType a_type, Suite *a_parent ) :
         Form( a_node, a_setupInfo, a_type, a_parent ) {
 
 }
@@ -35,7 +36,7 @@ Base::Base( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, FormType a_typ
 
 /* *********************************************************************************************************//**
  * @param a_construction    [in]    Used to pass user options for parsing.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops            [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs    [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
@@ -43,8 +44,8 @@ Base::Base( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, FormType a_typ
  * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering( Construction::Settings const &a_construction, pugi::xml_node const &a_node,
-                SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Suite *a_parent ) :
+CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering( Construction::Settings const &a_construction, HAPI::Node const &a_node,
+		SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Suite *a_parent ) :
         Base( a_node, a_setupInfo, FormType::coherentPhotonScattering, a_parent ),
         m_formFactor( data1dParse( a_construction, a_node.child( GIDI_formFactorChars ).first_child( ), a_setupInfo, nullptr ) ),
         m_realAnomalousFactor( data1dParseAllowEmpty( a_construction, a_node.child( GIDI_realAnomalousFactorChars ).first_child( ), a_setupInfo, nullptr ) ),
@@ -68,7 +69,7 @@ CoherentPhotoAtomicScattering::~CoherentPhotoAtomicScattering( ) {
 
 /* *********************************************************************************************************//**
  * @param a_construction    [in]    Used to pass user options for parsing.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops            [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs    [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
@@ -76,8 +77,8 @@ CoherentPhotoAtomicScattering::~CoherentPhotoAtomicScattering( ) {
  * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-IncoherentPhotoAtomicScattering::IncoherentPhotoAtomicScattering( Construction::Settings const &a_construction, pugi::xml_node const &a_node,
-                SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Suite *a_parent ) :
+IncoherentPhotoAtomicScattering::IncoherentPhotoAtomicScattering( Construction::Settings const &a_construction, HAPI::Node const &a_node,
+		SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Suite *a_parent ) :
         Base( a_node, a_setupInfo, FormType::incoherentPhotonScattering, a_parent ),
         m_scatteringFunction( data1dParse( a_construction, a_node.first_child( ), a_setupInfo, nullptr ) ) {
 
@@ -99,11 +100,11 @@ namespace n_ThermalNeutronScatteringLaw {
 
 /* *********************************************************************************************************//**
  * @param a_construction    [in]    Used to pass user options for parsing.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  ***********************************************************************************************************/
 
-S_table::S_table( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo ) :
+S_table::S_table( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo ) :
         Form( a_node, a_setupInfo, FormType::generic, nullptr ),
         m_function2d( nullptr ) { // data2dParse( a_construction, a_node.first_child( ), a_setupInfo, nullptr ) ) 
 
@@ -126,7 +127,7 @@ S_table::~S_table( ) {
 
 /* *********************************************************************************************************//**
  * @param a_construction    [in]    Used to pass user options for parsing.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops            [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs    [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
@@ -134,8 +135,8 @@ S_table::~S_table( ) {
  * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-CoherentElastic::CoherentElastic( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,
-                PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Suite *a_parent ) :
+CoherentElastic::CoherentElastic( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Suite *a_parent ) :
         Base( a_node, a_setupInfo, FormType::coherentElastic, a_parent ),
         m_S_table( a_construction, a_node.child( GIDI_S_tableChars ), a_setupInfo ) {
 
@@ -155,11 +156,11 @@ CoherentElastic::~CoherentElastic( ) {
 
 /* *********************************************************************************************************//**
  * @param a_construction    [in]    Used to pass user options for parsing.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  ***********************************************************************************************************/
 
-DebyeWaller::DebyeWaller( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo ) :
+DebyeWaller::DebyeWaller( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo ) :
         Form( a_node, a_setupInfo, FormType::generic, nullptr ),
         m_function1d( data1dParse( a_construction, a_node.first_child( ), a_setupInfo, nullptr ) ) {
 
@@ -180,7 +181,7 @@ DebyeWaller::~DebyeWaller( ) {
 
 /* *********************************************************************************************************//**
  * @param a_construction    [in]    Used to pass user options for parsing.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops            [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs    [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
@@ -188,8 +189,8 @@ DebyeWaller::~DebyeWaller( ) {
  * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-IncoherentElastic::IncoherentElastic( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,
-                PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Suite *a_parent ) :
+IncoherentElastic::IncoherentElastic( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Suite *a_parent ) :
         Base( a_node, a_setupInfo, FormType::coherentElastic, a_parent ),
         m_characteristicCrossSection( a_node.child( GIDI_characteristicCrossSectionChars ), a_setupInfo ),
         m_DebyeWaller( a_construction, a_node.child( GIDI_DebyeWallerChars ), a_setupInfo ) {
@@ -211,14 +212,14 @@ IncoherentElastic::~IncoherentElastic( ) {
 
 /* *********************************************************************************************************//**
  * @param a_construction    [in]    Used to pass user options for parsing.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  ***********************************************************************************************************/
 
-Options::Options( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo ) :
+Options::Options( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo ) :
         Form( a_node, a_setupInfo, FormType::generic, nullptr ),
-        m_calculatedAtThermal( strcmp( a_node.attribute( GIDI_calculatedAtThermalChars ).value( ), GIDI_trueChars ) == 0 ),
-        m_asymmetric( strcmp( a_node.attribute( GIDI_asymmetricChars ).value( ), GIDI_trueChars ) == 0 ) {
+        m_calculatedAtThermal( strcmp( a_node.attribute_as_string( GIDI_calculatedAtThermalChars ).c_str( ), GIDI_trueChars ) == 0 ),
+        m_asymmetric( strcmp( a_node.attribute_as_string( GIDI_asymmetricChars ).c_str( ), GIDI_trueChars ) == 0 ) {
 
 }
 
@@ -235,11 +236,11 @@ Options::~Options( ) {
 
 /* *********************************************************************************************************//**
  * @param a_construction    [in]    Used to pass user options for parsing.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  ***********************************************************************************************************/
 
-T_effective::T_effective( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo ) :
+T_effective::T_effective( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo ) :
         Form( a_node, a_setupInfo, FormType::generic, nullptr ),
         m_function1d( data1dParseAllowEmpty( a_construction, a_node.first_child( ), a_setupInfo, nullptr ) ) {
 
@@ -260,11 +261,11 @@ T_effective::~T_effective( ) {
 
 /* *********************************************************************************************************//**
  * @param a_construction    [in]    Used to pass user options for parsing.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  ***********************************************************************************************************/
 
-ScatteringAtom::ScatteringAtom( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo ) :
+ScatteringAtom::ScatteringAtom( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo ) :
         Form( a_node, a_setupInfo, FormType::generic, nullptr ),
         m_mass( a_node.child( GIDI_massChars ), a_setupInfo ),
         m_freeAtomCrossSection( a_node.child( GIDI_freeAtomCrossSectionChars ), a_setupInfo ), 
@@ -293,11 +294,11 @@ ScatteringAtom::~ScatteringAtom( ) {
 
 /* *********************************************************************************************************//**
  * @param a_construction    [in]    Used to pass user options for parsing.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  ***********************************************************************************************************/
 
-S_alpha_beta::S_alpha_beta( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo ) :
+S_alpha_beta::S_alpha_beta( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo ) :
         Form( a_node, a_setupInfo, FormType::generic, nullptr ),
         m_function3d( nullptr ) { // data3dParse( a_construction, a_node.first_child( ), a_setupInfo, nullptr ) )
 
@@ -319,7 +320,7 @@ S_alpha_beta::~S_alpha_beta( ) {
 
 /* *********************************************************************************************************//**
  * @param a_construction    [in]    Used to pass user options for parsing.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops            [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs    [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
@@ -327,8 +328,8 @@ S_alpha_beta::~S_alpha_beta( ) {
  * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-IncoherentInelastic::IncoherentInelastic( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,
-                PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Suite *a_parent ) :
+IncoherentInelastic::IncoherentInelastic( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Suite *a_parent ) :
         Base( a_node, a_setupInfo, FormType::incoherentInelastic, a_parent ),
         m_options( a_construction, a_node.child( GIDI_optionsChars ), a_setupInfo ),
         m_scatteringAtoms( a_construction, GIDI_scatteringAtomsChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseScatteringAtom, nullptr ),

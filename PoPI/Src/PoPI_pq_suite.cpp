@@ -14,10 +14,10 @@ namespace PoPI {
 /*
 =========================================================
 */
-PQ_suite::PQ_suite( pugi::xml_node const &a_node ) :
+PQ_suite::PQ_suite( HAPI::Node const &a_node ) :
         m_label( a_node.name( ) ) {
 
-    for( pugi::xml_node child = a_node.first_child( ); child; child = child.next_sibling( ) ) {
+    for( HAPI::Node child = a_node.first_child( ); !child.empty( ); child = child.next_sibling( ) ) {
         std::string name( child.name( ) );
         PhysicalQuantity *quantity;
 

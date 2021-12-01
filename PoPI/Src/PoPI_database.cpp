@@ -25,7 +25,7 @@
 
 namespace PoPI {
 
-static void parseAliases( pugi::xml_node const &a_node, Database *a_DB );
+static void parseAliases( HAPI::Node const &a_node, Database *a_DB );
 
 /*
 =========================================================
@@ -53,7 +53,7 @@ Database::Database( std::string const &a_fileName ) :
 /*
 =========================================================
 */
-Database::Database( pugi::xml_node const &a_database ) :
+Database::Database( HAPI::Node const &a_database ) :
     m_gaugeBosons( PoPI_gaugeBosonsChars ),
     m_leptons( PoPI_leptonsChars ),
     m_baryons( PoPI_baryonsChars ),
@@ -73,24 +73,18 @@ void Database::addFile( std::string const &a_fileName, bool a_warnIfDuplicate ) 
 =========================================================
 */
 void Database::addFile( char const *a_fileName, bool a_warnIfDuplicate ) {
-    pugi::xml_document doc;
 
-    pugi::xml_parse_result result = doc.load_file( a_fileName );
-    if( result.status != pugi::status_ok ) {
-        char Msg[MsgSize+1];
-
-        snprintf( Msg, MsgSize, "ERROR: in file '%s' in method '%s': %s. Input file is '%s'.", __FILE__, __func__, result.description( ), a_fileName );
-        throw Exception( Msg );
-    }
-
-    pugi::xml_node database = doc.first_child( );
+    HAPI::File *doc = new HAPI::PugiXMLFile( a_fileName );
+    HAPI::Node database = doc->first_child( );
     addDatabase( database, a_warnIfDuplicate );
+    delete doc;
 }
 /*
 =========================================================
 */
 void Database::addDatabase( std::string const &a_string, bool a_warnIfDuplicate ) {
 
+    // a_string must contain a complete & well-formed XML document
     pugi::xml_document doc;
 
     pugi::xml_parse_result result = doc.load_string( a_string.c_str( ) );
@@ -101,13 +95,16 @@ void Database::addDatabase( std::string const &a_string, bool a_warnIfDuplicate 
         throw Exception( Msg );
     }
 
-    pugi::xml_node database = doc.first_child( );
+    HAPI::PugiXMLNode *database_internal = new HAPI::PugiXMLNode(doc.first_child( ));
+    HAPI::Node database(database_internal);
     addDatabase( database, a_warnIfDuplicate );
 }
 /*
 =========================================================
 */
-void Database::addDatabase( pugi::xml_node const &a_database, bool a_warnIfDuplicate ) {
+void Database::addDatabase( HAPI::Node const &a_database, bool a_warnIfDuplicate ) {
+
+    if( a_database.name( ) != PoPI_PoPsChars ) throw Exception( "Node '" + a_database.name( ) + "' is not a 'PoPs' node." );
 
     FormatVersion formatVersion( a_database.attribute( PoPI_formatChars ).value( ) );
     if( m_formatVersion.format( ) == "" ) m_formatVersion = formatVersion;
@@ -115,7 +112,7 @@ void Database::addDatabase( pugi::xml_node const &a_database, bool a_warnIfDupli
     if( m_name == "" ) m_name = a_database.attribute( PoPI_nameChars ).value( );
     if( m_version == "" ) m_version = a_database.attribute( PoPI_versionChars ).value( );
 
-    for( pugi::xml_node child = a_database.first_child( ); child; child = child.next_sibling( ) ) {
+    for( HAPI::Node child = a_database.first_child( ); !child.empty( ); child = child.next_sibling( ) ) {
         std::string s_name( child.name( ) );
 
         if(      s_name == PoPI_gaugeBosonsChars ) {
@@ -148,9 +145,9 @@ void Database::addDatabase( pugi::xml_node const &a_database, bool a_warnIfDupli
 /*
 =========================================================
 */
-static void parseAliases( pugi::xml_node const &a_node, Database *a_DB ) {
+static void parseAliases( HAPI::Node const &a_node, Database *a_DB ) {
 
-    for( pugi::xml_node child = a_node.first_child( ); child; child = child.next_sibling( ) ) {
+    for( HAPI::Node child = a_node.first_child( ); !child.empty( ); child = child.next_sibling( ) ) {
         std::string name = child.name( );
         Alias *alias = nullptr;
 

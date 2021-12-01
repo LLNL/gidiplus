@@ -4,7 +4,6 @@
     /reactionSuite/styles/evaluated[@label='eval']
     /reactionSuite/styles/averageProductData[@label='apd']
     /reactionSuite/styles/MonteCarlo_cdf[@label='MonteCarlo_cdf']
-    /reactionSuite/styles/multiGroup[@label='MultiGroup']
     /reactionSuite/styles/heated[@label='heated_000']
     /reactionSuite/styles/griddedCrossSection[@label='MonteCarlo_000']
     /reactionSuite/styles/heatedMultiGroup[@label='MultiGroup_000']

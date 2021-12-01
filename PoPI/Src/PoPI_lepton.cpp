@@ -16,7 +16,7 @@ namespace PoPI {
 /*
 =========================================================
 */
-Lepton::Lepton( pugi::xml_node const &a_node, Database *a_DB, Database *a_parent ) :
+Lepton::Lepton( HAPI::Node const &a_node, Database *a_DB, Database *a_parent ) :
         Particle( a_node, Particle_class::lepton, PoPI_leptonChars ),
         m_generation( a_node.attribute( PoPI_generationChars ).value( ) ) {
 

@@ -42,6 +42,7 @@ for i1, line1 in enumerate( lines1 ) :
     line2 = lines2[i1]
     if( line1 != line2 ) :
         if( ( ":::" in line1 ) and ( ":::" in line1 ) ) : continue
+        if( ( "/.../" in line1 ) and ( "/.../" in line1 ) ) : continue
         split1 = line1.split( "::" )
         if( len( split1 ) != 2 ) : error( )
 

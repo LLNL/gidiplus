@@ -19,10 +19,31 @@ static char const *description = "Loops over each reaction does 1 product sampli
 
 #include "MCGIDI_testUtilities.hpp"
 
+void main2( int argc, char **argv );
 /*
 =========================================================
 */
 int main( int argc, char **argv ) {
+
+    try {
+        main2( argc, argv ); }
+    catch (std::exception &exception) {
+        std::cerr << exception.what( ) << std::endl;
+        exit( EXIT_FAILURE ); }
+    catch (char const *str) {
+        std::cout << str << std::endl;
+        exit( EXIT_FAILURE ); }
+    catch (std::string &str) {
+        std::cout << str << std::endl;
+        exit( EXIT_FAILURE );
+    }
+
+    exit( EXIT_SUCCESS );
+}
+/*
+=========================================================
+*/
+void main2( int argc, char **argv ) {
 
     PoPI::Database pops( "../../../GIDI/Test/pops.xml" );
     GIDI::Protare *protare;
@@ -69,13 +90,8 @@ int main( int argc, char **argv ) {
 
     MCGIDI_test_rngSetup( seed );
 
-    try {
-        GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, photo_mode );
-        protare = (GIDI::Protare *) map.protare( construction, pops, projectileID, targetID ); }
-    catch (char const *str) {
-        std::cout << str << std::endl;
-        exit( EXIT_FAILURE );
-    }
+    GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, photo_mode );
+    protare = (GIDI::Protare *) map.protare( construction, pops, projectileID, targetID );
 
     GIDI::Styles::TemperatureInfos temperatures = protare->temperatures( );
     for( GIDI::Styles::TemperatureInfos::const_iterator iter = temperatures.begin( ); iter != temperatures.end( ); ++iter ) {
@@ -102,13 +118,7 @@ int main( int argc, char **argv ) {
     }
 
     MCGIDI::DomainHash domainHash( 4000, 1e-8, 10 );
-    MCGIDI::Protare *MCProtare;
-    try {
-        MCProtare = MCGIDI::protareFromGIDIProtare( *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude ); }
-    catch (char const *str) {
-        std::cout << str << std::endl;
-        exit( EXIT_FAILURE );
-    }
+    MCGIDI::Protare *MCProtare = MCGIDI::protareFromGIDIProtare( *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude );
 
     MCProtare->setUserParticleIndex( pops[PoPI::IDs::neutron], 0 );
     MCProtare->setUserParticleIndex( pops["H2"], 10 );

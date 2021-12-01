@@ -63,11 +63,13 @@ class Bins {
             }
         }
 
-        void accrue( double a_value, double a_weight = 0.0 ) {
+        void accrue( double a_value, double a_weight = 1.0 ) {
 
             long index;
 
-            if( m_logDomainStep ) {
+            if( a_value == m_domainMax ) {
+                index = (long) m_bins.size( ) - 1; }
+            else if( m_logDomainStep ) {
                 index = (long) ( log( a_value / m_domainMin ) / m_logDomainFraction ); }
             else {
                 index = (long) ( ( a_value - m_domainMin ) / m_domainWidth * m_bins.size( ) );

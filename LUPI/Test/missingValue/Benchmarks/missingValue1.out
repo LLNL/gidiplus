@@ -1,0 +1,160 @@
+
+    ./missingValue1
+
+    ./missingValue1 -a a1
+
+    ./missingValue1 -a a1 A1 A2
+
+    ./missingValue1 -a a1 A1 A2 A3
+        P1                              : number entered 1; number needed (1,1)
+            A1
+        P2                              : number entered 2; number needed (2,3)
+            A2
+            A3
+        --store                         : number entered 0; number needed (0,-1)
+        --as                            : number entered 0; number needed (0,-1)
+        -a                              : number entered 1; number needed (1,2)
+            a1
+
+    ./missingValue1 -a a1 A1 A2 A3 A4
+        P1                              : number entered 1; number needed (1,1)
+            A1
+        P2                              : number entered 3; number needed (2,3)
+            A2
+            A3
+            A4
+        --store                         : number entered 0; number needed (0,-1)
+        --as                            : number entered 0; number needed (0,-1)
+        -a                              : number entered 1; number needed (1,2)
+            a1
+
+    ./missingValue1 -a a1 A1 A2 A3 A4 A5
+
+    ./missingValue1 -a a1 A1 A2 A3 A4 -a a2
+        P1                              : number entered 1; number needed (1,1)
+            A1
+        P2                              : number entered 3; number needed (2,3)
+            A2
+            A3
+            A4
+        --store                         : number entered 0; number needed (0,-1)
+        --as                            : number entered 0; number needed (0,-1)
+        -a                              : number entered 2; number needed (1,2)
+            a1
+            a2
+
+    ./missingValue1 -a a1 A1 -a a2 A2 A3 A4
+        P1                              : number entered 1; number needed (1,1)
+            A1
+        P2                              : number entered 3; number needed (2,3)
+            A2
+            A3
+            A4
+        --store                         : number entered 0; number needed (0,-1)
+        --as                            : number entered 0; number needed (0,-1)
+        -a                              : number entered 2; number needed (1,2)
+            a1
+            a2
+
+    ./missingValue1 -a a1 A1 A2 A3 -a a2 A4
+
+    ./missingValue1 -a a1 A1 A2 A3 A4
+        P1                              : number entered 1; number needed (1,1)
+            A1
+        P2                              : number entered 3; number needed (2,3)
+            A2
+            A3
+            A4
+        --store                         : number entered 0; number needed (0,-1)
+        --as                            : number entered 0; number needed (0,-1)
+        -a                              : number entered 1; number needed (1,2)
+            a1
+
+    ./missingValue1 -a a1 A1 A2 A3 -a a2
+        P1                              : number entered 1; number needed (1,1)
+            A1
+        P2                              : number entered 2; number needed (2,3)
+            A2
+            A3
+        --store                         : number entered 0; number needed (0,-1)
+        --as                            : number entered 0; number needed (0,-1)
+        -a                              : number entered 2; number needed (1,2)
+            a1
+            a2
+
+    ./missingValue1 -a a1 A1 A2 A3 -a a2 -a a3
+
+    ./missingValue1 -a a1 A1 A2 A3 -a a2 -a2 a3
+
+    ./missingValue1 --as as1 -a a1 A1 --as as2 A2 A3 -a a2 --as
+
+    ./missingValue1 --as as1 -a a1 A1 --as as2 A2 A3 -a a2 --as as3 --as as4 --as as5
+        P1                              : number entered 1; number needed (1,1)
+            A1
+        P2                              : number entered 2; number needed (2,3)
+            A2
+            A3
+        --store                         : number entered 0; number needed (0,-1)
+        --as                            : number entered 5; number needed (0,-1)
+            as1
+            as2
+            as3
+            as4
+            as5
+        -a                              : number entered 2; number needed (1,2)
+            a1
+            a2
+
+    ./missingValue1 -a a1 A1 A2 A3 -a a2 --store s1
+        P1                              : number entered 1; number needed (1,1)
+            A1
+        P2                              : number entered 2; number needed (2,3)
+            A2
+            A3
+        --store                         : number entered 1; number needed (0,-1)
+            s1
+        --as                            : number entered 0; number needed (0,-1)
+        -a                              : number entered 2; number needed (1,2)
+            a1
+            a2
+
+    ./missingValue1 -a a1 A1 A2 A3 -a a2 --store s1 -s s2
+        P1                              : number entered 1; number needed (1,1)
+            A1
+        P2                              : number entered 2; number needed (2,3)
+            A2
+            A3
+        --store                         : number entered 2; number needed (0,-1)
+            s2
+        --as                            : number entered 0; number needed (0,-1)
+        -a                              : number entered 2; number needed (1,2)
+            a1
+            a2
+
+    ./missingValue1 -a a1 A1 A2 A3 -a a2 --store s1 -s s2 --store s3
+        P1                              : number entered 1; number needed (1,1)
+            A1
+        P2                              : number entered 2; number needed (2,3)
+            A2
+            A3
+        --store                         : number entered 3; number needed (0,-1)
+            s3
+        --as                            : number entered 0; number needed (0,-1)
+        -a                              : number entered 2; number needed (1,2)
+            a1
+            a2
+
+    ./missingValue1 -a a1 A1 A2 A3 -a a2 --store s1 -s s2 --store s3 -s s4
+        P1                              : number entered 1; number needed (1,1)
+            A1
+        P2                              : number entered 2; number needed (2,3)
+            A2
+            A3
+        --store                         : number entered 4; number needed (0,-1)
+            s4
+        --as                            : number entered 0; number needed (0,-1)
+        -a                              : number entered 2; number needed (1,2)
+            a1
+            a2
+
+    ./missingValue1 -a a1 A1 A2 A3 -a a2 --store s1 -s s2 --store s3 -s

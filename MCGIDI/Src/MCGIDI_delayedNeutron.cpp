@@ -19,7 +19,7 @@ namespace MCGIDI {
  * Default constructor used when broadcasting a Protare as needed by MPI or GPUs.
  ***********************************************************************************************************/
 
-HOST_DEVICE DelayedNeutron::DelayedNeutron( ) :
+MCGIDI_HOST_DEVICE DelayedNeutron::DelayedNeutron( ) :
         m_delayedNeutronIndex( -1 ),
         m_rate( 0.0 ),
         m_product( ) {
@@ -34,7 +34,7 @@ HOST_DEVICE DelayedNeutron::DelayedNeutron( ) :
  * @param a_particles           [in]    List of transporting particles and their information (e.g., multi-group boundaries and fluxes).
  ***********************************************************************************************************/
 
-HOST DelayedNeutron::DelayedNeutron( int a_index, GIDI::DelayedNeutron const *a_delayedNeutron, SetupInfo &a_setupInfo, Transporting::MC const &a_settings, GIDI::Transporting::Particles const &a_particles ) :
+MCGIDI_HOST DelayedNeutron::DelayedNeutron( int a_index, GIDI::DelayedNeutron const *a_delayedNeutron, SetupInfo &a_setupInfo, Transporting::MC const &a_settings, GIDI::Transporting::Particles const &a_particles ) :
         m_delayedNeutronIndex( a_index ),
         m_rate( 0.0 ),
         m_product( &a_delayedNeutron->product( ), a_setupInfo, a_settings, a_particles, false ) {
@@ -46,7 +46,7 @@ HOST DelayedNeutron::DelayedNeutron( int a_index, GIDI::DelayedNeutron const *a_
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE DelayedNeutron::~DelayedNeutron( ) {
+MCGIDI_HOST_DEVICE DelayedNeutron::~DelayedNeutron( ) {
 
 }
 
@@ -57,7 +57,7 @@ HOST_DEVICE DelayedNeutron::~DelayedNeutron( ) {
  * @param a_userParticleIndex   [in]    The particle id specified by the user.
  ***********************************************************************************************************/
 
-HOST void DelayedNeutron::setUserParticleIndex( int a_particleIndex, int a_userParticleIndex ) {
+MCGIDI_HOST void DelayedNeutron::setUserParticleIndex( int a_particleIndex, int a_userParticleIndex ) {
     
     m_product.setUserParticleIndex( a_particleIndex, a_userParticleIndex );
 }
@@ -70,7 +70,7 @@ HOST void DelayedNeutron::setUserParticleIndex( int a_particleIndex, int a_userP
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void DelayedNeutron::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void DelayedNeutron::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     DATA_MEMBER_INT( m_delayedNeutronIndex, a_buffer, a_mode );
     DATA_MEMBER_FLOAT( m_rate, a_buffer, a_mode );

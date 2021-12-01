@@ -8,6 +8,7 @@
 */
 
 #include "GIDI.hpp"
+#include <HAPI.hpp>
 
 namespace GIDI {
 
@@ -33,7 +34,7 @@ OutputChannel::OutputChannel( bool a_twoBody, bool a_fissions, std::string a_pro
  * Constructed from data in a <**outputChannel**> node.
  *
  * @param a_construction    [in]    Used to pass user options to the constructor.
- * @param a_node            [in]    The reaction pugi::xml_node to be parsed and used to construct the reaction.
+ * @param a_node            [in]    The reaction HAPI::Node to be parsed and used to construct the reaction.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops            [in]    The *external* PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs    [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
@@ -42,12 +43,12 @@ OutputChannel::OutputChannel( bool a_twoBody, bool a_fissions, std::string a_pro
  * @param a_isFission       [in]    Boolean indicating if output channel is a fission channel (true) or not (false).
  ***********************************************************************************************************/
 
-OutputChannel::OutputChannel( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, 
+OutputChannel::OutputChannel( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, 
                 PoPI::Database const &a_internalPoPs, Styles::Suite const *a_styles, bool a_isFission ) :
         Ancestry( a_node.name( ) ),
-        m_twoBody( std::string( a_node.attribute( GIDI_genreChars ).value( ) ) == GIDI_twoBodyChars ),
+        m_twoBody( std::string( a_node.attribute_as_string( GIDI_genreChars ) ) == GIDI_twoBodyChars ),
         m_fissions( a_isFission ),
-        m_process( std::string( a_node.attribute( GIDI_processChars ).value( ) ) ),
+        m_process( std::string( a_node.attribute_as_string( GIDI_processChars ) ) ),
         m_Q( a_construction, GIDI_QChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseQSuite, a_styles ),
         m_products( a_construction, GIDI_productsChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseProductSuite, a_styles ),
         m_fissionFragmentData( a_construction, a_node.child( GIDI_fissionFragmentDataChars ), a_setupInfo, a_pops, a_internalPoPs, a_styles ) {
@@ -77,9 +78,9 @@ int OutputChannel::depth( ) const {
     std::size_t size = m_products.size( );
 
     for( std::size_t index = 0; index < size; ++index ) {
-        Product const &_product = *m_products.get<Product>( index );
+        Product const &product = *m_products.get<Product>( index );
 
-        int productDepth = _product.depth( );
+        int productDepth = product.depth( );
         if( productDepth > _depth ) _depth = productDepth;
     }
     return( _depth + 1 );
@@ -146,9 +147,9 @@ bool OutputChannel::hasFission( ) const {
 
     std::size_t size = m_products.size( );
     for( std::size_t index = 0; index < size; ++index ) {
-        Product const &_product = *m_products.get<Product>( index );
+        Product const &product = *m_products.get<Product>( index );
 
-        if( _product.hasFission( ) ) return( true );
+        if( product.hasFission( ) ) return( true );
     }
     return( false );
 }
@@ -167,9 +168,9 @@ void OutputChannel::productIDs( std::set<std::string> &a_indices, Transporting::
     std::size_t size = m_products.size( );
 
     for( std::size_t index = 0; index < size; ++index ) {
-        Product const &_product = *m_products.get<Product>( index );
+        Product const &product = *m_products.get<Product>( index );
 
-        _product.productIDs( a_indices, a_particles, a_transportablesOnly );
+        product.productIDs( a_indices, a_particles, a_transportablesOnly );
     }
 
     m_fissionFragmentData.productIDs( a_indices, a_particles, a_transportablesOnly );
@@ -218,8 +219,8 @@ int OutputChannel::maximumLegendreOrder( Transporting::MG const &a_settings, Sty
     int _maximumLegendreOrder = -1;
 
     for( std::size_t index = 0; index < size; ++index ) {
-        Product const &_product = *m_products.get<Product>( index );
-        int r_maximumLegendreOrder = _product.maximumLegendreOrder( a_settings, a_temperatureInfo, a_productID );
+        Product const &product = *m_products.get<Product>( index );
+        int r_maximumLegendreOrder = product.maximumLegendreOrder( a_settings, a_temperatureInfo, a_productID );
 
         if( r_maximumLegendreOrder > _maximumLegendreOrder ) _maximumLegendreOrder = r_maximumLegendreOrder;
     }
@@ -246,9 +247,9 @@ Vector OutputChannel::multiGroupMultiplicity( Transporting::MG const &a_settings
     Vector vector( 0 );
 
     for( std::size_t index = 0; index < m_products.size( ); ++index ) {
-        Product const &_product = *m_products.get<Product>( index );
+        Product const &product = *m_products.get<Product>( index );
 
-        vector += _product.multiGroupMultiplicity( a_settings, a_temperatureInfo, a_productID );
+        vector += product.multiGroupMultiplicity( a_settings, a_temperatureInfo, a_productID );
     }
 
     vector += m_fissionFragmentData.multiGroupMultiplicity( a_settings, a_temperatureInfo, a_productID );
@@ -307,9 +308,9 @@ Matrix OutputChannel::multiGroupProductMatrix( Transporting::MG const &a_setting
     Matrix matrix( 0, 0 );
 
     for( std::size_t index = 0; index < m_products.size( ); ++index ) {
-        Product const &_product = *m_products.get<Product>( index );
+        Product const &product = *m_products.get<Product>( index );
 
-        matrix += _product.multiGroupProductMatrix( a_settings, a_temperatureInfo, a_particles, a_productID, a_order );
+        matrix += product.multiGroupProductMatrix( a_settings, a_temperatureInfo, a_particles, a_productID, a_order );
     }
 
     matrix += m_fissionFragmentData.multiGroupProductMatrix( a_settings, a_temperatureInfo, a_particles, a_productID, a_order ); 
@@ -332,9 +333,9 @@ Vector OutputChannel::multiGroupAverageEnergy( Transporting::MG const &a_setting
     Vector vector( 0 );
 
     for( std::size_t index = 0; index < m_products.size( ); ++index ) {
-        Product const &_product = *m_products.get<Product>( index );
+        Product const &product = *m_products.get<Product>( index );
 
-        vector += _product.multiGroupAverageEnergy( a_settings, a_temperatureInfo, a_productID );
+        vector += product.multiGroupAverageEnergy( a_settings, a_temperatureInfo, a_productID );
     }
 
     vector += m_fissionFragmentData.multiGroupAverageEnergy( a_settings, a_temperatureInfo, a_productID ); 
@@ -357,14 +358,32 @@ Vector OutputChannel::multiGroupAverageMomentum( Transporting::MG const &a_setti
     Vector vector( 0 );
 
     for( std::size_t index = 0; index < m_products.size( ); ++index ) {
-        Product const &_product = *m_products.get<Product>( index );
+        Product const &product = *m_products.get<Product>( index );
 
-        vector += _product.multiGroupAverageMomentum( a_settings, a_temperatureInfo, a_productID );
+        vector += product.multiGroupAverageMomentum( a_settings, a_temperatureInfo, a_productID );
     }
 
     vector += m_fissionFragmentData.multiGroupAverageMomentum( a_settings, a_temperatureInfo, a_productID ); 
 
     return( vector );
+}
+
+/* *********************************************************************************************************//**
+ * Loops over the instances in **m_products** calling their **incompleteParticles** methods and calls the :**incompleteParticles** method
+ * for the **m_fissionFragmentData** member.
+ *
+ * @param       a_incompleteParticles   [out]   The list of particles whose **completeParticle** method returns *false*.
+ ***********************************************************************************************************/
+
+void OutputChannel::incompleteParticles( Transporting::Settings const &a_settings, std::set<std::string> &a_incompleteParticles ) const {
+
+    for( std::size_t index = 0; index < m_products.size( ); ++index ) {
+        Product const &product = *m_products.get<Product>( index );
+
+        product.incompleteParticles( a_settings, a_incompleteParticles );
+    }
+
+    m_fissionFragmentData.incompleteParticles( a_settings, a_incompleteParticles );
 }
 
 /* *********************************************************************************************************//**

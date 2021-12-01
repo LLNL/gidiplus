@@ -7,12 +7,14 @@ SHELL = /bin/ksh
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
+COMPILE_UTILITIES = 1
 GIDI_PLUS_PATH ?= $(abspath ../../..)
+
 CppSources = $(sort $(wildcard *.cpp))
 CppObjs = $(CppSources:.cpp=.o)
 Archive = libGIDI_testUtilities.a
 
-include ../../Makefile.paths
+include $(GIDI_PLUS_PATH)/Makefile.paths
 include ../Makefile.check
 
 default:

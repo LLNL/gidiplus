@@ -8,12 +8,13 @@
 */
 
 #include "GIDI.hpp"
+#include <HAPI.hpp>
 
 namespace GIDI {
 
 namespace Functions {
 
-static ResonanceBackgroundRegion1d *resonanceBackground1dParse( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+static ResonanceBackgroundRegion1d *resonanceBackground1dParse( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
 
 /*! \class ResonancesWithBackground1d
  * Class for the GNDS <**resonancesWithBackground**> node.
@@ -21,17 +22,31 @@ static ResonanceBackgroundRegion1d *resonanceBackground1dParse( Construction::Se
 
 /* *********************************************************************************************************//**
  * @param a_construction    [in]    Used to pass user options to the constructor.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent          [in]     The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-ResonancesWithBackground1d::ResonancesWithBackground1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, 
+ResonancesWithBackground1d::ResonancesWithBackground1d( Construction::Settings const &a_construction, HAPI::Node const &a_node, 
                 SetupInfo &a_setupInfo, Suite *a_parent ) :
         Function1dForm( a_construction, a_node, a_setupInfo, FormType::resonancesWithBackground1d, a_parent ),
-        m_resonances( a_node.child( GIDI_resonancesChars ).attribute( GIDI_hrefChars ).value( ) ),
+        m_resonances( a_node.child( GIDI_resonancesChars ).attribute_as_string( GIDI_hrefChars ) ),
         m_background( a_construction, a_node.child( GIDI_resonanceBackground1dChars ), a_setupInfo, nullptr ) {
 
+    for( HAPI::Node child = a_node.first_child( ); !child.empty( ); child.to_next_sibling( ) ) {
+        std::string name( child.name( ) );
+
+        if( name == "resonanceRegion" ) {
+            m_resonances = a_node.attribute_as_string( "href" ); }
+        else {
+          /*
+            if( m_background != NULL ) {
+                throw new std::runtime_error("Oops");
+            }
+            m_background = data1dParse( child, NULL );
+           */
+        }
+    }
 }
 
 /* *********************************************************************************************************//**
@@ -71,12 +86,12 @@ void ResonancesWithBackground1d::toXMLList_func( WriteInfo &a_writeInfo, std::st
 
 /* *********************************************************************************************************//**
  * @param a_construction    [in]    Used to pass user options to the constructor.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent          [in]     The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-ResonanceBackground1d::ResonanceBackground1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,   
+ResonanceBackground1d::ResonanceBackground1d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo,   
                 Suite *a_parent ) :
         Function1dForm( a_construction, a_node, a_setupInfo, FormType::resonanceBackground1d, a_parent ),
         m_resolvedRegion( resonanceBackground1dParse( a_construction, a_node.child( GIDI_resolvedRegionChars ), a_setupInfo, nullptr ) ),
@@ -158,13 +173,13 @@ void ResonanceBackground1d::toXMLList_func( WriteInfo &a_writeInfo, std::string 
 
 /* *********************************************************************************************************//**
  * @param a_construction    [in]    Used to pass user options to the constructor.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-ResonanceBackgroundRegion1d::ResonanceBackgroundRegion1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, 
-                SetupInfo &a_setupInfo, Suite *a_parent ) :
+ResonanceBackgroundRegion1d::ResonanceBackgroundRegion1d( Construction::Settings const &a_construction, HAPI::Node const &a_node,
+		SetupInfo &a_setupInfo, Suite *a_parent ) :
         Function1dForm( a_construction, a_node, a_setupInfo, FormType::resonanceBackgroundRegion1d, a_parent ),
         m_function1d( data1dParse( a_construction, a_node.first_child( ), a_setupInfo, nullptr ) ) {
 
@@ -237,15 +252,15 @@ void ResonanceBackgroundRegion1d::toXMLList_func( WriteInfo &a_writeInfo, std::s
  * Function that parses a node one-d function node. Called from a Suite::parse instance.
  *
  * @param a_construction    [in]    Used to pass user options to the constructor.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent          [in]    The parent GIDI::Suite that the returned Form will be added to.
  *
  * @return                          The parsed and constructed resonanceBackground region instance.
  ***********************************************************************************************************/
 
-static ResonanceBackgroundRegion1d *resonanceBackground1dParse( Construction::Settings const &a_construction, pugi::xml_node const &a_node, 
-                SetupInfo &a_setupInfo, Suite *a_parent ) {
+static ResonanceBackgroundRegion1d *resonanceBackground1dParse( Construction::Settings const &a_construction, HAPI::Node const &a_node,
+		SetupInfo &a_setupInfo, Suite *a_parent ) {
 
     std::string name( a_node.name( ) );
 

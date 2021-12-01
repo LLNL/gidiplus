@@ -21,7 +21,7 @@ namespace PoPI {
 /*
 =========================================================
 */
-Particle::Particle( pugi::xml_node const &a_node, Particle_class a_class, std::string const &a_family, int a_hasNucleus ) :
+Particle::Particle( HAPI::Node const &a_node, Particle_class a_class, std::string const &a_family, int a_hasNucleus ) :
         IDBase( a_node, a_class ),
         m_family( a_family ),
         m_hasNucleus( a_hasNucleus ),

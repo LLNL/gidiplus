@@ -3,16 +3,18 @@ label = MultiGroup_000  temperature = 0
 MCGIDI temperatures:
     0
 
-                                 n + O15  threshold =      15.6638  threshold =      15.6638
-                                H1 + N15  threshold =      12.1275  threshold =      12.1275
-                   O + photon [coherent]  threshold =            0  threshold =            0
-                 O + photon [incoherent]  threshold =            0  threshold =            0
-                 e- + O [photo-electric]  threshold =            0  threshold =            0
-O + photon [pair production: electron field]  threshold =        1.022  threshold =        1.022
+                                 n + O15  threshold =      15.6638
+                                H1 + N15  threshold =      12.1275
+            sumOfRemainingOutputChannels  threshold =       7.1619
+                   O + photon [coherent]  threshold =            0
+                 O + photon [incoherent]  threshold =            0
+                 e- + O [photo-electric]  threshold =            0
+O + photon [pair production: electron field]  threshold =        1.022
 
 List of reactions
     reaction: n + O15
     reaction: H1 + N15
+    reaction: sumOfRemainingOutputChannels
     reaction: O + photon [coherent]
     reaction: O + photon [incoherent]
     reaction: e- + O [photo-electric]
@@ -185,8 +187,8 @@ temperature = 1e-08
     energy =          8.06386 index =     34   crossSection = 0.603765
     energy =          9.67663 index =     36   crossSection = 0.55439
     energy =           11.612 index =     37   crossSection = 0.533918
-    energy =          13.9344 index =     39   crossSection = 0.487108
-    energy =          16.7212 index =     39   crossSection = 0.487108
+    energy =          13.9344 index =     39   crossSection = 0.487487
+    energy =          16.7212 index =     39   crossSection = 0.487487
 temperature = 1.01e-07
     energy =            1e-12 index =      0   crossSection = 3.24158
     energy =          1.2e-12 index =      0   crossSection = 3.24158
@@ -354,8 +356,8 @@ temperature = 1.01e-07
     energy =          8.06386 index =     34   crossSection = 0.603765
     energy =          9.67663 index =     36   crossSection = 0.55439
     energy =           11.612 index =     37   crossSection = 0.533918
-    energy =          13.9344 index =     39   crossSection = 0.487108
-    energy =          16.7212 index =     39   crossSection = 0.487108
+    energy =          13.9344 index =     39   crossSection = 0.487487
+    energy =          16.7212 index =     39   crossSection = 0.487487
 temperature = 1.0201e-06
     energy =            1e-12 index =      0   crossSection = 3.24158
     energy =          1.2e-12 index =      0   crossSection = 3.24158
@@ -523,8 +525,8 @@ temperature = 1.0201e-06
     energy =          8.06386 index =     34   crossSection = 0.603765
     energy =          9.67663 index =     36   crossSection = 0.55439
     energy =           11.612 index =     37   crossSection = 0.533918
-    energy =          13.9344 index =     39   crossSection = 0.487108
-    energy =          16.7212 index =     39   crossSection = 0.487108
+    energy =          13.9344 index =     39   crossSection = 0.487487
+    energy =          16.7212 index =     39   crossSection = 0.487487
 temperature = 1.0303e-05
     energy =            1e-12 index =      0   crossSection = 3.24158
     energy =          1.2e-12 index =      0   crossSection = 3.24158
@@ -692,8 +694,8 @@ temperature = 1.0303e-05
     energy =          8.06386 index =     34   crossSection = 0.603765
     energy =          9.67663 index =     36   crossSection = 0.55439
     energy =           11.612 index =     37   crossSection = 0.533918
-    energy =          13.9344 index =     39   crossSection = 0.487108
-    energy =          16.7212 index =     39   crossSection = 0.487108
+    energy =          13.9344 index =     39   crossSection = 0.487487
+    energy =          16.7212 index =     39   crossSection = 0.487487
 temperature = 0.00010406
     energy =            1e-12 index =      0   crossSection = 3.24158
     energy =          1.2e-12 index =      0   crossSection = 3.24158
@@ -861,8 +863,8 @@ temperature = 0.00010406
     energy =          8.06386 index =     34   crossSection = 0.603765
     energy =          9.67663 index =     36   crossSection = 0.55439
     energy =           11.612 index =     37   crossSection = 0.533918
-    energy =          13.9344 index =     39   crossSection = 0.487108
-    energy =          16.7212 index =     39   crossSection = 0.487108
+    energy =          13.9344 index =     39   crossSection = 0.487487
+    energy =          16.7212 index =     39   crossSection = 0.487487
 temperature = 0.00105101
     energy =            1e-12 index =      0   crossSection = 3.24158
     energy =          1.2e-12 index =      0   crossSection = 3.24158
@@ -1030,5 +1032,5 @@ temperature = 0.00105101
     energy =          8.06386 index =     34   crossSection = 0.603765
     energy =          9.67663 index =     36   crossSection = 0.55439
     energy =           11.612 index =     37   crossSection = 0.533918
-    energy =          13.9344 index =     39   crossSection = 0.487108
-    energy =          16.7212 index =     39   crossSection = 0.487108
+    energy =          13.9344 index =     39   crossSection = 0.487487
+    energy =          16.7212 index =     39   crossSection = 0.487487

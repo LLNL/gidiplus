@@ -16,7 +16,7 @@ namespace Sampling {
 /*
 =========================================================
 */
-HOST_DEVICE ClientRandomNumberGenerator::ClientRandomNumberGenerator( double (*a_generator)( void * ), void *a_state ) :
+MCGIDI_HOST_DEVICE ClientRandomNumberGenerator::ClientRandomNumberGenerator( double (*a_generator)( void * ), void *a_state ) :
         m_generator( a_generator ),
         m_state( a_state ) {
 }
@@ -24,14 +24,14 @@ HOST_DEVICE ClientRandomNumberGenerator::ClientRandomNumberGenerator( double (*a
 /*
 =========================================================
 */
-HOST_DEVICE ClientCodeRNGData::ClientCodeRNGData( double (*a_generator)( void * ), void *a_state ) :
+MCGIDI_HOST_DEVICE ClientCodeRNGData::ClientCodeRNGData( double (*a_generator)( void * ), void *a_state ) :
         ClientRandomNumberGenerator( a_generator, a_state ) {
 }
 
 /*
 =========================================================
 */
-HOST_DEVICE Input::Input( bool a_wantVelocity, Upscatter::Model a_upscatterModel ) :
+MCGIDI_HOST_DEVICE Input::Input( bool a_wantVelocity, Upscatter::Model a_upscatterModel ) :
         m_wantVelocity( a_wantVelocity ),
         m_upscatterModel( a_upscatterModel ),
 
@@ -62,7 +62,7 @@ HOST_DEVICE Input::Input( bool a_wantVelocity, Upscatter::Model a_upscatterModel
 ========================= ProductHandler ===================
 ============================================================
 */
-HOST_DEVICE void ProductHandler::add( double a_projectileEnergy, int a_productIndex, int a_userProductIndex, double a_productMass, Input &a_input, 
+MCGIDI_HOST_DEVICE void ProductHandler::add( double a_projectileEnergy, int a_productIndex, int a_userProductIndex, double a_productMass, Input &a_input, 
                 double (*a_userrng)( void * ), void *a_rngState, bool a_isPhoton ) {
 
     Product product;

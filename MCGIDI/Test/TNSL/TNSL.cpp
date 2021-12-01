@@ -12,6 +12,7 @@
 #include <iomanip>
 #include <set>
 
+#include "LUPI.hpp"
 #include "MCGIDI.hpp"
 
 #include "GIDI_testUtilities.hpp"
@@ -116,7 +117,7 @@ void main2( int argc, char **argv ) {
         MCGIDI::Reaction const &reaction = *(MCProtare->reaction( i1 ));
 
         std::cout << "    reaction: " << std::left << std::setw( 40 ) << reaction.label( ).c_str( ) << ":  final Q = " << reaction.finalQ( 0 ) << " threshold = " 
-                  << reaction.crossSectionThreshold( ) << std::endl;
+                  << LUPI::Misc::doubleToString3( "%.6g", reaction.crossSectionThreshold( ), true ) << std::endl;
     }
 
     std::vector<double> temperatures2;

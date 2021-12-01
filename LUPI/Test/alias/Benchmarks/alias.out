@@ -1,0 +1,64 @@
+
+    ./alias
+    --true option: number entered 0,   value = 0
+    --false option: number entered 0,   value = 1
+    --veryVeryLongCounterNameVeryVeryLong option: number entered 0,   counts = 0
+    --store option: number entered 0,   value = ''
+    --pops option: number entered 0
+         
+
+    ./alias --true -t -y -yes --yeap
+    --true option: number entered 5,   value = 1
+    --false option: number entered 0,   value = 1
+    --veryVeryLongCounterNameVeryVeryLong option: number entered 0,   counts = 0
+    --store option: number entered 0,   value = ''
+    --pops option: number entered 0
+         
+
+    ./alias --false --false
+    --true option: number entered 0,   value = 0
+    --false option: number entered 2,   value = 0
+    --veryVeryLongCounterNameVeryVeryLong option: number entered 0,   counts = 0
+    --store option: number entered 0,   value = ''
+    --pops option: number entered 0
+         
+
+    ./alias --veryVeryLongCounterNameVeryVeryLong
+    --true option: number entered 0,   value = 0
+    --false option: number entered 0,   value = 1
+    --veryVeryLongCounterNameVeryVeryLong option: number entered 1,   counts = 1
+    --store option: number entered 0,   value = ''
+    --pops option: number entered 0
+         
+
+    ./alias -v -v -v -v -v --veryVeryLongCounterNameVeryVeryLong -v -v
+    --true option: number entered 0,   value = 0
+    --false option: number entered 0,   value = 1
+    --veryVeryLongCounterNameVeryVeryLong option: number entered 8,   counts = 8
+    --store option: number entered 0,   value = ''
+    --pops option: number entered 0
+         
+
+    ./alias --store S1
+    --true option: number entered 0,   value = 0
+    --false option: number entered 0,   value = 1
+    --veryVeryLongCounterNameVeryVeryLong option: number entered 0,   counts = 0
+    --store option: number entered 1,   value = 'S1'
+    --pops option: number entered 0
+         
+
+    ./alias --store S1 --store s1
+    --true option: number entered 0,   value = 0
+    --false option: number entered 0,   value = 1
+    --veryVeryLongCounterNameVeryVeryLong option: number entered 0,   counts = 0
+    --store option: number entered 2,   value = 's1'
+    --pops option: number entered 0
+         
+
+    ./alias --pops p1.xml -p p2.xml --pop p3.xml
+    --true option: number entered 0,   value = 0
+    --false option: number entered 0,   value = 1
+    --veryVeryLongCounterNameVeryVeryLong option: number entered 0,   counts = 0
+    --store option: number entered 0,   value = ''
+    --pops option: number entered 3
+          'p1.xml' 'p2.xml' 'p3.xml'

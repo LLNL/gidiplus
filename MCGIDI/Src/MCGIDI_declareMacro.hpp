@@ -13,10 +13,10 @@
 #define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
 
 #ifdef __CUDACC__
-    #define HOST __host__
-    #define DEVICE __device__
-    #define HOST_DEVICE __host__ __device__
-    #define THROW(arg) printf(arg)
+    #define MCGIDI_HOST __host__
+    #define MCGIDI_DEVICE __device__
+    #define MCGIDI_HOST_DEVICE __host__ __device__
+    #define MCGIDI_THROW(arg) printf("%s", arg)
 inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=true)
 {
    if (code != cudaSuccess) 
@@ -27,22 +27,22 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=t
 }
 
 #elif HAVE_OPENMP_TARGET
-//    #define HOST_DEVICE _Pragma( "omp declare target" )
-//    #define HOST_DEVICE_END _Pragma("omp end declare target")
-    //#define HOST_DEVICE #pragma omp declare target
-    //#define HOST_DEVICE_END #pragma omp end declare target
-    //#define DEVICE #pragma omp declare target 
-    //#define DEVICE_END #pragma omp end declare target
-    #define HOST 
-    #define DEVICE 
-    #define HOST_DEVICE 
-    #define THROW(arg) printf(arg)
+//    #define MCGIDI_HOST_DEVICE _Pragma( "omp declare target" )
+//    #define MCGIDI_HOST_DEVICE_END _Pragma("omp end declare target")
+    //#define MCGIDI_HOST_DEVICE #pragma omp declare target
+    //#define MCGIDI_HOST_DEVICE_END #pragma omp end declare target
+    //#define MCGIDI_DEVICE #pragma omp declare target 
+    //#define MCGIDI_DEVICE_END #pragma omp end declare target
+    #define MCGIDI_HOST 
+    #define MCGIDI_DEVICE 
+    #define MCGIDI_HOST_DEVICE 
+    #define MCGIDI_THROW(arg) printf("%s", arg)
 inline void gpuAssert(int code, const char *file, int line, bool abort=true) {}
 #else
-    #define HOST
-    #define DEVICE 
-    #define HOST_DEVICE
-    #define THROW(arg) throw arg
+    #define MCGIDI_HOST
+    #define MCGIDI_DEVICE 
+    #define MCGIDI_HOST_DEVICE
+    #define MCGIDI_THROW(arg) throw arg
 inline void gpuAssert(int code, const char *file, int line, bool abort=true) {}
 #endif
 

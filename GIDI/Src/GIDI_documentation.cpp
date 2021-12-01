@@ -30,13 +30,13 @@ Suite::Suite( ) :
 /* *********************************************************************************************************//**
  * Parse a GNDS 1.10 documentations node.
  *
- * @param a_node        [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node        [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo   [in]    Information create my the Protare constructor to help in parsing.
  ***********************************************************************************************************/
 
-void Suite::parse( pugi::xml_node const &a_node, SetupInfo &a_setupInfo ) {
+void Suite::parse( HAPI::Node const &a_node, SetupInfo &a_setupInfo ) {
 
-    for( pugi::xml_node child = a_node.first_child( ); child; child = child.next_sibling( ) ) {
+    for( HAPI::Node child = a_node.first_child( ); !child.empty( ); child.to_next_sibling( ) ) {
         add( new Documentation( child, a_setupInfo, this ) );
     }
 }
@@ -46,16 +46,16 @@ void Suite::parse( pugi::xml_node const &a_node, SetupInfo &a_setupInfo ) {
 
 /* *********************************************************************************************************//**
  *
- * @param a_node        [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node        [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo   [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent      [in]    The parent GIDI::Suite.
  * @return
  ***********************************************************************************************************/
 
-Documentation::Documentation( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent ) :
-        Form( GIDI_documentation_1_10_Chars, FormType::generic, a_node.attribute( GIDI_nameChars ).value() ) {
+Documentation::Documentation( HAPI::Node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent ) :
+        Form( GIDI_documentation_1_10_Chars, FormType::generic, a_node.attribute_as_string( GIDI_nameChars ) ) {
 
-    m_label = a_node.attribute( GIDI_nameChars ).value();
+    m_label = a_node.attribute_as_string( GIDI_nameChars );
     m_text = std::string( a_node.text().get() );
 }
 

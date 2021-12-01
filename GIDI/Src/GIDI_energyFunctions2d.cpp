@@ -8,6 +8,7 @@
 */
 
 #include "GIDI.hpp"
+#include <HAPI.hpp>
 
 namespace GIDI {
 
@@ -20,12 +21,12 @@ namespace Functions {
 /* *********************************************************************************************************//**
  *
  * @param a_construction    [in]    Used to pass user options for parsing.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed to construct a GeneralEvaporation2d instance.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed to construct a GeneralEvaporation2d instance.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-GeneralEvaporation2d::GeneralEvaporation2d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+GeneralEvaporation2d::GeneralEvaporation2d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
         Function2dForm( a_construction, a_node, a_setupInfo, FormType::generalEvaporation2d, a_parent ),
         m_U( a_node.child( GIDI_UChars ), a_setupInfo ),
         m_theta( data1dParse( a_construction, a_node.child( GIDI_thetaChars ).first_child( ), a_setupInfo, nullptr ) ),
@@ -107,13 +108,13 @@ void GeneralEvaporation2d::toXMLList_func( WriteInfo &a_writeInfo, std::string c
 /* *********************************************************************************************************//**
  *
  * @param a_construction    [in]    Used to pass user options for parsing.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed to construct a SimpleMaxwellianFission2d instance.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed to construct a SimpleMaxwellianFission2d instance.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
  
-SimpleMaxwellianFission2d::SimpleMaxwellianFission2d( Construction::Settings const &a_construction, pugi::xml_node const &a_node,
-                SetupInfo &a_setupInfo, Suite *a_parent ) :
+SimpleMaxwellianFission2d::SimpleMaxwellianFission2d( Construction::Settings const &a_construction, HAPI::Node const &a_node,
+		SetupInfo &a_setupInfo, Suite *a_parent ) :
         Function2dForm( a_construction, a_node, a_setupInfo, FormType::simpleMaxwellianFission2d, a_parent ),
         m_U( a_node.child( GIDI_UChars ), a_setupInfo ),
         m_theta( data1dParse( a_construction, a_node.child( GIDI_thetaChars ).first_child( ), a_setupInfo, nullptr ) ) {
@@ -192,12 +193,12 @@ void SimpleMaxwellianFission2d::toXMLList_func( WriteInfo &a_writeInfo, std::str
 /* *********************************************************************************************************//**
  *
  * @param a_construction        [in]    Used to pass user options for parsing.
- * @param a_node                [in]    The **pugi::xml_node** to be parsed to construct a Evaporation2d instance.
+ * @param a_node                [in]    The **HAPI::Node** to be parsed to construct a Evaporation2d instance.
  * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent              [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
  
-Evaporation2d::Evaporation2d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+Evaporation2d::Evaporation2d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
         Function2dForm( a_construction, a_node, a_setupInfo, FormType::evaporation2d, a_parent ),
         m_U( a_node.child( GIDI_UChars ), a_setupInfo ),
         m_theta( data1dParse( a_construction, a_node.child( GIDI_thetaChars ).first_child( ), a_setupInfo, nullptr ) ) {
@@ -276,12 +277,12 @@ void Evaporation2d::toXMLList_func( WriteInfo &a_writeInfo, std::string const &a
 /* *********************************************************************************************************//**
  *
  * @param a_construction        [in]    Used to pass user options for parsing.
- * @param a_node                [in]    The **pugi::xml_node** to be parsed to construct a Watt2d instance.
+ * @param a_node                [in]    The **HAPI::Node** to be parsed to construct a Watt2d instance.
  * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent              [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
  
-Watt2d::Watt2d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+Watt2d::Watt2d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
         Function2dForm( a_construction, a_node, a_setupInfo, FormType::Watt2d, a_parent ),
         m_U( a_node.child( GIDI_UChars ), a_setupInfo ),
         m_a( data1dParse( a_construction, a_node.child( GIDI_aChars ).first_child( ), a_setupInfo, nullptr ) ),
@@ -363,12 +364,12 @@ void Watt2d::toXMLList_func( WriteInfo &a_writeInfo, std::string const &a_indent
 /* *********************************************************************************************************//**
  *
  * @param a_construction        [in]    Used to pass user options for parsing.
- * @param a_node                [in]    The **pugi::xml_node** to be parsed to construct a MadlandNix2d instance.
+ * @param a_node                [in]    The **HAPI::Node** to be parsed to construct a MadlandNix2d instance.
  * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent              [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-MadlandNix2d::MadlandNix2d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+MadlandNix2d::MadlandNix2d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
         Function2dForm( a_construction, a_node, a_setupInfo, FormType::MadlandNix2d, a_parent ),
         m_EFL( a_node.child( GIDI_EFL_Chars ), a_setupInfo ),
         m_EFH( a_node.child( GIDI_EFH_Chars ), a_setupInfo ),
@@ -449,18 +450,18 @@ void MadlandNix2d::toXMLList_func( WriteInfo &a_writeInfo, std::string const &a_
 /* *********************************************************************************************************//**
  *
  * @param a_construction        [in]    Used to pass user options for parsing.
- * @param a_node                [in]    The **pugi::xml_node** to be parsed to construct a Weighted_function2d instance.
+ * @param a_node                [in]    The **HAPI::Node** to be parsed to construct a Weighted_function2d instance.
  * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent              [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-Weighted_function2d::Weighted_function2d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+Weighted_function2d::Weighted_function2d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
         Function2dForm( a_construction, a_node, a_setupInfo, FormType::weighted_function2d, a_parent ) {
 
-    pugi::xml_node child = a_node.first_child( );
+    HAPI::Node child = a_node.first_child( );
     m_weight = data1dParse( a_construction, child, a_setupInfo, nullptr );
 
-    child = child.next_sibling( );
+    child.to_next_sibling( );
     m_energy = data2dParse( a_construction, child, a_setupInfo, nullptr );
 }
 
@@ -516,16 +517,16 @@ double Weighted_function2d::evaluate( double a_x2, double a_x1 ) const {
 /* *********************************************************************************************************//**
  *
  * @param a_construction        [in]    Used to pass user options for parsing.
- * @param a_node                [in]    The **pugi::xml_node** to be parsed to construct a WeightedFunctionals2d instance.
+ * @param a_node                [in]    The **HAPI::Node** to be parsed to construct a WeightedFunctionals2d instance.
  * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent              [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-WeightedFunctionals2d::WeightedFunctionals2d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,
-                Suite *a_parent ) :
+WeightedFunctionals2d::WeightedFunctionals2d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+		Suite *a_parent ) :
         Function2dForm( a_construction, a_node, a_setupInfo, FormType::weightedFunctionals2d, a_parent ) {
 
-    for( pugi::xml_node child = a_node.first_child( ); child; child = child.next_sibling( ) ) {
+    for( HAPI::Node child = a_node.first_child( ); !child.empty( ); child.to_next_sibling( ) ) {
         std::string name( child.name( ) );
 
         if( name != GIDI_weightedChars ) throw Exception( "WeightedFunctionals2d::WeightedFunctionals2d: bad child." );
@@ -599,12 +600,12 @@ double WeightedFunctionals2d::evaluate( double a_x2, double a_x1 ) const {
 /* *********************************************************************************************************//**
  *
  * @param a_construction        [in]    Used to pass user options for parsing.
- * @param a_node                [in]    The **pugi::xml_node** to be parsed to construct a NBodyPhaseSpace2d instance.
+ * @param a_node                [in]    The **HAPI::Node** to be parsed to construct a NBodyPhaseSpace2d instance.
  * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent              [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-NBodyPhaseSpace2d::NBodyPhaseSpace2d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+NBodyPhaseSpace2d::NBodyPhaseSpace2d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
         Function2dForm( a_construction, a_node, a_setupInfo, FormType::NBodyPhaseSpace2d, a_parent ),
         m_numberOfProducts( a_node.attribute( GIDI_numberOfProductsChars ).as_int( ) ),
         m_mass( a_node.child( GIDI_massChars ), a_setupInfo ) {

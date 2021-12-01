@@ -10,6 +10,7 @@
 #include <stdlib.h>
 
 #include "GIDI.hpp"
+#include <HAPI.hpp>
 
 namespace GIDI {
 
@@ -33,15 +34,17 @@ Legendre1d::Legendre1d( Axes const &a_axes, int a_index, double a_outerDomainVal
 /* *********************************************************************************************************//**
  *
  * @param a_construction    [in]    Used to pass user options for parsing.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed and used to construct the XYs2d.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed and used to construct the XYs2d.
  * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-Legendre1d::Legendre1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+Legendre1d::Legendre1d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
         Function1dForm( a_construction, a_node, a_setupInfo, FormType::Legendre1d, a_parent ) {
 
-    parseValuesOfDoubles( a_construction, a_node.child( GIDI_valuesChars ), a_setupInfo, m_coefficients );
+  nf_Buffer<double> coeff;
+    parseValuesOfDoubles( a_construction, a_node.child( GIDI_valuesChars ), a_setupInfo, coeff );
+    m_coefficients = coeff.vector();
 }
 
 /* *********************************************************************************************************//**

@@ -60,9 +60,6 @@ void main2( int argc, char **argv ) {
 
     GIDI::Transporting::Particles particles;
 
-    GIDI::Transporting::Groups_from_bdfls groups_from_bdfls( "../../../GIDI/Test/bdfls" );
-    GIDI::Transporting::Fluxes_from_bdfls fluxes_from_bdfls( "../../../GIDI/Test/bdfls", 0.0 );
-
     MCGIDI::DomainHash domainHash( 4000, 1e-8, 10 );
     std::set<int> reactionsToExclude;
     MCGIDI::Protare *MCProtare = MCGIDI::protareFromGIDIProtare( *protare, pops, settings, particles, domainHash, temperatures, reactionsToExclude );
@@ -81,7 +78,7 @@ void main2( int argc, char **argv ) {
         for( MCGIDI_VectorSizeType productIndex = 0; productIndex < indices.size( ); ++productIndex ) {
             int index = indices[productIndex];
 
-            std::cout << "    " << index << "  " << reaction->productMultiplicities( index ) << " " << userIndices[productIndex] << std::endl;
+            std::cout << "    " << index << "  " << reaction->productMultiplicity( index ) << " " << userIndices[productIndex] << std::endl;
         }
     }
 

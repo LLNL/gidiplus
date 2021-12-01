@@ -8,6 +8,7 @@
 */
 
 #include "GIDI.hpp"
+#include <HAPI.hpp>
 
 namespace GIDI {
 
@@ -35,7 +36,7 @@ Suite::Suite( std::string const &a_moniker ) :
 /* *********************************************************************************************************//**
  * @param a_construction        [in]    Used to pass user options to the constructor.
  * @param a_moniker             [in]    The **GNDS** moniker for the Suite instance.
- * @param a_node                [in]    The pugi::xml_node to be parsed and used to construct the Product.
+ * @param a_node                [in]    The HAPI::Node to be parsed and used to construct the Product.
  * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops                [in]    The *external* PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs        [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
@@ -44,14 +45,14 @@ Suite::Suite( std::string const &a_moniker ) :
  * @param a_styles              [in]    The <**styles**> node under the <**reactionSuite**> node.
  ***********************************************************************************************************/
 
-Suite::Suite( Construction::Settings const &a_construction, std::string const &a_moniker, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,
-                PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, parseSuite a_parseSuite, Styles::Suite const *a_styles ) :
+Suite::Suite( Construction::Settings const &a_construction, std::string const &a_moniker, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, parseSuite a_parseSuite, Styles::Suite const *a_styles ) :
         Ancestry( a_moniker ),
         m_styles( a_styles ) {
 
-    pugi::xml_node const node = a_node.child( a_moniker.c_str( ) );
+    HAPI::Node const node = a_node.child( a_moniker.c_str( ) );
 
-    if( node.type( ) != pugi::node_null ) parse( a_construction, node, a_setupInfo, a_pops, a_internalPoPs, a_parseSuite, a_styles );
+    if( ! node.empty( ) ) parse( a_construction, node, a_setupInfo, a_pops, a_internalPoPs, a_parseSuite, a_styles );
 }
 
 /* *********************************************************************************************************//**
@@ -65,7 +66,7 @@ Suite::~Suite( ) {
 /* *********************************************************************************************************//**
  *
  * @param a_construction        [in]    Used to pass user options to the constructor.
- * @param a_node                [in]    The pugi::xml_node to be parsed and used to construct the Product.
+ * @param a_node                [in]    The HAPI::Node to be parsed and used to construct the Product.
  * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops                [in]    The *external* PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs        [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
@@ -74,10 +75,10 @@ Suite::~Suite( ) {
  * @param a_styles              [in]    The <**styles**> node under the <**reactionSuite**> node.
  ***********************************************************************************************************/
 
-void Suite::parse( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops,
-                PoPI::Database const &a_internalPoPs, parseSuite a_parseSuite, GIDI::Styles::Suite const *a_styles ) {
+void Suite::parse( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops,
+		PoPI::Database const &a_internalPoPs, parseSuite a_parseSuite, GIDI::Styles::Suite const *a_styles ) {
 
-    for( pugi::xml_node child = a_node.first_child( ); child; child = child.next_sibling( ) ) {
+    for( HAPI::Node child = a_node.first_child( ); !child.empty( ); child.to_next_sibling( ) ) {
         std::string name( child.name( ) );
 
         Form *form = a_parseSuite( a_construction, this, child, a_setupInfo, a_pops, a_internalPoPs, name, a_styles );

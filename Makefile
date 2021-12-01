@@ -1,4 +1,4 @@
-SHELL = /bin/bash
+SHELL = /bin/ksh
 
 # <<BEGIN-copyright>>
 # Copyright 2019, Lawrence Livermore National Security, LLC.
@@ -9,27 +9,36 @@ SHELL = /bin/bash
 
 # These must be set by hand when we do a release.
 gidiplus_major = 3
-gidiplus_minor = 19
+gidiplus_minor = 22
+baseTag = GIDI_plus.$(gidiplus_major).$(gidiplus_minor).0
 
 CXXFLAGS += -std=c++11
 
-DIRS_GIDI_plus = numericalFunctions PoPI GIDI MCGIDI include lib Doc
-DIRS = pugixml $(DIRS_GIDI_plus)
+DIRS_GIDI_plus = LUPI HAPI PoPI GIDI MCGIDI include lib Doc
+DIRS = pugixml numericalFunctions $(DIRS_GIDI_plus)
 
 GIDI_PLUS_PATH ?= $(abspath .)
 export GIDI_PLUS_PATH
+
+include Makefile.paths
 
 PREFIX = `pwd`/install
 
 .PHONY: default include lib pugixml pugixml_dummy install clean realclean tar doDIRS
 
 default: pugixml
-	@echo "Info GIDI_PLUS_PATH = $(GIDI_PLUS_PATH)"
-	@echo "Info CXX            = $(CXX)"
-	@echo "Info CXXFLAGS       = $(CXXFLAGS)"
-	@echo "Info CC             = $(CC)"
-	@echo "Info CFLAGS         = $(CFLAGS)"
-	@echo "Info PREFIX         = $(PREFIX)"
+	@echo
+	@echo "INFO: GIDI_PLUS_PATH = $(GIDI_PLUS_PATH)"
+	@echo "INFO: CXX            = $(CXX)"
+	@echo "INFO: CXXFLAGS       = $(CXXFLAGS)"
+	@echo "INFO: CC             = $(CC)"
+	@echo "INFO: CFLAGS         = $(CFLAGS)"
+	@echo "INFO: PREFIX         = $(PREFIX)"
+	@echo "INFO: PUGIXML_PATH   = $(PUGIXML_PATH)"
+	@echo "INFO: HDF5_INCLUDE   = $(HDF5_INCLUDE)"
+	@echo "INFO: HDF5_LIB       = $(HDF5_LIB)"
+	cd pugixml; $(MAKE) default
+	cd numericalFunctions; $(MAKE) default
 	$(MAKE) doDIRS _DIRS="$(DIRS)" _TARGET=default
 
 include:
@@ -53,9 +62,10 @@ gidiplus_version.h: FORCE
 	@if test -d "./.git"; then \
 		echo "#define GIDIPLUS_MAJOR ${gidiplus_major}"  > gidiplus_version.h; \
 		echo "#define GIDIPLUS_MINOR ${gidiplus_minor}" >> gidiplus_version.h; \
-		git describe | awk -F "-" '{if (NF>2) {printf("#define GIDIPLUS_PATCHLEVEL %d\n", $$(NF-1))} else {print "#define GIDIPLUS_PATCHLEVEL 0"}}' >> gidiplus_version.h; \
+		git describe --long --match ${baseTag} | awk -F "-" '{if (NF>2) {printf("#define GIDIPLUS_PATCHLEVEL %d\n", $$(NF-1))} else {print "#define GIDIPLUS_PATCHLEVEL 0"}}' >> gidiplus_version.h; \
 		git rev-parse HEAD                     | awk '{printf("#define GIDIPLUS_GIT %s\n" , $$1)}'                 >> gidiplus_version.h; \
 		git ls-files -s numericalFunctions     | awk '{printf("#define NUMERICAL_FUNCTIONS_GIT %s\n" , $$2)}'      >> gidiplus_version.h; \
+		git ls-files -s HAPI                   | awk '{printf("#define HAPI_GIT %s\n" , $$2)}'                     >> gidiplus_version.h; \
 		git ls-files -s PoPI                   | awk '{printf("#define POPI_GIT %s\n" , $$2)}'                     >> gidiplus_version.h; \
 		git ls-files -s GIDI                   | awk '{printf("#define GIDI_GIT %s\n" , $$2)}'                     >> gidiplus_version.h; \
 		git ls-files -s MCGIDI                 | awk '{printf("#define MCGIDI_GIT %s\n" , $$2)}'                   >> gidiplus_version.h; \
@@ -83,8 +93,10 @@ realclean: pugixml_dummy
 	rm -rf pugixml test_install
 
 tar: gidiplus_version.h
+	if git status | grep "new commit"; then echo "ERROR: 'git submodule update --recursive' needed"; exit 1; fi
 	$(MAKE) -s realclean
-	fileName=`git describe | awk -F "-" '{(NF>2) ? patchVal=$$(NF-1) : patchVal=0; printf "gidiplus-%s.%s.%s.%s", ${gidiplus_major}, ${gidiplus_minor}, patchVal, $$NF}'`; \
+	fileName=`git describe --long --match ${baseTag} | awk -F "-" '{(NF>2) ? patchVal=$$(NF-1) : patchVal=0; printf "gidiplus-%s.%s.%s.%s", ${gidiplus_major}, ${gidiplus_minor}, patchVal, $$NF}'`; \
+	if [ "$$fileName" == "" ]; then exit; fi; \
 	rm -rf ../$$fileName; \
 	mkdir ../$$fileName; \
 	absolutePath=`cd ../$$fileName; pwd`; \

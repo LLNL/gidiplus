@@ -8,6 +8,7 @@
 */
 
 #include "GIDI.hpp"
+#include <HAPI.hpp>
 
 namespace GIDI {
 
@@ -19,16 +20,16 @@ namespace GIDI {
 
 /* *********************************************************************************************************//**
  * @param a_construction    [in]    Used to pass user options to the constructor.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed to construct a Transportable instance.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed to construct a Transportable instance.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops            [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-Transportable::Transportable( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,
-                PoPI::Database const &a_pops, Suite *a_parent ) :
+Transportable::Transportable( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+		PoPI::Database const &a_pops, Suite *a_parent ) :
         Form( a_node, a_setupInfo, FormType::transportable, a_parent ),
-        m_conserve( a_node.attribute( GIDI_conserveChars ).value( ) ),
+        m_conserve( a_node.attribute_as_string( GIDI_conserveChars ) ),
         m_group( a_construction, a_node.child( GIDI_groupChars ), a_setupInfo, a_pops ) {
 }
 

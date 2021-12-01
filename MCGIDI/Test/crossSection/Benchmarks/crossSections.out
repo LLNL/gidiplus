@@ -47,7 +47,8 @@ List of reactions
     reaction: O17 + photon                            :  final Q = 4.14459 threshold = 0
     reaction: n + He4 + C12 + photon                  :  final Q = -7.16195 threshold = 7.61359
     reaction: n + 4He4 + photon                       :  final Q = -14.4368 threshold = 15.3472
-    reaction: 2He4 + Be9 + photon                     :  final Q = -12.8632 threshold = 13.6743
+    reaction: 2He4 + Be9 + photon                     :  final Q = -12.8632 threshold = 13.6744
+    reaction: sumOfRemainingOutputChannels            :  final Q = 0 threshold = 0
 temperature = 1e-08
     energy = 1e-12 crossSection = 55.6183
     energy = 1.2e-12 crossSection = 55.6183
@@ -219,13 +220,13 @@ temperature = 1e-08
     energy = 16.7212 crossSection = 1.54289
     energy = 20.0655 crossSection = 1.64584
     energy = 24.0786 crossSection = 1.62859
-    energy = 28.8943 crossSection = 1.55467
-    energy = 34.6731 crossSection = 1.01461
-    energy = 41.6078 crossSection = 0.94791
-    energy = 49.9293 crossSection = 0.816124
-    energy = 59.9152 crossSection = 0.681287
-    energy = 71.8982 crossSection = 0.555622
-    energy = 86.2778 crossSection = 0.449818
+    energy = 28.8943 crossSection = 1.55557
+    energy = 34.6731 crossSection = 1.48427
+    energy = 41.6078 crossSection = 1.37537
+    energy = 49.9293 crossSection = 1.21244
+    energy = 59.9152 crossSection = 1.05151
+    energy = 71.8982 crossSection = 0.890384
+    energy = 86.2778 crossSection = 0.755706
 temperature = 1.01e-07
     energy = 1e-12 crossSection = 77.9537
     energy = 1.2e-12 crossSection = 77.9537
@@ -395,15 +396,15 @@ temperature = 1.01e-07
     energy = 11.612 crossSection = 1.74228
     energy = 13.9344 crossSection = 1.60852
     energy = 16.7212 crossSection = 1.54289
-    energy = 20.0655 crossSection = 1.64584
-    energy = 24.0786 crossSection = 1.62859
-    energy = 28.8943 crossSection = 1.55467
-    energy = 34.6731 crossSection = 1.01461
-    energy = 41.6078 crossSection = 0.947909
-    energy = 49.9293 crossSection = 0.816124
-    energy = 59.9152 crossSection = 0.681287
-    energy = 71.8982 crossSection = 0.555622
-    energy = 86.2778 crossSection = 0.449818
+    energy = 20.0655 crossSection = 1.64585
+    energy = 24.0786 crossSection = 1.62864
+    energy = 28.8943 crossSection = 1.55559
+    energy = 34.6731 crossSection = 1.48427
+    energy = 41.6078 crossSection = 1.37537
+    energy = 49.9293 crossSection = 1.21244
+    energy = 59.9152 crossSection = 1.05151
+    energy = 71.8982 crossSection = 0.890384
+    energy = 86.2778 crossSection = 0.755706
 temperature = 1.0201e-06
     energy = 1e-12 crossSection = 345.812
     energy = 1.2e-12 crossSection = 345.812
@@ -573,15 +574,15 @@ temperature = 1.0201e-06
     energy = 11.612 crossSection = 1.74217
     energy = 13.9344 crossSection = 1.60847
     energy = 16.7212 crossSection = 1.54293
-    energy = 20.0655 crossSection = 1.64587
-    energy = 24.0786 crossSection = 1.62858
-    energy = 28.8943 crossSection = 1.55467
-    energy = 34.6731 crossSection = 1.01461
-    energy = 41.6078 crossSection = 0.947909
-    energy = 49.9293 crossSection = 0.816122
-    energy = 59.9152 crossSection = 0.681287
-    energy = 71.8982 crossSection = 0.555622
-    energy = 86.2778 crossSection = 0.449817
+    energy = 20.0655 crossSection = 1.64608
+    energy = 24.0786 crossSection = 1.6292
+    energy = 28.8943 crossSection = 1.55578
+    energy = 34.6731 crossSection = 1.48427
+    energy = 41.6078 crossSection = 1.37537
+    energy = 49.9293 crossSection = 1.21244
+    energy = 59.9152 crossSection = 1.05151
+    energy = 71.8982 crossSection = 0.890384
+    energy = 86.2778 crossSection = 0.755705
 temperature = 1.0303e-05
     energy = 1e-12 crossSection = 637.093
     energy = 1.2e-12 crossSection = 637.093
@@ -751,15 +752,15 @@ temperature = 1.0303e-05
     energy = 11.612 crossSection = 1.74212
     energy = 13.9344 crossSection = 1.60843
     energy = 16.7212 crossSection = 1.54297
-    energy = 20.0655 crossSection = 1.64587
-    energy = 24.0786 crossSection = 1.6286
-    energy = 28.8943 crossSection = 1.55467
-    energy = 34.6731 crossSection = 1.01461
-    energy = 41.6078 crossSection = 0.947908
-    energy = 49.9293 crossSection = 0.816122
-    energy = 59.9152 crossSection = 0.681288
-    energy = 71.8982 crossSection = 0.555623
-    energy = 86.2778 crossSection = 0.449817
+    energy = 20.0655 crossSection = 1.64606
+    energy = 24.0786 crossSection = 1.62916
+    energy = 28.8943 crossSection = 1.55576
+    energy = 34.6731 crossSection = 1.48428
+    energy = 41.6078 crossSection = 1.37537
+    energy = 49.9293 crossSection = 1.21244
+    energy = 59.9152 crossSection = 1.0515
+    energy = 71.8982 crossSection = 0.890384
+    energy = 86.2778 crossSection = 0.755705
 temperature = 0.00010406
     energy = 1e-12 crossSection = 3451.63
     energy = 1.2e-12 crossSection = 3451.63
@@ -931,13 +932,13 @@ temperature = 0.00010406
     energy = 16.7212 crossSection = 1.54335
     energy = 20.0655 crossSection = 1.6459
     energy = 24.0786 crossSection = 1.62883
-    energy = 28.8943 crossSection = 1.55461
-    energy = 34.6731 crossSection = 1.01465
-    energy = 41.6078 crossSection = 0.947902
-    energy = 49.9293 crossSection = 0.816123
-    energy = 59.9152 crossSection = 0.68129
-    energy = 71.8982 crossSection = 0.555626
-    energy = 86.2778 crossSection = 0.449812
+    energy = 28.8943 crossSection = 1.55557
+    energy = 34.6731 crossSection = 1.48433
+    energy = 41.6078 crossSection = 1.37538
+    energy = 49.9293 crossSection = 1.21244
+    energy = 59.9152 crossSection = 1.05148
+    energy = 71.8982 crossSection = 0.890389
+    energy = 86.2778 crossSection = 0.755698
 temperature = 0.00105101
     energy = 1e-12 crossSection = 3451.63
     energy = 1.2e-12 crossSection = 3451.63
@@ -1109,10 +1110,10 @@ temperature = 0.00105101
     energy = 16.7212 crossSection = 1.54335
     energy = 20.0655 crossSection = 1.6459
     energy = 24.0786 crossSection = 1.62883
-    energy = 28.8943 crossSection = 1.55461
-    energy = 34.6731 crossSection = 1.01465
-    energy = 41.6078 crossSection = 0.947902
-    energy = 49.9293 crossSection = 0.816123
-    energy = 59.9152 crossSection = 0.68129
-    energy = 71.8982 crossSection = 0.555626
-    energy = 86.2778 crossSection = 0.449812
+    energy = 28.8943 crossSection = 1.55557
+    energy = 34.6731 crossSection = 1.48433
+    energy = 41.6078 crossSection = 1.37538
+    energy = 49.9293 crossSection = 1.21244
+    energy = 59.9152 crossSection = 1.05148
+    energy = 71.8982 crossSection = 0.890389
+    energy = 86.2778 crossSection = 0.755698

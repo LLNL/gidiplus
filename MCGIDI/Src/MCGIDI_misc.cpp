@@ -20,7 +20,7 @@ namespace MCGIDI {
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST SetupInfo::SetupInfo( Protare &a_protare ) :
+MCGIDI_HOST SetupInfo::SetupInfo( Protare &a_protare ) :
         m_protare( a_protare ) {
 
 }
@@ -29,7 +29,7 @@ HOST SetupInfo::SetupInfo( Protare &a_protare ) :
  * @return                          The *index*.
  ***********************************************************************************************************/
 
-HOST int MCGIDI_popsIndex( PoPI::Database const &a_pops, std::string const &a_ID ) {
+MCGIDI_HOST int MCGIDI_popsIndex( PoPI::Database const &a_pops, std::string const &a_ID ) {
 
     int index = -1;
 
@@ -49,7 +49,7 @@ HOST int MCGIDI_popsIndex( PoPI::Database const &a_pops, std::string const &a_ID
  ***********************************************************************************************************/
 
 
-HOST Vector<double> GIDI_VectorDoublesToMCGIDI_VectorDoubles( GIDI::Vector a_vector ) {
+MCGIDI_HOST Vector<double> GIDI_VectorDoublesToMCGIDI_VectorDoubles( GIDI::Vector a_vector ) {
 
     Vector<double> vector( static_cast<MCGIDI_VectorSizeType>( a_vector.size( ) ) );
 
@@ -65,7 +65,7 @@ HOST Vector<double> GIDI_VectorDoublesToMCGIDI_VectorDoubles( GIDI::Vector a_vec
  * @param a_productIndicesFrom          [in]    The set to add the ints to.
  ***********************************************************************************************************/
 
-HOST void addVectorItemsToSet( Vector<int> const &a_productIndicesFrom, std::set<int> &a_productIndicesTo ) {
+MCGIDI_HOST void addVectorItemsToSet( Vector<int> const &a_productIndicesFrom, std::set<int> &a_productIndicesTo ) {
 
     for( Vector<int>::const_iterator iter = a_productIndicesFrom.begin( ); iter != a_productIndicesFrom.end( ); ++iter ) a_productIndicesTo.insert( *iter );
 }
@@ -79,7 +79,7 @@ HOST void addVectorItemsToSet( Vector<int> const &a_productIndicesFrom, std::set
  * @return                              The relativistic kinetic energy of the particle.
  ***********************************************************************************************************/
 
-HOST_DEVICE double particleKineticEnergy( double a_mass_unitOfEnergy, double a_particleBeta ) {
+MCGIDI_HOST_DEVICE double particleKineticEnergy( double a_mass_unitOfEnergy, double a_particleBeta ) {
 
     if( a_particleBeta < 1e-4 ) return( 0.5 * a_mass_unitOfEnergy * a_particleBeta * a_particleBeta );
 
@@ -96,7 +96,7 @@ HOST_DEVICE double particleKineticEnergy( double a_mass_unitOfEnergy, double a_p
  * @return                              The relativistic kinetic energy of the particle.
  ***********************************************************************************************************/
 
-HOST_DEVICE double particleKineticEnergyFromBeta2( double a_mass_unitOfEnergy, double a_particleBeta2 ) {
+MCGIDI_HOST_DEVICE double particleKineticEnergyFromBeta2( double a_mass_unitOfEnergy, double a_particleBeta2 ) {
 
     if( a_particleBeta2 < 1e-8 ) return( 0.5 * a_mass_unitOfEnergy * a_particleBeta2 );
 
@@ -113,7 +113,7 @@ HOST_DEVICE double particleKineticEnergyFromBeta2( double a_mass_unitOfEnergy, d
  * @return                              The relativistic kinetic energy of the particle.
  ***********************************************************************************************************/
 
-HOST_DEVICE double boostSpeed( double a_massProjectile, double a_kineticEnergyProjectile, double a_massTarget ) {
+MCGIDI_HOST_DEVICE double boostSpeed( double a_massProjectile, double a_kineticEnergyProjectile, double a_massTarget ) {
 
     double betaProjectile = MCGIDI_particleBeta( a_massProjectile, a_kineticEnergyProjectile );
 
@@ -137,7 +137,7 @@ HOST_DEVICE double boostSpeed( double a_massProjectile, double a_kineticEnergyPr
  * @return                                      The number of returned center-of-mass frame mu values. Can be 0, 1 or 2.
  ***********************************************************************************************************/
 
-HOST_DEVICE int muCOM_From_muLab( double a_muLab, double a_boostBeta, double a_productBeta, double &a_muPlus, double &a_JacobianPlus, 
+MCGIDI_HOST_DEVICE int muCOM_From_muLab( double a_muLab, double a_boostBeta, double a_productBeta, double &a_muPlus, double &a_JacobianPlus, 
                 double &a_muMinus, double &a_JacobianMinus ) {
 
     int numberOfSolutions = 0;
@@ -192,7 +192,7 @@ HOST_DEVICE int muCOM_From_muLab( double a_muLab, double a_boostBeta, double a_p
  * @return                              The sampled normalized Maxwellian speed.
  ***********************************************************************************************************/
 
-HOST_DEVICE double sampleBetaFromMaxwellian( double (*a_userrng)( void * ), void *a_rngState ) {
+MCGIDI_HOST_DEVICE double sampleBetaFromMaxwellian( double (*a_userrng)( void * ), void *a_rngState ) {
 
     double _g = 2.0 / ( 1.37 * 0.5 * 1.772453850905516 );      // 1.772453850905516 = sqrt( pi ).
     double beta, r1;
@@ -218,7 +218,7 @@ HOST_DEVICE double sampleBetaFromMaxwellian( double (*a_userrng)( void * ), void
  * @return                              Returns *true* if target velocity is sampled and false otherwise.
  ***********************************************************************************************************/
 
-HOST_DEVICE bool sampleTargetBetaForUpscatterModelA( Protare const *a_protare, double a_projectileEnergy, Sampling::Input &a_input,
+MCGIDI_HOST_DEVICE bool sampleTargetBetaForUpscatterModelA( Protare const *a_protare, double a_projectileEnergy, Sampling::Input &a_input,
                 double (*a_userrng)( void * ), void *a_rngState ) {
 
     double projectileBeta = MCGIDI_particleBeta( a_protare->projectileMass( ), a_projectileEnergy );
@@ -284,7 +284,7 @@ HOST_DEVICE bool sampleTargetBetaForUpscatterModelA( Protare const *a_protare, d
  * @param a_product                 [in]    The particle to boost.
  ***********************************************************************************************************/
 
-HOST_DEVICE void upScatterModelABoostParticle( Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState, Sampling::Product &a_product ) {
+MCGIDI_HOST_DEVICE void upScatterModelABoostParticle( Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState, Sampling::Product &a_product ) {
 
     double C_rel = 1.0;
     if( a_input.m_relativeBeta != 0.0 ) C_rel = ( a_input.m_projectileBeta - a_input.m_relativeMu * a_input.m_targetBeta ) / a_input.m_relativeBeta;
@@ -321,7 +321,7 @@ HOST_DEVICE void upScatterModelABoostParticle( Sampling::Input &a_input, double 
  * @param a_mu                  [in]    The cosine of the angle of the scattered photon's z-axis and the incoming photon's z-axis.
  ***********************************************************************************************************/
 
-HOST_DEVICE void MCGIDI_sampleKleinNishina( double a_energyIn, double (*a_userrng)( void * ), void *a_rngState, double *a_energyOut, double *a_mu ) {
+MCGIDI_HOST_DEVICE void MCGIDI_sampleKleinNishina( double a_energyIn, double (*a_userrng)( void * ), void *a_rngState, double *a_energyOut, double *a_mu ) {
 /*
   Description
     Sample the Klein-Nishina distribution.

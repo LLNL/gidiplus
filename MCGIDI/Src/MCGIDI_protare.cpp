@@ -27,7 +27,7 @@ namespace MCGIDI {
  * @param a_allowFixedGrid              [in]    For internal (i.e., MCGIDI) use only. Users must use the default value.
  ***********************************************************************************************************/
 
-HOST Protare *protareFromGIDIProtare( GIDI::Protare const &a_protare, PoPI::Database const &a_pops, Transporting::MC &a_settings, 
+MCGIDI_HOST Protare *protareFromGIDIProtare( GIDI::Protare const &a_protare, PoPI::Database const &a_pops, Transporting::MC &a_settings, 
                 GIDI::Transporting::Particles const &a_particles, DomainHash const &a_domainHash, GIDI::Styles::TemperatureInfos const &a_temperatureInfos, 
                 std::set<int> const &a_reactionsToExclude, int a_reactionsToExcludeOffset, bool a_allowFixedGrid ) {
 
@@ -58,7 +58,7 @@ HOST Protare *protareFromGIDIProtare( GIDI::Protare const &a_protare, PoPI::Data
  * Default constructor used when broadcasting a Protare as needed by MPI or GPUs.
  ***********************************************************************************************************/
 
-HOST_DEVICE Protare::Protare( ProtareType a_protareType ) :
+MCGIDI_HOST_DEVICE Protare::Protare( ProtareType a_protareType ) :
         m_protareType( a_protareType ),
         m_projectileID( ),
         m_projectileIndex( -1 ),
@@ -90,7 +90,7 @@ HOST_DEVICE Protare::Protare( ProtareType a_protareType ) :
  * @param a_settings            [in]    Used to pass user options to the *this* to instruct it which data are desired.
  ***********************************************************************************************************/
 
-HOST Protare::Protare( ProtareType a_protareType, GIDI::Protare const &a_protare, PoPI::Database const &a_pops, Transporting::MC const &a_settings ) :
+MCGIDI_HOST Protare::Protare( ProtareType a_protareType, GIDI::Protare const &a_protare, PoPI::Database const &a_pops, Transporting::MC const &a_settings ) :
         m_protareType( a_protareType ),
         m_projectileID( a_protare.projectile( ).ID( ).c_str( ) ),
         m_projectileMass( a_protare.projectile( ).mass( "MeV/c**2" ) ),          // Includes nuclear excitation energy.
@@ -114,7 +114,7 @@ HOST Protare::Protare( ProtareType a_protareType, GIDI::Protare const &a_protare
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE Protare::~Protare( ) {
+MCGIDI_HOST_DEVICE Protare::~Protare( ) {
 
 }
 
@@ -124,7 +124,7 @@ HOST_DEVICE Protare::~Protare( ) {
  * @param a_transportablesOnly  [in]    If true, only transportable particle indices are added to *a_indices*, otherwise, all particle indices are added.
  ***********************************************************************************************************/
 
-HOST Vector<int> const &Protare::productIndices( bool a_transportablesOnly ) const {
+MCGIDI_HOST Vector<int> const &Protare::productIndices( bool a_transportablesOnly ) const {
 
     if( a_transportablesOnly ) return( m_productIndicesTransportable );
     return( m_productIndices );
@@ -137,7 +137,7 @@ HOST Vector<int> const &Protare::productIndices( bool a_transportablesOnly ) con
  * @param a_transportableIndices    [in]    The list of transportable indices for the outgoing particles (i.e., products).
  ***********************************************************************************************************/
 
-HOST void Protare::productIndices( std::set<int> const &a_indices, std::set<int> const &a_transportableIndices ) {
+MCGIDI_HOST void Protare::productIndices( std::set<int> const &a_indices, std::set<int> const &a_transportableIndices ) {
 
     m_productIndices.reserve( a_indices.size( ) );
     m_userProductIndices.reserve( a_indices.size( ) );
@@ -160,7 +160,7 @@ HOST void Protare::productIndices( std::set<int> const &a_indices, std::set<int>
  * @param a_transportablesOnly  [in]    If true, only transportable particle indices are added to *a_indices*, otherwise, all particle indices are added.
  ***********************************************************************************************************/
 
-HOST Vector<int> const &Protare::userProductIndices( bool a_transportablesOnly ) const {
+MCGIDI_HOST Vector<int> const &Protare::userProductIndices( bool a_transportablesOnly ) const {
 
     if( a_transportablesOnly ) return( m_userProductIndicesTransportable );
     return( m_userProductIndices );
@@ -173,7 +173,7 @@ HOST Vector<int> const &Protare::userProductIndices( bool a_transportablesOnly )
  * @param a_userParticleIndex   [in]    The particle id specified by the user.
  ***********************************************************************************************************/
 
-HOST void Protare::setUserParticleIndex( int a_particleIndex, int a_userParticleIndex ) {
+MCGIDI_HOST void Protare::setUserParticleIndex( int a_particleIndex, int a_userParticleIndex ) {
 
     if( m_projectileIndex == a_particleIndex ) m_projectileUserIndex = a_userParticleIndex;
     if( m_targetIndex == a_particleIndex ) m_targetUserIndex = a_userParticleIndex;
@@ -197,7 +197,7 @@ HOST void Protare::setUserParticleIndex( int a_particleIndex, int a_userParticle
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void Protare::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void Protare::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     int protareType = 0;
     if( a_mode != DataBuffer::Mode::Unpack ) {
@@ -260,15 +260,30 @@ HOST_DEVICE void Protare::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mo
 
 /* *********************************************************************************************************//**
  * This method counts the number of bytes of memory allocated by *this*. 
- * This should be an improvement to the internalSize() method of getting memory size.
+ * This is an improvement to the internalSize() method of getting memory size.
  ***********************************************************************************************************/
-HOST_DEVICE long Protare::memorySize( ) {
+MCGIDI_HOST_DEVICE long Protare::memorySize( ) {
 
     DataBuffer buf;
     // Written this way for debugger to modify buf.m_placementStart here for easier double checking.
     buf.m_placement = buf.m_placementStart + sizeOf();
     serialize(buf, DataBuffer::Mode::Memory);
-    return buf.m_placement - buf.m_placementStart;
+    return( ( buf.m_placement - buf.m_placementStart ) + ( buf.m_sharedPlacement - buf.m_sharedPlacementStart ) );
+}
+
+/* *********************************************************************************************************//**
+ * This method counts the number of bytes of memory allocated by *this* and puts it into a_totalMemory.
+ * If shared memory is used, the size of shared memory is a_sharedMemory. If using shared memory,
+ * the host code only needs to allocate (a_totalMemory - a_sharedMemory) in main memory.
+ ***********************************************************************************************************/
+MCGIDI_HOST_DEVICE void Protare::incrementMemorySize( long &a_totalMemory, long &a_sharedMemory ) {
+
+    DataBuffer buf;         // Written this way for debugger to modify buf.m_placementStart here for easier double checking.
+
+    buf.m_placement = buf.m_placementStart + sizeOf( );
+    serialize( buf, DataBuffer::Mode::Memory );
+    a_totalMemory += buf.m_placement - buf.m_placementStart;
+    a_sharedMemory += buf.m_sharedPlacement - buf.m_sharedPlacementStart;
 }
 
 /*! \class ProtareSingle
@@ -281,7 +296,7 @@ HOST_DEVICE long Protare::memorySize( ) {
  * Default constructor used when broadcasting a Protare as needed by MPI or GPUs.
  ***********************************************************************************************************/
 
-HOST_DEVICE ProtareSingle::ProtareSingle( ) :
+MCGIDI_HOST_DEVICE ProtareSingle::ProtareSingle( ) :
         Protare( ProtareType::single ),
         m_URR_index( -1 ),
         m_hasURR_probabilityTables( false ),
@@ -307,7 +322,7 @@ HOST_DEVICE ProtareSingle::ProtareSingle( ) :
  * @param a_allowFixedGrid              [in]    For internal (i.e., MCGIDI) use only. Users must use the default value.
  ***********************************************************************************************************/
 
-HOST ProtareSingle::ProtareSingle( GIDI::ProtareSingle const &a_protare, PoPI::Database const &a_pops, Transporting::MC &a_settings, 
+MCGIDI_HOST ProtareSingle::ProtareSingle( GIDI::ProtareSingle const &a_protare, PoPI::Database const &a_pops, Transporting::MC &a_settings, 
                 GIDI::Transporting::Particles const &a_particles, DomainHash const &a_domainHash, GIDI::Styles::TemperatureInfos const &a_temperatureInfos,
                 std::set<int> const &a_reactionsToExclude, int a_reactionsToExcludeOffset, bool a_allowFixedGrid ) :
         Protare( ProtareType::single, a_protare, a_pops, a_settings ),
@@ -323,6 +338,17 @@ HOST ProtareSingle::ProtareSingle( GIDI::ProtareSingle const &a_protare, PoPI::D
         m_orphanProducts( 0 ),
         m_heatedCrossSections( ),
         m_heatedMultigroupCrossSections( ) {
+
+    if( !a_protare.isPhotoAtomic( ) ) {
+        std::set<std::string> incompleteParticles;
+        a_protare.incompleteParticles( a_settings, incompleteParticles );
+        for( auto particle = a_particles.particles( ).begin( ); particle != a_particles.particles( ).end( ); ++particle ) {
+            if( incompleteParticles.count( particle->first ) != 0 ) {
+                std::string message = "Requested particle '" + particle->first + "' is incomplete in '" + a_protare.realFileName( ) + "'.";
+                throw std::runtime_error( message.c_str( ) );
+            }
+        }
+    }
 
     SetupInfo setupInfo( *this );
     setupInfo.m_formatVersion = a_protare.formatVersion( );
@@ -351,7 +377,7 @@ HOST ProtareSingle::ProtareSingle( GIDI::ProtareSingle const &a_protare, PoPI::D
         multiGroupSettings.setMode( GIDI::Transporting::Mode::multiGroup );
         break;
     default :
-        THROW( "ProtareSingle::ProtareSingle: invalid lookupMode" );
+        throw std::runtime_error( "ProtareSingle::ProtareSingle: invalid lookupMode" );
     }
     m_fixedGrid = a_allowFixedGrid && ( a_protare.projectile( ).ID( ) == PoPI::IDs::photon ) && ( a_settings.fixedGridPoints( ).size( ) > 0 );
 
@@ -367,7 +393,7 @@ HOST ProtareSingle::ProtareSingle( GIDI::ProtareSingle const &a_protare, PoPI::D
         else {
             std::vector<GIDI::Suite::const_iterator> tags = a_protare.styles( ).findAllOfMoniker( GIDI_multiGroupStyleChars );
 
-            if( tags.size( ) != 1 ) THROW( "MCGIDI::ProtareSingle::ProtareSingle: What is going on here?" );
+            if( tags.size( ) != 1 ) throw std::runtime_error( "MCGIDI::ProtareSingle::ProtareSingle: What is going on here?" );
             GIDI::Styles::MultiGroup const &multiGroup = static_cast<GIDI::Styles::MultiGroup const &>( **tags[0] );
             transportables = &multiGroup.transportables( );
         }
@@ -379,9 +405,10 @@ HOST ProtareSingle::ProtareSingle( GIDI::ProtareSingle const &a_protare, PoPI::D
     }
 
     std::vector<GIDI::Reaction const *> GIDI_reactions;
-    std::vector<GIDI::Reaction const *> GIDI_orphanProducts;
     std::set<std::string> product_ids;
     std::set<std::string> product_ids_transportable;
+    GIDI::Reaction const *nuclearPlusCoulombInterferenceReaction = nullptr;
+    if( a_settings.nuclearPlusCoulombInterferenceOnly( ) ) nuclearPlusCoulombInterferenceReaction = a_protare.nuclearPlusCoulombInterferenceOnlyReaction( );
 
     for( std::size_t reactionIndex = 0; reactionIndex < a_protare.reactions( ).size( ); ++reactionIndex ) {
         if( a_reactionsToExclude.find( static_cast<int>( reactionIndex + a_reactionsToExcludeOffset ) ) != a_reactionsToExclude.end( ) ) continue;
@@ -405,17 +432,25 @@ HOST ProtareSingle::ProtareSingle( GIDI::ProtareSingle const &a_protare, PoPI::D
         GIDI_reaction->productIDs( product_ids, particles, false );
         GIDI_reaction->productIDs( product_ids_transportable, particles, true );
 
-        GIDI_reactions.push_back( GIDI_reaction );
+        if( ( reactionIndex == 0 ) && a_settings.nuclearPlusCoulombInterferenceOnly( ) && a_protare.onlyRutherfordScatteringPresent( ) ) continue;
+        if( ( reactionIndex == 0 ) && ( nuclearPlusCoulombInterferenceReaction != nullptr ) ) {
+            GIDI_reactions.push_back( nuclearPlusCoulombInterferenceReaction ); }
+        else {
+            GIDI_reactions.push_back( GIDI_reaction );
+        }
     }
 
+    bool zeroReactions = GIDI_reactions.size( ) == 0;   // Happens when all reactions are skipped in the prior loop.
+    if( zeroReactions ) GIDI_reactions.push_back( a_protare.reaction( 0 ) );    // Special case where no reaction in the protare is wanted so the first one is used but its cross section is set to 0.0 at all energies.
+
     setupInfo.m_reactionType = Transporting::Reaction::Type::Reactions;
-    m_reactions.reserve( a_protare.reactions( ).size( ) );
+    m_reactions.reserve( GIDI_reactions.size( ) );
     for( auto GIDI_reaction = GIDI_reactions.begin( ); GIDI_reaction != GIDI_reactions.end( ); ++GIDI_reaction ) {
         setupInfo.m_reaction = *GIDI_reaction;
         setupInfo.m_isPairProduction = (*GIDI_reaction)->isPairProduction( );
-        Reaction *reaction2 = new Reaction( **GIDI_reaction, setupInfo, a_settings, particles, a_temperatureInfos );
-        reaction2->updateProtareSingleInfo( this, static_cast<int>( m_reactions.size( ) ) );
-        m_reactions.push_back( reaction2 );
+        Reaction *reaction = new Reaction( **GIDI_reaction, setupInfo, a_settings, particles, a_temperatureInfos );
+        reaction->updateProtareSingleInfo( this, static_cast<int>( m_reactions.size( ) ) );
+        m_reactions.push_back( reaction );
     }
 
     std::set<int> product_indices;
@@ -433,19 +468,19 @@ HOST ProtareSingle::ProtareSingle( GIDI::ProtareSingle const &a_protare, PoPI::D
             if( GIDI_reaction->crossSectionThreshold( ) >= a_settings.energyDomainMax( ) ) continue;
 
             setupInfo.m_reaction = GIDI_reaction;
-            Reaction *reaction2 = new Reaction( *GIDI_reaction, setupInfo, a_settings, particles, a_temperatureInfos );
-            reaction2->updateProtareSingleInfo( this, static_cast<int>( m_orphanProducts.size( ) ) );
-            m_orphanProducts.push_back( reaction2 );
+            Reaction *reaction = new Reaction( *GIDI_reaction, setupInfo, a_settings, particles, a_temperatureInfos );
+            reaction->updateProtareSingleInfo( this, static_cast<int>( m_orphanProducts.size( ) ) );
+            m_orphanProducts.push_back( reaction );
 
             GIDI::Functions::Reference1d const *reference( GIDI_reaction->crossSection( ).get<GIDI::Functions::Reference1d>( 0 ) );
             std::string xlink = reference->xlink( );
             GIDI::Ancestry const *ancestry = a_protare.findInAncestry( xlink );
-            if( ancestry == nullptr ) THROW( "Could not find xlink for orphan product - 1." );
+            if( ancestry == nullptr ) throw std::runtime_error( "Could not find xlink for orphan product - 1." );
             ancestry = ancestry->ancestor( );
-            if( ancestry == nullptr ) THROW( "Could not find xlink for orphan product - 2." );
+            if( ancestry == nullptr ) throw std::runtime_error( "Could not find xlink for orphan product - 2." );
             if( ancestry->moniker( ) != GIDI_crossSectionSumChars ) {
                 ancestry = ancestry->ancestor( );
-                if( ancestry == nullptr ) THROW( "Could not find xlink for orphan product - 3." );
+                if( ancestry == nullptr ) throw std::runtime_error( "Could not find xlink for orphan product - 3." );
             }
             GIDI::Sums::CrossSectionSum const *crossSectionSum = static_cast<GIDI::Sums::CrossSectionSum const *>( ancestry );
             GIDI::Sums::Summands const &summands = crossSectionSum->summands( );
@@ -453,9 +488,9 @@ HOST ProtareSingle::ProtareSingle( GIDI::ProtareSingle const &a_protare, PoPI::D
                 GIDI::Sums::Summand::Base const *summand = summands[i1];
 
                 GIDI::Ancestry const *ancestry = a_protare.findInAncestry( summand->href( ) );
-                if( ancestry == nullptr ) THROW( "Could not find href for summand - 1." );
+                if( ancestry == nullptr ) throw std::runtime_error( "Could not find href for summand - 1." );
                 ancestry = ancestry->ancestor( );
-                if( ancestry == nullptr ) THROW( "Could not find href for summand - 2." );
+                if( ancestry == nullptr ) throw std::runtime_error( "Could not find href for summand - 2." );
 
                 GIDI::Reaction const *GIDI_reaction2 = static_cast<GIDI::Reaction const *>( ancestry );
                 for( MCGIDI_VectorSizeType reactionIndex2 = 0; reactionIndex2 < m_reactions.size( ); ++reactionIndex2 ) {
@@ -463,7 +498,7 @@ HOST ProtareSingle::ProtareSingle( GIDI::ProtareSingle const &a_protare, PoPI::D
 
                     if( label == GIDI_reaction2->label( ) ) {
                         m_reactions[reactionIndex2]->associatedOrphanProductIndex( static_cast<int>( m_orphanProducts.size( ) ) - 1 );
-                        m_reactions[reactionIndex2]->associatedOrphanProduct( reaction2 );
+                        m_reactions[reactionIndex2]->associatedOrphanProduct( reaction );
                         break;
                     }
                 }
@@ -471,6 +506,7 @@ HOST ProtareSingle::ProtareSingle( GIDI::ProtareSingle const &a_protare, PoPI::D
         }
     }
 
+    std::vector<GIDI::Reaction const *> GIDI_orphanProducts;
     for( std::size_t reactionIndex = 0; reactionIndex < a_protare.orphanProducts( ).size( ); ++reactionIndex ) {
         GIDI::Reaction const *GIDI_reaction = a_protare.orphanProduct( reactionIndex );
 
@@ -479,12 +515,14 @@ HOST ProtareSingle::ProtareSingle( GIDI::ProtareSingle const &a_protare, PoPI::D
     }
 
     if( m_continuousEnergy ) {
-        m_heatedCrossSections.update( setupInfo, a_settings, particles, a_domainHash, a_temperatureInfos, GIDI_reactions, GIDI_orphanProducts, m_fixedGrid );
+        m_heatedCrossSections.update( setupInfo, a_settings, particles, a_domainHash, a_temperatureInfos, GIDI_reactions, GIDI_orphanProducts,
+                m_fixedGrid, zeroReactions );
         m_hasURR_probabilityTables = m_heatedCrossSections.hasURR_probabilityTables( );
         m_URR_domainMin = m_heatedCrossSections.URR_domainMin( );
         m_URR_domainMax = m_heatedCrossSections.URR_domainMax( ); }
     else {
-        m_heatedMultigroupCrossSections.update( a_protare, setupInfo, a_settings, particles, a_temperatureInfos, GIDI_reactions, GIDI_orphanProducts );
+        m_heatedMultigroupCrossSections.update( a_protare, setupInfo, a_settings, particles, a_temperatureInfos, GIDI_reactions, GIDI_orphanProducts,
+                zeroReactions );
     }
 
     if( ( photonIndex( ) != projectileIndex( ) ) && ( a_settings.upscatterModel( ) == Sampling::Upscatter::Model::A ) ) {
@@ -504,7 +542,7 @@ HOST ProtareSingle::ProtareSingle( GIDI::ProtareSingle const &a_protare, PoPI::D
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE ProtareSingle::~ProtareSingle( ) {
+MCGIDI_HOST_DEVICE ProtareSingle::~ProtareSingle( ) {
 
     for( Vector<NuclideGammaBranchInfo *>::const_iterator iter = m_branches.begin( ); iter < m_branches.end( ); ++iter ) delete *iter;
     for( Vector<NuclideGammaBranchStateInfo *>::const_iterator iter = m_nuclideGammaBranchStateInfos.begin( ); iter < m_nuclideGammaBranchStateInfos.end( ); ++iter ) delete *iter;
@@ -519,7 +557,7 @@ HOST_DEVICE ProtareSingle::~ProtareSingle( ) {
  * @param a_userParticleIndex   [in]    The particle id specified by the user.
  ***********************************************************************************************************/
 
-HOST void ProtareSingle::setUserParticleIndex( int a_particleIndex, int a_userParticleIndex ) {
+MCGIDI_HOST void ProtareSingle::setUserParticleIndex( int a_particleIndex, int a_userParticleIndex ) {
 
     Protare::setUserParticleIndex( a_particleIndex, a_userParticleIndex );
 
@@ -537,7 +575,21 @@ HOST void ProtareSingle::setUserParticleIndex( int a_particleIndex, int a_userPa
  * @return                              Returns the pointer representing *this*.
  ***********************************************************************************************************/
 
-HOST_DEVICE ProtareSingle const *ProtareSingle::protare( MCGIDI_VectorSizeType a_index ) const {
+MCGIDI_HOST_DEVICE ProtareSingle const *ProtareSingle::protare( MCGIDI_VectorSizeType a_index ) const {
+
+    if( a_index != 0 ) return( nullptr );
+    return( this );
+}
+
+/* *********************************************************************************************************//**
+ * Returns the pointer representing the protare (i.e., *this*) if *a_index* is 0 and nullptr otherwise.
+ *
+ * @param a_index               [in]    Must always be 0.
+ *
+ * @return                              Returns the pointer representing *this*.
+ ***********************************************************************************************************/
+
+MCGIDI_HOST_DEVICE ProtareSingle *ProtareSingle::protare( MCGIDI_VectorSizeType a_index ) {
 
     if( a_index != 0 ) return( nullptr );
     return( this );
@@ -551,7 +603,7 @@ HOST_DEVICE ProtareSingle const *ProtareSingle::protare( MCGIDI_VectorSizeType a
  * @return                              Pointer to the requested protare or nullptr if invalid *a_index*..
  ***********************************************************************************************************/
  
-HOST_DEVICE ProtareSingle const *ProtareSingle::protareWithReaction( int a_index ) const {
+MCGIDI_HOST_DEVICE ProtareSingle const *ProtareSingle::protareWithReaction( int a_index ) const {
  
     if( a_index < 0 ) return( nullptr );
     if( static_cast<std::size_t>( a_index ) < numberOfReactions( ) ) return( this );
@@ -566,9 +618,9 @@ HOST_DEVICE ProtareSingle const *ProtareSingle::protareWithReaction( int a_index
  * @return                              Vector of doubles.
  ***********************************************************************************************************/
 
-HOST_DEVICE Vector<double> ProtareSingle::temperatures( MCGIDI_VectorSizeType a_index ) const {
+MCGIDI_HOST_DEVICE Vector<double> ProtareSingle::temperatures( MCGIDI_VectorSizeType a_index ) const {
 
-    if( a_index != 0 ) THROW( "ProtareSingle::temperatures: a_index not 0." );
+    if( a_index != 0 ) MCGIDI_THROW( "ProtareSingle::temperatures: a_index not 0." );
     if( m_continuousEnergy ) return( m_heatedCrossSections.temperatures( ) );
     return( m_heatedMultigroupCrossSections.temperatures( ) );
 }
@@ -580,7 +632,7 @@ HOST_DEVICE Vector<double> ProtareSingle::temperatures( MCGIDI_VectorSizeType a_
  * @param a_protare             [in]    The GIDI::Protare** whose data is to be used to construct gamma branching data.
  ***********************************************************************************************************/
 
-HOST void ProtareSingle::setupNuclideGammaBranchStateInfos( SetupInfo &a_setupInfo, GIDI::ProtareSingle const &a_protare ) {
+MCGIDI_HOST void ProtareSingle::setupNuclideGammaBranchStateInfos( SetupInfo &a_setupInfo, GIDI::ProtareSingle const &a_protare ) {
 
     PoPI::NuclideGammaBranchStateInfos const &nuclideGammaBranchStateInfos = a_protare.nuclideGammaBranchStateInfos( );
     std::vector<NuclideGammaBranchInfo *> nuclideGammaBranchInfos;
@@ -603,7 +655,7 @@ HOST void ProtareSingle::setupNuclideGammaBranchStateInfos( SetupInfo &a_setupIn
  * @return                              true is if *this* has a fission reaction and false otherwise.
  ***********************************************************************************************************/
 
-HOST_DEVICE bool ProtareSingle::hasFission( ) const {
+MCGIDI_HOST_DEVICE bool ProtareSingle::hasFission( ) const {
 
     for( Vector<Reaction *>::const_iterator iter = m_reactions.begin( ); iter < m_reactions.end( ); ++iter ) {
         if( (*iter)->hasFission( ) ) return( true );
@@ -617,7 +669,7 @@ HOST_DEVICE bool ProtareSingle::hasFission( ) const {
  * @return                              true is if *this* has a URR data.
  ***********************************************************************************************************/
 
-HOST_DEVICE bool ProtareSingle::inURR( double a_energy ) const {
+MCGIDI_HOST_DEVICE bool ProtareSingle::inURR( double a_energy ) const {
 
     if( a_energy < m_URR_domainMin ) return( false );
     if( a_energy > m_URR_domainMax ) return( false );
@@ -636,7 +688,7 @@ HOST_DEVICE bool ProtareSingle::inURR( double a_energy ) const {
  * @param a_products            [in]    The object to add all sampled gammas to.
  ***********************************************************************************************************/
 
-HOST_DEVICE void ProtareSingle::sampleBranchingGammas( Sampling::Input &a_input, double a_projectileEnergy, int a_initialStateIndex, 
+MCGIDI_HOST_DEVICE void ProtareSingle::sampleBranchingGammas( Sampling::Input &a_input, double a_projectileEnergy, int a_initialStateIndex, 
                 double (*a_userrng)( void * ), void *a_rngState, Sampling::ProductHandler &a_products ) const {
 
     NuclideGammaBranchStateInfo *nuclideGammaBranchStateInfo = m_nuclideGammaBranchStateInfos[a_initialStateIndex];
@@ -679,7 +731,7 @@ HOST_DEVICE void ProtareSingle::sampleBranchingGammas( Sampling::Input &a_input,
  * @param a_sampling            [in]    Used for multi-group look up. If *true*, use augmented cross sections.
  ***********************************************************************************************************/
 
-HOST_DEVICE double ProtareSingle::crossSection( URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, bool a_sampling ) const {
+MCGIDI_HOST_DEVICE double ProtareSingle::crossSection( URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, bool a_sampling ) const {
 
     if( m_continuousEnergy ) return( m_heatedCrossSections.crossSection( a_URR_protareInfos, m_URR_index, a_hashIndex, a_temperature, a_energy ) );
 
@@ -695,10 +747,10 @@ HOST_DEVICE double ProtareSingle::crossSection( URR_protareInfos const &a_URR_pr
  * @param   a_crossSectionVector        [in/out]   The energy dependent, total cross section to add cross section data to.
  ***********************************************************************************************************/
  
-HOST_DEVICE void ProtareSingle::crossSectionVector( double a_temperature, double a_userFactor, int a_numberAllocated, double *a_crossSectionVector ) const {
+MCGIDI_HOST_DEVICE void ProtareSingle::crossSectionVector( double a_temperature, double a_userFactor, int a_numberAllocated, double *a_crossSectionVector ) const {
 
     if( m_continuousEnergy ) {
-        if( !m_fixedGrid ) THROW( "ProtareSingle::crossSectionVector: continuous energy cannot be supported." );
+        if( !m_fixedGrid ) MCGIDI_THROW( "ProtareSingle::crossSectionVector: continuous energy cannot be supported." );
         m_heatedCrossSections.crossSectionVector( a_temperature, a_userFactor, a_numberAllocated, a_crossSectionVector ); }
     else {
         m_heatedMultigroupCrossSections.crossSectionVector( a_temperature, a_userFactor, a_numberAllocated, a_crossSectionVector );
@@ -717,7 +769,7 @@ HOST_DEVICE void ProtareSingle::crossSectionVector( double a_temperature, double
  * @param a_sampling            [in]    Used for multi-group look up. If *true*, use augmented cross sections.
  ***********************************************************************************************************/
 
-HOST_DEVICE double ProtareSingle::reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, bool a_sampling ) const {
+MCGIDI_HOST_DEVICE double ProtareSingle::reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, bool a_sampling ) const {
 
     if( m_continuousEnergy ) return( m_heatedCrossSections.reactionCrossSection( a_reactionIndex, a_URR_protareInfos, m_URR_index, a_hashIndex, a_temperature, a_energy ) );
 
@@ -733,7 +785,7 @@ HOST_DEVICE double ProtareSingle::reactionCrossSection( int a_reactionIndex, URR
  * @param a_energy              [in]    The energy of the projectile.
  ***********************************************************************************************************/
 
-HOST_DEVICE double ProtareSingle::reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, double a_temperature, double a_energy ) const {
+MCGIDI_HOST_DEVICE double ProtareSingle::reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, double a_temperature, double a_energy ) const {
 
     if( m_continuousEnergy ) return( m_heatedCrossSections.reactionCrossSection( a_reactionIndex, a_URR_protareInfos, m_URR_index, a_temperature, a_energy ) );
 
@@ -753,7 +805,7 @@ HOST_DEVICE double ProtareSingle::reactionCrossSection( int a_reactionIndex, URR
  * @param a_rngState            [in]    The current state for the random number generator.
  ***********************************************************************************************************/
 
-HOST_DEVICE int ProtareSingle::sampleReaction( URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, 
+MCGIDI_HOST_DEVICE int ProtareSingle::sampleReaction( URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, 
                 double a_crossSection, double (*a_userrng)( void * ), void *a_rngState ) const {
 
     if( m_continuousEnergy ) return( m_heatedCrossSections.sampleReaction( a_URR_protareInfos, m_URR_index, a_hashIndex, a_temperature, a_energy, 
@@ -771,7 +823,7 @@ HOST_DEVICE int ProtareSingle::sampleReaction( URR_protareInfos const &a_URR_pro
  * @param a_energy              [in]    The energy of the projectile.
  ***********************************************************************************************************/
 
-HOST_DEVICE double ProtareSingle::depositionEnergy( int a_hashIndex, double a_temperature, double a_energy ) const {
+MCGIDI_HOST_DEVICE double ProtareSingle::depositionEnergy( int a_hashIndex, double a_temperature, double a_energy ) const {
 
     if( m_continuousEnergy ) return( m_heatedCrossSections.depositionEnergy( a_hashIndex, a_temperature, a_energy ) );
 
@@ -787,7 +839,7 @@ HOST_DEVICE double ProtareSingle::depositionEnergy( int a_hashIndex, double a_te
  * @param a_energy              [in]    The energy of the projectile.
  ***********************************************************************************************************/
 
-HOST_DEVICE double ProtareSingle::depositionMomentum( int a_hashIndex, double a_temperature, double a_energy ) const {
+MCGIDI_HOST_DEVICE double ProtareSingle::depositionMomentum( int a_hashIndex, double a_temperature, double a_energy ) const {
 
     if( m_continuousEnergy ) return( m_heatedCrossSections.depositionMomentum( a_hashIndex, a_temperature, a_energy ) );
 
@@ -803,7 +855,7 @@ HOST_DEVICE double ProtareSingle::depositionMomentum( int a_hashIndex, double a_
  * @param a_energy              [in]    The energy of the projectile.
  ***********************************************************************************************************/
 
-HOST_DEVICE double ProtareSingle::productionEnergy( int a_hashIndex, double a_temperature, double a_energy ) const {
+MCGIDI_HOST_DEVICE double ProtareSingle::productionEnergy( int a_hashIndex, double a_temperature, double a_energy ) const {
 
     if( m_continuousEnergy ) return( m_heatedCrossSections.productionEnergy( a_hashIndex, a_temperature, a_energy ) );
 
@@ -820,7 +872,7 @@ HOST_DEVICE double ProtareSingle::productionEnergy( int a_hashIndex, double a_te
  * @param a_particleIndex       [in]    The index of the particle whose gain is to be returned.
  ***********************************************************************************************************/
 
-HOST_DEVICE double ProtareSingle::gain( int a_hashIndex, double a_temperature, double a_energy, int a_particleIndex ) const {
+MCGIDI_HOST_DEVICE double ProtareSingle::gain( int a_hashIndex, double a_temperature, double a_energy, int a_particleIndex ) const {
 
     if( m_continuousEnergy ) return( m_heatedCrossSections.gain( a_hashIndex, a_temperature, a_energy, a_particleIndex ) );
 
@@ -835,7 +887,7 @@ HOST_DEVICE double ProtareSingle::gain( int a_hashIndex, double a_temperature, d
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void ProtareSingle::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void ProtareSingle::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     Protare::serialize( a_buffer, a_mode );
 

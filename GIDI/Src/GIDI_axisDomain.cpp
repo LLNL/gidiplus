@@ -8,6 +8,7 @@
 */
 
 #include "GIDI.hpp"
+#include <HAPI.hpp>
 
 namespace GIDI {
 
@@ -17,15 +18,15 @@ namespace GIDI {
 
 /* *********************************************************************************************************//**
  *
- * @param a_node            [in]     The **pugi::xml_node** to be parsed and used to construct the AxisDomain.
+ * @param a_node            [in]     The **HAPI::Node** to be parsed and used to construct the AxisDomain.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  ***********************************************************************************************************/
 
-AxisDomain::AxisDomain( pugi::xml_node const &a_node, SetupInfo &a_setupInfo ) :
+AxisDomain::AxisDomain( HAPI::Node const &a_node, SetupInfo &a_setupInfo ) :
         Form( a_node, a_setupInfo, FormType::axisDomain ),
-        m_minimum( a_node.attribute( GIDI_minChars ).as_double( ) ),
-        m_maximum( a_node.attribute( GIDI_maxChars ).as_double( ) ),
-        m_unit( a_node.attribute( GIDI_unitChars ).value( ) ) {
+        m_minimum( a_node.attribute_as_double( GIDI_minChars ) ),
+        m_maximum( a_node.attribute_as_double( GIDI_maxChars ) ),
+        m_unit( a_node.attribute_as_string( GIDI_unitChars ) ) {
 
 }
 

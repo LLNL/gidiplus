@@ -8,16 +8,17 @@
 */
 
 #include "GIDI.hpp"
+#include <HAPI.hpp>
 
 namespace GIDI {
 
 /* *********************************************************************************************************//**
  * @param a_construction    [in]    Used to pass user options for parsing.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed and used to construct the Protare.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed and used to construct the Protare.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  ***********************************************************************************************************/
 
-Flux::Flux( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo ) :
+Flux::Flux( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo ) :
         Form( a_node, a_setupInfo, FormType::flux ),
         m_flux( data2dParse( a_construction, a_node.first_child( ), a_setupInfo, nullptr ) ) {
 
@@ -78,11 +79,9 @@ Fluxes::Fluxes( std::string const &a_fileName ) :
 
 void Fluxes::addFile( std::string const &a_fileName ) {
 
-    pugi::xml_document doc;
-    pugi::xml_parse_result result = doc.load_file( a_fileName.c_str( ) );
-    if( result.status != pugi::status_ok ) throw Exception( result.description( ) );
+    HAPI::PugiXMLFile *doc = new HAPI::PugiXMLFile( a_fileName.c_str( ) );
 
-    pugi::xml_node fluxes = doc.first_child( );
+    HAPI::Node fluxes = doc->first_child( );
 
     std::string name( fluxes.name( ) );
     Construction::Settings construction( Construction::ParseMode::all, GIDI::Construction::PhotoMode::atomicOnly );
@@ -90,18 +89,19 @@ void Fluxes::addFile( std::string const &a_fileName ) {
 
     SetupInfo setupInfo( nullptr );
 
-    std::string formatVersionString = fluxes.attribute( GIDI_formatChars ).value( );
+    std::string formatVersionString = fluxes.attribute_as_string( GIDI_formatChars );
     if( formatVersionString == "" ) formatVersionString = GNDS_formatVersion_1_10Chars;
     FormatVersion formatVersion;
     formatVersion.setFormat( formatVersionString );
     if( !formatVersion.supported( ) ) throw Exception( "unsupport GND format version" );
     setupInfo.m_formatVersion = formatVersion;
 
-    for( pugi::xml_node child = fluxes.first_child( ); child; child = child.next_sibling( ) ) {
+    for( HAPI::Node child = fluxes.first_child( ); !child.empty( ); child.to_next_sibling( ) ) {
         Functions::Function3dForm *function3d = data3dParse( construction, child, setupInfo, nullptr );
 
         add( function3d );
     }
+    delete doc;
 }
 
 }

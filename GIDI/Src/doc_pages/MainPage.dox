@@ -18,9 +18,9 @@ the classes GIDI::Functions::XYs1d and GIDI::Functions::Ys1d that support calcul
 (a C++ library that samples from the **GNDS** data as needed by Monte Carlo transport codes).
 
 GIDI is not a stand-alone library.
-To use GIDI, one must also have the **statusMessageReporting**, **numericalFunctions** and **PoPI** libraries as well as
-the **pugixml** library. GIDI and the first three libraries (and **MCGIDI**) are developed by *Lawrance Livermore National Laboratory*  (LLNL) 
-and are available at /github.com/LLNL/gidiplus as one download. The **pugixml** must be downloaded by the user and placed in the
+To use GIDI, one must also have the **statusMessageReporting**, **numericalFunctions**, **PoPI** and **HAPI** libraries as well as
+the **pugixml** library and optionall **HDF5**. GIDI and the first four libraries (and **MCGIDI**) are developed by *Lawrance Livermore National Laboratory*  (LLNL) 
+and are available at /github.com/LLNL/gidiplus as one download. The **pugixml** and **HDF5** libraries must be downloaded by the user and placed in the
 appropriate location.
 
 For the most part, GIDI classes follow the structure of **GNDS**. From the developers standpoint, an important difference between **GNDS** and

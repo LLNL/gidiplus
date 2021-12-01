@@ -1,0 +1,13 @@
+projectile: n, target: U233
+contains styles: evaluated, crossSectionReconstructed
+documentation: 'Sample documentation'
+reaction 2n + U232:
+  cross section points:  8.6e+06 0 9e+06 0.0013 1e+07 3.5177 2e+07 2.45
+  Q-value: constant1d value = 0 over range 1e-05 - 2e+07 eV
+  products:
+    n multiplicity 1 distribution angularTwoBody.XYs2d
+    U233 multiplicity 1 distribution angularTwoBody.recoil
+
+Create empty node:         name = '', empty = 1
+Access non-existent node:  name = '', empty = 1
+Access non-existent attr:  name = '', value = ''

@@ -19,7 +19,7 @@ namespace MCGIDI {
  * Default constructor used when broadcasting a Protare as needed by MPI or GPUs.
  ***********************************************************************************************************/
 
-HOST_DEVICE Product::Product( ) :
+MCGIDI_HOST_DEVICE Product::Product( ) :
         m_ID( ),
         m_index( 0 ),
         m_userParticleIndex( -1 ),
@@ -41,7 +41,7 @@ HOST_DEVICE Product::Product( ) :
  * @param a_isFission           [in]    *true* if parent channel is a fission channel and *false* otherwise.
  ***********************************************************************************************************/
 
-HOST Product::Product( GIDI::Product const *a_product, SetupInfo &a_setupInfo, Transporting::MC const &a_settings, GIDI::Transporting::Particles const &a_particles,
+MCGIDI_HOST Product::Product( GIDI::Product const *a_product, SetupInfo &a_setupInfo, Transporting::MC const &a_settings, GIDI::Transporting::Particles const &a_particles,
                 bool a_isFission ) :
         m_ID( a_product->particle( ).ID( ).c_str( ) ),
         m_index( MCGIDI_popsIndex( a_settings.pops( ), a_product->particle( ).ID( ) ) ),
@@ -74,7 +74,7 @@ HOST Product::Product( GIDI::Product const *a_product, SetupInfo &a_setupInfo, T
  * @param a_label               [in]    The **GNDS** label for the product.
  ***********************************************************************************************************/
 
-HOST Product::Product( PoPI::Database const &a_pops, std::string const &a_ID, std::string const &a_label ) :
+MCGIDI_HOST Product::Product( PoPI::Database const &a_pops, std::string const &a_ID, std::string const &a_label ) :
         m_ID( a_ID.c_str( ) ),
         m_index( MCGIDI_popsIndex( a_pops, a_ID ) ),
         m_userParticleIndex( -1 ),
@@ -92,7 +92,7 @@ HOST Product::Product( PoPI::Database const &a_pops, std::string const &a_ID, st
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE Product::~Product( ) {
+MCGIDI_HOST_DEVICE Product::~Product( ) {
 
     delete m_multiplicity;
     delete m_distribution;
@@ -106,7 +106,7 @@ HOST_DEVICE Product::~Product( ) {
  * @param a_userParticleIndex   [in]    The particle id specified by the user.
  ***********************************************************************************************************/
 
-HOST void Product::setUserParticleIndex( int a_particleIndex, int a_userParticleIndex ) {
+MCGIDI_HOST void Product::setUserParticleIndex( int a_particleIndex, int a_userParticleIndex ) {
 
     if( m_index == a_particleIndex ) m_userParticleIndex = a_userParticleIndex;
     if( m_outputChannel != nullptr ) m_outputChannel->setUserParticleIndex( a_particleIndex, a_userParticleIndex );
@@ -120,7 +120,7 @@ HOST void Product::setUserParticleIndex( int a_particleIndex, int a_userParticle
  * @return                              The Q-value at product energy *a_x1*.
  ***********************************************************************************************************/
 
-HOST_DEVICE double Product::finalQ( double a_x1 ) const {
+MCGIDI_HOST_DEVICE double Product::finalQ( double a_x1 ) const {
 
     if( m_outputChannel != nullptr ) return( m_outputChannel->finalQ( a_x1 ) );
     return( m_excitationEnergy );
@@ -132,10 +132,33 @@ HOST_DEVICE double Product::finalQ( double a_x1 ) const {
  * @return                              *true* if any sub-output channel is a fission channel and *false* otherwise.
  ***********************************************************************************************************/
 
-HOST_DEVICE bool Product::hasFission( ) const {
+MCGIDI_HOST_DEVICE bool Product::hasFission( ) const {
 
     if( m_outputChannel != nullptr ) return( m_outputChannel->hasFission( ) );
     return( false );
+}
+
+/* *********************************************************************************************************//**
+ * Returns the energy dependent multiplicity for outgoing particle with pops id *a_id*. The returned value may not
+ * be an integer. Energy dependent multiplicities mainly occurs for photons and fission neutrons.
+ *
+ * @param a_id                      [in]    The PoPs id of the requested particle.
+ * @param a_projectileEnergy        [in]    The energy of the projectile.
+ *
+ * @return                                  The multiplicity value for the requested particle.
+ ***********************************************************************************************************/
+
+MCGIDI_HOST_DEVICE double Product::productAverageMultiplicity( int a_id, double a_projectileEnergy ) const {
+
+    double multiplicity1 = 0.0;
+
+    if( a_id == m_index ) {
+        if( ( m_multiplicity->domainMin( ) <= a_projectileEnergy ) && ( m_multiplicity->domainMax( ) >= a_projectileEnergy ) )
+            multiplicity1 += m_multiplicity->evaluate( a_projectileEnergy );
+    }
+    if( m_outputChannel != nullptr ) multiplicity1 += m_outputChannel->productAverageMultiplicity( a_id, a_projectileEnergy );
+
+    return( multiplicity1 );
 }
 
 /* *********************************************************************************************************//**
@@ -149,7 +172,7 @@ HOST_DEVICE bool Product::hasFission( ) const {
  * @param a_products                [in]    The object to add all sampled products to.
  ***********************************************************************************************************/
 
-HOST_DEVICE void Product::sampleProducts( Protare const *a_protare, double a_projectileEnergy, Sampling::Input &a_input, 
+MCGIDI_HOST_DEVICE void Product::sampleProducts( Protare const *a_protare, double a_projectileEnergy, Sampling::Input &a_input, 
                 double (*a_userrng)( void * ), void *a_rngState, Sampling::ProductHandler &a_products ) const {
 
     if( m_outputChannel != nullptr ) {
@@ -190,7 +213,7 @@ HOST_DEVICE void Product::sampleProducts( Protare const *a_protare, double a_pro
  * @param a_cumulative_weight       [in]    The sum of the multiplicity for other outgoing particles with index *a_pid*.
  ***********************************************************************************************************/
 
-HOST_DEVICE void Product::angleBiasing( Reaction const *a_reaction, int a_pid, double a_energy_in, double a_mu_lab, double &a_weight, double &a_energy_out,
+MCGIDI_HOST_DEVICE void Product::angleBiasing( Reaction const *a_reaction, int a_pid, double a_energy_in, double a_mu_lab, double &a_weight, double &a_energy_out,
                 double (*a_userrng)( void * ), void *a_rngState, double &a_cumulative_weight ) const {
 
     if( m_outputChannel != nullptr ) {
@@ -226,7 +249,7 @@ HOST_DEVICE void Product::angleBiasing( Reaction const *a_reaction, int a_pid, d
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void Product::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void Product::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     DATA_MEMBER_STRING( m_ID, a_buffer, a_mode );
     DATA_MEMBER_INT( m_index, a_buffer, a_mode );

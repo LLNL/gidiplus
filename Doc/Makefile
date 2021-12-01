@@ -1,4 +1,4 @@
-SHELL = /bin/bash
+SHELL = /bin/ksh
 
 # <<BEGIN-copyright>>
 # Copyright 2019, Lawrence Livermore National Security, LLC.

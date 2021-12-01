@@ -10,6 +10,7 @@
 #include <math.h>
 
 #include "GIDI.hpp"
+#include <HAPI.hpp>
 
 namespace GIDI {
 
@@ -18,7 +19,7 @@ namespace GIDI {
  *
  * @param a_construction            [in]    Used to pass user options for parsing.
  * @param a_parent                  [in]    The parent GIDI::Suite that the returned Form will be added to.
- * @param a_node                    [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node                    [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo               [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops                    [in]    A PoPs Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs            [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
@@ -28,8 +29,8 @@ namespace GIDI {
  * @return                                  The parsed and constructed GIDI::Form or nullptr if the node is not supported.
  ***********************************************************************************************************/
 
-Form *parseExternalFilesSuite( Construction::Settings const &a_construction, GIDI::Suite *a_parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,
-                PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
+Form *parseExternalFilesSuite( Construction::Settings const &a_construction, GIDI::Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
 
     Form *form = nullptr;
 
@@ -47,7 +48,7 @@ Form *parseExternalFilesSuite( Construction::Settings const &a_construction, GID
  *
  * @param a_construction            [in]    Used to pass user options for parsing.
  * @param a_parent                  [in]    The parent GIDI::Suite that the returned Form will be added to.
- * @param a_node                    [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node                    [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo               [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops                    [in]    A PoPs Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs            [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
@@ -57,8 +58,8 @@ Form *parseExternalFilesSuite( Construction::Settings const &a_construction, GID
  * @return                                  The parsed and constructed GIDI::Form or nullptr if the node is not supported.
  ***********************************************************************************************************/
 
-Form *parseStylesSuite( Construction::Settings const &a_construction, GIDI::Suite *a_parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,
-                PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
+Form *parseStylesSuite( Construction::Settings const &a_construction, GIDI::Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
 
     Form *form = nullptr;
 
@@ -107,7 +108,7 @@ Form *parseStylesSuite( Construction::Settings const &a_construction, GIDI::Suit
  *
  * @param a_construction            [in]    Used to pass user options for parsing.
  * @param a_parent                  [in]    The parent GIDI::Suite that the returned Form will be added to.
- * @param a_node                    [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node                    [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo               [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops                    [in]    A PoPs Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs            [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
@@ -117,8 +118,8 @@ Form *parseStylesSuite( Construction::Settings const &a_construction, GIDI::Suit
  * @return                                  The parsed and constructed GIDI::Form or nullptr if the node is not supported.
  ***********************************************************************************************************/
 
-Form *parseTransportablesSuite( Construction::Settings const &a_construction, Suite *a_parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,
-                PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
+Form *parseTransportablesSuite( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
 
     Form *form = nullptr;
 
@@ -136,7 +137,7 @@ Form *parseTransportablesSuite( Construction::Settings const &a_construction, Su
  *
  * @param a_construction            [in]    Used to pass user options for parsing.
  * @param a_parent                  [in]    The parent GIDI::Suite that the returned Form will be added to.
- * @param a_node                    [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node                    [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo               [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops                    [in]    A PoPs Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs            [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
@@ -146,8 +147,8 @@ Form *parseTransportablesSuite( Construction::Settings const &a_construction, Su
  * @return                                  The parsed and constructed GIDI::Reaction instance.
  ***********************************************************************************************************/
 
-Form *parseReaction( Construction::Settings const &a_construction, Suite *a_parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,
-                PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
+Form *parseReaction( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
 
     return( parseReactionType( GIDI_reactionChars, a_construction, a_parent, a_node, a_setupInfo, a_pops, a_internalPoPs, a_name, a_styles ) );
 }
@@ -157,7 +158,7 @@ Form *parseReaction( Construction::Settings const &a_construction, Suite *a_pare
  *
  * @param a_construction            [in]    Used to pass user options for parsing.
  * @param a_parent                  [in]    The parent GIDI::Suite that the returned Form will be added to.
- * @param a_node                    [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node                    [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo               [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops                    [in]    A PoPs Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs            [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
@@ -167,8 +168,8 @@ Form *parseReaction( Construction::Settings const &a_construction, Suite *a_pare
  * @return                                  The parsed and constructed GIDI::Reaction instance.
  ***********************************************************************************************************/
 
-Form *parseOrphanProduct( Construction::Settings const &a_construction, Suite *a_parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,
-                PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
+Form *parseOrphanProduct( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
 
     return( parseReactionType( GIDI_orphanProductChars, a_construction, a_parent, a_node, a_setupInfo, a_pops, a_internalPoPs, a_name, a_styles ) );
 }
@@ -178,7 +179,7 @@ Form *parseOrphanProduct( Construction::Settings const &a_construction, Suite *a
  *
  * @param a_construction            [in]    Used to pass user options for parsing.
  * @param a_parent                  [in]    The parent GIDI::Suite that the returned Form will be added to.
- * @param a_node                    [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node                    [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo               [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops                    [in]    A PoPs Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs            [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
@@ -188,8 +189,8 @@ Form *parseOrphanProduct( Construction::Settings const &a_construction, Suite *a
  * @return                                  The parsed and constructed GIDI::Reaction instance.
  ***********************************************************************************************************/
 
-Form *parseFissionComponent( Construction::Settings const &a_construction, Suite *a_parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,
-                PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
+Form *parseFissionComponent( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
 
     return( parseReactionType( GIDI_fissionComponentChars, a_construction, a_parent, a_node, a_setupInfo, a_pops, a_internalPoPs, a_name, a_styles ) );
 }
@@ -200,7 +201,7 @@ Form *parseFissionComponent( Construction::Settings const &a_construction, Suite
  * @param a_moniker                 [in]    The moniker for the form to parse.
  * @param a_construction            [in]    Used to pass user options for parsing.
  * @param a_parent                  [in]    The parent GIDI::Suite that the returned Form will be added to.
- * @param a_node                    [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node                    [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo               [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops                    [in]    A PoPs Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs            [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
@@ -210,9 +211,9 @@ Form *parseFissionComponent( Construction::Settings const &a_construction, Suite
  * @return                                  The parsed and constructed GIDI::Reaction instance.
  ***********************************************************************************************************/
 
-Form *parseReactionType( std::string const &a_moniker, Construction::Settings const &a_construction, Suite *a_parent, pugi::xml_node const &a_node,
-                SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name,
-                Styles::Suite const *a_styles ) {
+Form *parseReactionType( std::string const &a_moniker, Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node,
+		SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name,
+		Styles::Suite const *a_styles ) {
 
     Form *form = nullptr;
 
@@ -231,7 +232,7 @@ Form *parseReactionType( std::string const &a_moniker, Construction::Settings co
  *
  * @param a_construction            [in]    Used to pass user options for parsing.
  * @param a_parent                  [in]    The parent GIDI::Suite that the returned Form will be added to.
- * @param a_node                    [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node                    [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo               [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops                    [in]    A PoPs Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs            [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
@@ -241,8 +242,8 @@ Form *parseReactionType( std::string const &a_moniker, Construction::Settings co
  * @return                                  The parsed and constructed GIDI::CrossSectionSum instance.
  ***********************************************************************************************************/
 
-Form *parseSumsCrossSectionsSuite( Construction::Settings const &a_construction, Suite *a_parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,
-                PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
+Form *parseSumsCrossSectionsSuite( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
 
     Form *form = nullptr;
 
@@ -260,7 +261,7 @@ Form *parseSumsCrossSectionsSuite( Construction::Settings const &a_construction,
  *
  * @param a_construction            [in]    Used to pass user options for parsing.
  * @param a_parent                  [in]    The parent GIDI::Suite that the returned Form will be added to.
- * @param a_node                    [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node                    [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo               [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops                    [in]    A PoPs Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs            [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
@@ -270,8 +271,8 @@ Form *parseSumsCrossSectionsSuite( Construction::Settings const &a_construction,
  * @return                                  The parsed and constructed GIDI::MultiplicitySum instance.
  ***********************************************************************************************************/
 
-Form *parseSumsMultiplicitiesSuite( Construction::Settings const &a_construction, Suite *a_parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,
-                PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
+Form *parseSumsMultiplicitiesSuite( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
 
     Form *form = nullptr;
 
@@ -291,7 +292,7 @@ Form *parseSumsMultiplicitiesSuite( Construction::Settings const &a_construction
  *
  * @param a_construction            [in]    Used to pass user options for parsing.
  * @param a_parent                  [in]    The parent GIDI::Suite that the returned Form will be added to.
- * @param a_node                    [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node                    [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo               [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops                    [in]    A PoPs Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs            [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
@@ -301,9 +302,9 @@ Form *parseSumsMultiplicitiesSuite( Construction::Settings const &a_construction
  * @return                                  The parsed and constructed GIDI::Form or nullptr if the node is not supported.
  ***********************************************************************************************************/
 
-Form *parseDoubleDifferentialCrossSectionSuite( Construction::Settings const &a_construction, Suite *a_parent, pugi::xml_node const &a_node,
-                SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name,
-                Styles::Suite const *a_styles ) {
+Form *parseDoubleDifferentialCrossSectionSuite( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node,
+		SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name,
+		Styles::Suite const *a_styles ) {
 
     if( a_construction.parseMode( ) == Construction::ParseMode::outline ) return( nullptr );
     if( a_construction.parseMode( ) == Construction::ParseMode::multiGroupOnly ) return( nullptr );
@@ -334,7 +335,7 @@ Form *parseDoubleDifferentialCrossSectionSuite( Construction::Settings const &a_
  *
  * @param a_construction            [in]    Used to pass user options for parsing.
  * @param a_parent                  [in]    The parent GIDI::Suite that the returned Form will be added to.
- * @param a_node                    [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node                    [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo               [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops                    [in]    A PoPs Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs            [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
@@ -344,8 +345,8 @@ Form *parseDoubleDifferentialCrossSectionSuite( Construction::Settings const &a_
  * @return                                  The parsed and constructed GIDI::Form or nullptr if the node is not supported.
  ***********************************************************************************************************/
 
-Form *parseScatteringAtom( Construction::Settings const &a_construction, Suite *a_parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,
-                PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
+Form *parseScatteringAtom( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
 
     return( new DoubleDifferentialCrossSection::n_ThermalNeutronScatteringLaw::ScatteringAtom( a_construction, a_node, a_setupInfo ) );
 }
@@ -355,7 +356,7 @@ Form *parseScatteringAtom( Construction::Settings const &a_construction, Suite *
  *
  * @param a_construction            [in]    Used to pass user options for parsing.
  * @param a_parent                  [in]    The parent GIDI::Suite that the returned Form will be added to.
- * @param a_node                    [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node                    [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo               [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops                    [in]    A PoPs Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs            [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
@@ -365,8 +366,8 @@ Form *parseScatteringAtom( Construction::Settings const &a_construction, Suite *
  * @return                                  The parsed and constructed GIDI::Form or nullptr if the node is not supported.
  ***********************************************************************************************************/
 
-Form *parseCrossSectionSuite( Construction::Settings const &a_construction, Suite *a_parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,
-                PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
+Form *parseCrossSectionSuite( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
 
     if( a_construction.parseMode( ) == Construction::ParseMode::outline ) return( nullptr );
     if( ( a_construction.parseMode( ) == Construction::ParseMode::multiGroupOnly ) && ( a_name != GIDI_gridded1dChars ) ) return( nullptr );
@@ -395,7 +396,7 @@ Form *parseCrossSectionSuite( Construction::Settings const &a_construction, Suit
  *
  * @param a_construction            [in]    Used to pass user options for parsing.
  * @param a_parent                  [in]    The parent GIDI::Suite that the returned Form will be added to.
- * @param a_node                    [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node                    [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo               [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops                    [in]    A PoPs Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs            [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
@@ -405,8 +406,8 @@ Form *parseCrossSectionSuite( Construction::Settings const &a_construction, Suit
  * @return                                  The parsed and constructed GIDI::Form or nullptr if the node is not supported.
  ***********************************************************************************************************/
 
-Form *parseDelayedNeutronsSuite( Construction::Settings const &a_construction, Suite *a_parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,
-                PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
+Form *parseDelayedNeutronsSuite( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
 
     if( a_name != GIDI_delayedNeutronChars ) throw Exception( std::string( "Invalid " ) + GIDI_delayedNeutronsChars + " child node of moniker " + a_name );
     return( new DelayedNeutron( a_construction, a_node, a_setupInfo, a_pops, a_internalPoPs, a_parent, a_styles ) );
@@ -417,7 +418,7 @@ Form *parseDelayedNeutronsSuite( Construction::Settings const &a_construction, S
  *
  * @param a_construction            [in]    Used to pass user options for parsing.
  * @param a_parent                  [in]    The parent GIDI::Suite that the returned Form will be added to.
- * @param a_node                    [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node                    [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo               [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops                    [in]    A PoPs Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs            [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
@@ -427,8 +428,8 @@ Form *parseDelayedNeutronsSuite( Construction::Settings const &a_construction, S
  * @return                                  The parsed and constructed GIDI::Form or nullptr if the node is not supported.
  ***********************************************************************************************************/
 
-Form *parseFissionEnergyReleasesSuite( Construction::Settings const &a_construction, Suite *a_parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,
-                PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
+Form *parseFissionEnergyReleasesSuite( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
 
     if( a_name != GIDI_fissionEnergyReleaseChars ) throw Exception( std::string( "Invalid " ) + GIDI_fissionEnergyReleasesChars " child node of moniker " + a_name );
     return( new Functions::FissionEnergyRelease( a_construction, a_node, a_setupInfo, a_parent ) );
@@ -439,7 +440,7 @@ Form *parseFissionEnergyReleasesSuite( Construction::Settings const &a_construct
  *
  * @param a_construction            [in]    Used to pass user options for parsing.
  * @param a_parent                  [in]    The parent GIDI::Suite that the returned Form will be added to.
- * @param a_node                    [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node                    [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo               [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops                    [in]    A PoPs Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs            [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
@@ -449,8 +450,8 @@ Form *parseFissionEnergyReleasesSuite( Construction::Settings const &a_construct
  * @return                                  The parsed and constructed GIDI::Form or nullptr if the node is not supported.
  ***********************************************************************************************************/
 
-Form *parsePhysicalQuantitySuite( Construction::Settings const &a_construction, Suite *a_parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,
-                PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
+Form *parsePhysicalQuantitySuite( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
 
     return( new PhysicalQuantity( a_node, a_setupInfo ) );
 }
@@ -460,7 +461,7 @@ Form *parsePhysicalQuantitySuite( Construction::Settings const &a_construction, 
  *
  * @param a_construction            [in]    Used to pass user options for parsing.
  * @param a_parent                  [in]    The parent GIDI::Suite that the returned Form will be added to.
- * @param a_node                    [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node                    [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo               [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops                    [in]    A PoPs Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs            [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
@@ -470,8 +471,8 @@ Form *parsePhysicalQuantitySuite( Construction::Settings const &a_construction, 
  * @return                                  The parsed and constructed GIDI::Function1d instance.
  ***********************************************************************************************************/
 
-Form *parseAvailableSuite( Construction::Settings const &a_construction, Suite *a_parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,
-                PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
+Form *parseAvailableSuite( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
 
     if( a_construction.parseMode( ) == Construction::ParseMode::outline ) return( nullptr );
     if( ( a_construction.parseMode( ) == Construction::ParseMode::multiGroupOnly ) && ( a_name != GIDI_gridded1dChars ) ) return( nullptr );
@@ -484,7 +485,7 @@ Form *parseAvailableSuite( Construction::Settings const &a_construction, Suite *
  *
  * @param a_construction            [in]    Used to pass user options for parsing.
  * @param a_parent                  [in]    The parent GIDI::Suite that the returned Form will be added to.
- * @param a_node                    [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node                    [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo               [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops                    [in]    A PoPs Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs            [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
@@ -494,8 +495,8 @@ Form *parseAvailableSuite( Construction::Settings const &a_construction, Suite *
  * @return                                  The parsed and constructed GIDI::Function1d instance.
  ***********************************************************************************************************/
 
-Form *parseQSuite( Construction::Settings const &a_construction, Suite *a_parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,
-                PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
+Form *parseQSuite( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
 
     Form *form = nullptr;
 
@@ -511,7 +512,7 @@ Form *parseQSuite( Construction::Settings const &a_construction, Suite *a_parent
  *
  * @param a_construction            [in]    Used to pass user options for parsing.
  * @param a_parent                  [in]    The parent GIDI::Suite that the returned Form will be added to.
- * @param a_node                    [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node                    [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo               [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops                    [in]    A PoPs Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs            [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
@@ -521,8 +522,8 @@ Form *parseQSuite( Construction::Settings const &a_construction, Suite *a_parent
  * @return                                  The parsed and constructed GIDI::Product instance.
  ***********************************************************************************************************/
 
-Form *parseProductSuite( Construction::Settings const &a_construction, Suite *a_parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,
-                PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
+Form *parseProductSuite( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
 
     Form *form = nullptr;
 
@@ -540,7 +541,7 @@ Form *parseProductSuite( Construction::Settings const &a_construction, Suite *a_
  *
  * @param a_construction            [in]    Used to pass user options for parsing.
  * @param a_parent                  [in]    The parent GIDI::Suite that the returned Form will be added to.
- * @param a_node                    [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node                    [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo               [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops                    [in]    A PoPs Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs            [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
@@ -550,8 +551,8 @@ Form *parseProductSuite( Construction::Settings const &a_construction, Suite *a_
  * @return                                  The parsed and constructed GIDI::Function1d instance.
  ***********************************************************************************************************/
 
-Form *parseMultiplicitySuite( Construction::Settings const &a_construction, Suite *a_parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,
-                PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
+Form *parseMultiplicitySuite( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
 
     if( a_construction.parseMode( ) == Construction::ParseMode::outline ) return( nullptr );
 
@@ -565,7 +566,7 @@ Form *parseMultiplicitySuite( Construction::Settings const &a_construction, Suit
  *
  * @param a_construction            [in]    Used to pass user options for parsing.
  * @param a_parent                  [in]    The parent GIDI::Suite that the returned Form will be added to.
- * @param a_node                    [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node                    [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo               [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops                    [in]    A PoPs Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs            [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
@@ -575,8 +576,8 @@ Form *parseMultiplicitySuite( Construction::Settings const &a_construction, Suit
  * @return                                  The parsed and constructed GIDI::Form or nullptr if the node is not supported.
  ***********************************************************************************************************/
 
-Form *parseDistributionSuite( Construction::Settings const &a_construction, Suite *a_parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,
-                PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
+Form *parseDistributionSuite( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
 
     if( a_construction.parseMode( ) == Construction::ParseMode::outline ) return( nullptr );
     if( a_name == GIDI_multiGroup3dChars ) {
@@ -635,7 +636,7 @@ Form *parseDistributionSuite( Construction::Settings const &a_construction, Suit
  *
  * @param a_construction            [in]    Used to pass user options for parsing.
  * @param a_parent                  [in]    The parent GIDI::Suite that the returned Form will be added to.
- * @param a_node                    [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node                    [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo               [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops                    [in]    A PoPs Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs            [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
@@ -645,8 +646,8 @@ Form *parseDistributionSuite( Construction::Settings const &a_construction, Suit
  * @return                                  The parsed and constructed GIDI::Function1d instance.
  ***********************************************************************************************************/
 
-Form *parseAverageEnergySuite( Construction::Settings const &a_construction, Suite *a_parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,
-                PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
+Form *parseAverageEnergySuite( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
 
     if( a_construction.parseMode( ) == Construction::ParseMode::outline ) return( nullptr );
     if( ( a_construction.parseMode( ) == Construction::ParseMode::multiGroupOnly ) && ( a_name != GIDI_gridded1dChars ) ) return( nullptr );
@@ -659,7 +660,7 @@ Form *parseAverageEnergySuite( Construction::Settings const &a_construction, Sui
  *
  * @param a_construction            [in]    Used to pass user options for parsing.
  * @param a_parent                  [in]    The parent GIDI::Suite that the returned Form will be added to.
- * @param a_node                    [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node                    [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo               [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops                    [in]    A PoPs Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs            [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
@@ -670,8 +671,8 @@ Form *parseAverageEnergySuite( Construction::Settings const &a_construction, Sui
  * @return                                  The parsed and constructed GIDI::Function1d instance.
  ***********************************************************************************************************/
 
-Form *parseAverageMomentumSuite( Construction::Settings const &a_construction, Suite *a_parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,
-                PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
+Form *parseAverageMomentumSuite( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
 
     if( a_construction.parseMode( ) == Construction::ParseMode::outline ) return( nullptr );
     if( ( a_construction.parseMode( ) == Construction::ParseMode::multiGroupOnly ) && ( a_name != GIDI_gridded1dChars ) ) return( nullptr );
@@ -683,14 +684,14 @@ Form *parseAverageMomentumSuite( Construction::Settings const &a_construction, S
  * Function that parses a node one-d function node. Called from a Suite::parse instance.
  *
  * @param a_construction            [in]    Used to pass user options for parsing.
- * @param a_node                    [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node                    [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo               [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent                  [in]    The parent GIDI::Suite that the returned Form will be added to.
  *
  * @return                          The parsed and constructed GIDI::Function1d instance.
  ***********************************************************************************************************/
 
-Functions::Function1dForm *data1dParse( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) {
+Functions::Function1dForm *data1dParse( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) {
 
     Functions::Function1dForm *form = nullptr;
     std::string name( a_node.name( ) );
@@ -726,15 +727,15 @@ Functions::Function1dForm *data1dParse( Construction::Settings const &a_construc
  * Function that parses a node one-d function node. Called from a Suite::parse instance. If no node exists, returns nullptr.
  *
  * @param a_construction    [in]    Used to pass user options to the constructor.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent          [in]    The parent GIDI::Suite that the returned Form will be added to.
  *
  * @return                          The parsed and constructed GIDI::Function1d instance.
  ***********************************************************************************************************/
 
-Functions::Function1dForm *data1dParseAllowEmpty( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,
-                Suite *a_parent ) {
+Functions::Function1dForm *data1dParseAllowEmpty( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+		Suite *a_parent ) {
 
     std::string name( a_node.name( ) );
 
@@ -746,15 +747,15 @@ Functions::Function1dForm *data1dParseAllowEmpty( Construction::Settings const &
  * Function that parses the list of 1d function nodes contained in *a_node*.
  *
  * @param a_construction    [in]    Used to pass user options to the constructor.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_function1ds     [in]    The object to fill with the list of parsed 1d functions.
  ***********************************************************************************************************/
 
-void data1dListParse( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,
+void data1dListParse( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
                 std::vector<Functions::Function1dForm *> &a_function1ds ) {
 
-    for( pugi::xml_node child = a_node.first_child( ); child; child = child.next_sibling( ) ) {
+    for( HAPI::Node child = a_node.first_child( ); !child.empty( ); child.to_next_sibling( ) ) {
         Functions::Function1dForm *form = data1dParse( a_construction, child, a_setupInfo, nullptr );
 
         if( form == nullptr ) throw Exception( "data1dListParse data1dParse returned nullptr." );
@@ -766,13 +767,13 @@ void data1dListParse( Construction::Settings const &a_construction, pugi::xml_no
  * Function that parses a node two-d function node. Called from a Suite::parse instance.
  *
  * @param a_construction    [in]    Used to pass user options to the constructor.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent          [in]    The parent GIDI::Suite that the returned Form will be added to.
  * @return                          The parsed and constructed GIDI::Function2d instance.
  ***********************************************************************************************************/
  
-Functions::Function2dForm *data2dParse( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) {
+Functions::Function2dForm *data2dParse( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) {
 
     Functions::Function2dForm *form = nullptr;
     std::string name( a_node.name( ) );
@@ -814,15 +815,15 @@ Functions::Function2dForm *data2dParse( Construction::Settings const &a_construc
  * Function that parses the list of 2d function nodes contained in *a_node*.
  *
  * @param a_construction    [in]    Used to pass user options to the constructor.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed.
- * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed.
+ * @param a_parent          [in]    The parent GIDI::Suite that the returned Form will be added to.
  * @param a_function2ds     [in]    The object to fill with the list of parsed 2d functions.
  ***********************************************************************************************************/
 
-void data2dListParse( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,
-                std::vector<Functions::Function2dForm *> &a_function2ds ) {
+void data2dListParse( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+		std::vector<Functions::Function2dForm *> &a_function2ds ) {
 
-    for( pugi::xml_node child = a_node.first_child( ); child; child = child.next_sibling( ) ) {
+    for( HAPI::Node child = a_node.first_child( ); !child.empty( ); child.to_next_sibling( ) ) {
         Functions::Function2dForm *form = data2dParse( a_construction, child, a_setupInfo, nullptr );
 
         if( form == nullptr ) throw Exception( "data2dListParse data2dParse returned nullptr." );
@@ -834,14 +835,14 @@ void data2dListParse( Construction::Settings const &a_construction, pugi::xml_no
  * Function that parses a node three-d function node. Called from a Suite::parse instance.
  *
  * @param a_construction    [in]    Used to pass user options to the constructor.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent          [in]    The parent GIDI::Suite that the returned Form will be added to.
  *
  * @return                          The parsed and constructed GIDI::Function3d instance.
  ***********************************************************************************************************/
  
-Functions::Function3dForm *data3dParse( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) {
+Functions::Function3dForm *data3dParse( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) {
 
     Functions::Function3dForm *form = nullptr;
     std::string name( a_node.name( ) );

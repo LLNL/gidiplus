@@ -31,7 +31,7 @@ def checkOptions( target, options ) :
     cmd = './%s %s --tid %s > %s' % ( code, ' '.join( options ), target, output )
     if( args.verbose > 0 ) : print( cmd )
     os.system( cmd )
-    cmd = '../Utilities/diff.com %s/%s %s %s' % ( code, code, benchmarks, output )
+    cmd = 'python diff.py %s/%s %s %s' % ( code, code, benchmarks, output )
     if( args.verbose > 0 ) : print( cmd )
     os.system( cmd )
 

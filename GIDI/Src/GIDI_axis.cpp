@@ -8,6 +8,7 @@
 */
 
 #include "GIDI.hpp"
+#include <HAPI.hpp>
 
 namespace GIDI {
 
@@ -33,16 +34,16 @@ Axis::Axis( int a_index, std::string a_label, std::string a_unit, FormType a_typ
 
 /* *********************************************************************************************************//**
  *
- * @param a_node            [in]     The **pugi::xml_node** to be parsed and used to construct the Axis.
+ * @param a_node            [in]     The **HAPI::Node** to be parsed and used to construct the Axis.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_type            [in]     The **type** is either *"axis"* or *"grid"*.
  ***********************************************************************************************************/
 
-Axis::Axis( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, FormType a_type ) :
+Axis::Axis( HAPI::Node const &a_node, SetupInfo &a_setupInfo, FormType a_type ) :
         Form( a_node, a_setupInfo, a_type ),
-        m_index( a_node.attribute( GIDI_indexChars ).as_int( ) ),
-        m_unit( a_node.attribute( GIDI_unitChars ).value( ) ),
-        m_href( a_node.attribute( GIDI_hrefChars ).value( ) ) {
+  m_index( a_node.attribute_as_int( GIDI_indexChars ) ),
+  m_unit( a_node.attribute_as_string( GIDI_unitChars ) ),
+  m_href( a_node.attribute_as_string( GIDI_hrefChars ) ) {
 
 }
 

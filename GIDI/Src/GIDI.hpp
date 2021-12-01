@@ -18,10 +18,11 @@
 #include <iostream>
 #include <stdexcept>
 
-#include <pugixml.hpp>
+#include <HAPI.hpp>
 #include <PoPI.hpp>
 
 #include <nf_utilities.h>
+#include <nf_buffer.h>
 #include <ptwXY.h>
 
 #include "GIDI_data.hpp"
@@ -56,12 +57,18 @@ namespace Documentation_1_10 {
     class Suite;
 }                   // End of namespace Documentation_1_10.
 
+namespace ExternalFiles {
+
+class Suite;
+
+}                   // End of namespace ExternalFiles
+
 namespace Styles {
     class Suite;
     class MultiGroup;
 }                   // End of namespace Styles.
 
-typedef Form *(*parseSuite)( Construction::Settings const &a_construction, Suite *a_parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, 
+typedef Form *(*parseSuite)( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
         PoPI::Database const &a_pop, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles );
 
 enum class GNDS_FileType { uninitialized, unknown, pops, protare, covarianceSuite, map };
@@ -115,17 +122,20 @@ enum class FormType { generic, group, groups, transportable, flux, fluxes, exter
 
 enum class Frame { lab, centerOfMass };
 enum class TransportCorrectionType { None, Pendlebury, LLNL, Ferguson };
-enum class FileType { XML };
+enum class FileType { XML, HDF };
 
 #define GNDS_XML_verionEncoding "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
 
 #define GNDS_formatVersion_1_10Chars "1.10"
-#define GNDS_formatVersion_2_0_LLNL_3Chars "2.0.LLNL_3"
+#define GNDS_formatVersion_2_0Chars "2.0"
+#define GNDS_formatVersion_2_0_LLNL_4Chars "2.0.LLNL_4"
 
 #define GIDI_emptyFileNameChars ""
 
 #define GIDI_mapFormatVersion_0_1Chars "0.1"
 #define GIDI_mapFormatVersion_0_2Chars "0.2"
+
+#define GIDI_LLNL_Chars "LLNL"
 
 #define GIDI_mapChars "map"
 #define GIDI_importChars "import"
@@ -148,15 +158,22 @@ enum class FileType { XML };
 #define GIDI_reactionChars "reaction"
 #define GIDI_orphanProductsChars "orphanProducts"
 #define GIDI_orphanProductChars "orphanProduct"
+#define GIDI_incompleteReactionsChars "incompleteReactions"
 #define GIDI_fissionComponentsChars "fissionComponents"
 #define GIDI_fissionComponentChars "fissionComponent"
+
+#define GIDI_applicationDataChars "applicationData"
+#define GIDI_institutionChars "institution"
+#define GIDI_nuclearPlusCoulombInterferenceChars "nuclearPlusCoulombInterference"
 
 #define GIDI_sumsChars "sums"
 #define GIDI_sumsCrossSectionsChars "crossSections"
 #define GIDI_sumsMultiplicitiesChars "multiplicities"
 #define GIDI_sumsAddChars "add"
 #define GIDI_sumsSummandsChars "summands"
+#define GIDI_crossSectionSumsChars "crossSectionSums"
 #define GIDI_crossSectionSumChars "crossSectionSum"
+#define GIDI_multiplicitySumsChars "multiplicitySums"
 #define GIDI_multiplicitySumChars "multiplicitySum"
 
 #define GIDI_doubleDifferentialCrossSectionChars "doubleDifferentialCrossSection"
@@ -284,7 +301,10 @@ enum class FileType { XML };
 #define GIDI_resolvedRegionChars "resolvedRegion"
 #define GIDI_unresolvedRegionChars "unresolvedRegion"
 #define GIDI_fastRegionChars "fastRegion"
+
 #define GIDI_CoulombPlusNuclearElasticChars "CoulombPlusNuclearElastic"
+#define GIDI_RutherfordScatteringChars "RutherfordScattering"
+
 #define GIDI_URR_probabilityTables1ddChars "URR_probabilityTables1d"
 #define GIDI_LLNLLegendreChars "LLNLLegendre"
 
@@ -367,6 +387,8 @@ enum class FileType { XML };
 #define GIDI_genreChars "genre"
 #define GIDI_processChars "process"
 #define GIDI_pidChars "pid"
+#define GIDI_offsetChars "offset"
+#define GIDI_countChars "count"
 
 #define GIDI_inverseSpeedChars "inverseSpeed"
 
@@ -477,16 +499,21 @@ class SetupInfo {
 
     public:
         Protare *m_protare;
+        HAPI::DataManager *m_dataManager;
         ParticleSubstitution *m_particleSubstitution;
         FormatVersion m_formatVersion;
         Styles::MultiGroup *m_multiGroup;
 
         SetupInfo( Protare *a_protare ) :
                 m_protare( a_protare ),
+                m_dataManager ( nullptr ),
                 m_particleSubstitution( nullptr ),
                 m_formatVersion( ),
                 m_multiGroup( nullptr ) {
 
+        }
+        ~SetupInfo(){
+          delete m_dataManager;
         }
 };
 
@@ -519,6 +546,7 @@ class WriteInfo {
         std::string nodeEnder( std::string const &a_moniker ) { return( "</" + a_moniker + ">" ); }
 
         void print( );
+        void clear( ) { m_lines.clear( ); }      /**< Clears the contents of *m_lines*. */
 };
 
 /*
@@ -599,7 +627,7 @@ class Form : public Ancestry {
     public:
         Form( FormType a_type );
         Form( std::string const &a_moniker, FormType a_type, std::string const &a_label );
-        Form( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, FormType a_type, Suite *a_suite = nullptr );
+        Form( HAPI::Node const &a_node, SetupInfo &a_setupInfo, FormType a_type, Suite *a_suite = nullptr );
         Form( Form const &a_form );
         virtual ~Form( );
 
@@ -630,7 +658,7 @@ class PhysicalQuantity  : public Form {
         std::string m_unit;                                             /**< The unit for the physical quantity. */
 
     public:
-        PhysicalQuantity( pugi::xml_node const &a_node, SetupInfo &a_setupInfo );
+        PhysicalQuantity( HAPI::Node const &a_node, SetupInfo &a_setupInfo );
         PhysicalQuantity( double a_value, std::string a_unit );
         PhysicalQuantity( PhysicalQuantity const &a_physicalQuantity ) : 
                 Form( FormType::physicalQuantity ),
@@ -690,7 +718,7 @@ class AxisDomain : public Form {
         std::string m_unit;                                         /**< The unit for the domain. */
 
     public:
-        AxisDomain( pugi::xml_node const &a_node, SetupInfo &a_setupInfo );
+        AxisDomain( HAPI::Node const &a_node, SetupInfo &a_setupInfo );
         AxisDomain( double m_minimum, double m_maximum, std::string const &a_unit );
         ~AxisDomain( );
 
@@ -714,7 +742,7 @@ class Axis : public Form {
         std::string m_href;                                                     /**< The **GNDS**'s href if instance points to another Axis or Grid instance. */
 
     public:
-        Axis( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, FormType a_type = FormType::axis );
+        Axis( HAPI::Node const &a_node, SetupInfo &a_setupInfo, FormType a_type = FormType::axis );
         Axis( int a_index, std::string a_label, std::string a_unit, FormType a_type = FormType::axis );
         Axis( Axis const &a_axis );
         virtual ~Axis( );
@@ -739,22 +767,22 @@ class Grid : public Axis {
         std::string m_keyName;                                                      /**< **FIXME**. */
         std::string m_keyValue;                                                     /**< **FIXME**. */
         std::string m_valueType;                                                    /**< The type of data in m_values. Can be "Integer32". */
-        std::vector<double> m_values;                                               /**< The **GNDS grid**'s values. */
+        nf_Buffer<double> m_values;                                                 /**< The **GNDS grid**'s values. */
 
     public:
-        Grid( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, int a_useSystem_strtod );
+        Grid( HAPI::Node const &a_node, SetupInfo &a_setupInfo, int a_useSystem_strtod );
         Grid( Grid const &a_grid );
 
         std::size_t size( ) const { return( m_values.size( ) ); }                   /**< Returns the number of values in the **m_values** member. */
-        double &operator[]( std::size_t a_index ) { return( m_values[a_index] ); }  /**< Returns the value at m_values[a_index]. */
+        inline double &operator[]( std::size_t a_index ) noexcept { return( m_values[a_index] ); }  /**< Returns the value at m_values[a_index]. */
 
         std::string const &style( ) const { return( m_style ); }                    /**< Returns the value of the **m_style** member. */
         std::string keyName( ) const { return( m_keyName ); }                       /**< Returns the value of the **m_keyName** member. */
         std::string keyValue( ) const { return( m_keyValue ); }                     /**< Returns the value of the **m_keyValue** member. */
         std::string valueType( ) const { return( m_valueType ); }                     /**< Returns the value of the **m_valueType** member. */
 
-        std::vector<double> const &values( ) const { return( m_values ); }          /**< Returns the value of the **m_values** member. */
-        std::vector<double> const &data( ) const { return( m_values ); }            /**< Returns the value of the **m_values** member. */
+        nf_Buffer<double> const &values( ) const { return( m_values ); }          /**< Returns the value of the **m_values** member. */
+        nf_Buffer<double> const &data( ) const { return( m_values ); }            /**< Returns the value of the **m_values** member. */
 
         void toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent = "" ) const ;
 };
@@ -771,7 +799,7 @@ class Axes : public Form {
 
     public:
         Axes( );
-        Axes( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, int a_useSystem_strtod );
+        Axes( HAPI::Node const &a_node, SetupInfo &a_setupInfo, int a_useSystem_strtod );
         Axes( Axes const &a_axes );
         ~Axes( );
 
@@ -781,6 +809,8 @@ class Axes : public Form {
 
         void append( Axis *a_axis ) { m_axes.push_back( a_axis ); }                 /**< Appends *a_axis* to the* list of *Axis* nodes. */
         void toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent = "" ) const ;
+
+        static Axes makeAxes( std::vector<std::pair<std::string, std::string>> const &a_labelsAndUnits );
 };
 
 /*
@@ -794,11 +824,14 @@ class FlattenedArrayData : public Form {
         std::vector<int> m_shape;                                               /**< The shape of the flattened array. */
         std::size_t m_numberOfStarts;                                           /**< The number of start values. */
         std::size_t m_numberOfLengths;                                          /**< The number of length values. */
-        int32_t *m_starts;                                                      /**< The start values. */
-        int32_t *m_lengths;                                                     /**< The length values. */
-        std::vector<double> m_dValues;                                          /**< The given array data. */
+        nf_Buffer<int> m_starts;                                                /**< The start values. */
+        nf_Buffer<int> m_lengths;                                               /**< The length values. */
+        nf_Buffer<double> m_dValues;                                            /**< The given array data. */
+//        int32_t *m_starts;                                                      /**< The start values. */
+//        int32_t *m_lengths;                                                     /**< The length values. */
+//        std::vector<double> m_dValues;                                          /**< The given array data. */
 
-        FlattenedArrayData( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, int a_dimensions, int a_useSystem_strtod );
+        FlattenedArrayData( HAPI::Node const &a_node, SetupInfo &a_setupInfo, int a_dimensions, int a_useSystem_strtod );
         ~FlattenedArrayData( );
 
         std::vector<int> const &shape( ) const { return( m_shape ); }
@@ -817,7 +850,7 @@ class Array3d : public Form {
         FlattenedArrayData m_array;                                             /**< The 3d array as a FlattenedArrayData instance. */
 
     public:
-        Array3d( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, int a_useSystem_strtod );
+        Array3d( HAPI::Node const &a_node, SetupInfo &a_setupInfo, int a_useSystem_strtod );
         ~Array3d( );
 
         std::size_t size( ) const { return( m_array.m_shape.back( ) ); }        /**< The length of the 3d diminsion. */
@@ -848,7 +881,7 @@ class FunctionForm : public Form {
     public:
         FunctionForm( std::string const &a_moniker, FormType a_type, int a_dimension, ptwXY_interpolation a_interpolation, int a_index, double a_outerDomainValue );
         FunctionForm( std::string const &a_moniker, FormType a_type, int a_dimension, Axes const &a_axes, ptwXY_interpolation a_interpolation, int a_index, double a_outerDomainValue );
-        FunctionForm( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, FormType a_type, int a_dimension, Suite *a_suite = nullptr );
+        FunctionForm( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, FormType a_type, int a_dimension, Suite *a_suite = nullptr );
         FunctionForm( FunctionForm const &a_form );
         ~FunctionForm( );
 
@@ -881,7 +914,7 @@ class Function1dForm : public FunctionForm {
     public:
         Function1dForm( std::string const &a_moniker, FormType a_type, ptwXY_interpolation a_interpolation, int a_index, double a_outerDomainValue );
         Function1dForm( std::string const &a_moniker, FormType a_type, Axes const &a_axes, ptwXY_interpolation a_interpolation, int a_index, double a_outerDomainValue );
-        Function1dForm( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, FormType a_type, Suite *a_suite = nullptr );
+        Function1dForm( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, FormType a_type, Suite *a_suite = nullptr );
         Function1dForm( Function1dForm const &a_form );
         ~Function1dForm( );
 
@@ -902,7 +935,7 @@ class Constant1d : public Function1dForm {
 
     public:
         Constant1d( Axes const &a_axes, double value, double a_domainMin, double a_domainMax, int a_index = 0, double a_outerDomainValue = 0.0 );
-        Constant1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        Constant1d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         ~Constant1d( );
 
         double value( ) const { return( m_value ); }                    /**< Returns the value of the **m_value** member. */
@@ -925,27 +958,32 @@ class XYs1d : public Function1dForm {
         ptwXYPoints *m_ptwXY;                                               /**< The ptwXYPoints instance that stores points and is used to do calculations. */
 
     public:
+        XYs1d( );
         XYs1d( Axes const &a_axes, ptwXY_interpolation m_interpolation, int a_index = 0, double a_outerDomainValue = 0.0 );
         XYs1d( Axes const &a_axes, ptwXY_interpolation m_interpolation, std::vector<double> const &a_values, int a_index = 0, double a_outerDomainValue = 0.0 );
         XYs1d( Axes const &a_axes, ptwXYPoints *a_ptwXY, int a_index = 0, double a_outerDomainValue = 0.0 );
-        XYs1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        XYs1d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         XYs1d( XYs1d const &a_XYs1d );
         ~XYs1d( );
 
-        std::size_t size( ) const { return( ptwXY_length( nullptr, m_ptwXY ) ); }      /**< Returns the number of points (i.e., x,y pairs) in this. */
+        std::size_t size( ) const { return( ptwXY_length( nullptr, m_ptwXY ) ); }   /**< Returns the number of points (i.e., x,y pairs) in this. */
         ptwXYPoints const *ptwXY( ) const { return( m_ptwXY ); }                    /**< Returns the value of the **m_ptwXY** member. */
+        ptwXYPoints *ptwXY( ) { return( m_ptwXY ); }                                /**< Returns the value of the **m_ptwXY** member. */
 
         std::pair<double, double> operator[]( std::size_t a_index ) const ;
         XYs1d operator+( XYs1d const &a_XYs1d ) const ;
         XYs1d &operator+=( XYs1d const &a_XYs1d );
         XYs1d operator-( XYs1d const &a_XYs1d ) const ;
         XYs1d &operator-=( XYs1d const &a_XYs1d );
+        XYs1d operator*( XYs1d const &a_XYs1d ) const ;
+        XYs1d &operator*=( XYs1d const &a_XYs1d );
 
         double domainMin( ) const { return( (*this)[0].first ); }                   /**< Returns first x1 value of this. */
         double domainMax( ) const { return( (*this)[size( )-1].first ); }           /**< Returns last x1 value of this. */
         std::vector<double> xs( ) const ;
         std::vector<double> ys( ) const ;
         std::vector<double> ysMappedToXs( std::vector<double> const &a_xs, std::size_t *a_offset ) const ;
+        XYs1d domainSlice( double a_domainMin, double a_domainMax, bool a_fill ) const ;
         XYs1d domainSliceMax( double a_domainMax ) const ;
 
         double evaluate( double a_x1 ) const ;
@@ -953,6 +991,8 @@ class XYs1d : public Function1dForm {
 
         void print( char const *a_format );
         void print( std::string const &a_format );
+
+        static XYs1d *makeConstantXYs1d( Axes const &a_axes, double a_domainMin, double a_domainMax, double a_value );
 };
 
 /*
@@ -969,7 +1009,7 @@ class Ys1d : public Function1dForm {
     public:
         Ys1d( Axes const &a_axes, ptwXY_interpolation a_interpolation, int a_index = 0, double a_outerDomainValue = 0.0 );
         Ys1d( Axes const &a_axes, ptwXY_interpolation a_interpolation, std::size_t a_start, std::vector<double> const &a_Ys, int a_index = 0, double a_outerDomainValue = 0.0 );
-        Ys1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        Ys1d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         Ys1d( Ys1d const &a_Ys1d );
         ~Ys1d( );
 
@@ -1010,7 +1050,7 @@ class Polynomial1d : public Function1dForm {
 
     public:
         Polynomial1d( Axes const &a_axes, double a_domainMin, double a_domainMax, std::vector<double> const &a_coefficients, int a_index = 0, double a_outerDomainValue = 0.0 );
-        Polynomial1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        Polynomial1d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         Polynomial1d( Polynomial1d const &a_polynomial1d );
         ~Polynomial1d( );
 
@@ -1035,7 +1075,7 @@ class Legendre1d : public Function1dForm {
 
     public:
         Legendre1d( Axes const &a_axes, int a_index = 0, double a_outerDomainValue = 0.0 );
-        Legendre1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        Legendre1d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         Legendre1d( Legendre1d const &a_Legendre1d );
         ~Legendre1d( );
 
@@ -1062,7 +1102,7 @@ class Gridded1d : public Function1dForm {
 // BRB should have <array compression="flattened"> ... instead of m_data.
 
     public:
-        Gridded1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        Gridded1d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         Gridded1d( Vector const &a_grid, Vector const &a_data, Suite *a_parent );
         ~Gridded1d( );
 
@@ -1089,7 +1129,7 @@ class Reference1d : public Function1dForm {
         std::string m_xlink;                                                    /**< Link to the other function. */
 
     public:
-        Reference1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        Reference1d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         ~Reference1d( );
 
         double domainMin( ) const ;
@@ -1116,7 +1156,7 @@ class Xs_pdf_cdf1d : public Function1dForm {
     public:
         Xs_pdf_cdf1d( Axes const &a_axes, ptwXY_interpolation a_interpolation, std::vector<double> const &a_Xs, 
                 std::vector<double> const &a_pdf, std::vector<double> const &a_cdf, int a_index = 0, double a_outerDomainValue = 0.0 );
-        Xs_pdf_cdf1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        Xs_pdf_cdf1d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         ~Xs_pdf_cdf1d( );
 
         double domainMin( ) const { return( m_xs[0] ); }                        /**< Returns the value of the *domainMin*. */
@@ -1141,7 +1181,7 @@ class Regions1d : public Function1dForm {
         std::vector<Function1dForm *> m_function1ds;                            /**< List of regions. */
 
     public:
-        Regions1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        Regions1d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         ~Regions1d( );
 
         std::size_t size( ) const { return( m_function1ds.size( ) ); }                          /**< Returns number of regions. */
@@ -1172,7 +1212,7 @@ class Branching1dPids : public Form {
         std::string m_final;                                            /**< The nuclide level that the decay goes to. */
 
     public:
-        Branching1dPids( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        Branching1dPids( HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         ~Branching1dPids( );
 
         std::string const &initial( ) const { return( m_initial ); }           /**< Returns the value of the **m_initial** member. */
@@ -1191,7 +1231,7 @@ class Branching1d : public Function1dForm {
         double m_multiplicity;                                                  /**< The photon multiplicity for transitioning from the initial to the final state. */
 
     public:
-        Branching1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        Branching1d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         ~Branching1d( );
 
         Branching1dPids const &pids( ) const { return( m_pids ); }              /**< Returns the value of the **m_pids** member. */
@@ -1214,7 +1254,7 @@ class ResonanceBackgroundRegion1d : public Function1dForm {
         Function1dForm *m_function1d;                                           /**< The 1-d function representing *this*. */
 
     public:
-        ResonanceBackgroundRegion1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        ResonanceBackgroundRegion1d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         ~ResonanceBackgroundRegion1d( );
 
         double domainMin( ) const ;
@@ -1238,7 +1278,7 @@ class ResonanceBackground1d : public Function1dForm {
         ResonanceBackgroundRegion1d *m_fastRegion;                          /**< The 1-d function for the fast region. */
 
     public:
-        ResonanceBackground1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        ResonanceBackground1d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         ~ResonanceBackground1d( );
 
         Function1dForm const *resolvedRegion( ) const { return( m_resolvedRegion ); }       /**< Returns the value of the **m_resolvedRegion** member. */
@@ -1265,7 +1305,7 @@ class ResonancesWithBackground1d : public Function1dForm {
         ResonanceBackground1d m_background;                                                 /**< The background .*/
 
     public:
-        ResonancesWithBackground1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        ResonancesWithBackground1d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         ~ResonancesWithBackground1d( );
 
         double domainMin( ) const { return( m_background.domainMin( ) ); }                  /**< Returns *this* function's domain mimimun value. */
@@ -1287,7 +1327,7 @@ class URR_probabilityTables1d : public Function1dForm {
         Function2dForm *m_function2d;                                                       /**< The URR probability tables. */
 
     public:
-        URR_probabilityTables1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        URR_probabilityTables1d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         ~URR_probabilityTables1d( );
 
         Function2dForm const *function2d( ) const { return( m_function2d ); }               /**< Returns the pointer to the **m_function2d** member. */
@@ -1311,7 +1351,7 @@ class ThermalNeutronScatteringLaw1d : public Function1dForm {
         std::string m_href;                                                 /**< xlink to the IncoherentPhotoAtomicScattering instance under the *m_doubleDifferentialCrossSection* node. */
 
     public:
-        ThermalNeutronScatteringLaw1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        ThermalNeutronScatteringLaw1d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         ~ThermalNeutronScatteringLaw1d( );
 
         std::string const &href( ) const { return( m_href ); }              /**< Returns the value of the **m_href** member. */
@@ -1330,7 +1370,7 @@ class ThermalNeutronScatteringLaw1d : public Function1dForm {
 class Unspecified1d : public Function1dForm {
 
     public:
-        Unspecified1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        Unspecified1d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         ~Unspecified1d( );
 
         double domainMin( ) const ;
@@ -1351,7 +1391,7 @@ class Function2dForm : public FunctionForm {
     public:
         Function2dForm( std::string const &a_moniker, FormType a_type, ptwXY_interpolation a_interpolation, int a_index, double a_outerDomainValue );
         Function2dForm( std::string const &a_moniker, FormType a_type, Axes const &a_axes, ptwXY_interpolation a_interpolation, int a_index, double a_outerDomainValue );
-        Function2dForm( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, FormType a_type, Suite *a_suite = nullptr );
+        Function2dForm( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, FormType a_type, Suite *a_suite = nullptr );
         Function2dForm( Function2dForm const &a_form );
         ~Function2dForm( );
 
@@ -1372,7 +1412,7 @@ class XYs2d : public Function2dForm {
 
     public:
         XYs2d( Axes const &a_axes, ptwXY_interpolation a_interpolation, int a_index = 0, double a_outerDomainValue = 0.0 );
-        XYs2d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        XYs2d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         ~XYs2d( );
 
         std::string interpolationQualifier( ) const { return( m_interpolationQualifier ); }         /**< Returns the value of the **m_interpolationQualifier** member. */
@@ -1403,7 +1443,7 @@ class Recoil2d : public Function2dForm {
 
     public:
         Recoil2d( std::string const &a_label, std::string const &a_href );
-        Recoil2d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        Recoil2d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         ~Recoil2d( );
 
         double domainMin( ) const ;
@@ -1422,7 +1462,7 @@ class Recoil2d : public Function2dForm {
 class Isotropic2d : public Function2dForm {
 
     public:
-        Isotropic2d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        Isotropic2d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         ~Isotropic2d( );
 
         double domainMin( ) const ;
@@ -1446,7 +1486,7 @@ class DiscreteGamma2d : public Function2dForm {
         double m_value;                                                 /**< The energy of the discrete gamma. */
 
     public:
-        DiscreteGamma2d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        DiscreteGamma2d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         ~DiscreteGamma2d( );
 
         double domainMin( ) const { return( m_domainMin ); }            /**< Returns the value of the **m_domainMin** member. */
@@ -1470,7 +1510,7 @@ class PrimaryGamma2d : public Function2dForm {
         double m_value;                                                 /**< The binding energy needed to calculate the energy of the primary gamma. */
 
     public:
-        PrimaryGamma2d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        PrimaryGamma2d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         ~PrimaryGamma2d( );
 
         double domainMin( ) const { return( m_domainMin ); }            /**< Returns the value of the **m_domainMin** member. */
@@ -1494,7 +1534,7 @@ class GeneralEvaporation2d : public Function2dForm {
         Function1dForm *m_g;                                            /**< The *g* function for the general evaporation function. */
 
     public:
-        GeneralEvaporation2d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        GeneralEvaporation2d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         ~GeneralEvaporation2d( );
 
         double U( ) const { return( m_U.value( ) ); }                   /**< Returns the GNDS *U* value for *this*. */
@@ -1520,7 +1560,7 @@ class SimpleMaxwellianFission2d : public Function2dForm {
         Function1dForm *m_theta;                                        /**< The *theta* function for the simple Maxwellian function. */
 
     public:
-        SimpleMaxwellianFission2d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        SimpleMaxwellianFission2d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         ~SimpleMaxwellianFission2d( );
 
         double U( ) const { return( m_U.value( ) ); }                   /**< Returns the GNDS *U* value for *this*. */
@@ -1545,7 +1585,7 @@ class Evaporation2d : public Function2dForm {
         Function1dForm *m_theta;                                        /**< The *theta* function for the evaporation function. */
 
     public:
-        Evaporation2d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        Evaporation2d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         ~Evaporation2d( );
 
         double U( ) const { return( m_U.value( ) ); }                   /**< Returns the *m_U* value for *this*. */
@@ -1571,7 +1611,7 @@ class Watt2d : public Function2dForm {
         Function1dForm *m_b;                                            /**< The *b* function for the Watt function. */
 
     public:
-        Watt2d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        Watt2d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         ~Watt2d( );
 
         double U( ) const { return( m_U.value( ) ); }                   /**< Returns the GNDS *U* value for *this*. */
@@ -1598,7 +1638,7 @@ class MadlandNix2d : public Function2dForm {
         Function1dForm *m_T_M;                                          /**< The *T_M* function for the Madland/Nix function. */
 
     public:
-        MadlandNix2d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        MadlandNix2d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         ~MadlandNix2d( );
 
         double EFL( ) const { return( m_EFL.value( ) ); }               /**< Returns the GNDS *EFL* value for *this*. */
@@ -1625,7 +1665,7 @@ class Weighted_function2d : public Function2dForm {
         Function2dForm *m_energy;                                       /**< The energy functional. */
 
     public:
-        Weighted_function2d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        Weighted_function2d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         ~Weighted_function2d( );
 
         double domainMin( ) const ;
@@ -1647,7 +1687,7 @@ class WeightedFunctionals2d : public Function2dForm {
         std::vector<Weighted_function2d *> m_weighted_function2d;       /**< The list of Weighted_function2d. */
 
     public:
-        WeightedFunctionals2d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        WeightedFunctionals2d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         ~WeightedFunctionals2d( );
 
         double domainMin( ) const ;
@@ -1669,7 +1709,7 @@ class NBodyPhaseSpace2d : public Function2dForm {
         PhysicalQuantity m_mass;                                        /**< The mass for the NBodyPhaseSpace function. */
 
     public:
-        NBodyPhaseSpace2d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        NBodyPhaseSpace2d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         ~NBodyPhaseSpace2d( );
 
         double domainMin( ) const ;
@@ -1693,7 +1733,7 @@ class Regions2d : public Function2dForm {
         std::vector<Function2dForm *> m_function2ds;                        /**< List of 2d regions. */
 
     public:
-        Regions2d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        Regions2d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         ~Regions2d( );
 
         double domainMin( ) const ;
@@ -1717,7 +1757,7 @@ class Function3dForm : public FunctionForm {
     public:
         Function3dForm( std::string const &a_moniker, FormType a_type, ptwXY_interpolation a_interpolation, int a_index, double a_outerDomainValue );
         Function3dForm( std::string const &a_moniker, FormType a_type, Axes const &a_axes, ptwXY_interpolation a_interpolation, int a_index, double a_outerDomainValue );
-        Function3dForm( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, FormType a_type, Suite *a_suite = nullptr );
+        Function3dForm( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, FormType a_type, Suite *a_suite = nullptr );
         Function3dForm( Function3dForm const &a_form );
         ~Function3dForm( );
 
@@ -1738,7 +1778,7 @@ class XYs3d : public Function3dForm {
 
     public:
         XYs3d( Axes const &a_axes, ptwXY_interpolation a_interpolation = ptwXY_interpolationLinLin, int a_index = 0, double a_outerDomainValue = 0.0 );
-        XYs3d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        XYs3d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         ~XYs3d( );
 
         std::string interpolationQualifier( ) const { return( m_interpolationQualifier ); }         /**< Returns the value of the **m_interpolationQualifier** member. */
@@ -1771,7 +1811,7 @@ class Gridded3d : public Function3dForm {
         Array3d m_data;                                                                 /**< The multi-group transfer matrix. */
 
     public:
-        Gridded3d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo );
+        Gridded3d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo );
         ~Gridded3d( );
 
         double domainMin( ) const { return( 0.0 ); }                                        /**< Not properly implemented. */
@@ -1805,7 +1845,7 @@ namespace DoubleDifferentialCrossSection {
 class Base : public Form {
 
     public:
-        Base( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, FormType a_type, Suite *a_parent );
+        Base( HAPI::Node const &a_node, SetupInfo &a_setupInfo, FormType a_type, Suite *a_parent );
 };
 
 /*
@@ -1821,7 +1861,7 @@ class CoherentPhotoAtomicScattering : public Base {
         Functions::Function1dForm *m_imaginaryAnomalousFactor;                     /**< The imaginary anomalous factor of coherent photo-atomic scattering. */
 
     public:
-        CoherentPhotoAtomicScattering( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Suite *a_parent );
+        CoherentPhotoAtomicScattering( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Suite *a_parent );
         ~CoherentPhotoAtomicScattering( );
 
         Functions::Function1dForm *formFactor( ) { return( m_formFactor ); }                                            /**< Returns the value of the **m_formFactor** member. */
@@ -1843,7 +1883,7 @@ class IncoherentPhotoAtomicScattering : public Base {
         Functions::Function1dForm *m_scatteringFunction;                       /**< The scattering factor for incoherent photo-atomic scattering. */
 
     public:
-        IncoherentPhotoAtomicScattering( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Suite *a_parent );
+        IncoherentPhotoAtomicScattering( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Suite *a_parent );
         ~IncoherentPhotoAtomicScattering( );
 
         Functions::Function1dForm const *scatteringFunction( ) const { return( m_scatteringFunction ); }           /**< Returns the value of the **m_scatteringFunction** member. */
@@ -1863,7 +1903,7 @@ class S_table : public Form {
         Functions::Function2dForm *m_function2d;           /**< The cumulative scattering factor S(E,T). */
 
     public:
-        S_table( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo );
+        S_table( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo );
         ~S_table( );
 
         Functions::Function2dForm *function2d( ) { return( m_function2d ); }           /**< Returns the value of the **m_function2d** member. */
@@ -1880,7 +1920,7 @@ class CoherentElastic : public Base {
         S_table m_S_table;                                                  /**< The S(E,T). */
 
     public:
-        CoherentElastic( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Suite *a_parent );
+        CoherentElastic( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Suite *a_parent );
         ~CoherentElastic( );
 
         S_table const &s_table( ) { return( m_S_table ); }                  /**< Returns the value of the **m_S_table** member. */
@@ -1898,7 +1938,7 @@ class DebyeWaller : public Form {
         Functions::Function1dForm *m_function1d;                                   /**< The 1-d function representing the Debye-Waller function W(T). */
 
     public:
-        DebyeWaller( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo );
+        DebyeWaller( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo );
         ~DebyeWaller( );
 
         Functions::Function1dForm *function1d( ) { return( m_function1d ); }       /**< Returns the value of the **m_function1d** member. */
@@ -1916,7 +1956,7 @@ class IncoherentElastic : public Base {
         DebyeWaller m_DebyeWaller;                                      /**< The Debye-Waller function. */
 
     public:
-        IncoherentElastic( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Suite *a_parent );
+        IncoherentElastic( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Suite *a_parent );
         ~IncoherentElastic( );
 
         PhysicalQuantity const &characteristicCrossSection( ) { return( m_characteristicCrossSection ); }   /**< Returns the value of the **m_characteristicCrossSection** member. */
@@ -1936,7 +1976,7 @@ class Options : public Form {
         bool m_asymmetric;                                              /**< If *true* S(alpha,beta) is asymmetric, otherwise it is symmetric. */
 
     public:
-        Options( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo );
+        Options( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo );
         ~Options( );
 
         bool calculatedAtThermal( ) { return( m_calculatedAtThermal ); }    /**< Returns the value of the **m_calculatedAtThermal** member. */
@@ -1954,7 +1994,7 @@ class T_effective : public Form {
         Functions::Function1dForm *m_function1d;                               /**< The 1-d function representing effective temperature. */
 
     public:
-        T_effective( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo );
+        T_effective( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo );
         ~T_effective( );
 
         Functions::Function1dForm const *function1d( ) const { return( m_function1d ); }   /**< Returns the value of the **m_function1d** member. */
@@ -1975,7 +2015,7 @@ class ScatteringAtom : public Form {
         T_effective m_T_effective;                              /**< The effective temperatures for the shortcollision-time approximation given as a function of moderator temperature for the atom. */
 
     public:
-        ScatteringAtom( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo );
+        ScatteringAtom( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo );
         ~ScatteringAtom( );
 
         PhysicalQuantity const &mass( ) const { return( m_mass ); }                                     /**< Returns the value of the **m_mass** member. */
@@ -1996,7 +2036,7 @@ class S_alpha_beta : public Form {
         Functions::Function3dForm *m_function3d;                           /**< The S(alpha,beta,T) function. */
 
     public:
-        S_alpha_beta( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo );
+        S_alpha_beta( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo );
         ~S_alpha_beta( );
 
         Functions::Function3dForm *function3d( ) { return( m_function3d ); }                   /**< Returns the value of the **m_function3d** member. */
@@ -2020,7 +2060,7 @@ class Distribution : public Form {
 
     public:
         Distribution( std::string const &a_moniker, FormType a_type, std::string const &a_label, Frame a_productFrame );
-        Distribution( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, FormType a_type, Suite *a_parent );
+        Distribution( HAPI::Node const &a_node, SetupInfo &a_setupInfo, FormType a_type, Suite *a_parent );
 
         Frame productFrame( ) const { return( m_productFrame ); }               /**< Returns the value of the **m_productFrame** member. */
         void toXMLNodeStarter( WriteInfo &a_writeInfo, std::string const &a_indent = "" ) const ;
@@ -2038,7 +2078,7 @@ class AngularTwoBody : public Distribution {
 
     public:
         AngularTwoBody( std::string const &a_label, Frame a_productFrame, Functions::Function2dForm *a_angular = nullptr );
-        AngularTwoBody( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        AngularTwoBody( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         ~AngularTwoBody( );
 
         Functions::Function2dForm const *angular( ) const { return( m_angular ); }         /**< Returns the value of the **m_angular** member. */
@@ -2058,7 +2098,7 @@ class KalbachMann : public Distribution {
         Functions::Function2dForm *m_a;                                                    /**< The Kalbach/Mann a(E,E') function as a Function2dForm. */
 
     public:
-        KalbachMann( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        KalbachMann( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         ~KalbachMann( );
 
         Functions::Function2dForm const *f( ) const { return( m_f ); }                     /**< Returns the value of the **m_f** member. */
@@ -2078,7 +2118,7 @@ class EnergyAngular : public Distribution {
         Functions::Function3dForm *m_energyAngular;                                                /**< The P(E',mu|E) distribution as a Function3dForm. */
 
     public:
-        EnergyAngular( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        EnergyAngular( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         ~EnergyAngular( );
 
         Functions::Function3dForm const *energyAngular( ) const { return( m_energyAngular ); }     /**< Returns the value of the **m_energyAngular** member. */
@@ -2097,7 +2137,7 @@ class EnergyAngularMC : public Distribution {
         Functions::Function3dForm *m_energyAngular;                                        /**< The P(mu|E,E') distribution as a Function3dForm. */
 
     public:
-        EnergyAngularMC( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        EnergyAngularMC( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         ~EnergyAngularMC( );
 
         Functions::Function2dForm const *energy( ) const { return( m_energy ); }                   /**< Returns the value of the **m_energy** member. */
@@ -2116,7 +2156,7 @@ class AngularEnergy : public Distribution {
         Functions::Function3dForm *m_angularEnergy;                                                /**< The P(mu,E'|E) distribution as a Function3dForm. */
 
     public:
-        AngularEnergy( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        AngularEnergy( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         ~AngularEnergy( );
 
         Functions::Function3dForm const *angularEnergy( ) const { return( m_angularEnergy ); }     /**< Returns the value of the **m_angularEnergy** member. */
@@ -2135,7 +2175,7 @@ class AngularEnergyMC : public Distribution {
         Functions::Function3dForm *m_angularEnergy;                                                /**< The P(E'|E,mu) distribution as a Function3dForm. */
 
     public:
-        AngularEnergyMC( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        AngularEnergyMC( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         ~AngularEnergyMC( );
 
         Functions::Function2dForm const *angular( ) const { return( m_angular ); }                 /**< Returns the value of the **m_angular** member. */
@@ -2155,7 +2195,7 @@ class Uncorrelated : public Distribution {
         Functions::Function2dForm *m_energy;                                               /**< The P(E'|E) distribution as a Function2dForm. */
 
     public:
-        Uncorrelated( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        Uncorrelated( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         ~Uncorrelated( );
 
         Functions::Function2dForm const *angular( ) const { return( m_angular ); }         /**< Returns the value of the **m_angular** member. */
@@ -2174,7 +2214,7 @@ class MultiGroup3d : public Distribution {
         Functions::Gridded3d m_gridded3d;                                              /**< The multi-group Legendre distribution as a Gridded3d instance. */
 
     public:
-        MultiGroup3d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        MultiGroup3d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
 
         Functions::Gridded3d const &data( ) const { return( m_gridded3d ); }           /**< Returns the value of the **m_gridded3d** member. */
         void toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent = "" ) const ;
@@ -2192,7 +2232,7 @@ class LLNLAngularEnergy : public Distribution {
         Functions::Function3dForm *m_angularEnergy;                                    /**< The P(E'|E,mu) distribution as a Function3dForm. */
 
     public:
-        LLNLAngularEnergy( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        LLNLAngularEnergy( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         ~LLNLAngularEnergy( );
 
         Functions::Function2dForm const *angular( ) const { return( m_angular ); }                 /**< Returns the value of the **m_angular** member. */
@@ -2211,7 +2251,7 @@ class CoherentPhotoAtomicScattering : public Distribution {
         std::string m_href;                                                 /**< xlink to the IncoherentPhotoAtomicScattering instance under the *m_doubleDifferentialCrossSection* node. */
 
     public:
-        CoherentPhotoAtomicScattering( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        CoherentPhotoAtomicScattering( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
 
         std::string const &href( ) const { return( m_href ); }                          /**< Returns the value of the **m_href** member. */
 };
@@ -2227,7 +2267,7 @@ class IncoherentPhotoAtomicScattering : public Distribution {
         std::string m_href;                                                 /**< xlink to the IncoherentPhotoAtomicScattering instance under the *m_doubleDifferentialCrossSection* node. */
 
     public:
-        IncoherentPhotoAtomicScattering( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        IncoherentPhotoAtomicScattering( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
 
         std::string const &href( ) const { return( m_href ); }                          /**< Returns the value of the **m_href** member. */
 };
@@ -2243,7 +2283,7 @@ class ThermalNeutronScatteringLaw : public Distribution {
         std::string m_href;                                                 /**< xlink to the IncoherentPhotoAtomicScattering instance under the *m_doubleDifferentialCrossSection* node. */
 
     public:
-        ThermalNeutronScatteringLaw( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        ThermalNeutronScatteringLaw( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
 
         std::string const &href( ) const { return( m_href ); }                          /**< Returns the value of the **m_href** member. */
 };
@@ -2256,7 +2296,7 @@ class ThermalNeutronScatteringLaw : public Distribution {
 class Branching3d : public Distribution {
 
     public:
-        Branching3d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        Branching3d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
 
 };
 
@@ -2271,7 +2311,7 @@ class Reference3d : public Distribution {
         std::string m_href;                                                     /**< Link to the other function. */
 
     public:
-        Reference3d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        Reference3d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
 
         std::string const &href( ) const { return( m_href ); }                  /**< Returns the value of the **m_xlink** member. */
         void toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const ;
@@ -2285,7 +2325,7 @@ class Reference3d : public Distribution {
 class Unspecified : public Distribution {
 
     public:
-        Unspecified( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        Unspecified( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
 
         void toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const ;
 };
@@ -2311,7 +2351,7 @@ class Suite : public Ancestry {
     public:
         Suite( );
         Suite( std::string const &a_moniker );
-        Suite( Construction::Settings const &a_construction, std::string const &a_moniker, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, 
+        Suite( Construction::Settings const &a_construction, std::string const &a_moniker, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, 
                         PoPI::Database const &a_internalPoPs, parseSuite a_parseSuite, Styles::Suite const *a_styles );
         ~Suite( );
 
@@ -2331,7 +2371,7 @@ class Suite : public Ancestry {
 
         Styles::Suite const *styles( ) { return( m_styles ); }                              /**< Returns the value of the **m_styles** member. */
 
-        void parse( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, 
+        void parse( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, 
                         parseSuite a_parseSuite, Styles::Suite const *a_styles );
         void add( Form *a_form );
         iterator find( std::string const &a_label );
@@ -2433,7 +2473,7 @@ class Flux : public Form {
         Functions::Function2dForm *m_flux;                                          /**< The flux f(E,mu). */
 
     public:
-        Flux( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo );
+        Flux( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo );
         ~Flux( );
 
         void toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const ;
@@ -2450,12 +2490,12 @@ class Group : public Form {
         Grid m_grid;                                                /**< Multi-group boundaries for this Group. */
 
     public:
-        Group( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops );
+        Group( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops );
         Group( Group const &a_group );
 
         std::size_t size( ) const { return( m_grid.size( ) ); }                             /**< Returns the number of multi-group boundaries. */
         inline double &operator[]( std::size_t a_index ) { return( m_grid[a_index] ); }     /**< Returns the multi-group boundary at index *a_index*. */
-        std::vector<double> const &data( ) const { return( m_grid.data( ) ); }              /**< Returns the multi-group boundaries. */
+        std::vector<double> data( ) const { return( m_grid.data().vector() ); }              /**< Returns the multi-group boundaries. */
         Grid const &grid( ) const { return( m_grid ); }                                     /**< Returns the value of the **m_grid** member. */
         void toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const ;
 };
@@ -2472,13 +2512,13 @@ class Transportable : public Form {
         Group m_group;                                              /**< Multi-group boundaries for this Transportable. */
 
     public:
-        Transportable( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, Suite *a_parent );
+        Transportable( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, Suite *a_parent );
         Transportable( Transportable const &a_transportable );
 
         std::string pid( ) const { return( label( ) ); }                                    /**< Returns the value of the particle id for the **Transportable**. */
         std::string const &conserve( ) const { return( m_conserve ); }                      /**< Returns a const reference to member **m_conserve**. */
         Group const &group( ) const { return( m_group ); }                                  /**< Returns the value of the **m_group** member. */
-        std::vector<double> const &groupBoundaries( ) const { return( m_group.data( ) ); }  /**< Returns the multi-group boundaries for this transportable particle. */
+        std::vector<double> groupBoundaries( ) const { return( m_group.data( ) ); }  /**< Returns the multi-group boundaries for this transportable particle. */
         void toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const ;
 };
 
@@ -2495,7 +2535,7 @@ class ExternalFile : public Form {
 
     public:
         ExternalFile( std::string const &a_label, std::string const &a_path );
-        ExternalFile( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent );
+        ExternalFile( HAPI::Node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent );
         ~ExternalFile( );
 
         std::string const &path( ) const { return( m_path ); }
@@ -2518,7 +2558,7 @@ class Documentation : public Form {
         std::string m_text;
 
     public:
-        Documentation( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent );
+        Documentation( HAPI::Node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent );
         ~Documentation( ) { };
 
         std::string label( ) const { return m_label; }
@@ -2530,11 +2570,33 @@ class Suite : public GIDI::Suite {
 
     public:
         Suite( );
-        void parse( pugi::xml_node const &a_node, SetupInfo &a_setupInfo );
+        void parse( HAPI::Node const &a_node, SetupInfo &a_setupInfo );
 
 };
 
 }                     // End of namespace Documentation_1_10.
+
+/*
+============================================================
+===================== ExternalFiles stuff ==================
+============================================================
+*/
+
+namespace ExternalFiles {
+
+/*
+============================================================
+========================== Suite ===========================
+============================================================
+*/
+class Suite : public GIDI::Suite {
+
+    public:
+        void registerBinaryFiles(std::string a_parentDir, SetupInfo &a_setupInfo);
+
+};
+
+}                     // End of namespace ExternalFiles.
 
 /*
 ============================================================
@@ -2556,7 +2618,7 @@ class Base : public Form {
         std::string m_derivedStyle;             /**< The GNDS <**derivedFrom**> attribute. */
 
     public:
-        Base( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent );
+        Base( HAPI::Node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent );
 
         std::string const &date( ) const { return( m_date ); }                      /**< Returns the value of the **m_date** member. */
         std::string const &derivedStyle( ) const { return( m_derivedStyle ); }      /**< Returns the value of the **m_derivedStyle** member. */
@@ -2581,7 +2643,7 @@ class Evaluated : public Base {
         AxisDomain m_projectileEnergyDomain;        /**< The GNDS <**projectileEnergyDomain**> node data. */
 
     public:
-        Evaluated( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent );
+        Evaluated( HAPI::Node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent );
 
         PhysicalQuantity const &temperature( ) const { return( m_temperature ); }   /**< Returns the value of the **m_temperature** member. */
         AxisDomain const &projectileEnergyDomain( ) const { return( m_projectileEnergyDomain ); }
@@ -2596,7 +2658,7 @@ class Evaluated : public Base {
 class CrossSectionReconstructed : public Base {
 
     public:
-        CrossSectionReconstructed( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent );
+        CrossSectionReconstructed( HAPI::Node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent );
 
         PhysicalQuantity const &temperature( ) const ;
         void toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const ;
@@ -2613,7 +2675,7 @@ class CoulombPlusNuclearElasticMuCutoff : public Base {
         double m_muCutoff;                      /**< The GNDS <**muCutoff**> attribute. */
 
     public:
-        CoulombPlusNuclearElasticMuCutoff( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent );
+        CoulombPlusNuclearElasticMuCutoff( HAPI::Node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent );
 
         PhysicalQuantity const &temperature( ) const ;
         double muCutoff( ) const { return( m_muCutoff ); }          /**< Returns the value of the **m_muCutoff** member. */
@@ -2633,7 +2695,7 @@ class TNSL : public Base {
         PhysicalQuantity m_temperature;                                 /**< The GNDS <**temperature**> node data. */
 
     public:
-        TNSL( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent );
+        TNSL( HAPI::Node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent );
         PhysicalQuantity const & temperature( ) const { return( m_temperature ); }  /**< Returns the value of the **m_temperature** member. */
         void toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const ;
 };
@@ -2646,7 +2708,7 @@ class TNSL : public Base {
 class Realization : public Base {
 
     public:
-        Realization( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent );
+        Realization( HAPI::Node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent );
 
         PhysicalQuantity const & temperature( ) const ;
         void toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const ;
@@ -2660,7 +2722,7 @@ class Realization : public Base {
 class AverageProductData : public Base {
 
     public:
-        AverageProductData( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent );
+        AverageProductData( HAPI::Node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent );
 
         PhysicalQuantity const &temperature( ) const ;
         void toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const ;
@@ -2674,7 +2736,7 @@ class AverageProductData : public Base {
 class MonteCarlo_cdf : public Base {
 
     public:
-        MonteCarlo_cdf( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent );
+        MonteCarlo_cdf( HAPI::Node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent );
 
         PhysicalQuantity const &temperature( ) const ;
         void toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const ;
@@ -2692,13 +2754,13 @@ class MultiGroup : public Base {
         GIDI::Suite m_transportables;       /**< The GNDS <**transportables**> node. */
 
     public:
-        MultiGroup( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, GIDI::Suite *a_parent );
+        MultiGroup( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, GIDI::Suite *a_parent );
         ~MultiGroup( );
 
         int maximumLegendreOrder( ) const { return( m_maximumLegendreOrder ); }     /**< Returns the value of the **m_maximumLegendreOrder** member. */
         PhysicalQuantity const &temperature( ) const ;
 
-        std::vector<double> const &groupBoundaries( std::string const &a_productID ) const ;
+        std::vector<double> const groupBoundaries( std::string const &a_productID ) const ;
         GIDI::Suite const &transportables( ) const { return( m_transportables ); }  /**< Returns the value of the **m_transportables** member. */
         void toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const ;
 };
@@ -2714,7 +2776,7 @@ class Heated : public Base {
         PhysicalQuantity m_temperature;                                 /**< The GNDS <**temperature**> node data. */
 
     public:
-        Heated( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent );
+        Heated( HAPI::Node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent );
         PhysicalQuantity const & temperature( ) const { return( m_temperature ); }  /**< Returns the value of the **m_temperature** member. */
         void toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const ;
 };
@@ -2734,7 +2796,7 @@ class HeatedMultiGroup : public Base {
         std::string m_parameters;                       /**< The GNDS <**parameters**> attribute. Only used for GNDS 1.10. */
 
     public:
-        HeatedMultiGroup( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, GIDI::Suite *a_parent );
+        HeatedMultiGroup( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, GIDI::Suite *a_parent );
         ~HeatedMultiGroup( );
 
         PhysicalQuantity const &temperature( ) const ;
@@ -2742,7 +2804,7 @@ class HeatedMultiGroup : public Base {
         std::string const &href( ) const { return( m_href ); }                  /**< Returns a const reference to member **m_href**. */
         void set_href( std::string const &a_href );
         GIDI::Suite const &transportables( ) const { return( m_transportables ); }   /**< Returns a const reference to **m_transportables**. */
-        std::vector<double> const &groupBoundaries( std::string const &a_productID ) const ;
+        std::vector<double> const groupBoundaries( std::string const &a_productID ) const ;
         Flux const &flux( ) const { return( m_flux ); }                         /**< Returns a const reference to member **m_flux**. */
         std::string const &parameters( ) const { return( m_parameters ); }      /**< Returns a const reference to member **m_parameters**. Only used for GNDS 1.10. */
 
@@ -2762,7 +2824,7 @@ class SnElasticUpScatter : public Base {
         int m_upperCalculatedGroup;             /**< The GNDS <**upperCalculatedGroup**> attribute. */
 
     public:
-        SnElasticUpScatter( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, GIDI::Suite *a_parent );
+        SnElasticUpScatter( HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, GIDI::Suite *a_parent );
         ~SnElasticUpScatter( );
 
         PhysicalQuantity const &temperature( ) const ;
@@ -2781,7 +2843,7 @@ class GriddedCrossSection : public Base {
         Grid m_grid;                        /**< The GNDS <**grid**> node. */
 
     public:
-        GriddedCrossSection( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, GIDI::Suite *a_parent );
+        GriddedCrossSection( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, GIDI::Suite *a_parent );
         ~GriddedCrossSection( );
 
         PhysicalQuantity const &temperature( ) const ;
@@ -2797,7 +2859,7 @@ class GriddedCrossSection : public Base {
 class URR_probabilityTables : public Base {
 
     public:
-        URR_probabilityTables( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, GIDI::Suite *a_parent );
+        URR_probabilityTables( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, GIDI::Suite *a_parent );
         ~URR_probabilityTables( );
 
         PhysicalQuantity const &temperature( ) const ;
@@ -3109,6 +3171,7 @@ class Settings {
     private:
         std::string m_projectileID;                                 /**< The PoPs id of the projectile. */
         DelayedNeutrons m_delayedNeutrons;                          /**< If true, include delayed neutrons when returning or setting up data. */
+        bool m_nuclearPlusCoulombInterferenceOnly;                  /**< If true, for charge particle as projectile and elastic scattering, the Rutherford term is excluded from the elastic reaction. */
 
     public:
         Settings( std::string const &a_projectileID, DelayedNeutrons a_delayedNeutrons );
@@ -3118,6 +3181,10 @@ class Settings {
 
         DelayedNeutrons delayedNeutrons( ) const { return( m_delayedNeutrons ); }                                   /**< Returns the value of the **m_delayedNeutrons** member. */
         void setDelayedNeutrons( DelayedNeutrons a_delayedNeutrons ) { m_delayedNeutrons = a_delayedNeutrons; }     /**< Sets the **m_delayedNeutrons** member to **a_delayedNeutrons*. */
+
+        bool nuclearPlusCoulombInterferenceOnly( ) const { return( m_nuclearPlusCoulombInterferenceOnly ); }        /**< Returns the value of the **m_nuclearPlusCoulombInterferenceOnly** member. */
+        void setNuclearPlusCoulombInterferenceOnly( bool a_nuclearPlusCoulombInterferenceOnly )
+            { m_nuclearPlusCoulombInterferenceOnly = a_nuclearPlusCoulombInterferenceOnly; }                        /**< Sets the **m_nuclearPlusCoulombInterferenceOnly** to **a_nuclearPlusCoulombInterferenceOnly**. */
 
         Vector multiGroupZeroVector( Particles const &a_particles, bool a_collapse = true ) const ;
         Matrix multiGroupZeroMatrix( Particles const &a_particles, std::string const &a_particleID, bool a_collapse = true ) const ;
@@ -3166,7 +3233,7 @@ class Product : public Form {
 
     public:
         Product( PoPI::Database const &a_pops, std::string const &a_productID, std::string const &a_label );
-        Product( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Suite *a_parent, Styles::Suite const *a_styles );
+        Product( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Suite *a_parent, Styles::Suite const *a_styles );
         ~Product( );
 
         ParticleInfo const &particle( ) const { return( m_particle ); }                     /**< Returns the value of the **m_particle** member. */
@@ -3203,6 +3270,8 @@ class Product : public Form {
 
         void continuousEnergyProductData( std::string const &a_particleID, double a_energy, double &a_productEnergy, double &a_productMomentum, double &a_productGain ) const ;
 
+        void incompleteParticles( Transporting::Settings const &a_settings, std::set<std::string> &a_incompleteParticles ) const ;
+
         void toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent = "" ) const ;
 };
 
@@ -3219,7 +3288,7 @@ class DelayedNeutron : public Form {
         Product m_product;                          /**< The GNDS <**product**> node. */
 
     public:
-        DelayedNeutron( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Suite *a_parent, Styles::Suite const *a_styles );
+        DelayedNeutron( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Suite *a_parent, Styles::Suite const *a_styles );
         ~DelayedNeutron( );
 
         int delayedNeutronIndex( ) const { return( m_delayedNeutronIndex ); };
@@ -3240,6 +3309,8 @@ class DelayedNeutron : public Form {
         Matrix multiGroupProductMatrix( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, Transporting::Particles const &a_particles, std::string const &a_productID, int a_order ) const ;
         Vector multiGroupAverageEnergy( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const ;
         Vector multiGroupAverageMomentum( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const ;
+
+        void incompleteParticles( Transporting::Settings const &a_settings, std::set<std::string> &a_incompleteParticles ) const ;
 
         void toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent = "" ) const ;
 };
@@ -3284,12 +3355,12 @@ typedef std::vector<DelayedNeutronProduct> DelayedNeutronProducts;
 class FissionFragmentData : public Ancestry {
 
     private:
-        Suite m_delayedNeutrons;                            /**< The GNDS <**delayedNeutrons**> node. */
+        Suite m_delayedNeutrons;                            /**< The GNDS <**delayedNeutrons**> node. This members stores a list of DelayedNeutron instances. */
         Suite m_fissionEnergyReleases;                      /**< The GNDS <**fissionEnergyReleases**> node. */
 
     public:
         FissionFragmentData( );
-        FissionFragmentData( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Styles::Suite const *a_styles );
+        FissionFragmentData( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Styles::Suite const *a_styles );
         ~FissionFragmentData( );
 
         Suite &delayedNeutrons( ) { return( m_delayedNeutrons ); }
@@ -3310,6 +3381,7 @@ class FissionFragmentData : public Ancestry {
         Vector multiGroupAverageMomentum( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const ;
 
         void delayedNeutronProducts( DelayedNeutronProducts &a_delayedNeutronProducts ) const ;
+        void incompleteParticles( Transporting::Settings const &a_settings, std::set<std::string> &a_incompleteParticles ) const ;
 
         void toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent = "" ) const ;
 };
@@ -3332,7 +3404,7 @@ class OutputChannel : public Ancestry {
 
     public:
         OutputChannel( bool a_twoBody, bool a_fissions, std::string a_process );
-        OutputChannel( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, 
+        OutputChannel( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, 
                 Styles::Suite const *a_styles, bool a_isFission );
         ~OutputChannel( );
 
@@ -3360,11 +3432,12 @@ class OutputChannel : public Ancestry {
 
         Vector multiGroupQ( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, bool a_final ) const ;
         Vector multiGroupMultiplicity( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const ;
-        Matrix multiGroupProductMatrix( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, Transporting::Particles const &a_particles, std::string const &a_productID, int order ) const ;
+        Matrix multiGroupProductMatrix( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, Transporting::Particles const &a_particles, std::string const &a_productID, int a_order ) const ;
         Vector multiGroupAverageEnergy( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const ;
         Vector multiGroupAverageMomentum( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const ;
 
         void delayedNeutronProducts( DelayedNeutronProducts &a_delayedNeutronProducts ) const { m_fissionFragmentData.delayedNeutronProducts( a_delayedNeutronProducts ); }
+        void incompleteParticles( Transporting::Settings const &a_settings, std::set<std::string> &a_incompleteParticles ) const ;
         void continuousEnergyProductData( std::string const &a_particleID, double a_energy, double &a_productEnergy, double &a_productMomentum, double &a_productGain ) const ;
 
         void toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent = "" ) const ;
@@ -3387,7 +3460,7 @@ class IncoherentInelastic : public Base {
         S_alpha_beta m_S_alpha_beta;                    /**< The S(alpha,beta,T) function. */
     
     public:
-        IncoherentInelastic( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Suite *a_parent );
+        IncoherentInelastic( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Suite *a_parent );
         ~IncoherentInelastic( );
         
         Options &options( ) { return( m_options ); }                                    /**< Returns the value of the **m_options** */
@@ -3424,7 +3497,7 @@ class Reaction : public Form {
 
     public:
         Reaction( int a_ENDF_MT, std::string a_fissionGenre );
-        Reaction( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Protare const &a_protare,
+        Reaction( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Protare const &a_protare,
                         Styles::Suite const *a_styles );
         ~Reaction( );
 
@@ -3482,7 +3555,10 @@ class Reaction : public Form {
         Vector multiGroupGain( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID, std::string const &a_projectileID ) const ;
 
         void delayedNeutronProducts( DelayedNeutronProducts &a_delayedNeutronProducts ) const ;
+        void incompleteParticles( Transporting::Settings const &a_settings, std::set<std::string> &a_incompleteParticles ) const ;
         void continuousEnergyProductData( std::string const &a_particleID, double a_energy, double &a_productEnergy, double &a_productMomentum, double &a_productGain ) const ;
+
+        void modifiedCrossSection( Functions::XYs1d const &a_offset, Functions::XYs1d const &a_slope );
 
         void toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent = "" ) const ;
 };
@@ -3502,7 +3578,7 @@ class Base : public Ancestry {
         std::string m_href;                                                     /**< xlink for the summand. */
 
     public:
-        Base( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo );
+        Base( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo );
         ~Base( );
 
         std::string const &href( ) const { return( m_href ); }                  /**< Returns the value of the **m_href** member. */
@@ -3520,7 +3596,7 @@ class Base : public Ancestry {
 class Add : public Base {
 
     public:
-        Add( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo );
+        Add( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo );
 };
 
 }           // End of namespace Summand.
@@ -3536,7 +3612,7 @@ class Summands : public Form {
         std::vector<Summand::Base *> m_summands;                            /**< List of summand for *this*. */
 
     public:
-        Summands( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo );
+        Summands( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo );
         ~Summands( );
 
         std::size_t size( ) const { return( m_summands.size( ) ); }         /**< Returns the number of summands in *this*. */
@@ -3557,7 +3633,7 @@ class Base : public Form {
         Summands m_summands;                                                /**< List of Summands for *this*. */
 
     public:
-        Base( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs,
+        Base( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs,
                 FormType a_type );
 
         int ENDF_MT( ) const { return( m_ENDF_MT ); }                       /**< Returns the value of the **m_ENDF_MT** member. */
@@ -3576,7 +3652,7 @@ class CrossSectionSum : public Base {
         Suite m_crossSection;                                               /**< The GNDS <**crossSection**> node. */
 
     public:
-        CrossSectionSum( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs );
+        CrossSectionSum( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs );
         Ancestry *findInAncestry3( std::string const &a_item );
         Ancestry const *findInAncestry3( std::string const &a_item ) const ;
 
@@ -3597,7 +3673,7 @@ class MultiplicitySum : public Base {
         Suite m_multiplicity;                                               /**< The GNDS <**multiplicity**> node. */
 
     public:
-        MultiplicitySum( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs );
+        MultiplicitySum( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs );
 
         Suite &multiplicity( ) { return( m_multiplicity ); }                /**< Returns a reference to the **m_multiplicity** member. */
 
@@ -3612,17 +3688,19 @@ class MultiplicitySum : public Base {
 class Sums : public Ancestry {
 
     private:
-        Suite m_crossSections;                                              /**< The GNDS <**crossSections**> node. */
-        Suite m_multiplicities;                                             /**< The GNDS <**multiplicities**> node. */
+        Suite m_crossSectionSums;                                               /**< The GNDS <**crossSectionSums**> node. */
+        Suite m_multiplicitySums;                                               /**< The GNDS <**multiplicitySums**> node. */
 
     public:
         Sums( );
         ~Sums( );
 
-        Suite &crossSections( ) { return( m_crossSections ); }              /**< Returns the value of the **m_crossSections** member. */
-        Suite &multiplicities( ) { return( m_multiplicities ); }            /**< Returns the value of the **m_multiplicities** member. */
+        Suite &crossSectionSums( ) { return( m_crossSectionSums ); }                /**< Returns the value of the **m_crossSectionSums** member. */
+        Suite const &crossSectionSums( ) const { return( m_crossSectionSums ); }    /**< Returns the value of the **m_crossSectionSums** member. */
+        Suite &multiplicitySums( ) { return( m_multiplicitySums ); }                /**< Returns the value of the **m_multiplicitySums** member. */
+        Suite const &multiplicitySums( ) const { return( m_multiplicitySums ); }    /**< Returns the value of the **m_multiplicitySums** member. */
 
-        void parse( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs );
+        void parse( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs );
         Ancestry *findInAncestry3( std::string const &a_item );
         Ancestry const *findInAncestry3( std::string const &a_item ) const ;
 
@@ -3644,7 +3722,7 @@ class Protare : public Ancestry {
         ParticleInfo m_GNDS_target;             /**< Information about the target as specified in the GNDS file. For example, for requested target 'H1' for a photo-atomic GNDS file, the GNDS target will be 'H'. */
 
     protected:
-        void initialize( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, bool a_targetRequiredInGlobalPoPs, 
+        void initialize( HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, bool a_targetRequiredInGlobalPoPs, 
                         bool a_requiredInPoPs = true );
 
     public:
@@ -3697,7 +3775,7 @@ class Protare : public Ancestry {
         virtual Ancestry *findInAncestry3( std::string const &a_item ) = 0;
         virtual Ancestry const *findInAncestry3( std::string const &a_item ) const = 0;
 
-        virtual std::vector<double> const &groupBoundaries( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const = 0;
+        virtual std::vector<double> const groupBoundaries( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const = 0;
         virtual Vector multiGroupInverseSpeed( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo ) const = 0;
 
         virtual Vector multiGroupCrossSection( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo ) const = 0;
@@ -3726,6 +3804,7 @@ class Protare : public Ancestry {
 
         virtual stringAndDoublePairs muCutoffForCoulombPlusNuclearElastic( ) const = 0;
         virtual DelayedNeutronProducts delayedNeutronProducts( ) const = 0;
+        virtual void incompleteParticles( Transporting::Settings const &a_settings, std::set<std::string> &a_incompleteParticles ) const = 0;
         std::set<int> reactionIndicesMatchingENDLCValues( std::set<int> const &a_CValues, bool a_checkActiveState = true );
 };
 
@@ -3755,23 +3834,30 @@ class ProtareSingle : public Protare {
 
         PoPI::NuclideGammaBranchStateInfos m_nuclideGammaBranchStateInfos;  /**< Simplified list of gamma branching data from nuclide level decays derived from the internal PoPI::Database. */
 
-        Suite m_externalFiles;                  /**< The GNDS <**externalFile**> node. */
+        ExternalFiles::Suite m_externalFiles;   /**< The GNDS <**externalFiles**> node. */
         Styles::Suite m_styles;                 /**< The GNDS <**styles**> node. */
         Documentation_1_10::Suite m_documentations;  /**< The GNDS <**documentations**> node. */
         Suite m_reactions;                      /**< The GNDS <**reactions**> node. */
         Suite m_orphanProducts;                 /**< The GNDS <**orphanProducts**> node. */
+        Suite m_incompleteReactions;            /**< The GNDS <**incompleteReactions**> node. */
 
         Sums::Sums m_sums;                      /**< The GNDS <**sums**> node. */
         Suite m_fissionComponents;              /**< The GNDS <**fissionComponents**> node. */
 
+        bool m_onlyRutherfordScatteringPresent; /**> For charged particle elastic scattering, this member of *true* if only Rutherford scattering is present and *false* otherwise. */
+        Reaction *m_nuclearPlusCoulombInterferenceOnlyReaction;    /**< The nuclear + interference (ENDL C=9) reaction in the applicationData node. */
+
         void initialize( );
-        void initialize( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, bool a_targetRequiredInGlobalPoPs,
+        void initialize( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, bool a_targetRequiredInGlobalPoPs,
                         bool a_requiredInPoPs = true );
 
     public:
         ProtareSingle( PoPI::Database const &a_pops, std::string const &a_projectileID, std::string const &a_targetID, std::string const &a_evaluation,
                 std::string const &a_interaction, std::string const &a_formatVersion = GNDS_formatVersion_1_10Chars );
         ProtareSingle( Construction::Settings const &a_construction, std::string const &a_fileName, FileType a_fileType, PoPI::Database const &a_pops, 
+                ParticleSubstitution const &a_particleSubstitution, std::vector<std::string> const &a_libraries, std::string const &a_interaction,
+                bool a_targetRequiredInGlobalPoPs = true, bool a_requiredInPoPs = true );
+        ProtareSingle( Construction::Settings const &a_construction, HAPI::Node const &a_protare, PoPI::Database const &a_pops, 
                 ParticleSubstitution const &a_particleSubstitution, std::vector<std::string> const &a_libraries, std::string const &a_interaction,
                 bool a_targetRequiredInGlobalPoPs = true, bool a_requiredInPoPs = true );
         ~ProtareSingle( );
@@ -3784,12 +3870,19 @@ class ProtareSingle : public Protare {
         bool isTNSL_ProtareSingle( ) const { return( m_isTNSL_ProtareSingle ); }    /**< Returns *true* if the instance is a ProtareSingle instance with only TNSL data and *false* otherwise. */
         bool isPhotoAtomic( ) const { return( m_isPhotoAtomic ); }                  /**< Returns the value of the **m_isPhotoAtomic** member. */
 
-        Suite &reactions( ) { return( m_reactions ); }                              /**< Returns the value of the **m_reactions** member. */
-        Suite const &reactions( ) const { return( m_reactions ); }                  /**< Returns the value of the **m_reactions** member. */
-        Suite &orphanProducts( ) { return( m_orphanProducts ); }                    /**< Returns the value of the **m_orphanProducts** member. */
-        Suite const &orphanProducts( ) const { return( m_orphanProducts ); }        /**< Returns the value of the **m_orphanProducts** member. */
-        Sums::Sums &sums( ) { return( m_sums ); }                                   /**< Returns the value of the **m_sums** member. */
-        Suite &fissionComponents( ) { return( m_fissionComponents ); }              /**< Returns the value of the **m_fissionComponents** member. */
+        Suite &reactions( ) { return( m_reactions ); }                              /**< Returns a reference to the **m_reactions** member. */
+        Suite const &reactions( ) const { return( m_reactions ); }                  /**< Returns a *const* reference to the **m_reactions** member. */
+        Suite &orphanProducts( ) { return( m_orphanProducts ); }                    /**< Returns a reference to the **m_orphanProducts** member. */
+        Suite const &orphanProducts( ) const { return( m_orphanProducts ); }        /**< Returns a *const* reference to the **m_orphanProducts** member. */
+        Suite &incompleteReactions( ) { return( m_incompleteReactions ); }          /**< Returns a reference to the **m_incompleteReactions** member. */
+        Suite const &incompleteReactions( ) const { return( m_incompleteReactions ); }  /**< Returns a *const* reference to the **m_incompleteReactions** member. */
+
+        Sums::Sums &sums( ) { return( m_sums ); }                                   /**< Returns a reference to the **m_sums** member. */
+        Sums::Sums const &sums( ) const { return( m_sums ); }                       /**< Returns a reference to the **m_sums** member. */
+        Suite &fissionComponents( ) { return( m_fissionComponents ); }              /**< Returns a reference to the **m_fissionComponents** member. */
+
+        bool onlyRutherfordScatteringPresent( ) const { return( m_onlyRutherfordScatteringPresent ); } /**< Returns the value of **m_onlyRutherfordScatteringPresent**. */
+        Reaction const *nuclearPlusCoulombInterferenceOnlyReaction( ) const { return( m_nuclearPlusCoulombInterferenceOnlyReaction ); } /**< Returns a reference to the **m_nuclearPlusCoulombInterferenceOnlyReaction** member. */
 
 // The rest are virtual methods defined in the Protare class.
 
@@ -3810,6 +3903,9 @@ class ProtareSingle : public Protare {
 
         Documentation_1_10::Suite &documentations( ) { return( m_documentations ); }                             /**< Returns the value of the **m_documentations** member. */
 
+        ExternalFile const &externalFile( std::string const a_label ) const { return( *m_externalFiles.get<ExternalFile>( a_label ) ); }      /**< Returns the external file with label **a_label**. */
+        ExternalFiles::Suite const &externalFiles( ) const { return( m_externalFiles ); }                /**< Returns the value of the **m_externalFiles** member. */
+
         Styles::Base &style( std::string const a_label ) { return( *m_styles.get<Styles::Base>( a_label ) ); }      /**< Returns the style with label **a_label**. */
         Styles::Suite &styles( ) { return( m_styles ); }                                                    /**< Returns the value of the **m_styles** member. */
         Styles::Suite const &styles( ) const { return( m_styles ); }                                        /**< Returns a *const* reference to the **m_styles** member. */
@@ -3824,16 +3920,21 @@ class ProtareSingle : public Protare {
         std::size_t numberOfReactions( ) const { return( m_reactions.size( ) ); }                                   /**< Returns the number of reactions in the **Protare**. */
         Reaction *reaction( std::size_t a_index ) { return( m_reactions.get<Reaction>( a_index ) ); }               /**< Returns the **a_index** - 1 reaction. */
         Reaction const *reaction( std::size_t a_index ) const { return( m_reactions.get<Reaction>( a_index ) ); }   /**< Returns the **a_index** - 1 reaction. */
-        std::size_t numberOfOrphanProducts( ) const { return( m_orphanProducts.size( ) ); };
-        Reaction *orphanProduct( std::size_t a_index ) { return( m_orphanProducts.get<Reaction>( a_index ) ); }     /**< Returns the **a_index** - 1 orphan product. */
-        Reaction const *orphanProduct( std::size_t a_index ) const { return( m_orphanProducts.get<Reaction>( a_index ) ); }     /**< Returns the **a_index** - 1 orphan product. */
+
+        std::size_t numberOfOrphanProducts( ) const { return( m_orphanProducts.size( ) ); };                        /**< Returns the number of orphan product reactions in the **Protare**. */
+        Reaction *orphanProduct( std::size_t a_index ) { return( m_orphanProducts.get<Reaction>( a_index ) ); }     /**< Returns the **a_index** - 1 orphan product reaction. */
+        Reaction const *orphanProduct( std::size_t a_index ) const { return( m_orphanProducts.get<Reaction>( a_index ) ); }     /**< Returns the **a_index** - 1 orphan product reaction. */
+
+        std::size_t numberOfIncompleteReactions( ) const { return( m_incompleteReactions.size( ) ); }                                   /**< Returns the number of incomplete reactions in the **Protare**. */
+        Reaction *incompleteReaction( std::size_t a_index ) { return( m_incompleteReactions.get<Reaction>( a_index ) ); }               /**< Returns the **a_index** - 1 reaction. */
+        Reaction const *incompleteReaction( std::size_t a_index ) const { return( m_incompleteReactions.get<Reaction>( a_index ) ); }   /**< Returns the **a_index** - 1 reaction. */
 
         bool hasFission( ) const ;
 
         Ancestry *findInAncestry3( std::string const &a_item );
         Ancestry const *findInAncestry3( std::string const &a_item ) const ;
 
-        std::vector<double> const &groupBoundaries( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const ;
+        std::vector<double> const groupBoundaries( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const ;
         Vector multiGroupInverseSpeed( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo ) const ;
 
         Vector multiGroupCrossSection( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo ) const ;
@@ -3858,6 +3959,7 @@ class ProtareSingle : public Protare {
 
         stringAndDoublePairs muCutoffForCoulombPlusNuclearElastic( ) const ;
         DelayedNeutronProducts delayedNeutronProducts( ) const ;
+        void incompleteParticles( Transporting::Settings const &a_settings, std::set<std::string> &a_incompleteParticles ) const ;
 
         void saveAs( std::string const &a_fileName ) const ;
         void toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent = "" ) const ;
@@ -3919,7 +4021,7 @@ class ProtareComposite : public Protare {
         Ancestry *findInAncestry3( std::string const &a_item ) { return( nullptr ); }  /**< Always returns *nullptr*. */
         Ancestry const *findInAncestry3( std::string const &a_item ) const { return( nullptr ); }  /**< Always returns *nullptr*. */
 
-        std::vector<double> const &groupBoundaries( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const ;
+        std::vector<double> const groupBoundaries( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const ;
         Vector multiGroupInverseSpeed( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo ) const ;
 
         Vector multiGroupCrossSection( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo ) const ;
@@ -3944,6 +4046,7 @@ class ProtareComposite : public Protare {
 
         stringAndDoublePairs muCutoffForCoulombPlusNuclearElastic( ) const ;
         DelayedNeutronProducts delayedNeutronProducts( ) const ;
+        void incompleteParticles( Transporting::Settings const &a_settings, std::set<std::string> &a_incompleteParticles ) const ;
 };
 
 /*
@@ -4009,7 +4112,7 @@ class ProtareTNSL : public Protare {
         Ancestry *findInAncestry3( std::string const &a_item ) { return( nullptr ); }                      /**< Always returns *nullptr*. */
         Ancestry const *findInAncestry3( std::string const &a_item ) const { return( nullptr ); }          /**< Always returns *nullptr*. */
 
-        std::vector<double> const &groupBoundaries( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const ;
+        std::vector<double> const groupBoundaries( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const ;
         Vector multiGroupInverseSpeed( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo ) const ;
 
         Vector multiGroupCrossSection( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo ) const ;
@@ -4040,6 +4143,7 @@ class ProtareTNSL : public Protare {
 
         stringAndDoublePairs muCutoffForCoulombPlusNuclearElastic( ) const ;
         DelayedNeutronProducts delayedNeutronProducts( ) const { return( m_protare->delayedNeutronProducts( ) ); }
+        void incompleteParticles( Transporting::Settings const &a_settings, std::set<std::string> &a_incompleteParticles ) const ;
 };
 
 namespace Map {
@@ -4065,7 +4169,7 @@ class BaseEntry : public Ancestry {
         std::string m_cumulativePath;                       /**< Currently not used. */
 
     public:
-        BaseEntry( pugi::xml_node const &a_node, std::string const &a_basePath, Map const *a_parent );
+        BaseEntry( HAPI::Node const &a_node, std::string const &a_basePath, Map const *a_parent );
         virtual ~BaseEntry( ) = 0;
 
         std::string const &name( ) const { return( m_name ); }              /**< Returns the value of the **m_name** member. */
@@ -4092,7 +4196,7 @@ class Import : public BaseEntry {
         Map *m_map;                                         /**< Map instance for this Import. */
 
     public:
-        Import( pugi::xml_node const &a_node, PoPI::Database const &a_pops, std::string const &a_basePath, Map const *a_parent );
+        Import( HAPI::Node const &a_node, PoPI::Database const &a_pops, std::string const &a_basePath, Map const *a_parent );
         ~Import( );
 
         EntryType entryType( ) const { return( EntryType::import ); }   /**< Returns EntryType::import. */
@@ -4129,7 +4233,7 @@ class ProtareBase : public BaseEntry {
         std::string m_interaction;              /**< The interaction type for the protare. */
 
     public:
-        ProtareBase( pugi::xml_node const &a_node, std::string const &a_basePath, Map const *const a_map );
+        ProtareBase( HAPI::Node const &a_node, std::string const &a_basePath, Map const *const a_map );
         ~ProtareBase( );
 
         std::string const &interaction( ) const { return( m_interaction ); }        /**< Returns the value of the **m_interaction** member. */
@@ -4161,7 +4265,7 @@ class Protare : public ProtareBase {
         bool m_isPhotoAtomic;                   /**< true if photo-atomic protare and false otherwise. */
 
     public:
-        Protare( pugi::xml_node const &a_node, PoPI::Database const &a_pops, std::string const &a_basePath, Map const *const a_parent );
+        Protare( HAPI::Node const &a_node, PoPI::Database const &a_pops, std::string const &a_basePath, Map const *const a_parent );
         ~Protare( );
 
         EntryType entryType( ) const { return( EntryType::protare ); }              /**< Returns EntryType::protare. */
@@ -4184,7 +4288,7 @@ class TNSL : public ProtareBase {
         std::string m_standardEvaluation;                       /**< The non-TNSL evaluation. */
 
     public:
-        TNSL( pugi::xml_node const &a_node, PoPI::Database const &a_pops, std::string const &a_basePath, Map const *const a_parent );
+        TNSL( HAPI::Node const &a_node, PoPI::Database const &a_pops, std::string const &a_basePath, Map const *const a_parent );
         ~TNSL( );
 
         EntryType entryType( ) const { return( EntryType::TNSL ); }                 /**< Returns EntryType::TNSL. */
@@ -4211,11 +4315,11 @@ class Map : public Ancestry {
         std::vector<BaseEntry *> m_entries;             /**< List of Map entries. */
 
         void initialize( std::string const &a_fileName, PoPI::Database const &a_pops, Map const *a_parent );
-        void initialize( pugi::xml_node const &a_node, std::string const &a_fileName, PoPI::Database const &a_pops, Map const *a_parent );
+        void initialize( HAPI::Node const &a_node, std::string const &a_fileName, PoPI::Database const &a_pops, Map const *a_parent );
 
     public:
         Map( std::string const &a_fileName, PoPI::Database const &a_pops, Map const *a_parent = nullptr );
-        Map( pugi::xml_node const &a_node, std::string const &a_fileName, PoPI::Database const &a_pops, Map const *a_parent = nullptr );
+        Map( HAPI::Node const &a_node, std::string const &a_fileName, PoPI::Database const &a_pops, Map const *a_parent = nullptr );
         ~Map( );
 
         Map const *parent( ) const { return( m_parent ); }                      /**< Returns the value of the **m_parent** member. */
@@ -4281,7 +4385,7 @@ class FissionEnergyRelease : public Function1dForm {
         void energyReleaseToXMLList( WriteInfo &a_writeInfo, std::string const &a_moniker, std::string const &a_indent, Function1dForm *a_function1d ) const ;
 
     public:
-        FissionEnergyRelease( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+        FissionEnergyRelease( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
         ~FissionEnergyRelease( );
 
         double domainMin( ) const { return( m_nonNeutrinoEnergy->domainMin( ) ); }                  /**< Returns the minimum domain value for the energy released. */
@@ -4337,62 +4441,62 @@ class Fluxes : public Suite {
 ========================== others ==========================
 ============================================================
 */
-Form *parseExternalFilesSuite( Construction::Settings const &a_construction, Suite *parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pop, PoPI::Database const &a_internalPoPs,
+Form *parseExternalFilesSuite( Construction::Settings const &a_construction, Suite *parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pop, PoPI::Database const &a_internalPoPs,
                 std::string const &a_name, Styles::Suite const *a_styles );
-Form *parseStylesSuite( Construction::Settings const &a_construction, Suite *parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pop, PoPI::Database const &a_internalPoPs,
+Form *parseStylesSuite( Construction::Settings const &a_construction, Suite *parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pop, PoPI::Database const &a_internalPoPs,
                 std::string const &a_name, Styles::Suite const *a_styles );
-Form *parseTransportablesSuite( Construction::Settings const &a_construction, Suite *a_parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs,
+Form *parseTransportablesSuite( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs,
                 std::string const &a_name, Styles::Suite const *a_styles );
-Form *parseReaction( Construction::Settings const &a_construction, Suite *a_parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs,
+Form *parseReaction( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs,
                 std::string const &a_name, Styles::Suite const *a_styles );
-Form *parseOrphanProduct( Construction::Settings const &a_construction, Suite *a_parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs,
+Form *parseOrphanProduct( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs,
                 std::string const &a_name, Styles::Suite const *a_styles );
-Form *parseFissionComponent( Construction::Settings const &a_construction, Suite *a_parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops,
+Form *parseFissionComponent( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops,
                 PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles );
-Form *parseReactionType( std::string const &a_moniker, Construction::Settings const &a_construction, Suite *a_parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs,
+Form *parseReactionType( std::string const &a_moniker, Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs,
                 std::string const &a_name, Styles::Suite const *a_styles );
-Form *parseSumsCrossSectionsSuite( Construction::Settings const &a_construction, Suite *a_parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops,
+Form *parseSumsCrossSectionsSuite( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops,
                 PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles );
-Form *parseSumsMultiplicitiesSuite( Construction::Settings const &a_construction, Suite *a_parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops,
+Form *parseSumsMultiplicitiesSuite( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops,
                 PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles );
-Form *parseDoubleDifferentialCrossSectionSuite( Construction::Settings const &a_construction, Suite *a_parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs,
+Form *parseDoubleDifferentialCrossSectionSuite( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs,
                 std::string const &a_name, Styles::Suite const *a_styles );
-Form *parseScatteringAtom( Construction::Settings const &a_construction, Suite *a_parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs,
+Form *parseScatteringAtom( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs,
                 std::string const &a_name, Styles::Suite const *a_styles );
-Form *parseCrossSectionSuite( Construction::Settings const &a_construction, Suite *parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pop, PoPI::Database const &a_internalPoPs,
+Form *parseCrossSectionSuite( Construction::Settings const &a_construction, Suite *parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pop, PoPI::Database const &a_internalPoPs,
                 std::string const &a_name, Styles::Suite const *a_styles );
-Form *parseDelayedNeutronsSuite( Construction::Settings const &a_construction, Suite *parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pop, PoPI::Database const &a_internalPoPs,
+Form *parseDelayedNeutronsSuite( Construction::Settings const &a_construction, Suite *parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pop, PoPI::Database const &a_internalPoPs,
                 std::string const &a_name, Styles::Suite const *a_styles );
-Form *parseFissionEnergyReleasesSuite( Construction::Settings const &a_construction, Suite *parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pop, PoPI::Database const &a_internalPoPs,
+Form *parseFissionEnergyReleasesSuite( Construction::Settings const &a_construction, Suite *parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pop, PoPI::Database const &a_internalPoPs,
                 std::string const &a_name, Styles::Suite const *a_styles );
-Form *parsePhysicalQuantitySuite( Construction::Settings const &a_construction, Suite *parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pop, PoPI::Database const &a_internalPoPs,
+Form *parsePhysicalQuantitySuite( Construction::Settings const &a_construction, Suite *parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pop, PoPI::Database const &a_internalPoPs,
                 std::string const &a_name, Styles::Suite const *a_styles );
-Form *parseAvailableSuite( Construction::Settings const &a_construction, Suite *a_parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs,
+Form *parseAvailableSuite( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs,
                 std::string const &a_name, Styles::Suite const *a_styles );
-Form *parseQSuite( Construction::Settings const &a_construction, Suite *parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pop, PoPI::Database const &a_internalPoPs,
+Form *parseQSuite( Construction::Settings const &a_construction, Suite *parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pop, PoPI::Database const &a_internalPoPs,
                 std::string const &a_name, Styles::Suite const *a_styles );
-Form *parseProductSuite( Construction::Settings const &a_construction, Suite *parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pop, PoPI::Database const &a_internalPoPs, 
+Form *parseProductSuite( Construction::Settings const &a_construction, Suite *parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pop, PoPI::Database const &a_internalPoPs, 
                 std::string const &a_name, Styles::Suite const *a_styles );
-Form *parseMultiplicitySuite( Construction::Settings const &a_construction, Suite *parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pop, PoPI::Database const &a_internalPoPs,
+Form *parseMultiplicitySuite( Construction::Settings const &a_construction, Suite *parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pop, PoPI::Database const &a_internalPoPs,
                 std::string const &a_name, Styles::Suite const *a_styles );
-Form *parseDistributionSuite( Construction::Settings const &a_construction, Suite *parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pop, PoPI::Database const &a_internalPoPs,
+Form *parseDistributionSuite( Construction::Settings const &a_construction, Suite *parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pop, PoPI::Database const &a_internalPoPs,
                 std::string const &a_name, Styles::Suite const *a_styles );
-Form *parseAverageEnergySuite( Construction::Settings const &a_construction, Suite *parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pop, PoPI::Database const &a_internalPoPs,
+Form *parseAverageEnergySuite( Construction::Settings const &a_construction, Suite *parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pop, PoPI::Database const &a_internalPoPs,
                 std::string const &a_name, Styles::Suite const *a_styles );
-Form *parseAverageMomentumSuite( Construction::Settings const &a_construction, Suite *parent, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pop, PoPI::Database const &a_internalPoPs,
+Form *parseAverageMomentumSuite( Construction::Settings const &a_construction, Suite *parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pop, PoPI::Database const &a_internalPoPs,
                 std::string const &a_name, Styles::Suite const *a_styles );
-Functions::Function1dForm *data1dParse( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *parent );
-Functions::Function1dForm *data1dParseAllowEmpty( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
-void data1dListParse( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, std::vector<Functions::Function1dForm *> &a_function1ds );
-Functions::Function2dForm *data2dParse( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *parent );
-void data2dListParse( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, std::vector<Functions::Function2dForm *> &a_function2ds );
-Functions::Function3dForm *data3dParse( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *parent );
+Functions::Function1dForm *data1dParse( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *parent );
+Functions::Function1dForm *data1dParseAllowEmpty( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent );
+void data1dListParse( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, std::vector<Functions::Function1dForm *> &a_function1ds );
+Functions::Function2dForm *data2dParse( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *parent );
+void data2dListParse( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, std::vector<Functions::Function2dForm *> &a_function2ds );
+Functions::Function3dForm *data3dParse( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *parent );
 void checkOuterDomainValues1d( std::vector<Functions::Function1dForm *> &a_functions, std::vector<double> &a_Xs );
 void checkOuterDomainValues2d( std::vector<Functions::Function2dForm *> &a_functions, std::vector<double> &a_Xs );
 void checkSequentialDomainLimits1d( std::vector<Functions::Function1dForm *> &a_functions, std::vector<double> &a_Xs );
 void checkSequentialDomainLimits2d( std::vector<Functions::Function2dForm *> &a_functions, std::vector<double> &a_Xs );
 
-int parseFlattened1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Vector &data );
+int parseFlattened1d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Vector &data );
 
 Vector collapse( Vector const &a_vector, Transporting::Settings const &a_settings, Transporting::Particles const &a_particles, double a_temperature );
 Matrix collapse( Matrix const &a_matrix, Transporting::Settings const &a_settings, Transporting::Particles const &a_particles, double a_temperature, std::string const &a_productID );
@@ -4414,11 +4518,13 @@ std::string realPath( std::string const &a_path );
 std::vector<std::string> splitString( std::string const &a_string, char a_delimiter );
 long binarySearchVector( double a_x, std::vector<double> const &a_Xs );
 void intsToXMLList( WriteInfo &a_writeInfo, std::string const &a_indent, std::vector<int> a_values, std::string const &a_attributes );
-void parseValuesOfDoubles( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, std::vector<double> &a_vector );
-void parseValuesOfDoubles( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, std::vector<double> &a_vector, int a_useSystem_strtod );
+void parseValuesOfDoubles( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, nf_Buffer<double> &a_vector );
+void parseValuesOfDoubles( HAPI::Node const &a_node, SetupInfo &a_setupInfo, nf_Buffer<double> &a_vector, int a_useSystem_strtod );
+void parseValuesOfInts( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, std::vector<int> &a_vector );
+void parseValuesOfInts( HAPI::Node const &a_node, SetupInfo &a_setupInfo, nf_Buffer<int> &a_vector );
 void doublesToXMLList( WriteInfo &a_writeInfo, std::string const &a_indent, std::vector<double> a_values, std::size_t a_start = 0, bool a_newLine = true,
         std::string const &a_valueType = "" );
-Frame parseFrame( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, std::string const &a_name );
+Frame parseFrame( HAPI::Node const &a_node, SetupInfo &a_setupInfo, std::string const &a_name );
 std::string frameToString( Frame a_frame );
 std::string intToString( int a_value );
 std::string size_t_ToString( std::size_t a_value );

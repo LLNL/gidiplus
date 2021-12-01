@@ -19,7 +19,7 @@ namespace MCGIDI {
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void URR_protareInfo::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void URR_protareInfo::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     DATA_MEMBER_CAST( m_inURR, a_buffer, a_mode, bool );
     DATA_MEMBER_FLOAT( m_rng_Value, a_buffer, a_mode );
@@ -31,7 +31,7 @@ HOST_DEVICE void URR_protareInfo::serialize( DataBuffer &a_buffer, DataBuffer::M
  * @param a_protares            [in]    The list of protares to be check for URR data. Each protare with URR data add to *a_URR_protareInfos*.
  ***********************************************************************************************************/
 
-HOST URR_protareInfos::URR_protareInfos( Vector<Protare *> &a_protares ) {
+MCGIDI_HOST URR_protareInfos::URR_protareInfos( Vector<Protare *> &a_protares ) {
 
     setup( a_protares );
 }
@@ -42,7 +42,7 @@ HOST URR_protareInfos::URR_protareInfos( Vector<Protare *> &a_protares ) {
  * @param a_protares            [in]    The list of protares to be check for URR data. Each protare with URR data add to *a_URR_protareInfos*.
  ***********************************************************************************************************/
 
-HOST void URR_protareInfos::setup( Vector<Protare *> &a_protares ) {
+MCGIDI_HOST void URR_protareInfos::setup( Vector<Protare *> &a_protares ) {
 
     std::vector<URR_protareInfo> URR_protareInfo_1;
 
@@ -73,7 +73,7 @@ HOST void URR_protareInfos::setup( Vector<Protare *> &a_protares ) {
  * @param a_rngState            [in]    The random number generator state.
  ***********************************************************************************************************/
 
-HOST_DEVICE void URR_protareInfos::updateProtare( MCGIDI::Protare const *a_protare, double a_energy, double (*a_userrng)( void * ), void *a_rngState ) {
+MCGIDI_HOST_DEVICE void URR_protareInfos::updateProtare( MCGIDI::Protare const *a_protare, double a_energy, double (*a_userrng)( void * ), void *a_rngState ) {
 
     for( MCGIDI_VectorSizeType i1 = 0; i1 < a_protare->numberOfProtares( ); ++i1 ) {
         ProtareSingle *protareSingle = const_cast<ProtareSingle *>( a_protare->protare( i1 ) );
@@ -95,7 +95,7 @@ HOST_DEVICE void URR_protareInfos::updateProtare( MCGIDI::Protare const *a_prota
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void URR_protareInfos::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void URR_protareInfos::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     std::size_t vectorSize = m_URR_protareInfos.size( );
     int vectorSizeInt = (int) vectorSize;

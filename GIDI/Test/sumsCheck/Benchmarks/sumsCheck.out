@@ -1,0 +1,19 @@
+/.../GIDI/Test/Data/MG_MC.XML/neutrons/n-008_O_016.xml
+
+crossSectionSum labels:
+    total
+    nonelastic
+    (z,n)
+    (z,p)
+    (z,d)
+    (z,t)
+    (z,alpha)
+
+multiplicitySum labels:
+    2n + O15 + photon total gamma multiplicity
+    O17 + photon total gamma multiplicity
+    (z,n) total gamma multiplicity
+    (z,p) total gamma multiplicity
+    (z,d) total gamma multiplicity
+    (z,t) total gamma multiplicity
+    (z,alpha) total gamma multiplicity

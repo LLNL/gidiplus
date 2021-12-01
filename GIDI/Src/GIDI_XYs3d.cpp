@@ -8,6 +8,7 @@
 */
 
 #include "GIDI.hpp"
+#include <HAPI.hpp>
 
 namespace GIDI {
 
@@ -20,14 +21,14 @@ namespace Functions {
 /* *********************************************************************************************************//**
  *
  * @param a_construction    [in]    Used to pass user options for parsing.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed and used to construct the XYs2d.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed and used to construct the XYs2d.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-XYs3d::XYs3d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+XYs3d::XYs3d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
         Function3dForm( a_construction, a_node, a_setupInfo, FormType::XYs3d, a_parent ),
-        m_interpolationQualifier( a_node.attribute( GIDI_interpolationQualifierChars ).value( ) ) {
+        m_interpolationQualifier( a_node.attribute_as_string( GIDI_interpolationQualifierChars ) ) {
 
     if( a_setupInfo.m_formatVersion.format( ) != GNDS_formatVersion_1_10Chars ) {
         data2dListParse( a_construction, a_node.child( GIDI_function2dsChars ), a_setupInfo, m_function2ds );
@@ -35,7 +36,7 @@ XYs3d::XYs3d( Construction::Settings const &a_construction, pugi::xml_node const
         return;                                     // Need to add uncertainty parsing.
     }
 
-    for( pugi::xml_node child = a_node.first_child( ); child; child = child.next_sibling( ) ) {
+    for( HAPI::Node child = a_node.first_child( ); !child.empty( ); child.to_next_sibling( ) ) {
         std::string name( child.name( ) );
 
         if( name == GIDI_axesChars ) continue;

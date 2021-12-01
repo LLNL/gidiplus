@@ -36,16 +36,16 @@ class ClientRandomNumberGenerator {
         void *m_state;                                      /**< User supplied state. */
 
     public:
-        HOST_DEVICE ClientRandomNumberGenerator( double (*a_generator)( void * ), void *a_state );
+        MCGIDI_HOST_DEVICE ClientRandomNumberGenerator( double (*a_generator)( void * ), void *a_state );
 
-        HOST_DEVICE double (*generator( ))( void * ) { return( m_generator ); }
-        HOST_DEVICE void *state( ) { return( m_state ); }
-        HOST_DEVICE double Double( ) { return( m_generator( m_state ) ); }
+        MCGIDI_HOST_DEVICE double (*generator( ))( void * ) { return( m_generator ); }
+        MCGIDI_HOST_DEVICE void *state( ) { return( m_state ); }
+        MCGIDI_HOST_DEVICE double Double( ) { return( m_generator( m_state ) ); }
 
 // The following are deprecated.
-        HOST_DEVICE double (*rng( ))( void * ) { return( generator( ) ); }
-        HOST_DEVICE void *rngState( ) { return( state( ) ); }
-        HOST_DEVICE double dRng( ) { return( Double( ) ); }
+        MCGIDI_HOST_DEVICE double (*rng( ))( void * ) { return( generator( ) ); }
+        MCGIDI_HOST_DEVICE void *rngState( ) { return( state( ) ); }
+        MCGIDI_HOST_DEVICE double dRng( ) { return( Double( ) ); }
 };
 
 /*
@@ -56,7 +56,7 @@ class ClientRandomNumberGenerator {
 class ClientCodeRNGData : public ClientRandomNumberGenerator {
 
     public:
-        HOST_DEVICE ClientCodeRNGData( double (*a_generator)( void * ), void *a_state );
+        MCGIDI_HOST_DEVICE ClientCodeRNGData( double (*a_generator)( void * ), void *a_state );
 };
 
 /*
@@ -106,9 +106,9 @@ class Input {
         int m_delayedNeutronIndex;                  /**< If the product is a delayed neutron, this is its index. */
         double m_delayedNeutronDecayRate;           /**< If the product is a delayed neutron, this is its decay rate. */
 
-        HOST_DEVICE Input( bool a_wantVelocity, Upscatter::Model a_upscatterModel );
+        MCGIDI_HOST_DEVICE Input( bool a_wantVelocity, Upscatter::Model a_upscatterModel );
 
-        HOST_DEVICE bool wantVelocity( ) const { return( m_wantVelocity ); }                            /**< BRB */
+        MCGIDI_HOST_DEVICE bool wantVelocity( ) const { return( m_wantVelocity ); }                            /**< BRB */
 
 };
 
@@ -142,13 +142,13 @@ class Product {
 class ProductHandler {
 
     public:
-        HOST_DEVICE ProductHandler( ) {}
-        HOST_DEVICE virtual ~ProductHandler( ) {}
+        MCGIDI_HOST_DEVICE ProductHandler( ) {}
+        MCGIDI_HOST_DEVICE virtual ~ProductHandler( ) {}
 
-        HOST_DEVICE virtual std::size_t size( ) = 0;
-        HOST_DEVICE virtual void push_back( Product &a_product ) = 0;
-        HOST_DEVICE virtual void clear( ) = 0;
-        HOST_DEVICE void add( double a_projectileEnergy, int a_productIndex, int a_userProductIndex, double a_productMass, Input &a_input, 
+        MCGIDI_HOST_DEVICE virtual std::size_t size( ) = 0;
+        MCGIDI_HOST_DEVICE virtual void push_back( Product &a_product ) = 0;
+        MCGIDI_HOST_DEVICE virtual void clear( ) = 0;
+        MCGIDI_HOST_DEVICE void add( double a_projectileEnergy, int a_productIndex, int a_userProductIndex, double a_productMass, Input &a_input, 
                 double (*a_userrng)( void * ), void *a_rngState, bool isPhoton );
 };
 
@@ -168,18 +168,18 @@ class StdVectorProductHandler : public ProductHandler {
         Product m_products[1024];
 
     public:
-        HOST_DEVICE StdVectorProductHandler( ) : m_size( 0 ) { }
-        HOST_DEVICE ~StdVectorProductHandler( ) { }
+        MCGIDI_HOST_DEVICE StdVectorProductHandler( ) : m_size( 0 ) { }
+        MCGIDI_HOST_DEVICE ~StdVectorProductHandler( ) { }
 
-        HOST_DEVICE virtual std::size_t size( ) { return( m_size ); }
-        HOST_DEVICE Product &operator[]( long a_index ) { return( m_products[a_index] ); }
-        HOST_DEVICE void push_back( Product &a_product ) {
+        MCGIDI_HOST_DEVICE virtual std::size_t size( ) { return( m_size ); }
+        MCGIDI_HOST_DEVICE Product &operator[]( long a_index ) { return( m_products[a_index] ); }
+        MCGIDI_HOST_DEVICE void push_back( Product &a_product ) {
             if( m_size < MCGIDI_CUDACC_numberOfProducts ) {
                 m_products[m_size] = a_product;
                 ++m_size;
             }
         }
-        HOST_DEVICE void clear( ) { m_size = 0; }
+        MCGIDI_HOST_DEVICE void clear( ) { m_size = 0; }
 };
 
 #else
@@ -189,14 +189,14 @@ class StdVectorProductHandler : public ProductHandler {
         std::vector<Product> m_products;            /**< The list of products sampled. */
 
     public:
-        HOST_DEVICE StdVectorProductHandler( ) : m_products( ) { }
-        HOST_DEVICE ~StdVectorProductHandler( ) { }
+        MCGIDI_HOST_DEVICE StdVectorProductHandler( ) : m_products( ) { }
+        MCGIDI_HOST_DEVICE ~StdVectorProductHandler( ) { }
 
-        HOST_DEVICE virtual std::size_t size( ) { return( m_products.size( ) ); }
-        HOST_DEVICE Product &operator[]( long a_index ) { return( m_products[a_index] ); }
-        HOST_DEVICE std::vector<Product> &products( ) { return( m_products ); }
-        HOST_DEVICE void push_back( Product &a_product ) { m_products.push_back( a_product ); }
-        HOST_DEVICE void clear( ) { m_products.clear( ); }
+        MCGIDI_HOST_DEVICE virtual std::size_t size( ) { return( m_products.size( ) ); }
+        MCGIDI_HOST_DEVICE Product &operator[]( long a_index ) { return( m_products[a_index] ); }
+        MCGIDI_HOST_DEVICE std::vector<Product> &products( ) { return( m_products ); }
+        MCGIDI_HOST_DEVICE void push_back( Product &a_product ) { m_products.push_back( a_product ); }
+        MCGIDI_HOST_DEVICE void clear( ) { m_products.clear( ); }
 };
 #endif
 
@@ -211,18 +211,18 @@ class MCGIDIVectorProductHandler : public ProductHandler {
         Vector<Product> m_products;             /**< The list of products sampled. */
 
     public:
-        HOST_DEVICE MCGIDIVectorProductHandler( MCGIDI_VectorSizeType a_size = 20 ) :
+        MCGIDI_HOST_DEVICE MCGIDIVectorProductHandler( MCGIDI_VectorSizeType a_size = 20 ) :
                 m_products( ) {
 
             m_products.reserve( a_size );
         }
-        HOST_DEVICE ~MCGIDIVectorProductHandler( ) {}
+        MCGIDI_HOST_DEVICE ~MCGIDIVectorProductHandler( ) {}
 
-        HOST_DEVICE virtual std::size_t size( ) { return( m_products.size( ) ); }
-        HOST_DEVICE Product const &operator[]( MCGIDI_VectorSizeType a_index ) const { return( m_products[a_index] ); }
-        HOST_DEVICE Vector<Product> const &products( ) const { return( m_products ); }
-        HOST_DEVICE void push_back( Product &a_product ) { m_products.push_back( a_product ); }
-        HOST_DEVICE void clear( ) { m_products.clear( ); }
+        MCGIDI_HOST_DEVICE virtual std::size_t size( ) { return( m_products.size( ) ); }
+        MCGIDI_HOST_DEVICE Product const &operator[]( MCGIDI_VectorSizeType a_index ) const { return( m_products[a_index] ); }
+        MCGIDI_HOST_DEVICE Vector<Product> const &products( ) const { return( m_products ); }
+        MCGIDI_HOST_DEVICE void push_back( Product &a_product ) { m_products.push_back( a_product ); }
+        MCGIDI_HOST_DEVICE void clear( ) { m_products.clear( ); }
 };
 
 }       // End of namespace Sampling.

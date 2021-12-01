@@ -8,6 +8,7 @@
 */
 
 #include "GIDI.hpp"
+#include <HAPI.hpp>
 
 namespace GIDI {
 
@@ -36,17 +37,19 @@ Polynomial1d::Polynomial1d( Axes const &a_axes, double a_domainMin, double a_dom
 
 /* *********************************************************************************************************//**
  * @param a_construction    [in]    Used to pass user options to the constructor.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed and used to construct the XYs2d.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed and used to construct the XYs2d.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-Polynomial1d::Polynomial1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+Polynomial1d::Polynomial1d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
         Function1dForm( a_construction, a_node, a_setupInfo, FormType::polynomial1d, a_parent ),
         m_domainMin( a_node.attribute( GIDI_domainMinChars ).as_double( ) ),
         m_domainMax( a_node.attribute( GIDI_domainMaxChars ).as_double( ) ) {
 
-    parseValuesOfDoubles( a_construction, a_node.child( GIDI_valuesChars ), a_setupInfo, m_coefficients );
+  nf_Buffer<double> coeff;
+    parseValuesOfDoubles( a_construction, a_node.child( GIDI_valuesChars ), a_setupInfo, coeff );
+    m_coefficients = coeff.vector();
 }
 
 /* *********************************************************************************************************//**

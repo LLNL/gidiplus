@@ -40,7 +40,7 @@ int main( int argc, char **argv ) {
 */
 void main2( int argc, char **argv ) {
 
-    argvOptions argv_options( "availableEnergy", description );
+    argvOptions argv_options( "productMatrix", description );
     ParseTestOptions parseTestOptions( argv_options, argc, argv );
 
     parseTestOptions.m_askGNDS_File = true;

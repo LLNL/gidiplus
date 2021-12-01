@@ -9,6 +9,7 @@
 
 #include <stdlib.h>
 #include "GIDI.hpp"
+#include <HAPI.hpp>
 
 namespace GIDI {
 
@@ -43,7 +44,7 @@ Product::Product( PoPI::Database const &a_pops, std::string const &a_productID, 
  * Constructed from data in a <**product**> node.
  *
  * @param a_construction    [in]    Used to pass user options to the constructor.
- * @param a_node            [in]    The pugi::xml_node to be parsed and used to construct the Product.
+ * @param a_node            [in]    The HAPI::Node to be parsed and used to construct the Product.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops            [in]    The *external* PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs    [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
@@ -52,11 +53,11 @@ Product::Product( PoPI::Database const &a_pops, std::string const &a_productID, 
  * @param a_styles          [in]    The <**styles**> node under the <**reactionSuite**> node.
  ***********************************************************************************************************/
 
-Product::Product( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, 
+Product::Product( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, 
                 PoPI::Database const &a_internalPoPs, Suite *a_parent, Styles::Suite const *a_styles ) :
         Form( a_node, a_setupInfo, FormType::product, a_parent ),
-        m_particle( a_node.attribute( GIDI_pidChars ).value( ), a_pops, a_internalPoPs, false ),
-        m_GNDS_particle( a_node.attribute( GIDI_pidChars ).value( ), a_pops, a_internalPoPs, false ),
+        m_particle( a_node.attribute_as_string( GIDI_pidChars ), a_pops, a_internalPoPs, false ),
+        m_GNDS_particle( a_node.attribute_as_string( GIDI_pidChars ), a_pops, a_internalPoPs, false ),
         m_productMultiplicity( 0 ),
         m_multiplicity( a_construction, GIDI_multiplicityChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseMultiplicitySuite, a_styles ),
         m_distribution( a_construction, GIDI_distributionChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseDistributionSuite, a_styles ),
@@ -76,8 +77,8 @@ Product::Product( Construction::Settings const &a_construction, pugi::xml_node c
         if( m_particle.ID( ) == a_setupInfo.m_protare->GNDS_target( ).ID( ) ) m_particle = a_setupInfo.m_protare->target( );
     }
 
-    pugi::xml_node const _outputChannel = a_node.child( GIDI_outputChannelChars );
-    if( _outputChannel.type( ) != pugi::node_null ) m_outputChannel = new OutputChannel( a_construction, _outputChannel, a_setupInfo, a_pops, a_internalPoPs, a_styles, false );
+    HAPI::Node const _outputChannel = a_node.child( GIDI_outputChannelChars );
+    if( ! _outputChannel.empty( ) ) m_outputChannel = new OutputChannel( a_construction, _outputChannel, a_setupInfo, a_pops, a_internalPoPs, a_styles, false );
 
     if( m_outputChannel == nullptr ) {
         if( m_multiplicity.size( ) > 0 ) {
@@ -393,6 +394,25 @@ void Product::continuousEnergyProductData( std::string const &a_particleID, doub
             a_productGain += multiplicity( ).get<GIDI::Functions::Function1dForm>( 0 )->evaluate( a_energy ); } }
     else {
         m_outputChannel->continuousEnergyProductData( a_particleID, a_energy, a_productEnergy, a_productMomentum, a_productGain );
+    }
+}
+
+/* *********************************************************************************************************//**
+ * If the product has a distribution and its first distribution form is not **unspecified**, its PoPs id is added to *a_incompleteParticles*.
+ *
+ * @return      Returns *true* if the product has distribution data and *false* otherwise.
+ ***********************************************************************************************************/
+
+void Product::incompleteParticles( Transporting::Settings const &a_settings, std::set<std::string> &a_incompleteParticles ) const {
+
+    if( m_outputChannel == nullptr ) {
+        if( m_distribution.size( ) == 0 ) {
+            a_incompleteParticles.insert( particle( ).ID( ) ); }
+        else if( m_distribution.get<Form>( 0 )->type( ) == FormType::unspecified ) {
+            a_incompleteParticles.insert( particle( ).ID( ) );
+        } }
+    else {
+        m_outputChannel->incompleteParticles( a_settings, a_incompleteParticles );
     }
 }
 

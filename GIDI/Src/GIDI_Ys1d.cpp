@@ -9,6 +9,7 @@
 
 #include <stdlib.h>
 #include "GIDI.hpp"
+#include <HAPI.hpp>
 
 namespace GIDI {
 
@@ -49,21 +50,26 @@ Ys1d::Ys1d( Axes const &a_axes, ptwXY_interpolation a_interpolation, std::size_t
 
 }
 
+
 /* *********************************************************************************************************//**
- * Constructs the instance from a **pugi::xml_node** instance.
+ * Constructs the instance from a **HAPI::Nodee** instance.
  *
  * @param a_construction        [in]    Used to pass user options for parsing.
- * @param a_node                [in]    The Ys1d pugi::xml_node to be parsed and to construct the instance.
+ * @param a_node                [in]    The Ys1d HAPI::Node to be parsed and to construct the instance.
  * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent              [in]    If imbedded in a two dimensional function, its pointers.
  ***********************************************************************************************************/
 
-Ys1d::Ys1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+Ys1d::Ys1d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
         Function1dForm( a_construction, a_node, a_setupInfo, FormType::Ys1d, a_parent ),
-        m_start( a_node.child( GIDI_valuesChars ).attribute( GIDI_startChars ).as_int( ) ),         // as_int returns 0 if "start" not present.
+        m_start( a_node.child( "values" ).attribute( "start" ).as_int( ) ),         // as_int returns 0 if "start" not present.
         m_Ys( ) {
 
-    parseValuesOfDoubles( a_construction, a_node.child( GIDI_valuesChars ), a_setupInfo, m_Ys );
+    HAPI::Node values = a_node.child("values");
+    nf_Buffer<double> data;
+    parseValuesOfDoubles( a_construction, values, a_setupInfo, data );
+    m_Ys.resize( (long) data.size() );
+    for( size_t i1 = 0; i1 < data.size(); ++i1 ) m_Ys[i1] = data[i1];
 }
 
 /* *********************************************************************************************************//**

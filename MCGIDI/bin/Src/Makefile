@@ -7,21 +7,24 @@ SHELL = /bin/ksh
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
-.PHONY: default bin compile check clean realclean doDirs
-
 DIRS = readAllProtaresInMapFile angleBiasing
+
+.PHONY: default bin compile check clean realclean doDirs $(DIRS)
 
 default: bin
 
 bin:
 	echo ""
 	echo "  -- MCGIDI/bin/Src --"
-	$(MAKE) doDirs TARGET=bin
+	$(MAKE) $(DIRS)
 
 compile:
 	$(MAKE) doDirs TARGET=bin
 
 check:
+
+$(DIRS):
+	cd $@; $(MAKE) bin
 
 clean:
 	$(MAKE) doDirs TARGET=clean

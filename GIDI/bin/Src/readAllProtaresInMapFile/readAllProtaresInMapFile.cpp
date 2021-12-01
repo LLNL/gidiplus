@@ -15,13 +15,24 @@
 #include <stdexcept>
 
 #include "GIDI.hpp"
+#include "GIDI_testUtilities.hpp"
 
-static int mode = 0;
+static char const *description = 
+    "Reads evergy nth protare (including TNSL) in the specified map file.\n"
+    "The default for 'nth' is 1 and can be set with the '-n' options. Values for \nthe '-m' options are:\n\n"
+    "        0 is GIDI::Construction::ParseMode::all,\n"
+    "        1 is GIDI::Construction::ParseMode::multiGroupOnly,\n"
+    "        2 is GIDI::Construction::ParseMode::MonteCarloContinuousEnergy,\n"
+    "        3 is GIDI::Construction::ParseMode::excludeProductMatrices\n"
+    "        4 is GIDI::Construction::ParseMode::outline.";
+
+static int nth = 1;
+static int countDown = 1;
 static bool printLibraries = false;
-static bool useSystem_strtod = true;
 static GIDI::Construction::Settings *constructionPtr = nullptr;
+static int errCount = 0;
 
-void subMain( int argc, char **argv );
+void main2( int argc, char **argv );
 void walk( std::string const &mapFilename, PoPI::Database const &pops );
 void readProtare( std::string const &protareFilename, PoPI::Database const &pops, std::vector<std::string> &a_libraries, bool a_targetRequiredInGlobalPoPs );
 void printUsage( );
@@ -30,59 +41,40 @@ void printUsage( );
 */
 int main( int argc, char **argv ) {
 
-    subMain( argc, argv );
+    try {
+        main2( argc, argv ); }
+    catch (std::exception &exception) {
+        std::cerr << exception.what( ) << std::endl;
+        exit( EXIT_FAILURE ); }
+    catch (char const *str) {
+        std::cerr << str << std::endl;
+        exit( EXIT_FAILURE ); }
+    catch (std::string &str) {
+        std::cerr << str << std::endl;
+        exit( EXIT_FAILURE );
+    }
+
+    if( errCount > 0 ) exit( EXIT_FAILURE );
     exit( EXIT_SUCCESS );
 }
 /*
 =========================================================
 */
-void subMain( int argc, char **argv ) {
+void main2( int argc, char **argv ) {
 
-    int iarg = 1;
-    PoPI::Database pops = PoPI::Database( );
-    char *mapFilePtr = nullptr;
+    PoPI::Database pops;
+    argvOptions argv_options( "readAllProtaresInMapFiled", description, 2 );
 
-    for( ; iarg < argc; ++iarg ) {
+    argv_options.add( argvOption( "-f", false, "Use nf_strtod instead of the system stdtod." ) );
+    argv_options.add( argvOption( "-l", false, "Print libraries for each Protare." ) );
+    argv_options.add( argvOption( "-m",  true, "Which GIDI::Construction::Settings flag to use." ) );
+    argv_options.add( argvOption( "-n",  true, "If present, only every nth protare is read where 'n' is the next argument." ) );
 
-        if( argv[iarg][0] == '-' ) {
-            std::string arg( argv[iarg] );
+    argv_options.parseArgv( argc, argv );
 
-            if( arg == "-h" ) {
-                printUsage( ); }
-            else if( arg == "-f" ) {
-                useSystem_strtod = false; }
-            else if( arg == "-m" ) {
-                ++iarg;
-                if( iarg == argc ) throw std::range_error( "-m options needs integer argument" );
+    printLibraries = argv_options.find( "-l" )->m_counter > 0;
 
-                char *endPtr;
-                long i2 = strtol( argv[iarg], &endPtr, 10 );
-                if( ( i2 < 0 ) || ( i2 > static_cast<int>( GIDI::Construction::ParseMode::outline ) ) ) throw std::range_error( "-m argument out of range" );
-                mode = (int) i2; }
-            else if( arg == "-l" ) {
-                printLibraries = true; }
-            else {
-                std::cerr << "Unsupported options '" << arg << "'" << std::endl;
-                exit( EXIT_FAILURE );
-            } }
-        else {
-            try {
-                if( mapFilePtr == nullptr ) {
-                    mapFilePtr = argv[iarg]; }
-                else {
-                    pops.addFile( argv[iarg], true );
-                } }
-            catch (char const *str) {
-                std::cerr << "PoPI::Database failed while reading '" << argv[iarg] << "'" << std::endl;
-                std::cerr << str << std::endl;
-                exit( EXIT_FAILURE );
-            }
-        }
-    }
-
-    if( mapFilePtr == nullptr ) throw std::range_error( "need map file name" );
-    if( argc < iarg ) printUsage( );
-
+    int mode = argv_options.find( "-m" )->asInt( argv, 0 );
     GIDI::Construction::ParseMode parseMode( GIDI::Construction::ParseMode::all );
     if( mode == 1 ) {
         parseMode = GIDI::Construction::ParseMode::multiGroupOnly; }
@@ -94,17 +86,16 @@ void subMain( int argc, char **argv ) {
         parseMode = GIDI::Construction::ParseMode::outline;
     }
     GIDI::Construction::Settings construction( parseMode, GIDI::Construction::PhotoMode::nuclearAndAtomic );
-    construction.setUseSystem_strtod( useSystem_strtod );
+    construction.setUseSystem_strtod( argv_options.find( "-f" )->m_counter > 0 );
     constructionPtr = &construction;
 
-    std::string const &mapFilename( mapFilePtr );
-    try {
-        walk( mapFilename, pops ); }
-    catch (char const *str) {
-        std::cout << str << std::endl; }
-    catch (std::string str) {
-        std::cout << str << std::endl;
-    }
+    nth = argv_options.find( "-n" )->asInt( argv, 1 );
+    if( nth < 0 ) nth = 1;
+
+    std::string const &mapFilename( argv[argv_options.m_arguments[0]] );
+
+    for( std::size_t index = 1; index < argv_options.m_arguments.size( ); ++index ) pops.addFile( argv[argv_options.m_arguments[index]], false );
+    walk( mapFilename, pops );
 }
 /*
 =========================================================
@@ -136,6 +127,11 @@ void walk( std::string const &mapFilename, PoPI::Database const &pops ) {
 */
 void readProtare( std::string const &protareFilename, PoPI::Database const &pops, std::vector<std::string> &a_libraries, bool a_targetRequiredInGlobalPoPs ) {
 
+    --countDown;
+    if( countDown != 0 ) return;
+    countDown = nth;
+
+    std::string throwMessage;
     GIDI::Protare *protare = nullptr;
     GIDI::ParticleSubstitution particleSubstitution;
 
@@ -152,34 +148,17 @@ void readProtare( std::string const &protareFilename, PoPI::Database const &pops
         }
         std::cout << std::endl; }
     catch (char const *str) {
-        std::cout << str << std::endl;
-        exit( EXIT_FAILURE );
+        throwMessage = str; }
+    catch (std::string str) {
+        throwMessage = str; }
+    catch (std::exception &exception) {
+        throwMessage = exception.what( );
+    }
+
+    if( throwMessage != "" ) {
+        ++errCount;
+        std::cout << "ERROR: throw with message '" << throwMessage << "'" << std::endl;
     }
 
     delete protare;
-}
-/*
-=========================================================
-*/
-void printUsage( ) {
-
-    printf( "\nUSAGE:\n" );
-    printf( "    readAllProtaresInMapFile [-h] [-f] [-m MFLAG] mapFile popsFile [popsFile, [popsFile, ...]]\n\n" );
-
-    printf( "    mapFile        Map file name to use.\n" );
-    printf( "    popsFile       One or more PoPs file names. At least 1 is required.\n" );
-    printf( "\n" );
-
-    printf( "    -h         Print usage information.\n" );
-    printf( "    -f         Use nf_strtod instead of the system stdtod.\n" );
-    printf( "    -m         Which GIDI::Construction::Settings flag to use,\n" );
-    printf( "                   0 is GIDI::Construction::ParseMode::all,\n" );
-    printf( "                   1 is GIDI::Construction::ParseMode::multiGroupOnly,\n" );
-    printf( "                   2 is GIDI::Construction::ParseMode::MonteCarloContinuousEnergy,\n" );
-    printf( "                   3 is GIDI::Construction::ParseMode::excludeProductMatrices,\n" );
-    printf( "                   4 is GIDI::Construction::ParseMode::outline.\n" );
-    printf( "    -l         Print libraries for each Protare.\n" );
-    printf( "\n" );
-
-    exit( EXIT_SUCCESS );
 }

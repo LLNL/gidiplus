@@ -17,7 +17,7 @@ namespace PoPI {
 /*
 =========================================================
 */
-Isotope::Isotope( pugi::xml_node const &a_node, Database *a_DB, ChemicalElement *a_chemicalElement ) :
+Isotope::Isotope( HAPI::Node const &a_node, Database *a_DB, ChemicalElement *a_chemicalElement ) :
         SymbolBase( a_node, Particle_class::isotope ),
         m_chemicalElement( a_chemicalElement ),
         m_Z( a_chemicalElement->Z( ) ),

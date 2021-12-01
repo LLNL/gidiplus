@@ -19,13 +19,13 @@ namespace Functions {
 
 /* *********************************************************************************************************//**
  * @param a_construction    [in]    Used to pass user options to the constructor.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent          [in]     The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-URR_probabilityTables1d::URR_probabilityTables1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, 
-                SetupInfo &a_setupInfo, Suite *a_parent ) :
+URR_probabilityTables1d::URR_probabilityTables1d( Construction::Settings const &a_construction, HAPI::Node const &a_node,
+		SetupInfo &a_setupInfo, Suite *a_parent ) :
         Function1dForm( a_construction, a_node, a_setupInfo, FormType::URR_probabilityTables1d, a_parent ),
         m_function2d( data2dParse( a_construction, a_node.first_child( ), a_setupInfo, nullptr ) ) {
 

@@ -11,6 +11,7 @@
 #include <algorithm>
 
 #include "GIDI.hpp"
+#include <HAPI.hpp>
 
 namespace GIDI {
 
@@ -50,15 +51,15 @@ Protare::~Protare( ) {
  * @param a_requiredInPoPs              [in]    If *true*, no particle is required to be in **a_pops**.
  ***********************************************************************************************************/
 
-void Protare::initialize( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs,
-                bool a_targetRequiredInGlobalPoPs, bool a_requiredInPoPs ) {
+void Protare::initialize( HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs,
+		bool a_targetRequiredInGlobalPoPs, bool a_requiredInPoPs ) {
 
     setMoniker( a_node.name( ) );    
 
-    std::string projectileID = a_node.attribute( GIDI_projectileChars ).value( );
+    std::string projectileID = a_node.attribute_as_string( GIDI_projectileChars );
     m_projectile = ParticleInfo( projectileID, a_pops, a_internalPoPs, a_requiredInPoPs );
 
-    std::string targetID = a_node.attribute( GIDI_targetChars ).value( );
+    std::string targetID = a_node.attribute_as_string( GIDI_targetChars );
     m_GNDS_target = ParticleInfo( targetID, a_pops, a_internalPoPs, a_targetRequiredInGlobalPoPs && a_requiredInPoPs );
 
     auto iter = a_setupInfo.m_particleSubstitution->find( m_GNDS_target.ID( ) );
@@ -170,7 +171,7 @@ ProtareSingle::ProtareSingle( PoPI::Database const &a_pops, std::string const &a
  *
  * @param a_construction                [in]    Used to pass user options to the constructor.
  * @param a_fileName                    [in]    File containing a protare (i.e., reactionSuite) node that is parsed and used to construct the Protare.
- * @param a_fileType                    [in]    File type of a_fileType. Currently, only GIDI::XML is supported.
+ * @param a_fileType                    [in]    File type of a_fileType. Currently, only GIDI::FileType::XML and GIDI::FileType::HDF are supported.
  * @param a_pops                        [in]    A PoPs Database instance used to get particle indices and possibly other particle information.
  * @param a_particleSubstitution        [in]    Map of particles to substitute with another particles.
  * @param a_libraries                   [in]    The list of libraries that were searched to find *this*.
@@ -188,20 +189,50 @@ ProtareSingle::ProtareSingle( Construction::Settings const &a_construction, std:
         m_fileName( a_fileName ),
         m_realFileName( realPath( a_fileName ) ) {
 
-    pugi::xml_document doc;
+    HAPI::File *doc;
+    if( a_fileType == GIDI::FileType::XML ) {
+        doc = new HAPI::PugiXMLFile( a_fileName.c_str( ) ); }
+#ifdef HAPI_USE_HDF5
+    else if( a_fileType == GIDI::FileType::HDF ) {
+        doc = new HAPI::HDFFile( a_fileName.c_str( ) ); }
+#endif
+    else {
+        throw std::runtime_error( "Only XML/HDF file types supported." );
+    }
 
-    if( a_fileType != FileType::XML ) throw Exception( "Only XML file type supported." );
-
-    pugi::xml_parse_result result = doc.load_file( a_fileName.c_str( ) );
-    if( result.status != pugi::status_ok ) throw Exception( result.description( ) );
-
-    pugi::xml_node protare = doc.first_child( );
+    HAPI::Node protare = doc->first_child( );
 
     SetupInfo setupInfo( this );
     ParticleSubstitution particleSubstitution( a_particleSubstitution );
     setupInfo.m_particleSubstitution = &particleSubstitution;
 
     initialize( a_construction, protare, setupInfo, a_pops, a_targetRequiredInGlobalPoPs, a_requiredInPoPs );
+
+    delete doc;
+}
+
+/* *********************************************************************************************************//**
+ * Parses a GNDS HAPI::Node instance to construct the Protare instance. Calls the ProtareSingle::initialize method which does most of the work.
+ *
+ * @param a_construction                [in]    Used to pass user options to the constructor.
+ * @param a_node                        [in]    The **HAPI::Node** to be parsed and used to construct the Protare.
+ * @param a_pops                        [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
+ * @param a_libraries                   [in]    The list of libraries that were searched to find *this*.
+ * @param a_targetRequiredInGlobalPoPs  [in]    If *true*, the target is required to be in **a_pops**.
+ * @param a_requiredInPoPs              [in]    If *true*, no particle is required to be in **a_pops**.
+ ***********************************************************************************************************/
+
+ProtareSingle::ProtareSingle( Construction::Settings const &a_construction, HAPI::Node const &a_node, PoPI::Database const &a_pops,
+                ParticleSubstitution const &a_particleSubstitution, std::vector<std::string> const &a_libraries, 
+                std::string const &a_interaction, bool a_targetRequiredInGlobalPoPs, bool a_requiredInPoPs ) :
+        Protare( ),
+        m_libraries( a_libraries ) {
+
+    SetupInfo setupInfo( this );
+    ParticleSubstitution particleSubstitution( a_particleSubstitution );
+    setupInfo.m_particleSubstitution = &particleSubstitution;
+
+    initialize( a_construction, a_node, setupInfo, a_pops, a_targetRequiredInGlobalPoPs, a_requiredInPoPs );
 }
 
 /* *********************************************************************************************************//**
@@ -225,10 +256,16 @@ void ProtareSingle::initialize( ) {
     m_orphanProducts.setAncestor( this );
     m_orphanProducts.setMoniker( GIDI_orphanProductsChars );
 
+    m_incompleteReactions.setAncestor( this );
+    m_incompleteReactions.setMoniker( GIDI_reactionsChars );
+
     m_sums.setAncestor( this );
 
     m_fissionComponents.setAncestor( this );
     m_fissionComponents.setMoniker( GIDI_fissionComponentsChars );
+
+    m_onlyRutherfordScatteringPresent = false;
+    m_nuclearPlusCoulombInterferenceOnlyReaction = nullptr;
 }
 
 /* *********************************************************************************************************//**
@@ -242,10 +279,16 @@ void ProtareSingle::initialize( ) {
  * @param a_requiredInPoPs              [in]    If *true*, no particle is required to be in **a_pops**.
  ***********************************************************************************************************/
 
-void ProtareSingle::initialize( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,
-                PoPI::Database const &a_pops, bool a_targetRequiredInGlobalPoPs, bool a_requiredInPoPs ) {
+void ProtareSingle::initialize( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+		PoPI::Database const &a_pops, bool a_targetRequiredInGlobalPoPs, bool a_requiredInPoPs ) {
 
-    pugi::xml_node internalPoPs = a_node.child( GIDI_PoPsChars );
+    if( a_node.name( ) != GIDI_topLevelChars ) throw Exception( "Node '" + a_node.name( ) + "' is not a 'reactionSuite' node." );
+
+    m_externalFiles.parse( a_construction, a_node.child( GIDI_externalFilesChars ), a_setupInfo, a_pops, m_internalPoPs, parseExternalFilesSuite, nullptr );
+    std::string parentDir = m_fileName.substr( 0, m_fileName.find_last_of( "/" ) );
+    m_externalFiles.registerBinaryFiles( parentDir, a_setupInfo );
+
+    HAPI::Node internalPoPs = a_node.child( GIDI_PoPsChars );
     m_internalPoPs.addDatabase( internalPoPs, true );
     std::vector<PoPI::Alias *> const aliases = m_internalPoPs.aliases( );
     for( auto alias = aliases.begin( ); alias != aliases.end( ); ++alias ) {
@@ -255,11 +298,17 @@ void ProtareSingle::initialize( Construction::Settings const &a_construction, pu
     Protare::initialize( a_node, a_setupInfo, a_pops, m_internalPoPs, a_targetRequiredInGlobalPoPs, a_requiredInPoPs );
     initialize( );
 
-    m_formatVersion.setFormat( a_node.attribute( GIDI_formatChars ).value( ) );
-    if( !m_formatVersion.supported( ) ) throw Exception( "unsupport GND format version" );
+    m_formatVersion.setFormat( a_node.attribute_as_string( GIDI_formatChars ) );
+    if( !m_formatVersion.supported( ) ) throw Exception( "unsupported GNDS format version" );
     a_setupInfo.m_formatVersion = m_formatVersion;
 
-    if( m_formatVersion.major( ) > 1 ) m_interaction = a_node.attribute( GIDI_interactionChars ).value( );
+    if( m_formatVersion.major( ) > 1 ) {
+        m_interaction = a_node.attribute_as_string( GIDI_interactionChars ); }
+    else {
+        HAPI::Node const firstReaction = a_node.child( GIDI_reactionsChars ).first_child( );
+        if( firstReaction.attribute_as_int( GIDI_ENDF_MT_Chars ) == 502 ) m_interaction = GIDI_MapInteractionAtomicChars;
+    }
+    m_isPhotoAtomic = ( m_interaction == GIDI_MapInteractionAtomicChars ) && ( PoPI::IDs::photon == projectile( ).ID( ) );
 
     m_internalPoPs.calculateNuclideGammaBranchStateInfos( m_nuclideGammaBranchStateInfos );
 
@@ -272,11 +321,9 @@ void ProtareSingle::initialize( Construction::Settings const &a_construction, pu
         m_thresholdFactor = 1.0 + projectile( ).mass( "amu" ) / target( ).mass( "amu" );            // BRB FIXME, I think only this statement needs to be in this if section.
     }
 
-    m_evaluation = a_node.attribute( GIDI_evaluationChars ).value( );
+    m_evaluation = a_node.attribute_as_string( GIDI_evaluationChars );
 
     m_projectileFrame = parseFrame( a_node, a_setupInfo, GIDI_projectileFrameChars );
-
-    m_externalFiles.parse( a_construction, a_node.child( GIDI_externalFilesChars ), a_setupInfo, a_pops, m_internalPoPs, parseExternalFilesSuite, nullptr );
 
     m_styles.parse( a_construction, a_node.child( GIDI_stylesChars ), a_setupInfo, a_pops, m_internalPoPs, parseStylesSuite, nullptr );
 
@@ -287,9 +334,37 @@ void ProtareSingle::initialize( Construction::Settings const &a_construction, pu
 
     m_reactions.parse( a_construction, a_node.child( GIDI_reactionsChars ), a_setupInfo, a_pops, m_internalPoPs, parseReaction, &m_styles );
     m_orphanProducts.parse( a_construction, a_node.child( GIDI_orphanProductsChars ), a_setupInfo, a_pops, m_internalPoPs, parseOrphanProduct, &m_styles );
+    m_incompleteReactions.parse( a_construction, a_node.child( GIDI_incompleteReactionsChars ), a_setupInfo, a_pops, m_internalPoPs, parseReaction, &m_styles );
 
     m_sums.parse( a_construction, a_node.child( GIDI_sumsChars ), a_setupInfo, a_pops, m_internalPoPs );
     m_fissionComponents.parse( a_construction, a_node.child( GIDI_fissionComponentsChars ), a_setupInfo, a_pops, m_internalPoPs, parseFissionComponent, &m_styles );
+
+    m_onlyRutherfordScatteringPresent = false;
+    HAPI::Node const CoulombPlusNuclearElastic = a_node.child( GIDI_reactionsChars ).first_child( ).child( GIDI_doubleDifferentialCrossSectionChars ).first_child( );
+    if( CoulombPlusNuclearElastic.name( ) == GIDI_CoulombPlusNuclearElasticChars ) {    // Check if only RutherfordScattering present.
+        m_onlyRutherfordScatteringPresent = true;
+        for( HAPI::Node child = CoulombPlusNuclearElastic.first_child( ); !child.empty( ); child.to_next_sibling( ) ) {
+            if( child.name( ) != GIDI_RutherfordScatteringChars ) m_onlyRutherfordScatteringPresent = false;
+        }
+    }
+
+    HAPI::Node const &applicationData = a_node.child( GIDI_applicationDataChars );
+    for( HAPI::Node child1 = applicationData.first_child( ); !child1.empty( ); child1.to_next_sibling( ) ) {
+        std::string nodeName( child1.name( ) );
+
+        if( nodeName == GIDI_institutionChars ) {
+            if( child1.attribute_as_string( GIDI_labelChars ) == GIDI_LLNL_Chars ) {
+                for( HAPI::Node child2 = child1.first_child( ); !child2.empty( ); child2.to_next_sibling( ) ) {
+                    if( child2.name( ) == GIDI_nuclearPlusCoulombInterferenceChars ) {
+                        HAPI::Node const reactionNode = child2.child( GIDI_reactionChars );
+                        m_nuclearPlusCoulombInterferenceOnlyReaction = new Reaction( a_construction, reactionNode, a_setupInfo, a_pops, m_internalPoPs, *this, &m_styles );
+                    }
+                }
+            } }
+        else {
+            std::cout << "parseStylesSuite: Ignoring unsupported style = '" << nodeName << "'." << std::endl;
+        }
+    }
 }
 
 /* *********************************************************************************************************//**
@@ -297,6 +372,7 @@ void ProtareSingle::initialize( Construction::Settings const &a_construction, pu
 
 ProtareSingle::~ProtareSingle( ) {
 
+    if( m_nuclearPlusCoulombInterferenceOnlyReaction != nullptr ) delete m_nuclearPlusCoulombInterferenceOnlyReaction;
 }
 
 /* *********************************************************************************************************//**
@@ -459,7 +535,7 @@ bool sortTemperatures( Styles::TemperatureInfo const &lhs, Styles::TemperatureIn
  * @return                          List of multi-group boundaries.
  ***********************************************************************************************************/
 
-std::vector<double> const &ProtareSingle::groupBoundaries( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
+std::vector<double> const ProtareSingle::groupBoundaries( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
 
     Styles::HeatedMultiGroup const *heatedMultiGroupStyle1 = m_styles.get<Styles::HeatedMultiGroup>( a_temperatureInfo.heatedMultiGroup( ) );
 
@@ -718,8 +794,12 @@ Vector ProtareSingle::multiGroupTransportCorrection( Transporting::MG const &a_s
     std::size_t size = matrixCollapsed.size( );
     std::vector<double> transportCorrection1( size, 0 );
 
-    if( a_transportCorrectionType == TransportCorrectionType::Pendlebury ) {
-        for( std::size_t index = 0; index < size; ++index ) transportCorrection1[index] = matrixCollapsed[index][index];
+    if( a_transportCorrectionType == TransportCorrectionType::None ) {
+        }
+    else if( a_transportCorrectionType == TransportCorrectionType::Pendlebury ) {
+        for( std::size_t index = 0; index < size; ++index ) transportCorrection1[index] = matrixCollapsed[index][index]; }
+    else {
+        throw Exception( "Unsupported transport correction: only None and Pendlebury (i.e., Pendlebury/Underhill) are currently supported." );
     }
     return( Vector( transportCorrection1 ) );
 }
@@ -954,6 +1034,29 @@ DelayedNeutronProducts ProtareSingle::delayedNeutronProducts( ) const {
     }
 
     return( delayedNeutronProducts1 );
+}
+
+/* *********************************************************************************************************//**
+ * Calls the **incompleteParticles** method for each active reaction in the *reactions* and *orphanProducts* nodes.
+ *
+ * @param       a_incompleteParticles   [out]   The list of particles whose **completeParticle** method returns *false*.
+ ***********************************************************************************************************/
+
+void ProtareSingle::incompleteParticles( Transporting::Settings const &a_settings, std::set<std::string> &a_incompleteParticles ) const {
+
+    for( std::size_t i1 = 0; i1 < m_reactions.size( ); ++i1 ) {
+        Reaction const *reaction1 = m_reactions.get<Reaction>( i1 );
+
+        if( !reaction1->active( ) ) continue;
+        reaction1->incompleteParticles( a_settings, a_incompleteParticles );
+    }
+
+    for( std::size_t i1 = 0; i1 < m_orphanProducts.size( ); ++i1 ) {
+        Reaction const *reaction1 = m_orphanProducts.get<Reaction>( i1 );
+
+        if( !reaction1->active( ) ) continue;
+        reaction1->incompleteParticles( a_settings, a_incompleteParticles );
+    }
 }
 
 /* *********************************************************************************************************//**

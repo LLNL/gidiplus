@@ -8,6 +8,7 @@
 */
 
 #include "GIDI.hpp"
+#include <HAPI.hpp>
 
 namespace GIDI {
 
@@ -44,21 +45,25 @@ Xs_pdf_cdf1d::Xs_pdf_cdf1d( Axes const &a_axes, ptwXY_interpolation a_interpolat
 /* *********************************************************************************************************//**
  *
  * @param a_construction    [in]    Used to pass user options to the constructor.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed and used to construct the XYs2d.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed and used to construct the XYs2d.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-Xs_pdf_cdf1d::Xs_pdf_cdf1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+Xs_pdf_cdf1d::Xs_pdf_cdf1d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
         Function1dForm( a_construction, a_node, a_setupInfo, FormType::xs_pdf_cdf1d, a_parent ) {
 
-        parseValuesOfDoubles( a_construction, a_node.child( GIDI_xsChars ).child( GIDI_valuesChars ), a_setupInfo, m_xs );
-        parseValuesOfDoubles( a_construction, a_node.child( GIDI_pdfChars ).child( GIDI_valuesChars ), a_setupInfo, m_pdf );
-        parseValuesOfDoubles( a_construction, a_node.child( GIDI_cdfChars ).child( GIDI_valuesChars ), a_setupInfo, m_cdf );
+        nf_Buffer<double> buffer;
+        parseValuesOfDoubles( a_construction, a_node.child( GIDI_xsChars ).child( GIDI_valuesChars ), a_setupInfo, buffer );
+        m_xs = buffer.vector();
+        parseValuesOfDoubles( a_construction, a_node.child( GIDI_pdfChars ).child( GIDI_valuesChars ), a_setupInfo, buffer );
+        m_pdf = buffer.vector();
+        parseValuesOfDoubles( a_construction, a_node.child( GIDI_cdfChars ).child( GIDI_valuesChars ), a_setupInfo, buffer );
+        m_cdf = buffer.vector();
 }
 
 /* *********************************************************************************************************//**
- ***********************************************************************************************************/
+ * *********************************************************************************************************/
 
 Xs_pdf_cdf1d::~Xs_pdf_cdf1d( ) {
 

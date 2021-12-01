@@ -64,6 +64,9 @@ int main( int argc, char **argv ) {
     std::string label( temperatures[0].griddedCrossSection( ) );
     MCGIDI::Transporting::MC MC( pops, photonID, &protare->styles( ), label, GIDI::Transporting::DelayedNeutrons::on, 20.0 );
 
+    GIDI::Transporting::Particle projectile( photonID, GIDI::Transporting::Mode::MonteCarloContinuousEnergy );
+    particles.add( projectile );
+
     MCGIDI::DomainHash domainHash( 4000, 1e-8, 10 );
     MCGIDI::ProtareSingle *MCProtare;
     try {
@@ -74,7 +77,7 @@ int main( int argc, char **argv ) {
     }
     delete protare;
 
-    MCGIDI::Sampling::Input input( true, MCGIDI::Sampling::Upscatter::None );
+    MCGIDI::Sampling::Input input( true, MCGIDI::Sampling::Upscatter::Model::none );
 
     MCGIDI::Sampling::StdVectorProductHandler products;
     MCGIDI::Reaction const *reaction = MCProtare->reaction( reactionIndex );

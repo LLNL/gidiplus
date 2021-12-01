@@ -15,6 +15,7 @@ static char const *description = "Loops over each reaction does 1 product sampli
 #include <set>
 #include <stdarg.h>
 
+#include "LUPI.hpp"
 #include "MCGIDI.hpp"
 
 #include "MCGIDI_testUtilities.hpp"
@@ -120,12 +121,13 @@ int main( int argc, char **argv ) {
         MCGIDI::Reaction const *reaction = MCProtare->reaction( i1 );
         double threshold = MCProtare->threshold( i1 );
 
-        std::cout << "reaction (" << std::setw( 3 ) << i1 << ") = " << reaction->label( ).c_str( ) << "  threshold = " << threshold << std::endl;
+        std::cout << "reaction (" << std::setw( 3 ) << i1 << ") = " << reaction->label( ).c_str( ) 
+                << "  threshold = " << LUPI::Misc::doubleToString3( "%.6g", threshold, true ) << std::endl;
         if( threshold < 1e-13 ) threshold = 1e-13;
         for( double energy = threshold; energy < 100; energy *= 2 ) {
             products.clear( );
 
-            std::cout << "    energy = " << energy << std::endl;
+            std::cout << "    energy = " << LUPI::Misc::doubleToString3( "%.6g", energy, true )  << std::endl;
             reaction->sampleProducts( MCProtare, energy, input, float64RNG64, rngState, products );
             for( std::size_t i2 = 0; i2 < products.size( ); ++i2 ) {
                 MCGIDI::Sampling::Product const &product = products[i2];

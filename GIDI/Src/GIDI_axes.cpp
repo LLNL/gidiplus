@@ -8,6 +8,7 @@
 */
 
 #include "GIDI.hpp"
+#include <HAPI.hpp>
 
 namespace GIDI {
 
@@ -27,15 +28,15 @@ Axes::Axes( ) :
 
 /* *********************************************************************************************************//**
  *
- * @param a_node                [in]    The **pugi::xml_node** to be parsed and used to construct the Axes.
+ * @param a_node                [in]    The **HAPI::Node** to be parsed and used to construct the Axes.
  * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_useSystem_strtod    [in]    Flag passed to the function nfu_stringToListOfDoubles.
  ***********************************************************************************************************/
 
-Axes::Axes( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, int a_useSystem_strtod ) :
+Axes::Axes( HAPI::Node const &a_node, SetupInfo &a_setupInfo, int a_useSystem_strtod ) :
         Form( a_node, a_setupInfo, FormType::axes ) {
 
-    for( pugi::xml_node child = a_node.first_child( ); child; child = child.next_sibling( ) ) {
+    for( HAPI::Node child = a_node.first_child( ); !child.empty( ); child.to_next_sibling( ) ) {
         std::string name( child.name( ) );
 
         if(      name == GIDI_axisChars ) {
@@ -92,6 +93,27 @@ void Axes::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) cons
     a_writeInfo.addNodeStarter( a_indent, moniker( ), "" );
     for( std::vector<Axis *>::const_iterator iter = m_axes.begin( ); iter != m_axes.end( ); ++iter ) (*iter)->toXMLList( a_writeInfo, indent2 );
     a_writeInfo.addNodeEnder( moniker( ) );
+}
+
+/* *********************************************************************************************************//**
+ * This is a factory function for the Axes class that creates an Axes instance whose axis data are taken from the
+ * *a_labelsAndUnits* argument. The number of Axis instances created is the size() of *a_labelsAndUnits*. Each
+ * item of *a_labelsAndUnits* specifies the label and unit for an Axis instance.
+ *
+ * @param       a_writeInfo         [in/out]    Instance containing incremental indentation and other information and stores the appended lines.
+ * @param       a_indent            [in]        The amount to indent *this* node.
+ ***********************************************************************************************************/
+    
+Axes Axes::makeAxes( std::vector<std::pair<std::string, std::string>> const &a_labelsAndUnits ) {
+
+    int index = 0;
+    Axes axes = Axes( );
+
+    for( auto labelAndUnit = a_labelsAndUnits.begin( ); labelAndUnit != a_labelsAndUnits.end( ); ++labelAndUnit, ++index ) {
+        axes.append( new Axis( index, labelAndUnit->first, labelAndUnit->second ) );
+    }
+
+    return( axes );
 }
 
 }

@@ -32,13 +32,20 @@ class DataBuffer {
         char *m_charData;
         uint64_t *m_longData;
 
+        // For unpacking into pre-allocated memory
         char *m_placementStart;
         char *m_placement;
         size_t m_maxPlacementSize;
 
+        // If m_sharedPlacementStart is not a nullPtr, place int and double vector information here
+        // m_sharedMaxPlacementSize is how much shared memory will be used.
+        char *m_sharedPlacementStart;
+        char *m_sharedPlacement;
+        size_t m_sharedMaxPlacementSize;
+
         enum class Mode { Count, Pack, Unpack, Reset, Memory };
 
-        HOST_DEVICE DataBuffer( void ) :
+        MCGIDI_HOST_DEVICE DataBuffer( void ) :
                 m_intIndex( 0 ),
                 m_floatIndex( 0 ),
                 m_charIndex( 0 ),
@@ -49,10 +56,13 @@ class DataBuffer {
                 m_longData( nullptr ),
                 m_placementStart( nullptr ),
                 m_placement( nullptr ),
-                m_maxPlacementSize( 0 ) {
+                m_maxPlacementSize( 0 ),
+                m_sharedPlacementStart( nullptr ),
+                m_sharedPlacement( nullptr ),
+                m_sharedMaxPlacementSize( 0 ) {
         }
 
-        HOST_DEVICE DataBuffer( DataBuffer const &rhs ) :
+        MCGIDI_HOST_DEVICE DataBuffer( DataBuffer const &rhs ) :
                 m_intIndex( 0 ),
                 m_floatIndex( 0 ),
                 m_charIndex( 0 ),
@@ -63,11 +73,14 @@ class DataBuffer {
                 m_longData( nullptr ),
                 m_placementStart( nullptr ),
                 m_placement( nullptr ),
-                m_maxPlacementSize( 0 ) {
+                m_maxPlacementSize( 0 ),
+                m_sharedPlacementStart( nullptr ),
+                m_sharedPlacement( nullptr ),
+                m_sharedMaxPlacementSize( 0 ) {
 
         }
 
-        HOST_DEVICE ~DataBuffer( ) {
+        MCGIDI_HOST_DEVICE ~DataBuffer( ) {
 
             delete [] m_intData;
             delete [] m_floatData;
@@ -75,9 +88,9 @@ class DataBuffer {
             delete [] m_longData;
         }
 
-        HOST_DEVICE void zeroIndexes( void ) { m_intIndex = m_floatIndex = m_charIndex = m_longIndex = 0; }
+        MCGIDI_HOST_DEVICE void zeroIndexes( void ) { m_intIndex = m_floatIndex = m_charIndex = m_longIndex = 0; }
 
-        HOST_DEVICE void copyIndexes( DataBuffer const &a_input ) {
+        MCGIDI_HOST_DEVICE void copyIndexes( DataBuffer const &a_input ) {
 
             m_intIndex   = a_input.m_intIndex;
             m_floatIndex = a_input.m_floatIndex;
@@ -85,23 +98,26 @@ class DataBuffer {
             m_longIndex  = a_input.m_longIndex;
         }
 
-        HOST_DEVICE void simpleCopy( DataBuffer const &a_input ) {
+        MCGIDI_HOST_DEVICE void simpleCopy( DataBuffer const &a_input ) {
 
-            m_intIndex         = a_input.m_intIndex;
-            m_floatIndex       = a_input.m_floatIndex;
-            m_charIndex        = a_input.m_charIndex;
-            m_longIndex        = a_input.m_longIndex;
-            m_intData          = a_input.m_intData;
-            m_floatData        = a_input.m_floatData;
-            m_charData         = a_input.m_charData;
-            m_longData         = a_input.m_longData;
-            m_placementStart   = a_input.m_placementStart;
-            m_maxPlacementSize = a_input.m_maxPlacementSize;
-            m_placement        = a_input.m_placement;
+            m_intIndex               = a_input.m_intIndex;
+            m_floatIndex             = a_input.m_floatIndex;
+            m_charIndex              = a_input.m_charIndex;
+            m_longIndex              = a_input.m_longIndex;
+            m_intData                = a_input.m_intData;
+            m_floatData              = a_input.m_floatData;
+            m_charData               = a_input.m_charData;
+            m_longData               = a_input.m_longData;
+            m_placementStart         = a_input.m_placementStart;
+            m_placement              = a_input.m_placement;
+            m_maxPlacementSize       = a_input.m_maxPlacementSize;
+            m_sharedPlacementStart   = a_input.m_sharedPlacementStart;
+            m_sharedPlacement        = a_input.m_sharedPlacement;
+            m_sharedMaxPlacementSize = a_input.m_sharedMaxPlacementSize;
         }
 
-        // Useful for temporary buffers that we don;t want destroying the data in the destructor
-        HOST_DEVICE void nullOutPointers( void ) {
+        // Useful for temporary buffers that we don't want destroying the data in the destructor
+        MCGIDI_HOST_DEVICE void nullOutPointers( void ) {
 
             m_intData = nullptr;
             m_floatData = nullptr;
@@ -109,7 +125,7 @@ class DataBuffer {
             m_longData = nullptr;
         }
 
-        HOST_DEVICE void allocateBuffers( void ) {
+        MCGIDI_HOST_DEVICE void allocateBuffers( void ) {
 
             m_intData = new int[m_intIndex];
             m_floatData = new double[m_floatIndex];
@@ -117,30 +133,48 @@ class DataBuffer {
             m_longData = new uint64_t[m_longIndex];
         }
 
-        HOST_DEVICE bool compareIndexes( char const *a_file, int a_line, DataBuffer const &a_input ) {
+        MCGIDI_HOST_DEVICE void freeMemory( void ) {
+
+            delete [] m_intData;
+            delete [] m_floatData;
+            delete [] m_charData;
+            delete [] m_longData;
+            zeroIndexes( );
+            nullOutPointers( );
+        }
+
+        MCGIDI_HOST_DEVICE bool compareIndexes( char const *a_file, int a_line, DataBuffer const &a_input ) {
 
             return( ( a_input.m_intIndex  == m_intIndex  ) && ( a_input.m_floatIndex == m_floatIndex ) &&
                     ( a_input.m_charIndex == m_charIndex ) && ( a_input.m_longIndex  == m_longIndex  ) );
         }
 
-        HOST_DEVICE void incrementPlacement(size_t a_delta) {
+        MCGIDI_HOST_DEVICE void incrementPlacement(size_t a_delta) {
 
             size_t sub = a_delta % 8;
             if (sub != 0) a_delta += (8-sub);
             m_placement += a_delta;
         }
 
-        // Returns true if data buffer has not gone over any memory limits
-        HOST_DEVICE bool validate() {
+        MCGIDI_HOST_DEVICE void incrementSharedPlacement(size_t a_delta) {
 
-            if (m_placementStart == 0) return true;
+            size_t sub = a_delta % 8;
+            if (sub != 0) a_delta += (8-sub);
+            m_sharedPlacement += a_delta;
+        }
+
+        // Returns true if data buffer has not gone over any memory limits
+        MCGIDI_HOST_DEVICE bool validate() {
+
+            if (m_placementStart == 0 && m_sharedPlacementStart == 0) return true;
             if (m_placement > m_maxPlacementSize + m_placementStart) return false;
+            if (m_sharedPlacement > m_sharedMaxPlacementSize + m_sharedPlacementStart) return false;
             return true;
         }
 
 #ifdef __CUDACC__
         // Copy this host object to the device and return its pointer
-        HOST DataBuffer *copyToDevice(size_t a_cpuSize, char *&a_protarePtr) {
+        MCGIDI_HOST DataBuffer *copyToDevice(size_t a_cpuSize, char *&a_protarePtr) {
 
             DataBuffer *devicePtr = nullptr;
             DataBuffer buf_tmp;
@@ -233,8 +267,16 @@ class DataBuffer {
     { \
         size_t vector_size = member.size(); \
         DATA_MEMBER_INT(vector_size, (buf), mode); \
-        if ( mode == DataBuffer::Mode::Unpack ) member.resize(vector_size, &(buf).m_placement); \
-        if ( mode == DataBuffer::Mode::Memory ) { (buf).incrementPlacement(sizeof(double) * member.capacity()); } \
+        if ( mode == DataBuffer::Mode::Unpack ) { \
+            if ((buf).m_sharedPlacement == nullptr) { \
+                member.resize(vector_size, &(buf).m_placement); \
+            } else { \
+                member.resize(vector_size, &(buf).m_sharedPlacement); \
+            } \
+        }\
+        if ( mode == DataBuffer::Mode::Memory ) { \
+            (buf).incrementSharedPlacement(sizeof(double) * member.capacity()); \
+        } \
         for ( size_t member_index = 0; member_index < vector_size; member_index++ ) \
         { \
             DATA_MEMBER_FLOAT(member[member_index], (buf), mode); \
@@ -263,26 +305,22 @@ class DataBuffer {
     { \
         size_t vector_size = member.size(); \
         DATA_MEMBER_INT(vector_size, (buf), mode); \
-        if ( mode == DataBuffer::Mode::Unpack ) member.resize(vector_size, &(buf).m_placement); \
-        if ( mode == DataBuffer::Mode::Memory ) { (buf).incrementPlacement(sizeof(int) * member.capacity()); } \
+        if ( mode == DataBuffer::Mode::Unpack ) { \
+            if ((buf).m_sharedPlacement == nullptr) { \
+                member.resize(vector_size, &(buf).m_placement); \
+            } else { \
+                member.resize(vector_size, &(buf).m_sharedPlacement); \
+            } \
+        }\
+        if ( mode == DataBuffer::Mode::Memory ) { \
+            (buf).incrementSharedPlacement(sizeof(int) * member.capacity()); \
+        } \
         for ( size_t member_index = 0; member_index < vector_size; member_index++ ) \
         { \
             DATA_MEMBER_INT(member[member_index], (buf), mode); \
         } \
     }
 #endif
-
-#define DATA_MEMBER_VECTOR_INT_NO_THREAD(member, buf, mode) \
-    { \
-        size_t vector_size = member.size(); \
-        DATA_MEMBER_INT(vector_size, (buf), mode); \
-        if ( mode == DataBuffer::Mode::Unpack ) member.resize(vector_size, &(buf).m_placement); \
-        if ( mode == DataBuffer::Mode::Memory ) { (buf).incrementPlacement(sizeof(int) * member.capacity()); } \
-        for ( size_t member_index = 0; member_index < vector_size; member_index++ ) \
-        { \
-            DATA_MEMBER_INT(member[member_index], (buf), mode); \
-        } \
-    }
 
 // For threads of 32
 #ifdef __CUDA_ARCH__

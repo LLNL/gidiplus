@@ -7,14 +7,15 @@ SHELL = /bin/ksh
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
-.PHONY: default include lib docs check clean realclean doDIRS
+.PHONY: default include lib bin docs check clean realclean doDIRS
 
-DIRS = Src include lib Test Doc
+DIRS = Src include lib Test bin Doc
 
 GIDI_PLUS_PATH ?= $(abspath ..)
 export GIDI_PLUS_PATH
 
 default: include lib
+	$(MAKE) bin
 
 include:
 	cd include; $(MAKE)
@@ -22,8 +23,8 @@ include:
 lib:
 	cd lib; $(MAKE)
 
-docs:
-	doxygen Doc/doxygen/Doxyfile
+bin:
+	cd bin; $(MAKE) bin
 
 check:
 	cd Test; $(MAKE) check
@@ -33,6 +34,9 @@ clean:
 
 realclean:
 	$(MAKE) doDIRS _DIRS="$(DIRS)" _TARGET=realclean
+
+docs:
+	doxygen Doc/doxygen/Doxyfile
 
 doDIRS:
 	SAVED_PWD=`pwd`; \

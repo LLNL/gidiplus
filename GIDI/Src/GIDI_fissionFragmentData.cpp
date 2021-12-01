@@ -30,7 +30,7 @@ FissionFragmentData::FissionFragmentData( ) :
  * Constructed from data in a <**outputChannel**> node.
  *
  * @param a_construction    [in]    Used to pass user options to the constructor.
- * @param a_node            [in]    The reaction pugi::xml_node to be parsed and used to construct the reaction.
+ * @param a_node            [in]    The reaction HAPI::Node to be parsed and used to construct the reaction.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops            [in]    The *external* PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs    [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
@@ -38,8 +38,8 @@ FissionFragmentData::FissionFragmentData( ) :
  * @param a_styles          [in]    The <**styles**> node under the <**reactionSuite**> node.
  ***********************************************************************************************************/
 
-FissionFragmentData::FissionFragmentData( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,
-                PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Styles::Suite const *a_styles ) :
+FissionFragmentData::FissionFragmentData( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Styles::Suite const *a_styles ) :
         Ancestry( a_node.name( ) ),
         m_delayedNeutrons( a_construction, GIDI_delayedNeutronsChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseDelayedNeutronsSuite, a_styles ),
         m_fissionEnergyReleases( a_construction, GIDI_fissionEnergyReleasesChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseFissionEnergyReleasesSuite, a_styles ) {
@@ -146,11 +146,13 @@ int FissionFragmentData::maximumLegendreOrder( Transporting::MG const &a_setting
 
     int _maximumLegendreOrder = -1;
 
-    for( std::size_t index = 0; index < m_delayedNeutrons.size( ); ++index ) {
-        DelayedNeutron const &delayedNeutrons1 = *m_delayedNeutrons.get<DelayedNeutron>( index );
-        int r_maximumLegendreOrder = delayedNeutrons1.maximumLegendreOrder( a_settings, a_temperatureInfo, a_productID );
+    if( a_settings.delayedNeutrons( ) == Transporting::DelayedNeutrons::on ) {
+        for( std::size_t index = 0; index < m_delayedNeutrons.size( ); ++index ) {
+            DelayedNeutron const &delayedNeutrons1 = *m_delayedNeutrons.get<DelayedNeutron>( index );
+            int r_maximumLegendreOrder = delayedNeutrons1.maximumLegendreOrder( a_settings, a_temperatureInfo, a_productID );
 
-        if( r_maximumLegendreOrder > _maximumLegendreOrder ) _maximumLegendreOrder = r_maximumLegendreOrder;
+            if( r_maximumLegendreOrder > _maximumLegendreOrder ) _maximumLegendreOrder = r_maximumLegendreOrder;
+        }
     }
 
     return( _maximumLegendreOrder );
@@ -290,7 +292,7 @@ Vector FissionFragmentData::multiGroupAverageMomentum( Transporting::MG const &a
 /* *********************************************************************************************************//**
  * Appends a DelayedNeutronProduct instance for each delayed neutron in *m_delayedNeutrons*.
  *
- * @param       a_delayedNeutronProducts    [in/out]    The list to append the delayed neutrons to.
+ * @param       a_delayedNeutronProducts    [in]        The list to append the delayed neutrons to.
  ***********************************************************************************************************/
 
 void FissionFragmentData::delayedNeutronProducts( DelayedNeutronProducts &a_delayedNeutronProducts ) const {
@@ -300,6 +302,23 @@ void FissionFragmentData::delayedNeutronProducts( DelayedNeutronProducts &a_dela
 
         PhysicalQuantity rate = *delayedNeutron.rate( ).get<PhysicalQuantity>( 0 );
         a_delayedNeutronProducts.push_back( DelayedNeutronProduct( delayedNeutron.delayedNeutronIndex( ), rate, &delayedNeutron.product( ) ) );
+    }
+}
+
+/* *********************************************************************************************************//**
+ * Loops over the instances in ** m_delayedNeutrons** calling their incompleteParticles method.
+ *
+ * @param       a_incompleteParticles   [out]   The list of particles whose **completeParticle** method returns *false*.
+ ***********************************************************************************************************/
+
+void FissionFragmentData::incompleteParticles( Transporting::Settings const &a_settings, std::set<std::string> &a_incompleteParticles ) const {
+
+    if( a_settings.delayedNeutrons( ) == Transporting::DelayedNeutrons::on ) {
+        for( std::size_t index = 0; index < m_delayedNeutrons.size( ); ++index ) {
+            DelayedNeutron const &delayedNeutron = *m_delayedNeutrons.get<DelayedNeutron>( index );
+
+            delayedNeutron.incompleteParticles( a_settings, a_incompleteParticles );
+        }
     }
 }
 

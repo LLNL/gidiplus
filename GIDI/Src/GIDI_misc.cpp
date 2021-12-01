@@ -9,9 +9,11 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <sstream>
 #include <algorithm>
 
 #include "GIDI.hpp"
+#include <HAPI.hpp>
 
 namespace GIDI {
 
@@ -107,40 +109,91 @@ void intsToXMLList( WriteInfo &a_writeInfo, std::string const &a_indent, std::ve
 }
 
 /* *********************************************************************************************************//**
- * This function converts the text of a **pugi::xml_node** into a list of doubles.
+ * This function converts the text of a **HAPI::Node** into a list of doubles.
  *
  * @param a_construction        [in]    Used to pass user options to the constructor.
- * @param a_node                [in]    The **pugi::xml_node** node whoses text is to be converted into a list of doubles.
+ * @param a_node                [in]    The **HAPI::Node** node whose text is to be converted into a list of doubles.
  * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_values              [in]    The list to fill with the converted values.
  ***********************************************************************************************************/
 
-void parseValuesOfDoubles( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo,
-            std::vector<double> &a_values) {
+void parseValuesOfDoubles( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+            nf_Buffer<double> &a_values) {
 
     parseValuesOfDoubles( a_node, a_setupInfo, a_values, a_construction.useSystem_strtod( ) );
 }
 
 /* *********************************************************************************************************//**
- * This function converts the text of a **pugi::xml_node** into a list of doubles.
+ * This function converts the text of a **HAPI::Node** into a list of doubles.
  *
- * @param a_node                [in]    The **pugi::xml_node** node whoses text is to be converted into a list of doubles.
+ * @param a_node                [in]    The **HAPI::Node** node whose text is to be converted into a list of doubles.
  * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_values              [in]    The list to fill with the converted values.
  * @param a_useSystem_strtod    [in]    Flag passed to the function nfu_stringToListOfDoubles.
  ***********************************************************************************************************/
 
-void parseValuesOfDoubles( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, std::vector<double> &a_values, int a_useSystem_strtod ) {
+void parseValuesOfDoubles( HAPI::Node const &a_node, SetupInfo &a_setupInfo, nf_Buffer<double> &a_values, int a_useSystem_strtod ) {
 
-    int64_t numberConverted;
-    char *endCharacter;
+    std::string href = a_node.attribute_as_string( GIDI_hrefChars );
 
-    double *p1 = nfu_stringToListOfDoubles( nullptr, a_node.text( ).get( ), ' ', &numberConverted, &endCharacter, a_useSystem_strtod );
-    if( p1 == nullptr ) throw Exception( "parseValuesOfDoubles: nfu_stringToListOfDoubles returned nullptr." );
-
+    if( href != "" ) {
+        size_t offset = a_node.attribute_as_long( GIDI_offsetChars );
+        size_t count = a_node.attribute_as_long( GIDI_countChars );
+        if( a_setupInfo.m_dataManager == nullptr )
+            throw Exception( "parseValuesOfDoubles: Cannot read from HDF5 file as GIDI+ was compiled without HDF5 support." );
+        a_setupInfo.m_dataManager->getDoubles( a_values, offset, offset + count ); }
+    else {
+        HAPI::Data data = a_node.data( );
+        data.getDoubles( a_values ); // FIXME overload getDoubles() to take std::vector argument, avoid extra copy?
+    }
+/*
+    int64_t numberConverted = p1.size( );
     a_values.resize( numberConverted );
     for( int64_t i1 = 0; i1 < numberConverted; ++i1 ) a_values[i1] = p1[i1];
-    smr_freeMemory2( p1 );
+*/
+}
+
+/* *********************************************************************************************************//**
+ * This function converts the text of a **HAPI::Node** into a list of ints.
+ *
+ * @param a_construction        [in]    Used to pass user options to the constructor.
+ * @param a_node                [in]    The **HAPI::Node** node whose text is to be converted into a list of ints.
+ * @param a_values              [in]    The list to fill with the converted values.
+ ***********************************************************************************************************/
+
+void parseValuesOfInts( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, nf_Buffer<int> &a_values) {
+
+    parseValuesOfInts( a_node, a_setupInfo, a_values );
+}
+
+/* *********************************************************************************************************//**
+ * This function converts the text of a **HAPI::Node** into a list of ints.
+ *
+ * @param a_node                [in]    The **HAPI::Node** node whoses text is to be converted into a list of ints.
+ * @param a_values              [in]    The list to fill with the converted values.
+ ***********************************************************************************************************/
+
+void parseValuesOfInts( HAPI::Node const &a_node, SetupInfo &a_setupInfo, nf_Buffer<int> &a_values ) {
+
+    std::string href = a_node.attribute_as_string( GIDI_hrefChars );
+
+    if( href != "" ) {
+        size_t offset = a_node.attribute_as_long( GIDI_offsetChars );
+        size_t count = a_node.attribute_as_long( GIDI_countChars );
+        if( a_setupInfo.m_dataManager == nullptr )
+            	throw Exception( "parseValuesOfInts: Cannot read from HDF5 file as GIDI+ was compiled without HDF5 support." );
+        a_setupInfo.m_dataManager->getInts( a_values, offset, offset + count ); }
+    else {
+        HAPI::Data data = a_node.data( );
+        data.getInts( a_values ); // FIXME overload getDoubles() to take std::vector argument, avoid extra copy?
+    }
+
+/*
+    int64_t numberConverted = p1.size( );
+    a_values.resize( numberConverted );
+    for( int64_t i1 = 0; i1 < numberConverted; ++i1 ) a_values[i1] = p1[i1];
+*/
+//  a_values.swap( p1 );
 }
 
 /* *********************************************************************************************************//**
@@ -224,19 +277,19 @@ void WriteInfo::print( ) {
 }
 
 /* *********************************************************************************************************//**
- * This function returns an frame enum representing a **pugi::xml_node**'s attribute with name *a_name*.
+ * This function returns an frame enum representing a **HAPI::Node**'s attribute with name *a_name*.
  *
- * @param a_node        [in]    The **pugi::xml_node** node whoses attribute named *a_node* is to be parsed to determine the frame.
+ * @param a_node        [in]    The **HAPI::Node** node whoses attribute named *a_node* is to be parsed to determine the frame.
  * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_name        [in]    The name of the attribute to parse.
  *
  * @return                      The *frame* enum representing the node's frame.
  ***********************************************************************************************************/
 
-Frame parseFrame( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, std::string const &a_name ) {
+Frame parseFrame( HAPI::Node const &a_node, SetupInfo &a_setupInfo, std::string const &a_name ) {
 
     Frame frame = Frame::lab;
-    if( strcmp( a_node.attribute( a_name.c_str( ) ).value( ), GIDI_centerOfMassChars ) == 0 ) frame = Frame::centerOfMass;
+    if( strcmp( a_node.attribute_as_string( a_name.c_str( ) ).c_str( ), GIDI_centerOfMassChars ) == 0 ) frame = Frame::centerOfMass;
     return( frame );
 }
 

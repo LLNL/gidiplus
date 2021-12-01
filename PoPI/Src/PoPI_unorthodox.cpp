@@ -14,7 +14,7 @@ namespace PoPI {
 /*
 =========================================================
 */
-Unorthodox::Unorthodox( pugi::xml_node const &a_node, Database *a_DB, Database *a_parent ) :
+Unorthodox::Unorthodox( HAPI::Node const &a_node, Database *a_DB, Database *a_parent ) :
         Particle( a_node, Particle_class::unorthodox, PoPI_unorthodoxChars ) {
 
     addToDatabase( a_DB );

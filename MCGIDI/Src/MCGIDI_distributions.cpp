@@ -19,9 +19,9 @@ namespace MCGIDI {
 
 namespace Distributions {
 
-HOST_DEVICE static void kinetics_COMKineticEnergy2LabEnergyAndMomentum( double a_beta, double a_kinetic_com, 
+MCGIDI_HOST_DEVICE static void kinetics_COMKineticEnergy2LabEnergyAndMomentum( double a_beta, double a_kinetic_com, 
         double a_m3cc, double a_m4cc, Sampling::Input &a_input );
-HOST_DEVICE static double coherentPhotoAtomicScatteringIntegrateSub( int a_n, double a_a, double a_logX, double a_energy1, double a_y1, double a_energy2, double a_y2 );
+MCGIDI_HOST_DEVICE static double coherentPhotoAtomicScatteringIntegrateSub( int a_n, double a_a, double a_logX, double a_energy1, double a_y1, double a_energy2, double a_y2 );
 
 /*! \class Distribution
  * This class is the base class for all distribution forms.
@@ -31,7 +31,7 @@ HOST_DEVICE static double coherentPhotoAtomicScatteringIntegrateSub( int a_n, do
  * Default constructor used when broadcasting a Protare as needed by MPI or GPUs.
  ***********************************************************************************************************/
 
-HOST_DEVICE Distribution::Distribution( ) :
+MCGIDI_HOST_DEVICE Distribution::Distribution( ) :
         m_type( Type::none ),
         m_productFrame( GIDI::Frame::lab ),
         m_projectileMass( 0.0 ),
@@ -46,7 +46,7 @@ HOST_DEVICE Distribution::Distribution( ) :
  * @param a_setupInfo           [in]    Used internally when constructing a Protare to pass information to other constructors.
  ***********************************************************************************************************/
 
-HOST Distribution::Distribution( Type a_type, GIDI::Distributions::Distribution const &a_distribution, SetupInfo &a_setupInfo ) :
+MCGIDI_HOST Distribution::Distribution( Type a_type, GIDI::Distributions::Distribution const &a_distribution, SetupInfo &a_setupInfo ) :
         m_type( a_type ),
         m_productFrame( a_distribution.productFrame( ) ),
         m_projectileMass( a_setupInfo.m_protare.projectileMass( ) ),
@@ -61,7 +61,7 @@ HOST Distribution::Distribution( Type a_type, GIDI::Distributions::Distribution 
  * @param a_setupInfo               [in]    Used internally when constructing a Protare to pass information to other constructors.
  ***********************************************************************************************************/
 
-HOST Distribution::Distribution( Type a_type, GIDI::Frame a_productFrame, SetupInfo &a_setupInfo ) :
+MCGIDI_HOST Distribution::Distribution( Type a_type, GIDI::Frame a_productFrame, SetupInfo &a_setupInfo ) :
         m_type( a_type ),
         m_productFrame( a_productFrame ),
         m_projectileMass( a_setupInfo.m_protare.projectileMass( ) ),
@@ -73,7 +73,7 @@ HOST Distribution::Distribution( Type a_type, GIDI::Frame a_productFrame, SetupI
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE Distribution::~Distribution( ) {
+MCGIDI_HOST_DEVICE Distribution::~Distribution( ) {
 
 }
 
@@ -85,7 +85,7 @@ HOST_DEVICE Distribution::~Distribution( ) {
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void Distribution::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void Distribution::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     int distributionType = 0;
     switch( m_type ) {
@@ -170,7 +170,7 @@ HOST_DEVICE void Distribution::serialize( DataBuffer &a_buffer, DataBuffer::Mode
  * This class represents the distribution for an outgoing product for a two-body interaction.
  */
 
-HOST_DEVICE AngularTwoBody::AngularTwoBody( ) :
+MCGIDI_HOST_DEVICE AngularTwoBody::AngularTwoBody( ) :
         m_residualMass( 0.0 ),
         m_Q( 0.0 ),
         m_crossSectionThreshold( 0.0 ),
@@ -184,7 +184,7 @@ HOST_DEVICE AngularTwoBody::AngularTwoBody( ) :
  * @param a_setupInfo               [in]    Used internally when constructing a Protare to pass information to other constructors.
  ***********************************************************************************************************/
 
-HOST AngularTwoBody::AngularTwoBody( GIDI::Distributions::AngularTwoBody const &a_angularTwoBody, SetupInfo &a_setupInfo ) :
+MCGIDI_HOST AngularTwoBody::AngularTwoBody( GIDI::Distributions::AngularTwoBody const &a_angularTwoBody, SetupInfo &a_setupInfo ) :
         Distribution( Type::angularTwoBody, a_angularTwoBody, a_setupInfo ),
         m_residualMass( a_setupInfo.m_product2Mass ),                           // Includes nuclear excitation energy.
         m_Q( a_setupInfo.m_Q ),
@@ -200,7 +200,7 @@ HOST AngularTwoBody::AngularTwoBody( GIDI::Distributions::AngularTwoBody const &
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE AngularTwoBody::~AngularTwoBody( ) {
+MCGIDI_HOST_DEVICE AngularTwoBody::~AngularTwoBody( ) {
 
     delete m_angular;
 }
@@ -216,7 +216,7 @@ HOST_DEVICE AngularTwoBody::~AngularTwoBody( ) {
  * @param a_rngState                [in]    The current state for the random number generator.
  ***********************************************************************************************************/
 
-HOST_DEVICE void AngularTwoBody::sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const {
+MCGIDI_HOST_DEVICE void AngularTwoBody::sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const {
 
     double initialMass = projectileMass( ) + targetMass( ), finalMass = productMass( ) + m_residualMass;
     double beta = sqrt( a_X * ( a_X + 2. * projectileMass( ) ) ) / ( a_X + initialMass );      // beta = v/c.
@@ -257,7 +257,7 @@ HOST_DEVICE void AngularTwoBody::sample( double a_X, Sampling::Input &a_input, d
  * @return                                  The probability of emitting outgoing particle into lab angle *a_mu_lab*.
  ***********************************************************************************************************/
 
-HOST_DEVICE double AngularTwoBody::angleBiasing( Reaction const *a_reaction, double a_energy_in, double a_mu_lab, 
+MCGIDI_HOST_DEVICE double AngularTwoBody::angleBiasing( Reaction const *a_reaction, double a_energy_in, double a_mu_lab, 
                 double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const {
 
     a_energy_out = 0.0;
@@ -311,7 +311,7 @@ HOST_DEVICE double AngularTwoBody::angleBiasing( Reaction const *a_reaction, dou
  * @param a_input                   [in]    Sample options requested by user and where the products' outgoing data are returned.
  ***********************************************************************************************************/
 
-HOST_DEVICE static void kinetics_COMKineticEnergy2LabEnergyAndMomentum( double a_beta, double a_kinetic_com, 
+MCGIDI_HOST_DEVICE static void kinetics_COMKineticEnergy2LabEnergyAndMomentum( double a_beta, double a_kinetic_com, 
         double a_m3cc, double a_m4cc, Sampling::Input &a_input ) {
 /*
     Relativity:
@@ -392,7 +392,7 @@ HOST_DEVICE static void kinetics_COMKineticEnergy2LabEnergyAndMomentum( double a
  * @param a_rngState                [in]    The current state for the random number generator.
  ***********************************************************************************************************/
 
-HOST_DEVICE bool AngularTwoBody::upscatterModelB( double a_kineticLab, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const {
+MCGIDI_HOST_DEVICE bool AngularTwoBody::upscatterModelB( double a_kineticLab, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const {
 
     double neutronMass = projectileMass( );                             // Mass are in incident energy unit / c**2.
     double _targetMass = targetMass( );
@@ -523,7 +523,7 @@ HOST_DEVICE bool AngularTwoBody::upscatterModelB( double a_kineticLab, Sampling:
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void AngularTwoBody::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void AngularTwoBody::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     Distribution::serialize( a_buffer, a_mode );
     DATA_MEMBER_FLOAT( m_residualMass, a_buffer, a_mode );
@@ -543,7 +543,7 @@ HOST_DEVICE void AngularTwoBody::serialize( DataBuffer &a_buffer, DataBuffer::Mo
  * Default constructor used when broadcasting a Protare as needed by MPI or GPUs.
  ***********************************************************************************************************/
 
-HOST_DEVICE Uncorrelated::Uncorrelated( ) :
+MCGIDI_HOST_DEVICE Uncorrelated::Uncorrelated( ) :
         m_angular( nullptr ),
         m_energy( nullptr ) {
 
@@ -554,7 +554,7 @@ HOST_DEVICE Uncorrelated::Uncorrelated( ) :
  * @param a_setupInfo               [in]    Used internally when constructing a Protare to pass information to other constructors.
  ***********************************************************************************************************/
 
-HOST Uncorrelated::Uncorrelated( GIDI::Distributions::Uncorrelated const &a_uncorrelated, SetupInfo &a_setupInfo ) :
+MCGIDI_HOST Uncorrelated::Uncorrelated( GIDI::Distributions::Uncorrelated const &a_uncorrelated, SetupInfo &a_setupInfo ) :
         Distribution( Type::uncorrelated, a_uncorrelated, a_setupInfo ),
         m_angular( Probabilities::parseProbability2d( a_uncorrelated.angular( ), nullptr ) ),
         m_energy( Probabilities::parseProbability2d( a_uncorrelated.energy( ), &a_setupInfo ) ) {
@@ -564,7 +564,7 @@ HOST Uncorrelated::Uncorrelated( GIDI::Distributions::Uncorrelated const &a_unco
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE Uncorrelated::~Uncorrelated( ) {
+MCGIDI_HOST_DEVICE Uncorrelated::~Uncorrelated( ) {
 
     delete m_angular;
     delete m_energy;
@@ -580,7 +580,7 @@ HOST_DEVICE Uncorrelated::~Uncorrelated( ) {
  * @param a_rngState                [in]    The current state for the random number generator.
  ***********************************************************************************************************/
 
-HOST_DEVICE void Uncorrelated::sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const {
+MCGIDI_HOST_DEVICE void Uncorrelated::sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const {
 
     a_input.m_sampledType = Sampling::SampledType::uncorrelatedBody;
     a_input.m_mu = m_angular->sample( a_X, a_userrng( a_rngState ), a_userrng, a_rngState );
@@ -603,10 +603,10 @@ HOST_DEVICE void Uncorrelated::sample( double a_X, Sampling::Input &a_input, dou
  * @return                                  The probability of emitting outgoing particle into lab angle *a_mu_lab*.
  ***********************************************************************************************************/
 
-HOST_DEVICE double Uncorrelated::angleBiasing( Reaction const *a_reaction, double a_energy_in, double a_mu_lab, 
+MCGIDI_HOST_DEVICE double Uncorrelated::angleBiasing( Reaction const *a_reaction, double a_energy_in, double a_mu_lab, 
                 double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const {
 
-    if( productFrame( ) != GIDI::Frame::lab ) THROW( "Uncorrelated::angleBiasing: center-of-mass not supported." );
+    if( productFrame( ) != GIDI::Frame::lab ) MCGIDI_THROW( "Uncorrelated::angleBiasing: center-of-mass not supported." );
 
     a_energy_out = m_energy->sample( a_energy_in, a_userrng( a_rngState ), a_userrng, a_rngState );
     return( m_angular->evaluate( a_energy_in, a_mu_lab ) );
@@ -620,7 +620,7 @@ HOST_DEVICE double Uncorrelated::angleBiasing( Reaction const *a_reaction, doubl
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void Uncorrelated::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void Uncorrelated::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     Distribution::serialize( a_buffer, a_mode );
     m_angular = serializeProbability2d( a_buffer, a_mode, m_angular );
@@ -638,7 +638,7 @@ HOST_DEVICE void Uncorrelated::serialize( DataBuffer &a_buffer, DataBuffer::Mode
  * Default constructor used when broadcasting a Protare as needed by MPI or GPUs.
  ***********************************************************************************************************/
 
-HOST_DEVICE EnergyAngularMC::EnergyAngularMC( ) :
+MCGIDI_HOST_DEVICE EnergyAngularMC::EnergyAngularMC( ) :
         m_energy( nullptr ),
         m_angularGivenEnergy( nullptr ) {
 
@@ -649,7 +649,7 @@ HOST_DEVICE EnergyAngularMC::EnergyAngularMC( ) :
  * @param a_setupInfo               [in]    Used internally when constructing a Protare to pass information to other constructors.
  ***********************************************************************************************************/
 
-HOST EnergyAngularMC::EnergyAngularMC( GIDI::Distributions::EnergyAngularMC const &a_energyAngularMC, SetupInfo &a_setupInfo ) :
+MCGIDI_HOST EnergyAngularMC::EnergyAngularMC( GIDI::Distributions::EnergyAngularMC const &a_energyAngularMC, SetupInfo &a_setupInfo ) :
         Distribution( Type::energyAngularMC, a_energyAngularMC, a_setupInfo ),
         m_energy( Probabilities::parseProbability2d( a_energyAngularMC.energy( ), nullptr ) ),
         m_angularGivenEnergy( Probabilities::parseProbability3d( a_energyAngularMC.energyAngular( ) ) ) {
@@ -659,7 +659,7 @@ HOST EnergyAngularMC::EnergyAngularMC( GIDI::Distributions::EnergyAngularMC cons
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE EnergyAngularMC::~EnergyAngularMC( ) {
+MCGIDI_HOST_DEVICE EnergyAngularMC::~EnergyAngularMC( ) {
 
     delete m_energy;
     delete m_angularGivenEnergy;
@@ -675,7 +675,7 @@ HOST_DEVICE EnergyAngularMC::~EnergyAngularMC( ) {
  * @param a_rngState                [in]    The current state for the random number generator.
  ***********************************************************************************************************/
 
-HOST_DEVICE void EnergyAngularMC::sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const {
+MCGIDI_HOST_DEVICE void EnergyAngularMC::sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const {
 
     double energyOut_1, energyOut_2;
 
@@ -700,7 +700,7 @@ HOST_DEVICE void EnergyAngularMC::sample( double a_X, Sampling::Input &a_input, 
  * @return                                  The probability of emitting outgoing particle into lab angle *a_mu_lab*.
  ***********************************************************************************************************/
 
-HOST_DEVICE double EnergyAngularMC::angleBiasing( Reaction const *a_reaction, double a_energy_in, double a_mu_lab, 
+MCGIDI_HOST_DEVICE double EnergyAngularMC::angleBiasing( Reaction const *a_reaction, double a_energy_in, double a_mu_lab, 
                 double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const {
 
     double probability = 0.0;
@@ -748,7 +748,7 @@ HOST_DEVICE double EnergyAngularMC::angleBiasing( Reaction const *a_reaction, do
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void EnergyAngularMC::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void EnergyAngularMC::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     Distribution::serialize( a_buffer, a_mode );
     m_energy = serializeProbability2d( a_buffer, a_mode, m_energy );
@@ -766,7 +766,7 @@ HOST_DEVICE void EnergyAngularMC::serialize( DataBuffer &a_buffer, DataBuffer::M
  * Default constructor used when broadcasting a Protare as needed by MPI or GPUs.
  ***********************************************************************************************************/
 
-HOST_DEVICE AngularEnergyMC::AngularEnergyMC( ) :
+MCGIDI_HOST_DEVICE AngularEnergyMC::AngularEnergyMC( ) :
         m_angular( nullptr ),
         m_energyGivenAngular( nullptr ) {
 
@@ -777,7 +777,7 @@ HOST_DEVICE AngularEnergyMC::AngularEnergyMC( ) :
  * @param a_setupInfo               [in]    Used internally when constructing a Protare to pass information to other constructors.
  ***********************************************************************************************************/
 
-HOST AngularEnergyMC::AngularEnergyMC( GIDI::Distributions::AngularEnergyMC const &a_angularEnergyMC, SetupInfo &a_setupInfo ) :
+MCGIDI_HOST AngularEnergyMC::AngularEnergyMC( GIDI::Distributions::AngularEnergyMC const &a_angularEnergyMC, SetupInfo &a_setupInfo ) :
         Distribution( Type::angularEnergyMC, a_angularEnergyMC, a_setupInfo ),
         m_angular( Probabilities::parseProbability2d( a_angularEnergyMC.angular( ), nullptr ) ),
         m_energyGivenAngular( Probabilities::parseProbability3d( a_angularEnergyMC.angularEnergy( ) ) ) {
@@ -787,7 +787,7 @@ HOST AngularEnergyMC::AngularEnergyMC( GIDI::Distributions::AngularEnergyMC cons
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE AngularEnergyMC::~AngularEnergyMC( ) {
+MCGIDI_HOST_DEVICE AngularEnergyMC::~AngularEnergyMC( ) {
 
     delete m_angular;
     delete m_energyGivenAngular;
@@ -803,7 +803,7 @@ HOST_DEVICE AngularEnergyMC::~AngularEnergyMC( ) {
  * @param a_rngState                [in]    The current state for the random number generator.
  ***********************************************************************************************************/
 
-HOST_DEVICE void AngularEnergyMC::sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const {
+MCGIDI_HOST_DEVICE void AngularEnergyMC::sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const {
 
     double mu_1, mu_2;
 
@@ -828,10 +828,10 @@ HOST_DEVICE void AngularEnergyMC::sample( double a_X, Sampling::Input &a_input, 
  * @return                                  The probability of emitting outgoing particle into lab angle *a_mu_lab*.
  ***********************************************************************************************************/
 
-HOST_DEVICE double AngularEnergyMC::angleBiasing( Reaction const *a_reaction, double a_energy_in, double a_mu_lab, 
+MCGIDI_HOST_DEVICE double AngularEnergyMC::angleBiasing( Reaction const *a_reaction, double a_energy_in, double a_mu_lab, 
                 double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const {
 
-    if( productFrame( ) != GIDI::Frame::lab ) THROW( "AngularEnergyMC::angleBiasing: center-of-mass not supported." );
+    if( productFrame( ) != GIDI::Frame::lab ) MCGIDI_THROW( "AngularEnergyMC::angleBiasing: center-of-mass not supported." );
 
     a_energy_out = m_energyGivenAngular->sample( a_energy_in, a_mu_lab, a_mu_lab, a_userrng( a_rngState), a_userrng, a_rngState );
     return( m_angular->evaluate( a_energy_in, a_mu_lab ) );
@@ -845,7 +845,7 @@ HOST_DEVICE double AngularEnergyMC::angleBiasing( Reaction const *a_reaction, do
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void AngularEnergyMC::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void AngularEnergyMC::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     Distribution::serialize( a_buffer, a_mode );
     m_angular = serializeProbability2d( a_buffer, a_mode, m_angular );
@@ -860,7 +860,7 @@ HOST_DEVICE void AngularEnergyMC::serialize( DataBuffer &a_buffer, DataBuffer::M
  * Default constructor used when broadcasting a Protare as needed by MPI or GPUs.
  ***********************************************************************************************************/
 
-HOST_DEVICE KalbachMann::KalbachMann( ) :
+MCGIDI_HOST_DEVICE KalbachMann::KalbachMann( ) :
         m_energyToMeVFactor( 0.0 ),
         m_eb_massFactor( 0.0 ),
         m_f( nullptr ),
@@ -874,7 +874,7 @@ HOST_DEVICE KalbachMann::KalbachMann( ) :
  * @param a_setupInfo               [in]    Used internally when constructing a Protare to pass information to other constructors.
  ***********************************************************************************************************/
 
-HOST KalbachMann::KalbachMann( GIDI::Distributions::KalbachMann const &a_KalbachMann, SetupInfo &a_setupInfo ) :
+MCGIDI_HOST KalbachMann::KalbachMann( GIDI::Distributions::KalbachMann const &a_KalbachMann, SetupInfo &a_setupInfo ) :
         Distribution( Type::KalbachMann, a_KalbachMann, a_setupInfo ),
         m_energyToMeVFactor( 1 ),                                           // FIXME.
         m_eb_massFactor( 1 ),                                               // FIXME.
@@ -887,7 +887,7 @@ HOST KalbachMann::KalbachMann( GIDI::Distributions::KalbachMann const &a_Kalbach
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE KalbachMann::~KalbachMann( ) {
+MCGIDI_HOST_DEVICE KalbachMann::~KalbachMann( ) {
 
     delete m_f;
     delete m_r;
@@ -903,7 +903,7 @@ HOST_DEVICE KalbachMann::~KalbachMann( ) {
  * @param a_rngState                [in]    The current state for the random number generator.
  ***********************************************************************************************************/
 
-HOST_DEVICE void KalbachMann::sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const {
+MCGIDI_HOST_DEVICE void KalbachMann::sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const {
 
     a_input.m_sampledType = Sampling::SampledType::uncorrelatedBody;
     a_input.m_energyOut1 = m_f->sample( a_X, a_userrng( a_rngState ), a_userrng, a_rngState );
@@ -941,7 +941,7 @@ HOST_DEVICE void KalbachMann::sample( double a_X, Sampling::Input &a_input, doub
  * @return                                  The probability of emitting outgoing particle into lab angle *a_mu_lab*.
  ***********************************************************************************************************/
 
-HOST_DEVICE double KalbachMann::angleBiasing( Reaction const *a_reaction, double a_energy_in, double a_mu_lab, 
+MCGIDI_HOST_DEVICE double KalbachMann::angleBiasing( Reaction const *a_reaction, double a_energy_in, double a_mu_lab, 
                 double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const {
 
     a_energy_out = 0.0;
@@ -998,7 +998,7 @@ HOST_DEVICE double KalbachMann::angleBiasing( Reaction const *a_reaction, double
  * @param a_mu                      [in]    The mu of the product in the center-of-mass frame.
  ***********************************************************************************************************/
 
-HOST_DEVICE double KalbachMann::evaluate( double a_energy, double a_energyOut, double a_mu ) {
+MCGIDI_HOST_DEVICE double KalbachMann::evaluate( double a_energy, double a_energyOut, double a_mu ) {
 
 //    double f_0 = m_f->evaluate( a_energy, a_energyOut );
     double rValue = m_r->evaluate( a_energy, a_energyOut );
@@ -1016,7 +1016,7 @@ HOST_DEVICE double KalbachMann::evaluate( double a_energy, double a_energyOut, d
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void KalbachMann::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void KalbachMann::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     Distribution::serialize( a_buffer, a_mode );
     DATA_MEMBER_FLOAT( m_energyToMeVFactor, a_buffer, a_mode );
@@ -1035,7 +1035,7 @@ HOST_DEVICE void KalbachMann::serialize( DataBuffer &a_buffer, DataBuffer::Mode 
  * Default constructor used when broadcasting a Protare as needed by MPI or GPUs.
  ***********************************************************************************************************/
 
-HOST_DEVICE CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering( ) :
+MCGIDI_HOST_DEVICE CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering( ) :
         m_realAnomalousFactor( nullptr ),
         m_imaginaryAnomalousFactor( nullptr ) {
 
@@ -1046,7 +1046,7 @@ HOST_DEVICE CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering( ) :
  * @param a_setupInfo                       [in]    Used internally when constructing a Protare to pass information to other constructors.
  ***********************************************************************************************************/
 
-HOST CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering( GIDI::Distributions::CoherentPhotoAtomicScattering const &a_coherentPhotoAtomicScattering, SetupInfo &a_setupInfo ) :
+MCGIDI_HOST CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering( GIDI::Distributions::CoherentPhotoAtomicScattering const &a_coherentPhotoAtomicScattering, SetupInfo &a_setupInfo ) :
         Distribution( Type::coherentPhotoAtomicScattering, a_coherentPhotoAtomicScattering, a_setupInfo ),
         m_anomalousDataPresent( false ),
         m_realAnomalousFactor( nullptr ),
@@ -1071,22 +1071,22 @@ HOST CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering( GIDI::Distrib
         offset = 1; }
     else if( formFactor->type( ) == GIDI::FormType::regions1d ) {
         GIDI::Functions::Regions1d const *regions1d = static_cast<GIDI::Functions::Regions1d const *>( formFactor );
-        if( regions1d->size( ) != 2 ) THROW( "MCGIDI::CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering: unsupported form factor size." );
+        if( regions1d->size( ) != 2 ) throw std::runtime_error( "MCGIDI::CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering: unsupported form factor size." );
 
         domainUnit = regions1d->axes( )[0]->unit( );
 
         GIDI::Functions::Function1dForm const *region0 = (*regions1d)[0];
-        if( region0->type( ) != GIDI::FormType::XYs1d ) THROW( "MCGIDI::CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering: unsupported form factor for region 0." );
+        if( region0->type( ) != GIDI::FormType::XYs1d ) throw std::runtime_error( "MCGIDI::CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering: unsupported form factor for region 0." );
         xys1d0 = static_cast<GIDI::Functions::XYs1d const *>( region0 );
-        if( xys1d0->size( ) != 2 ) THROW( "MCGIDI::CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering: unsupported size of region 1 of form factor." );
+        if( xys1d0->size( ) != 2 ) throw std::runtime_error( "MCGIDI::CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering: unsupported size of region 1 of form factor." );
 
         GIDI::Functions::Function1dForm const *region1 = (*regions1d)[1];
-        if( region1->type( ) != GIDI::FormType::XYs1d ) THROW( "MCGIDI::CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering: unsupported form factor for region 1." );
+        if( region1->type( ) != GIDI::FormType::XYs1d ) throw std::runtime_error( "MCGIDI::CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering: unsupported form factor for region 1." );
         xys1d1 = static_cast<GIDI::Functions::XYs1d const *>( region1 );
 
         dataSize = xys1d1->size( ) + 1; }
     else {
-        THROW( "MCGIDI::CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering: unsupported form factor. Must be XYs1d or regions1d." );
+        throw std::runtime_error( "MCGIDI::CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering: unsupported form factor. Must be XYs1d or regions1d." );
     }
 
     double domainFactor = 1.0;
@@ -1095,7 +1095,7 @@ HOST CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering( GIDI::Distrib
     else if( domainUnit == "1/cm" ) {
         domainFactor = 0.012398419739640716 * 1e-8; }               // Converts 'h * c /cm' to MeV.
     else {
-        THROW( "MCGIDI::CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering: unsupported domain unit" );
+        throw std::runtime_error( "MCGIDI::CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering: unsupported domain unit" );
     }
 
     m_energies.resize( dataSize );
@@ -1186,7 +1186,7 @@ HOST CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering( GIDI::Distrib
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE CoherentPhotoAtomicScattering::~CoherentPhotoAtomicScattering( ) {
+MCGIDI_HOST_DEVICE CoherentPhotoAtomicScattering::~CoherentPhotoAtomicScattering( ) {
 
     delete m_realAnomalousFactor;
     delete m_imaginaryAnomalousFactor;
@@ -1199,7 +1199,7 @@ HOST_DEVICE CoherentPhotoAtomicScattering::~CoherentPhotoAtomicScattering( ) {
  * @param a_mu                      [in]    The mu of the product in the center-of-mass frame.
  ***********************************************************************************************************/
 
-HOST_DEVICE double CoherentPhotoAtomicScattering::evaluate( double a_energyIn, double a_mu ) const {
+MCGIDI_HOST_DEVICE double CoherentPhotoAtomicScattering::evaluate( double a_energyIn, double a_mu ) const {
 
     double probability;
     MCGIDI_VectorSizeType lowerIndexEnergy = binarySearchVector( a_energyIn, m_energies );      // FIXME - need to handle case where lowerIndexEnergy = 0 like in evaluateScatteringFunction.
@@ -1247,7 +1247,7 @@ HOST_DEVICE double CoherentPhotoAtomicScattering::evaluate( double a_energyIn, d
  * @param a_mu                      [in]    The mu of the product in the center-of-mass frame.
  ***********************************************************************************************************/
 
-HOST_DEVICE double CoherentPhotoAtomicScattering::evaluateFormFactor( double a_energyIn, double a_mu ) const {
+MCGIDI_HOST_DEVICE double CoherentPhotoAtomicScattering::evaluateFormFactor( double a_energyIn, double a_mu ) const {
 
     double X = a_energyIn * sqrt( 0.5 * ( 1 - a_mu ) );
     MCGIDI_VectorSizeType lowerIndex = binarySearchVector( X, m_energies );
@@ -1271,7 +1271,7 @@ HOST_DEVICE double CoherentPhotoAtomicScattering::evaluateFormFactor( double a_e
  * @param a_rngState                [in]    The current state for the random number generator.
  ***********************************************************************************************************/
 
-HOST_DEVICE void CoherentPhotoAtomicScattering::sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const {
+MCGIDI_HOST_DEVICE void CoherentPhotoAtomicScattering::sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const {
 
     a_input.m_energyOut1 = a_X;
 
@@ -1295,7 +1295,7 @@ HOST_DEVICE void CoherentPhotoAtomicScattering::sample( double a_X, Sampling::In
             imaginaryAnomalousFactor = m_imaginaryAnomalousFactor->evaluate( a_X );
         }
 
-        double anomalousFactorSquared = realAnomalousFactor * realAnomalousFactor + imaginaryAnomalousFactor + imaginaryAnomalousFactor;
+        double anomalousFactorSquared = realAnomalousFactor * realAnomalousFactor + imaginaryAnomalousFactor * imaginaryAnomalousFactor;
         double normalization = m_integratedFormFactorSquared[lowerIndex] + formFactor_X_i * formFactor_X_i * Z_a( Z, 2.0 * _a + 2.0 );
 
         anomalousFactorSquared = 0.0;
@@ -1354,7 +1354,7 @@ HOST_DEVICE void CoherentPhotoAtomicScattering::sample( double a_X, Sampling::In
  * @return                                  The probability of emitting outgoing particle into lab angle *a_mu_lab*.
  ***********************************************************************************************************/
 
-HOST_DEVICE double CoherentPhotoAtomicScattering::angleBiasing( Reaction const *a_reaction, double a_energy_in, double a_mu_lab, 
+MCGIDI_HOST_DEVICE double CoherentPhotoAtomicScattering::angleBiasing( Reaction const *a_reaction, double a_energy_in, double a_mu_lab, 
                 double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const {
 
     a_energy_out = a_energy_in;
@@ -1382,7 +1382,7 @@ HOST_DEVICE double CoherentPhotoAtomicScattering::angleBiasing( Reaction const *
  * @param a_a                       [in]    
  ***********************************************************************************************************/
 
-HOST_DEVICE double CoherentPhotoAtomicScattering::Z_a( double a_Z, double a_a ) const {
+MCGIDI_HOST_DEVICE double CoherentPhotoAtomicScattering::Z_a( double a_Z, double a_a ) const {
 
     if( fabs( a_a ) < 1e-3 ) {
         double logZ = log( a_Z );
@@ -1404,7 +1404,7 @@ HOST_DEVICE double CoherentPhotoAtomicScattering::Z_a( double a_Z, double a_a ) 
  * @param a_y2                      [in]    
  ***********************************************************************************************************/
 
-HOST_DEVICE static double coherentPhotoAtomicScatteringIntegrateSub( int a_n, double a_a, double a_logX, double a_energy1, double a_y1, double a_energy2, double a_y2 ) {
+MCGIDI_HOST_DEVICE static double coherentPhotoAtomicScatteringIntegrateSub( int a_n, double a_a, double a_logX, double a_energy1, double a_y1, double a_energy2, double a_y2 ) {
 
     double epsilon = a_a + a_n + 1.0;
     double integral = 0.0;
@@ -1427,7 +1427,7 @@ HOST_DEVICE static double coherentPhotoAtomicScatteringIntegrateSub( int a_n, do
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void CoherentPhotoAtomicScattering::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void CoherentPhotoAtomicScattering::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     Distribution::serialize( a_buffer, a_mode );
 
@@ -1445,8 +1445,8 @@ HOST_DEVICE void CoherentPhotoAtomicScattering::serialize( DataBuffer &a_buffer,
     DATA_MEMBER_VECTOR_DOUBLE( m_probabilityNorm2_5, a_buffer, a_mode );
 
     if( m_anomalousDataPresent ) {
-        m_realAnomalousFactor->serialize( a_buffer, a_mode );
-        m_imaginaryAnomalousFactor->serialize( a_buffer, a_mode );
+        m_realAnomalousFactor = serializeFunction1d( a_buffer, a_mode, m_realAnomalousFactor );
+        m_imaginaryAnomalousFactor = serializeFunction1d( a_buffer, a_mode, m_imaginaryAnomalousFactor );
     }
 }
 
@@ -1458,7 +1458,7 @@ HOST_DEVICE void CoherentPhotoAtomicScattering::serialize( DataBuffer &a_buffer,
  * Default constructor used when broadcasting a Protare as needed by MPI or GPUs.
  ***********************************************************************************************************/
 
-HOST_DEVICE IncoherentPhotoAtomicScattering::IncoherentPhotoAtomicScattering( ) {
+MCGIDI_HOST_DEVICE IncoherentPhotoAtomicScattering::IncoherentPhotoAtomicScattering( ) {
 
 }
 
@@ -1467,7 +1467,7 @@ HOST_DEVICE IncoherentPhotoAtomicScattering::IncoherentPhotoAtomicScattering( ) 
  * @param a_setupInfo                           [in]    Used internally when constructing a Protare to pass information to other constructors.
  ***********************************************************************************************************/
 
-HOST IncoherentPhotoAtomicScattering::IncoherentPhotoAtomicScattering( GIDI::Distributions::IncoherentPhotoAtomicScattering const &a_incoherentPhotoAtomicScattering, SetupInfo &a_setupInfo ) :
+MCGIDI_HOST IncoherentPhotoAtomicScattering::IncoherentPhotoAtomicScattering( GIDI::Distributions::IncoherentPhotoAtomicScattering const &a_incoherentPhotoAtomicScattering, SetupInfo &a_setupInfo ) :
         Distribution( Type::incoherentPhotoAtomicScattering, a_incoherentPhotoAtomicScattering, a_setupInfo ) {
 
     GIDI::Ancestry const *link = a_incoherentPhotoAtomicScattering.findInAncestry( a_incoherentPhotoAtomicScattering.href( ) );
@@ -1489,22 +1489,22 @@ HOST IncoherentPhotoAtomicScattering::IncoherentPhotoAtomicScattering( GIDI::Dis
         offset = 1; }
     else if( scatteringFunction->type( ) == GIDI::FormType::regions1d ) {
         GIDI::Functions::Regions1d const *regions1d = static_cast<GIDI::Functions::Regions1d const *>( scatteringFunction );
-        if( regions1d->size( ) != 2 ) THROW( "MCGIDI::CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering: unsupported form factor size." );
+        if( regions1d->size( ) != 2 ) throw std::runtime_error( "MCGIDI::CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering: unsupported form factor size." );
 
         domainUnit = regions1d->axes( )[0]->unit( );
 
         GIDI::Functions::Function1dForm const *region0 = (*regions1d)[0];
-        if( region0->type( ) != GIDI::FormType::XYs1d ) THROW( "MCGIDI::CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering: unsupported form factor for region 0." );
+        if( region0->type( ) != GIDI::FormType::XYs1d ) throw std::runtime_error( "MCGIDI::CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering: unsupported form factor for region 0." );
         xys1d0 = static_cast<GIDI::Functions::XYs1d const *>( region0 );
-        if( xys1d0->size( ) != 2 ) THROW( "MCGIDI::CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering: unsupported size of region 1 of form factor." );
+        if( xys1d0->size( ) != 2 ) throw std::runtime_error( "MCGIDI::CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering: unsupported size of region 1 of form factor." );
 
         GIDI::Functions::Function1dForm const *region1 = (*regions1d)[1];
-        if( region1->type( ) != GIDI::FormType::XYs1d ) THROW( "MCGIDI::CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering: unsupported form factor for region 1." );
+        if( region1->type( ) != GIDI::FormType::XYs1d ) throw std::runtime_error( "MCGIDI::CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering: unsupported form factor for region 1." );
         xys1d1 = static_cast<GIDI::Functions::XYs1d const *>( region1 );
 
         dataSize = xys1d1->size( ) + 1; }
     else {
-        THROW( "MCGIDI::CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering: unsupported form factor. Must be XYs1d or regions1d." );
+        throw std::runtime_error( "MCGIDI::CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering: unsupported form factor. Must be XYs1d or regions1d." );
     }
 
     double domainFactor = 1.0;
@@ -1513,7 +1513,7 @@ HOST IncoherentPhotoAtomicScattering::IncoherentPhotoAtomicScattering( GIDI::Dis
     else if( domainUnit == "1/cm" ) {
         domainFactor = 0.012398419739640716 * 1e-8; }               // Converts 'h * c /cm' to MeV.
     else {
-        THROW( "MCGIDI::IncoherentPhotoAtomicScattering::IncoherentPhotoAtomicScattering: unsupported domain unit" );
+        throw std::runtime_error( "MCGIDI::IncoherentPhotoAtomicScattering::IncoherentPhotoAtomicScattering: unsupported domain unit" );
     }
 
     m_energies.resize( dataSize );
@@ -1552,7 +1552,7 @@ HOST IncoherentPhotoAtomicScattering::IncoherentPhotoAtomicScattering( GIDI::Dis
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE IncoherentPhotoAtomicScattering::~IncoherentPhotoAtomicScattering( ) {
+MCGIDI_HOST_DEVICE IncoherentPhotoAtomicScattering::~IncoherentPhotoAtomicScattering( ) {
 
 }
 
@@ -1563,7 +1563,7 @@ HOST_DEVICE IncoherentPhotoAtomicScattering::~IncoherentPhotoAtomicScattering( )
  * @param a_mu                      [in]    
  ***********************************************************************************************************/
 
-HOST_DEVICE double IncoherentPhotoAtomicScattering::energyRatio( double a_energyIn, double a_mu ) const {
+MCGIDI_HOST_DEVICE double IncoherentPhotoAtomicScattering::energyRatio( double a_energyIn, double a_mu ) const {
 
     double relativeEnergy = a_energyIn / PoPI_electronMass_MeV_c2;
 
@@ -1577,7 +1577,7 @@ HOST_DEVICE double IncoherentPhotoAtomicScattering::energyRatio( double a_energy
  * @param a_mu                      [in]    
  ***********************************************************************************************************/
 
-HOST_DEVICE double IncoherentPhotoAtomicScattering::evaluateKleinNishina( double a_energyIn, double a_mu ) const {
+MCGIDI_HOST_DEVICE double IncoherentPhotoAtomicScattering::evaluateKleinNishina( double a_energyIn, double a_mu ) const {
 
     double relativeEnergy = a_energyIn / PoPI_electronMass_MeV_c2;
     double _energyRatio = energyRatio( a_energyIn, a_mu );
@@ -1597,7 +1597,7 @@ HOST_DEVICE double IncoherentPhotoAtomicScattering::evaluateKleinNishina( double
  * @param a_energyIn                [in]    The energy of the projectile.
  ***********************************************************************************************************/
 
-HOST_DEVICE double IncoherentPhotoAtomicScattering::evaluateScatteringFunction( double a_energyIn ) const {
+MCGIDI_HOST_DEVICE double IncoherentPhotoAtomicScattering::evaluateScatteringFunction( double a_energyIn ) const {
 
     MCGIDI_VectorSizeType lowerIndex = binarySearchVector( a_energyIn, m_energies );
 
@@ -1619,7 +1619,7 @@ HOST_DEVICE double IncoherentPhotoAtomicScattering::evaluateScatteringFunction( 
  * @param a_rngState                [in]    The current state for the random number generator.
  ***********************************************************************************************************/
 
-HOST_DEVICE void IncoherentPhotoAtomicScattering::sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const {
+MCGIDI_HOST_DEVICE void IncoherentPhotoAtomicScattering::sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const {
 
     double k1 = a_X / PoPI_electronMass_MeV_c2;
     double energyOut, mu, scatteringFunction;
@@ -1655,7 +1655,7 @@ HOST_DEVICE void IncoherentPhotoAtomicScattering::sample( double a_X, Sampling::
  * @return                                  The probability of emitting outgoing particle into lab angle *a_mu_lab*.
  ***********************************************************************************************************/
 
-HOST_DEVICE double IncoherentPhotoAtomicScattering::angleBiasing( Reaction const *a_reaction, double a_energy_in, double a_mu_lab, 
+MCGIDI_HOST_DEVICE double IncoherentPhotoAtomicScattering::angleBiasing( Reaction const *a_reaction, double a_energy_in, double a_mu_lab, 
                 double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const {
 
     URR_protareInfos URR_protareInfos1;
@@ -1683,7 +1683,7 @@ HOST_DEVICE double IncoherentPhotoAtomicScattering::angleBiasing( Reaction const
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void IncoherentPhotoAtomicScattering::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void IncoherentPhotoAtomicScattering::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     Distribution::serialize( a_buffer, a_mode );
 
@@ -1697,7 +1697,7 @@ HOST_DEVICE void IncoherentPhotoAtomicScattering::serialize( DataBuffer &a_buffe
  * This class represents the distribution for an outgoing photon the is the result of an electron annihilating with a positron.
  */
 
-HOST_DEVICE PairProductionGamma::PairProductionGamma( ) {
+MCGIDI_HOST_DEVICE PairProductionGamma::PairProductionGamma( ) {
 
 }
 
@@ -1706,7 +1706,7 @@ HOST_DEVICE PairProductionGamma::PairProductionGamma( ) {
  * @param a_firstSampled            [in]    FIX ME
  ***********************************************************************************************************/
 
-HOST PairProductionGamma::PairProductionGamma( SetupInfo &a_setupInfo, bool a_firstSampled ) :
+MCGIDI_HOST PairProductionGamma::PairProductionGamma( SetupInfo &a_setupInfo, bool a_firstSampled ) :
         Distribution( Type::pairProductionGamma, GIDI::Frame::lab, a_setupInfo ),
         m_firstSampled( a_firstSampled ) {
 
@@ -1715,7 +1715,7 @@ HOST PairProductionGamma::PairProductionGamma( SetupInfo &a_setupInfo, bool a_fi
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST PairProductionGamma::~PairProductionGamma( ) {
+MCGIDI_HOST PairProductionGamma::~PairProductionGamma( ) {
 
 }
 
@@ -1731,7 +1731,7 @@ HOST PairProductionGamma::~PairProductionGamma( ) {
  * @param a_rngState                [in]    The current state for the random number generator.
  ***********************************************************************************************************/
 
-HOST_DEVICE void PairProductionGamma::sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const {
+MCGIDI_HOST_DEVICE void PairProductionGamma::sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const {
 
     if( m_firstSampled ) {
         a_input.m_mu = 1.0 - 2.0 * a_userrng( a_rngState );
@@ -1759,7 +1759,7 @@ HOST_DEVICE void PairProductionGamma::sample( double a_X, Sampling::Input &a_inp
  * @return                                  The probability of emitting outgoing particle into lab angle *a_mu_lab*.
  ***********************************************************************************************************/
 
-HOST_DEVICE double PairProductionGamma::angleBiasing( Reaction const *a_reaction, double a_energy_in, double a_mu_lab, 
+MCGIDI_HOST_DEVICE double PairProductionGamma::angleBiasing( Reaction const *a_reaction, double a_energy_in, double a_mu_lab, 
                 double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const {
 
     a_energy_out = PoPI_electronMass_MeV_c2;
@@ -1774,7 +1774,7 @@ HOST_DEVICE double PairProductionGamma::angleBiasing( Reaction const *a_reaction
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void PairProductionGamma::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void PairProductionGamma::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     Distribution::serialize( a_buffer, a_mode );
 
@@ -1785,7 +1785,7 @@ HOST_DEVICE void PairProductionGamma::serialize( DataBuffer &a_buffer, DataBuffe
  * This class represents the distribution for an outgoing product whose distribution is not specified.
  */
 
-HOST_DEVICE Unspecified::Unspecified( ) {
+MCGIDI_HOST_DEVICE Unspecified::Unspecified( ) {
 
 }
 
@@ -1794,7 +1794,7 @@ HOST_DEVICE Unspecified::Unspecified( ) {
  * @param a_setupInfo               [in]    Used internally when constructing a Protare to pass information to other constructors.
  ***********************************************************************************************************/
 
-HOST Unspecified::Unspecified( GIDI::Distributions::Distribution const &a_distribution, SetupInfo &a_setupInfo ) :
+MCGIDI_HOST Unspecified::Unspecified( GIDI::Distributions::Distribution const &a_distribution, SetupInfo &a_setupInfo ) :
         Distribution( Type::unspecified, a_distribution, a_setupInfo ) {
 
 }
@@ -1802,7 +1802,7 @@ HOST Unspecified::Unspecified( GIDI::Distributions::Distribution const &a_distri
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE Unspecified::~Unspecified( ) {
+MCGIDI_HOST_DEVICE Unspecified::~Unspecified( ) {
 
 }
 
@@ -1815,7 +1815,7 @@ HOST_DEVICE Unspecified::~Unspecified( ) {
  * @param a_rngState                [in]    The current state for the random number generator.
  ***********************************************************************************************************/
 
-HOST_DEVICE void Unspecified::sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const {
+MCGIDI_HOST_DEVICE void Unspecified::sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const {
 
     a_input.m_sampledType = Sampling::SampledType::unspecified;
     a_input.m_energyOut1 = 0.;
@@ -1839,7 +1839,7 @@ HOST_DEVICE void Unspecified::sample( double a_X, Sampling::Input &a_input, doub
  * @return                                  The probability of emitting outgoing particle into lab angle *a_mu_lab*.
  ***********************************************************************************************************/
 
-HOST_DEVICE double Unspecified::angleBiasing( Reaction const *a_reaction, double a_energy_in, double a_mu_lab, 
+MCGIDI_HOST_DEVICE double Unspecified::angleBiasing( Reaction const *a_reaction, double a_energy_in, double a_mu_lab, 
                 double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const {
 
     a_energy_out = 0.0;
@@ -1854,7 +1854,7 @@ HOST_DEVICE double Unspecified::angleBiasing( Reaction const *a_reaction, double
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void Unspecified::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void Unspecified::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     Distribution::serialize( a_buffer, a_mode );
 }
@@ -1868,7 +1868,7 @@ HOST_DEVICE void Unspecified::serialize( DataBuffer &a_buffer, DataBuffer::Mode 
  * @param a_settings            [in]    Used to pass user options to the *this* to instruct it which data are desired.
  ***********************************************************************************************************/
 
-HOST Distribution *parseGIDI( GIDI::Suite const &a_distribution, SetupInfo &a_setupInfo, Transporting::MC const &a_settings ) {
+MCGIDI_HOST Distribution *parseGIDI( GIDI::Suite const &a_distribution, SetupInfo &a_setupInfo, Transporting::MC const &a_settings ) {
 
 // BRB6
     std::string const *label = a_settings.styles( )->findLabelInLineage( a_distribution, a_setupInfo.m_distributionLabel );
@@ -1906,7 +1906,7 @@ HOST Distribution *parseGIDI( GIDI::Suite const &a_distribution, SetupInfo &a_se
         break;
     default :
         std::cout << "distribution = moniker = " << GIDI_distribution.moniker( ) << " label = " << GIDI_distribution.label( ) << std::endl;
-        THROW( "MCGIDI::Distributions::parseGIDI: unsupported distribution" );
+        throw std::runtime_error( "MCGIDI::Distributions::parseGIDI: unsupported distribution" );
     }
 
     return( distribution );
@@ -1918,7 +1918,7 @@ HOST Distribution *parseGIDI( GIDI::Suite const &a_distribution, SetupInfo &a_se
  * @return                              The type of the distribution or Distributions::Type::none if *a_distribution* is a *nullptr* pointer.
  ***********************************************************************************************************/
 
-HOST_DEVICE Type DistributionType( Distribution const *a_distribution ) {
+MCGIDI_HOST_DEVICE Type DistributionType( Distribution const *a_distribution ) {
 
     if( a_distribution == nullptr ) return( Type::none );
     return( a_distribution->type( ) );

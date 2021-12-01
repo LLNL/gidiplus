@@ -10,5 +10,5 @@ SHELL = /bin/ksh
 GIDI_PLUS_PATH ?= $(abspath ../../../..)
 CppSources = $(sort $(wildcard *.cpp))
 
-include ../../../Makefile.paths
+include $(GIDI_PLUS_PATH)/Makefile.paths
 include ../Makefile.bin

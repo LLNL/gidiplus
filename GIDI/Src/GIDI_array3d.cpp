@@ -11,6 +11,7 @@
 #include <algorithm>
 
 #include "GIDI.hpp"
+#include <HAPI.hpp>
 
 namespace GIDI {
 
@@ -20,12 +21,12 @@ namespace GIDI {
 
 /* *********************************************************************************************************//**
  *
- * @param a_node                [in]     The **pugi::xml_node** to be parsed and used to construct the Array3d.
+ * @param a_node                [in]    The **HAPI::Node** to be parsed and used to construct the Array3d.
  * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_useSystem_strtod    [in]    Flag passed to the function nfu_stringToListOfDoubles.
  ***********************************************************************************************************/
 
-Array3d::Array3d( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, int a_useSystem_strtod ) :
+Array3d::Array3d( HAPI::Node const &a_node, SetupInfo &a_setupInfo, int a_useSystem_strtod ) :
         Form( a_node, a_setupInfo, FormType::array3d ),
         m_array( a_node, a_setupInfo, 3, a_useSystem_strtod ) {
 

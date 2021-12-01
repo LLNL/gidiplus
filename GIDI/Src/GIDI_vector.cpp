@@ -334,4 +334,58 @@ void Vector::write( FILE *a_file, std::string const &a_prefix ) const {
     for( std::vector<double>::const_iterator iter = m_vector.begin( ); iter < m_vector.end( ); ++iter ) fprintf( a_file, "%19.11e\n", *iter );
 }
 
+/* *********************************************************************************************************//**
+ * This method writes the contents of *this* to output *a_file* with each pair (boundary, value) as one line. Each line is written
+ * with the C *printf* style format as specified via the *a_format* arguement. If *a_epsilon* is zero then ( size() + 1 )
+ * lines are printed with the last y-value being the last value in *this*. If *a_epsilon* is not zero then ( 2 * size() )
+ * lines are printed with each boundary with index 1 to size() being print at first ( boundary[index] * ( 1 - a_epsilon ) )
+ * and then ( boundary[index] * ( 1 + a_epsilon ) ) as :
+ *
+ *      boundary[index] * ( 1 - a_epsilon ) ), this[index-1]
+ *      boundary[index] * ( 1 + a_epsilon ) ), this[index]
+ * 
+ *
+ * @param a_file        [in]    A pointer to an opened C FILE instance where the data are to be written.
+ * @param a_format      [in]    A C *printf* style format to wrint one line of each (boundary, value) pair. Must include the line feed character.
+ * @param a_boundaries  [in]    The list of boundaries. Must contain (size() + 1) values except for the case when size() is 0.
+ * @param a_epsilon     [in]    Prefix to add to line.
+ ***********************************************************************************************************/
+
+void Vector::writeWithBoundaries( FILE *a_file, char const *a_format, std::vector<double> const &a_boundaries, double a_epsilon ) const {
+
+    if( size( ) == 0 ) {
+        if( a_boundaries.size( ) > 0 ) {
+            Vector vector( a_boundaries.size( ) - 1 );
+            vector.writeWithBoundaries2( a_file, a_format, a_boundaries, a_epsilon ); } }
+    else {
+        if( size( ) + 1 != a_boundaries.size( ) ) throw Exception( "Vector::writeWithBoundaries: Vector size and number of boundaries are not compatible." );
+        writeWithBoundaries2( a_file, a_format, a_boundaries, a_epsilon );
+    }
+}
+
+/* *********************************************************************************************************//**
+ * For internal use only. See method **writeWithBoundaries** for description.
+ *
+ * @param a_file        [in]    A pointer to an opened C FILE instance where the data are to be written.
+ * @param a_format      [in]    A C *printf* style format to wrint one line of each (boundary, value) pair. Do not include the line feed character.
+ * @param a_boundaries  [in]    The list of boundaries. Must contain (size() + 1) values except for the case when size() is 0.
+ * @param a_epsilon     [in]    Prefix to add to line.
+ ***********************************************************************************************************/
+void Vector::writeWithBoundaries2( FILE *a_file, char const *a_format, std::vector<double> const &a_boundaries, double a_epsilon ) const {
+
+    int numberOfValues = (int) size( );
+
+    if( a_epsilon == 0.0 ) {
+        for( int index = 0; index < numberOfValues; ++index ) fprintf( a_file, a_format, a_boundaries[index], m_vector[index] ); }
+    else {
+        if( numberOfValues > 0 ) fprintf( a_file, a_format, a_boundaries[0], m_vector[0] );
+        for( int index = 1; index < numberOfValues; ++index ) {
+            fprintf( a_file, a_format, a_boundaries[index] * ( 1.0 - a_epsilon ), m_vector[index-1] );
+
+            fprintf( a_file, a_format, a_boundaries[index] * ( 1.0 + a_epsilon ), m_vector[index] );
+        }
+    }
+    if( numberOfValues > 0 ) fprintf( a_file, a_format, a_boundaries[numberOfValues], m_vector[numberOfValues-1] );
+}
+
 }

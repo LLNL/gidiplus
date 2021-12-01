@@ -1,0 +1,49 @@
+GIDI_PLUS_INCLUDE ?= $(GIDI_PLUS_PATH)/include
+GIDI_PLUS_lib ?= $(GIDI_PLUS_PATH)/lib
+
+PUGIXML_PATH     ?= $(GIDI_PLUS_PATH)/pugixml
+PUGIXML_INCLUDE  ?= $(PUGIXML_PATH)/include
+PUGIXML_LIB      ?= $(PUGIXML_PATH)/lib
+
+LUPI_PATH     	?= $(GIDI_PLUS_PATH)/LUPI
+LUPI_INCLUDE  	?= $(LUPI_PATH)/include
+LUPI_LIB      	?= $(LUPI_PATH)/lib
+LUPI_UTILITIES	?= $(LUPI_PATH)/Utilities
+
+HAPI_PATH        ?= $(GIDI_PLUS_PATH)/HAPI
+HAPI_INCLUDE     ?= $(HAPI_PATH)/include
+HAPI_LIB         ?= $(HAPI_PATH)/lib
+
+SMR_PATH         ?= $(GIDI_PLUS_PATH)/numericalFunctions/statusMessageReporting
+SMR_INCLUDE      ?= $(SMR_PATH)/include
+SMR_LIB          ?= $(SMR_PATH)/lib
+
+NF_PATH          ?= $(GIDI_PLUS_PATH)/numericalFunctions
+NF_INCLUDE       ?= $(NF_PATH)/include
+NF_LIB           ?= $(NF_PATH)/lib
+
+POPI_PATH        ?= $(GIDI_PLUS_PATH)/PoPI
+POPI_INCLUDE     ?= $(POPI_PATH)/include
+POPI_LIB         ?= $(POPI_PATH)/lib
+
+GIDI_PATH        ?= $(GIDI_PLUS_PATH)/GIDI
+GIDI_INCLUDE     ?= $(GIDI_PATH)/include
+GIDI_LIB         ?= $(GIDI_PATH)/lib
+
+MCGIDI_PATH      ?= $(GIDI_PLUS_PATH)/MCGIDI
+MCGIDI_INCLUDE   ?= $(MCGIDI_PATH)/include
+MCGIDI_LIB       ?= $(MCGIDI_PATH)/lib
+
+ifdef HDF5_PATH
+    HDF5_INCLUDE       ?= $(HDF5_PATH)/include
+    HDF5_LIB           ?= $(HDF5_PATH)/lib
+	HDF5_FLAGS = -I$(HDF5_INCLUDE) -DHAPI_USE_HDF5=1
+	HDF5_LIB_MINUS_L = -L$(HDF5_LIB)
+	HDF5_LIBS = -ldl -lhdf5 -lz
+endif
+
+local_CXXFLAGS = $(CXXFLAGS) -DHAPI_USE_PUGIXML=1 $(HDF5_FLAGS) -I$(PUGIXML_INCLUDE) -I$(LUPI_INCLUDE) -I$(HAPI_INCLUDE) \
+		-I$(SMR_INCLUDE) -I$(NF_INCLUDE) -I$(POPI_INCLUDE) -I$(GIDI_INCLUDE) -I$(MCGIDI_INCLUDE)
+
+LIB_PATHS = $(HDF5_LIB_MINUS_L) -L$(PUGIXML_LIB) -L$(LUPI_LIB) -L$(HAPI_LIB) -L$(SMR_LIB) -L$(NF_LIB) -L$(POPI_LIB) \
+		-L$(GIDI_LIB) -L$(MCGIDI_LIB)

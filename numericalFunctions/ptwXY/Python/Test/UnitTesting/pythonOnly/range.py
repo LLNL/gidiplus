@@ -23,9 +23,9 @@ yData = [ math.sin( x ) for x in xData ]
 xys = pointwiseXY_C.pointwiseXY_C( [ xData, yData ], initialSize = len( xData ), overflowSize = 10, dataForm = 'XsAndYs' )
 rangeMin = min( [ y for x, y in xys ] )
 rangeMax = max( [ y for x, y in xys ] )
-range1 = ( rangeMin, rangeMax )
+range1 = [ rangeMin, rangeMax ]
 range2 = xys.range( )
-range3 = ( xys.rangeMin( ), xys.rangeMax( ) )
+range3 = [ xys.rangeMin( ), xys.rangeMax( ) ]
 
 if( range1 != range2 ) : raise Exception( 'xys.range( ) failed "%s" vs. "%s"' % ( range1, range2 ) )
 if( range1 != range3 ) : raise Exception( 'xys.rangeMin( ) and/or xys.rangeMax( ) failed "%s" vs. "%s"' % ( range1, range3 ) )

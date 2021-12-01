@@ -12,6 +12,7 @@
 
 #include "math.h"
 
+#include <LUPI.hpp>
 #include <PoPI.hpp>
 #include <GIDI.hpp>
 
@@ -41,10 +42,10 @@ namespace MCGIDI {
 
 #define MCGIDI_particleBeta( a_mass_unitOfEnergy, a_kineticEnergy ) ( sqrt( (a_kineticEnergy) * ( (a_kineticEnergy) + 2.0 * (a_mass_unitOfEnergy) ) ) / ( (a_kineticEnergy) + (a_mass_unitOfEnergy) ) )
 
-HOST_DEVICE double particleKineticEnergy( double a_mass_unitOfEnergy, double a_particleBeta );
-HOST_DEVICE double particleKineticEnergyFromBeta2( double a_mass_unitOfEnergy, double a_particleBeta2 );    // a_particleBeta2 = a_particleBeta^2.
-HOST_DEVICE double boostSpeed( double a_massProjectile, double a_kineticEnergyProjectile, double a_massTarget );
-HOST_DEVICE int muCOM_From_muLab( double a_muLab, double a_boostBeta, double a_productBeta, double &a_muPlus, double &a_JacobianPlus, double &a_muMinus, double &a_JacobianMinus );
+MCGIDI_HOST_DEVICE double particleKineticEnergy( double a_mass_unitOfEnergy, double a_particleBeta );
+MCGIDI_HOST_DEVICE double particleKineticEnergyFromBeta2( double a_mass_unitOfEnergy, double a_particleBeta2 );    // a_particleBeta2 = a_particleBeta^2.
+MCGIDI_HOST_DEVICE double boostSpeed( double a_massProjectile, double a_kineticEnergyProjectile, double a_massTarget );
+MCGIDI_HOST_DEVICE int muCOM_From_muLab( double a_muLab, double a_boostBeta, double a_productBeta, double &a_muPlus, double &a_JacobianPlus, double &a_muMinus, double &a_JacobianMinus );
 
 enum class ProtareType { single, composite, TNSL };
 
@@ -89,48 +90,48 @@ class MC : public GIDI::Transporting::Settings {
         std::vector<double> m_fixedGridPoints;
 
     public:
-        MC( PoPI::Database const &a_pops, std::string const &a_projectileID, GIDI::Styles::Suite const *a_styles, std::string const &a_label, GIDI::Transporting::DelayedNeutrons a_delayedNeutrons, double energyDomainMax );
+        MCGIDI_HOST MC( PoPI::Database const &a_pops, std::string const &a_projectileID, GIDI::Styles::Suite const *a_styles, std::string const &a_label, GIDI::Transporting::DelayedNeutrons a_delayedNeutrons, double energyDomainMax );
 
-        GIDI::Styles::Suite const *styles( ) const { return( m_styles ); }               /**< Returns the value of the **m_styles**. */
-        void styles( GIDI::Styles::Suite const *a_styles ) { m_styles = a_styles; }      /**< This is needed for ProtareTNSL, but should be avoided otherwise. FIXME, need to have a better way. */
+        MCGIDI_HOST GIDI::Styles::Suite const *styles( ) const { return( m_styles ); }               /**< Returns the value of the **m_styles**. */
+        MCGIDI_HOST void styles( GIDI::Styles::Suite const *a_styles ) { m_styles = a_styles; }      /**< This is needed for ProtareTNSL, but should be avoided otherwise. FIXME, need to have a better way. */
 
-        std::string label( ) const { return( m_label ); }
+        MCGIDI_HOST std::string label( ) const { return( m_label ); }
 
 // FIXME (1) should this not be something like
 // GIDI::Styles::Suite const &suite( ) const { return( *m_styles ); }                   /**< Returns a reference to **m_styles**. */
-        double energyDomainMax( ) const { return( m_energyDomainMax ); }                /**< Returns the value of the **m_energyDomainMax**. */
+        MCGIDI_HOST double energyDomainMax( ) const { return( m_energyDomainMax ); }                /**< Returns the value of the **m_energyDomainMax**. */
 
-        bool ignoreENDF_MT5( ) const { return( m_ignoreENDF_MT5 ); }                    /**< Returns the value of the **m_ignoreENDF_MT5**. */
-        void setIgnoreENDF_MT5( bool a_ignoreENDF_MT5 ) { m_ignoreENDF_MT5 = a_ignoreENDF_MT5; }
+        MCGIDI_HOST bool ignoreENDF_MT5( ) const { return( m_ignoreENDF_MT5 ); }                    /**< Returns the value of the **m_ignoreENDF_MT5**. */
+        MCGIDI_HOST void setIgnoreENDF_MT5( bool a_ignoreENDF_MT5 ) { m_ignoreENDF_MT5 = a_ignoreENDF_MT5; }
 
-        bool sampleNonTransportingParticles( ) const { return( m_sampleNonTransportingParticles); }
-        void sampleNonTransportingParticles( bool a_sampleNonTransportingParticles ) { m_sampleNonTransportingParticles = a_sampleNonTransportingParticles; }
+        MCGIDI_HOST bool sampleNonTransportingParticles( ) const { return( m_sampleNonTransportingParticles); }
+        MCGIDI_HOST void sampleNonTransportingParticles( bool a_sampleNonTransportingParticles ) { m_sampleNonTransportingParticles = a_sampleNonTransportingParticles; }
 
-        LookupMode::Data1d crossSectionLookupMode( ) const { return( m_crossSectionLookupMode ); }    /**< Returns the value of the **m_crossSectionLookupMode**. */
-        void crossSectionLookupMode( LookupMode::Data1d a_crossSectionLookupMode );
-        LookupMode::Data1d other1dDataLookupMode( ) const { return( m_other1dDataLookupMode ); }      /**< Returns the value of the **m_other1dDataLookupMode**. */
-        void other1dDataLookupMode( LookupMode::Data1d a_other1dDataLookupMode );
-        LookupMode::Distribution distributionLookupMode( ) const { return( m_distributionLookupMode ); }  /**< Returns the value of the **m_distributionLookupMode**. */
-        void distributionLookupMode( LookupMode::Distribution a_distributionLookupMode );
+        MCGIDI_HOST LookupMode::Data1d crossSectionLookupMode( ) const { return( m_crossSectionLookupMode ); }    /**< Returns the value of the **m_crossSectionLookupMode**. */
+        MCGIDI_HOST void crossSectionLookupMode( LookupMode::Data1d a_crossSectionLookupMode );
+        MCGIDI_HOST LookupMode::Data1d other1dDataLookupMode( ) const { return( m_other1dDataLookupMode ); }      /**< Returns the value of the **m_other1dDataLookupMode**. */
+        MCGIDI_HOST void other1dDataLookupMode( LookupMode::Data1d a_other1dDataLookupMode );
+        MCGIDI_HOST LookupMode::Distribution distributionLookupMode( ) const { return( m_distributionLookupMode ); }  /**< Returns the value of the **m_distributionLookupMode**. */
+        MCGIDI_HOST void distributionLookupMode( LookupMode::Distribution a_distributionLookupMode );
 
-        Sampling::Upscatter::Model upscatterModel( ) const { return( m_upscatterModel ); }             /**< Returns the value of the **m_upscatterModel**. */
-        void setUpscatterModelA( std::string const &a_upscatterModelALabel );
-        std::string upscatterModelALabel( ) const { return( m_upscatterModelALabel ); }                 /**< Returns the value of the **m_upscatterModelALabel**. */
+        MCGIDI_HOST Sampling::Upscatter::Model upscatterModel( ) const { return( m_upscatterModel ); }             /**< Returns the value of the **m_upscatterModel**. */
+        MCGIDI_HOST void setUpscatterModelA( std::string const &a_upscatterModelALabel );
+        MCGIDI_HOST std::string upscatterModelALabel( ) const { return( m_upscatterModelALabel ); }                 /**< Returns the value of the **m_upscatterModelALabel**. */
 
-        bool want_URR_probabilityTables( ) const { return( m_want_URR_probabilityTables ); }
-        void want_URR_probabilityTables( bool a_want_URR_probabilityTables ) { m_want_URR_probabilityTables = a_want_URR_probabilityTables; }
+        MCGIDI_HOST bool want_URR_probabilityTables( ) const { return( m_want_URR_probabilityTables ); }
+        MCGIDI_HOST void want_URR_probabilityTables( bool a_want_URR_probabilityTables ) { m_want_URR_probabilityTables = a_want_URR_probabilityTables; }
 
-        bool wantTerrellPromptNeutronDistribution( ) const { return( m_wantTerrellPromptNeutronDistribution ); }
-        void wantTerrellPromptNeutronDistribution( bool a_wantTerrellPromptNeutronDistribution ) { m_wantTerrellPromptNeutronDistribution = a_wantTerrellPromptNeutronDistribution; }
+        MCGIDI_HOST bool wantTerrellPromptNeutronDistribution( ) const { return( m_wantTerrellPromptNeutronDistribution ); }
+        MCGIDI_HOST void wantTerrellPromptNeutronDistribution( bool a_wantTerrellPromptNeutronDistribution ) { m_wantTerrellPromptNeutronDistribution = a_wantTerrellPromptNeutronDistribution; }
 
-        std::vector<double> fixedGridPoints( ) const { return( m_fixedGridPoints ); }
-        void fixedGridPoints( std::vector<double> a_fixedGridPoints ) { m_fixedGridPoints = a_fixedGridPoints; }
+        MCGIDI_HOST std::vector<double> fixedGridPoints( ) const { return( m_fixedGridPoints ); }
+        MCGIDI_HOST void fixedGridPoints( std::vector<double> a_fixedGridPoints ) { m_fixedGridPoints = a_fixedGridPoints; }
 
-        PoPI::Database const &pops( ) const { return( m_pops ); }                       /**< Returns a reference to **m_styles**. */
-        int neutronIndex( ) const { return( m_neutronIndex ); }
-        int photonIndex( ) const { return( m_photonIndex ); }
+        MCGIDI_HOST PoPI::Database const &pops( ) const { return( m_pops ); }                       /**< Returns a reference to **m_styles**. */
+        MCGIDI_HOST int neutronIndex( ) const { return( m_neutronIndex ); }
+        MCGIDI_HOST int photonIndex( ) const { return( m_photonIndex ); }
 
-        void process( GIDI::Protare const &a_protare );
+        MCGIDI_HOST void process( GIDI::Protare const &a_protare );
 };
 
 }           // End of namespace Transporting.
@@ -161,7 +162,7 @@ class SetupInfo {
         GIDI::OutputChannel const *m_outputChannel;
         std::map<std::string, int> m_stateNamesToIndices;
 
-        HOST SetupInfo( Protare &a_protare );
+        MCGIDI_HOST SetupInfo( Protare &a_protare );
 };
 
 /*
@@ -169,7 +170,7 @@ class SetupInfo {
 =========================== Others =========================
 ============================================================
 */
-HOST int MCGIDI_popsIndex( PoPI::Database const &a_pops, std::string const &a_ID );
+MCGIDI_HOST int MCGIDI_popsIndex( PoPI::Database const &a_pops, std::string const &a_ID );
 
 #if 0
 /* *********************************************************************************************************//**
@@ -193,7 +194,7 @@ HOST int MCGIDI_popsIndex( PoPI::Database const &a_pops, std::string const &a_ID
  ***********************************************************************************************************/
 #endif
 
-HOST_DEVICE inline MCGIDI_VectorSizeType binarySearchVector( double a_x, Vector<double> const &a_Xs, bool a_boundIndex = false ) {
+MCGIDI_HOST_DEVICE inline MCGIDI_VectorSizeType binarySearchVector( double a_x, Vector<double> const &a_Xs, bool a_boundIndex = false ) {
 
     MCGIDI_VectorSizeType lower = 0, middle, upper = (MCGIDI_VectorSizeType) a_Xs.size( ) - 1;
 
@@ -222,7 +223,7 @@ HOST_DEVICE inline MCGIDI_VectorSizeType binarySearchVector( double a_x, Vector<
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE inline MCGIDI_VectorSizeType binarySearchVectorBounded( double a_x, Vector<double> const &a_Xs, MCGIDI_VectorSizeType a_lower, 
+MCGIDI_HOST_DEVICE inline MCGIDI_VectorSizeType binarySearchVectorBounded( double a_x, Vector<double> const &a_Xs, MCGIDI_VectorSizeType a_lower, 
                 MCGIDI_VectorSizeType a_upper, bool a_boundIndex ) {
 
     MCGIDI_VectorSizeType middle;
@@ -274,22 +275,22 @@ class DomainHash {
         double m_inverse_du;                                                /**< The value *m_bins* / ( *m_u_domainMax* - *m_u_domainMin* ). */
 
     public:
-        HOST_DEVICE DomainHash( );
-        HOST_DEVICE DomainHash( int a_bins, double a_domainMin, double a_domainMax );
-        HOST_DEVICE DomainHash( DomainHash const &a_domainHash );
+        MCGIDI_HOST_DEVICE DomainHash( );
+        MCGIDI_HOST_DEVICE DomainHash( int a_bins, double a_domainMin, double a_domainMax );
+        MCGIDI_HOST_DEVICE DomainHash( DomainHash const &a_domainHash );
 
-        HOST_DEVICE int bins( ) const { return( m_bins ); }                     /**< Returns the value of the **m_bins**. */
-        HOST_DEVICE double domainMin( ) const { return( m_domainMin ); }        /**< Returns the value of the **m_domainMax**. */
-        HOST_DEVICE double domainMax( ) const { return( m_domainMax ); }        /**< Returns the value of the **m_domainMax**. */
-        HOST_DEVICE double u_domainMin( ) const { return( m_u_domainMin ); }    /**< Returns the value of the **m_u_domainMin**. */
-        HOST_DEVICE double u_domainMax( ) const { return( m_u_domainMax ); }    /**< Returns the value of the **m_u_domainMax**. */
-        HOST_DEVICE double inverse_du( ) const { return( m_inverse_du ); }      /**< Returns the value of the **m_inverse_du**. */
+        MCGIDI_HOST_DEVICE int bins( ) const { return( m_bins ); }                     /**< Returns the value of the **m_bins**. */
+        MCGIDI_HOST_DEVICE double domainMin( ) const { return( m_domainMin ); }        /**< Returns the value of the **m_domainMax**. */
+        MCGIDI_HOST_DEVICE double domainMax( ) const { return( m_domainMax ); }        /**< Returns the value of the **m_domainMax**. */
+        MCGIDI_HOST_DEVICE double u_domainMin( ) const { return( m_u_domainMin ); }    /**< Returns the value of the **m_u_domainMin**. */
+        MCGIDI_HOST_DEVICE double u_domainMax( ) const { return( m_u_domainMax ); }    /**< Returns the value of the **m_u_domainMax**. */
+        MCGIDI_HOST_DEVICE double inverse_du( ) const { return( m_inverse_du ); }      /**< Returns the value of the **m_inverse_du**. */
 
-        HOST_DEVICE int index( double a_domain ) const ;
-        HOST_DEVICE Vector<int> map( Vector<double> &a_domainValues ) const ;
+        MCGIDI_HOST_DEVICE int index( double a_domain ) const ;
+        MCGIDI_HOST_DEVICE Vector<int> map( Vector<double> &a_domainValues ) const ;
 
-        HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE void print( bool a_printValues ) const ;
+        MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
+        MCGIDI_HOST void print( bool a_printValues ) const ;
 };
 
 /*
@@ -308,15 +309,15 @@ class MultiGroupHash {
         MultiGroupHash( std::vector<double> a_boundaries );
         MultiGroupHash( GIDI::Protare const &a_protare, GIDI::Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_particleID = "" );
 
-        HOST_DEVICE Vector<double> const &boundaries( ) const { return( m_boundaries ); }   /**< Returns a reference to **m_styles**. */
-        HOST_DEVICE int index( double a_domain ) const {
+        MCGIDI_HOST_DEVICE Vector<double> const &boundaries( ) const { return( m_boundaries ); }   /**< Returns a reference to **m_styles**. */
+        MCGIDI_HOST_DEVICE int index( double a_domain ) const {
             MCGIDI_VectorSizeType _index = binarySearchVector( a_domain, m_boundaries );
 
             if( _index == -2 ) return( 0 );
             if( _index == -1 ) return( m_boundaries.size( ) - 2 );
             return( _index );
         }
-        HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
+        MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
 };
 
 /*
@@ -330,11 +331,11 @@ class URR_protareInfo {
         bool m_inURR;
         double m_rng_Value;
 
-        HOST_DEVICE URR_protareInfo( ) : m_inURR( false ), m_rng_Value( 0.0 ) { }
-        HOST_DEVICE URR_protareInfo( URR_protareInfo const &a_URR_protareInfo ) { m_inURR = a_URR_protareInfo.m_inURR; m_rng_Value = a_URR_protareInfo.m_rng_Value; }
+        MCGIDI_HOST_DEVICE URR_protareInfo( ) : m_inURR( false ), m_rng_Value( 0.0 ) { }
+        MCGIDI_HOST_DEVICE URR_protareInfo( URR_protareInfo const &a_URR_protareInfo ) { m_inURR = a_URR_protareInfo.m_inURR; m_rng_Value = a_URR_protareInfo.m_rng_Value; }
 
-        HOST_DEVICE bool inURR( ) const { return( m_inURR ); }
-        HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
+        MCGIDI_HOST_DEVICE bool inURR( ) const { return( m_inURR ); }
+        MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
 };
 
 /*
@@ -348,17 +349,17 @@ class URR_protareInfos {
         Vector<URR_protareInfo> m_URR_protareInfos;
 
     public:
-        HOST_DEVICE URR_protareInfos( ) : m_URR_protareInfos( ) { }
-        HOST URR_protareInfos( Vector<Protare *> &a_protares );
+        MCGIDI_HOST_DEVICE URR_protareInfos( ) : m_URR_protareInfos( ) { }
+        MCGIDI_HOST URR_protareInfos( Vector<Protare *> &a_protares );
 
-        HOST void setup( Vector<Protare *> &a_protares );
+        MCGIDI_HOST void setup( Vector<Protare *> &a_protares );
 
-        HOST_DEVICE MCGIDI_VectorSizeType size( ) const { return( m_URR_protareInfos.size( ) ); }
-        HOST_DEVICE URR_protareInfo const &operator[]( MCGIDI_VectorSizeType a_index ) const { return( m_URR_protareInfos[a_index] ); }  /**< Returns the instance of *m_URR_protareInfos* at index *a_index*. */
-        HOST_DEVICE void updateProtare( MCGIDI::Protare const *a_protare, double a_energy, double (*a_userrng)( void * ), void *a_rngState );
+        MCGIDI_HOST_DEVICE MCGIDI_VectorSizeType size( ) const { return( m_URR_protareInfos.size( ) ); }
+        MCGIDI_HOST_DEVICE URR_protareInfo const &operator[]( MCGIDI_VectorSizeType a_index ) const { return( m_URR_protareInfos[a_index] ); }  /**< Returns the instance of *m_URR_protareInfos* at index *a_index*. */
+        MCGIDI_HOST_DEVICE void updateProtare( MCGIDI::Protare const *a_protare, double a_energy, double (*a_userrng)( void * ), void *a_rngState );
 
-        HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long internalSize( ) const { return m_URR_protareInfos.internalSize( ); }
+        MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
+        MCGIDI_HOST_DEVICE long internalSize( ) const { return m_URR_protareInfos.internalSize( ); }
 };
 
 /*
@@ -375,24 +376,26 @@ class HeatedReactionCrossSectionContinuousEnergy {
         Probabilities::ProbabilityBase2d *m_URR_probabilityTables;
 
     public:
-        HOST_DEVICE HeatedReactionCrossSectionContinuousEnergy( );
-        HOST HeatedReactionCrossSectionContinuousEnergy( int a_offset, double a_threshold, Vector<double> &a_crossSection );
-        HOST HeatedReactionCrossSectionContinuousEnergy( double a_threshold, GIDI::Functions::Ys1d const &a_crossSection, Probabilities::ProbabilityBase2d *a_URR_probabilityTables );
+        MCGIDI_HOST_DEVICE HeatedReactionCrossSectionContinuousEnergy( );
+        MCGIDI_HOST HeatedReactionCrossSectionContinuousEnergy( int a_offset, double a_threshold, Vector<double> &a_crossSection );
+        MCGIDI_HOST HeatedReactionCrossSectionContinuousEnergy( double a_threshold, GIDI::Functions::Ys1d const &a_crossSection, Probabilities::ProbabilityBase2d *a_URR_probabilityTables );
 
-        HOST_DEVICE double threshold( ) const { return( m_threshold ); }                            /**< Returns the value of the **m_threshold**. */
-        HOST_DEVICE int offset( ) const { return( m_offset ); }                                     /**< Returns the value of the **m_offset**. */
-        HOST_DEVICE bool hasURR_probabilityTables( ) const { return( m_URR_probabilityTables != nullptr ); }   /**< Returns true if URR probability tables data present and false otherwise. */
-        HOST_DEVICE double URR_domainMin( ) const ;
-        HOST_DEVICE double URR_domainMax( ) const ;
-        HOST_DEVICE Probabilities::ProbabilityBase2d *URR_probabilityTables( ) const { return( m_URR_probabilityTables ); }             /**< Returns the value of the **m_URR_probabilityTables**. */
-        HOST_DEVICE double crossSection( std::size_t a_index ) const {
+        MCGIDI_HOST_DEVICE double threshold( ) const { return( m_threshold ); }                            /**< Returns the value of the **m_threshold**. */
+        MCGIDI_HOST_DEVICE int offset( ) const { return( m_offset ); }                                     /**< Returns the value of the **m_offset**. */
+        MCGIDI_HOST_DEVICE bool hasURR_probabilityTables( ) const { return( m_URR_probabilityTables != nullptr ); }   /**< Returns true if URR probability tables data present and false otherwise. */
+        MCGIDI_HOST_DEVICE double URR_domainMin( ) const ;
+        MCGIDI_HOST_DEVICE double URR_domainMax( ) const ;
+        MCGIDI_HOST_DEVICE Probabilities::ProbabilityBase2d *URR_probabilityTables( ) const { return( m_URR_probabilityTables ); }             /**< Returns the value of the **m_URR_probabilityTables**. */
+        MCGIDI_HOST_DEVICE double crossSection( std::size_t a_index ) const {
             int index = static_cast<int>( a_index ) - m_offset;
             if( index < 0 ) return( 0.0 );
             if( index >= static_cast<int>( m_crossSection.size( ) ) ) return( 0.0 );
 
             return( m_crossSection[index] );
         }
-        HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
+        MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
+
+        MCGIDI_HOST void print( std::string const &a_indent, std::string const &a_iFormat, std::string const &a_energyFormat, std::string const &a_dFormat );
 };
 
 /*
@@ -413,14 +416,15 @@ class ContinuousEnergyGain {
 
         ContinuousEnergyGain &operator=( ContinuousEnergyGain const &a_continuousEnergyGain );
 
-        HOST_DEVICE int particleIndex( ) const { return( m_particleIndex ); }
-        HOST_DEVICE int userParticleIndex( ) const { return( m_userParticleIndex ); }
-        HOST void setUserParticleIndex( int a_particleIndex, int a_userParticleIndex ) { if( a_particleIndex == m_particleIndex ) m_userParticleIndex = a_userParticleIndex; }
-        HOST_DEVICE Vector<double> const &gain( ) const { return( m_gain ); }
-        HOST void adjustGain( int a_energy_index, double a_gain ) { m_gain[a_energy_index] += a_gain; }
-        HOST_DEVICE double gain( int a_energy_index, double a_energy_fraction ) const ;
+        MCGIDI_HOST_DEVICE int particleIndex( ) const { return( m_particleIndex ); }
+        MCGIDI_HOST_DEVICE int userParticleIndex( ) const { return( m_userParticleIndex ); }
+        MCGIDI_HOST void setUserParticleIndex( int a_particleIndex, int a_userParticleIndex ) { if( a_particleIndex == m_particleIndex ) m_userParticleIndex = a_userParticleIndex; }
+        MCGIDI_HOST_DEVICE Vector<double> const &gain( ) const { return( m_gain ); }
+        MCGIDI_HOST void adjustGain( int a_energy_index, double a_gain ) { m_gain[a_energy_index] += a_gain; }
+        MCGIDI_HOST_DEVICE double gain( int a_energy_index, double a_energy_fraction ) const ;
 
-        HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
+        MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
+        MCGIDI_HOST void print( std::string const &a_indent, std::string const &a_iFormat, std::string const &a_energyFormat, std::string const &a_dFormat );
 };
 
 /*
@@ -431,7 +435,8 @@ class ContinuousEnergyGain {
 class HeatedCrossSectionContinuousEnergy {
 
     private:
-        Vector<int> m_hashIndices;
+        double m_temperature;                                   /**< The target temperature of the data. */
+        Vector<int> m_hashIndices;                              /**< The indicies for the energy hash function. */
         Vector<double> m_energies;                              /**< Energy grid for cross sections. */
         Vector<double> m_totalCrossSection;                     /**< The total cross section. */
         Vector<double> m_depositionEnergy;                      /**< The total continuous energy, deposition-energy cross section (related to the kinetic energy of the untracked outgoing particles). */
@@ -442,43 +447,45 @@ class HeatedCrossSectionContinuousEnergy {
         Vector<HeatedReactionCrossSectionContinuousEnergy *> m_reactionCrossSections;
 
     public:
-        HOST_DEVICE HeatedCrossSectionContinuousEnergy( );
-        HOST HeatedCrossSectionContinuousEnergy( SetupInfo &a_setupInfo, Transporting::MC const &a_settings, GIDI::Transporting::Particles const &a_particles,
+        MCGIDI_HOST_DEVICE HeatedCrossSectionContinuousEnergy( );
+        MCGIDI_HOST HeatedCrossSectionContinuousEnergy( SetupInfo &a_setupInfo, Transporting::MC const &a_settings, GIDI::Transporting::Particles const &a_particles,
                 DomainHash const &a_domainHash, GIDI::Styles::TemperatureInfo const &a_temperatureInfo, std::vector<GIDI::Reaction const *> const &a_reactions,
-                std::vector<GIDI::Reaction const *> const &a_orphanProducts, bool a_fixedGrid );
-        HOST_DEVICE ~HeatedCrossSectionContinuousEnergy( );
+                std::vector<GIDI::Reaction const *> const &a_orphanProducts, bool a_fixedGrid, bool a_zeroReactions );
+        MCGIDI_HOST_DEVICE ~HeatedCrossSectionContinuousEnergy( );
 
-        HOST_DEVICE int evaluationInfo( int a_hashIndex, double a_energy, double *a_energyFraction ) const ;
+        MCGIDI_HOST_DEVICE int evaluationInfo( int a_hashIndex, double a_energy, double *a_energyFraction ) const ;
 
-        HOST_DEVICE double minimumEnergy( ) const { return( m_energies[0] ); }          /**< Returns the minimum cross section domain. */
-        HOST_DEVICE double maximumEnergy( ) const { return( m_energies.back( ) ); }     /**< Returns the maximum cross section domain. */
-        HOST_DEVICE int numberOfReactions( ) const { return( (int) m_reactionCrossSections.size( ) ); } 
+        MCGIDI_HOST_DEVICE double minimumEnergy( ) const { return( m_energies[0] ); }          /**< Returns the minimum cross section domain. */
+        MCGIDI_HOST_DEVICE double maximumEnergy( ) const { return( m_energies.back( ) ); }     /**< Returns the maximum cross section domain. */
+        MCGIDI_HOST_DEVICE int numberOfReactions( ) const { return( (int) m_reactionCrossSections.size( ) ); } 
                                                                 /**< Returns the number of reaction cross section. */
 
-        HOST_DEVICE int thresholdOffset( int a_reactionIndex ) const { return( m_reactionCrossSections[a_reactionIndex]->offset( ) ); }
+        MCGIDI_HOST_DEVICE int thresholdOffset( int a_reactionIndex ) const { return( m_reactionCrossSections[a_reactionIndex]->offset( ) ); }
                                                                 /**< Returns the offset for the cross section for the reaction with index *a_reactionIndex*. */
-        HOST_DEVICE double threshold( int a_reactionIndex ) const { return( m_reactionCrossSections[a_reactionIndex]->threshold( ) ); }
+        MCGIDI_HOST_DEVICE double threshold( int a_reactionIndex ) const { return( m_reactionCrossSections[a_reactionIndex]->threshold( ) ); }
                                                                 /**< Returns the threshold for the reaction with index *a_reactionIndex*. */
-        HOST_DEVICE bool hasURR_probabilityTables( ) const ;
-        HOST_DEVICE double URR_domainMin( ) const ;
-        HOST_DEVICE double URR_domainMax( ) const ;
-        HOST_DEVICE bool reactionHasURR_probabilityTables( int a_index ) const { return( m_reactionCrossSections[a_index]->hasURR_probabilityTables( ) ); }
+        MCGIDI_HOST_DEVICE bool hasURR_probabilityTables( ) const ;
+        MCGIDI_HOST_DEVICE double URR_domainMin( ) const ;
+        MCGIDI_HOST_DEVICE double URR_domainMax( ) const ;
+        MCGIDI_HOST_DEVICE bool reactionHasURR_probabilityTables( int a_index ) const { return( m_reactionCrossSections[a_index]->hasURR_probabilityTables( ) ); }
 
-        HOST_DEVICE Vector<double> &totalCrossSection( ) { return( m_totalCrossSection ); }     /**< Returns a reference to member *m_totalCrossSection*. */
-        HOST_DEVICE double crossSection(                               URR_protareInfos const &a_URR_protareInfos, int a_URR_index, int a_hashIndex, double a_energy, bool a_sampling = false ) const ;
-        HOST_DEVICE double reactionCrossSection(  int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, int a_URR_index, int a_hashIndex, double a_energy, bool a_sampling = false ) const ;
-        HOST_DEVICE double reactionCrossSection2( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, int a_URR_index, double a_energy, int a_energyIndex, double a_energyFraction, bool a_sampling = false ) const ;
-        HOST_DEVICE double reactionCrossSection(  int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, int a_URR_index, double a_energy ) const ;
+        MCGIDI_HOST_DEVICE Vector<double> &totalCrossSection( ) { return( m_totalCrossSection ); }     /**< Returns a reference to member *m_totalCrossSection*. */
+        MCGIDI_HOST_DEVICE double crossSection(                               URR_protareInfos const &a_URR_protareInfos, int a_URR_index, int a_hashIndex, double a_energy, bool a_sampling = false ) const ;
+        MCGIDI_HOST_DEVICE double reactionCrossSection(  int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, int a_URR_index, int a_hashIndex, double a_energy, bool a_sampling = false ) const ;
+        MCGIDI_HOST_DEVICE double reactionCrossSection2( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, int a_URR_index, double a_energy, int a_energyIndex, double a_energyFraction, bool a_sampling = false ) const ;
+        MCGIDI_HOST_DEVICE double reactionCrossSection(  int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, int a_URR_index, double a_energy ) const ;
 
-        HOST_DEVICE double depositionEnergy(   int a_hashIndex, double a_energy ) const ;
-        HOST_DEVICE double depositionMomentum( int a_hashIndex, double a_energy ) const ;
-        HOST_DEVICE double productionEnergy(   int a_hashIndex, double a_energy ) const ;
-        HOST_DEVICE double gain(               int a_hashIndex, double a_energy, int a_particleIndex ) const ;
+        MCGIDI_HOST_DEVICE double depositionEnergy(   int a_hashIndex, double a_energy ) const ;
+        MCGIDI_HOST_DEVICE double depositionMomentum( int a_hashIndex, double a_energy ) const ;
+        MCGIDI_HOST_DEVICE double productionEnergy(   int a_hashIndex, double a_energy ) const ;
+        MCGIDI_HOST_DEVICE double gain(               int a_hashIndex, double a_energy, int a_particleIndex ) const ;
 
-        HOST void setUserParticleIndex( int a_particleIndex, int a_userParticleIndex );
-        HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
+        MCGIDI_HOST void setUserParticleIndex( int a_particleIndex, int a_userParticleIndex );
+        MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
 
-        HOST_DEVICE Vector<double> const &energies( ) const { return( m_energies ); }       /**< Returns a reference to **m_styles**. */
+        MCGIDI_HOST_DEVICE Vector<double> const &energies( ) const { return( m_energies ); }       /**< Returns a reference to **m_styles**. */
+
+        MCGIDI_HOST void print( std::string const &a_indent, std::string const &a_iFormat, std::string const &a_energyFormat, std::string const &a_dFormat );
 };
 
 /*
@@ -494,41 +501,44 @@ class HeatedCrossSectionsContinuousEnergy {
         Vector<HeatedCrossSectionContinuousEnergy *> m_heatedCrossSections;
 
     public:
-        HOST_DEVICE HeatedCrossSectionsContinuousEnergy( );
-        HOST_DEVICE ~HeatedCrossSectionsContinuousEnergy( );
+        MCGIDI_HOST_DEVICE HeatedCrossSectionsContinuousEnergy( );
+        MCGIDI_HOST_DEVICE ~HeatedCrossSectionsContinuousEnergy( );
 
-        HOST void update( SetupInfo &a_setupInfo, Transporting::MC const &a_settings, GIDI::Transporting::Particles const &a_particles, DomainHash const &a_domainHash, 
+        MCGIDI_HOST void update( SetupInfo &a_setupInfo, Transporting::MC const &a_settings, GIDI::Transporting::Particles const &a_particles, DomainHash const &a_domainHash, 
                 GIDI::Styles::TemperatureInfos const &a_temperatureInfos, std::vector<GIDI::Reaction const *> const &a_reactions, 
-                std::vector<GIDI::Reaction const *> const &a_orphanProducts, bool a_fixedGrid );
+                std::vector<GIDI::Reaction const *> const &a_orphanProducts, bool a_fixedGrid, bool a_zeroReactions );
 
-        HOST_DEVICE double minimumEnergy( ) const { return( m_heatedCrossSections[0]->minimumEnergy( ) ); }
+        MCGIDI_HOST_DEVICE double minimumEnergy( ) const { return( m_heatedCrossSections[0]->minimumEnergy( ) ); }
                                                                     /**< Returns the minimum cross section domain. */
-        HOST_DEVICE double maximumEnergy( ) const { return( m_heatedCrossSections[0]->maximumEnergy( ) ); }
+        MCGIDI_HOST_DEVICE double maximumEnergy( ) const { return( m_heatedCrossSections[0]->maximumEnergy( ) ); }
                                                                     /**< Returns the maximum cross section domain. */
-        HOST_DEVICE Vector<double> const &temperatures( ) const { return( m_temperatures ); }   /**< Returns the value of the **m_temperatures**. */
+        MCGIDI_HOST_DEVICE Vector<double> const &temperatures( ) const { return( m_temperatures ); }   /**< Returns the value of the **m_temperatures**. */
+        Vector<HeatedCrossSectionContinuousEnergy *> &heatedCrossSections( ) { return( m_heatedCrossSections ); }
 
-        HOST_DEVICE double threshold( MCGIDI_VectorSizeType a_index ) const { return( m_thresholds[a_index] ); }     /**< Returns the threshold for the reaction at index *a_index*. */
-        HOST_DEVICE bool hasURR_probabilityTables( ) const { return( m_heatedCrossSections[0]->hasURR_probabilityTables( ) ); }
-        HOST_DEVICE double URR_domainMin( ) const { return( m_heatedCrossSections[0]->URR_domainMin( ) ); }
-        HOST_DEVICE double URR_domainMax( ) const { return( m_heatedCrossSections[0]->URR_domainMax( ) ); }
-        HOST_DEVICE bool reactionHasURR_probabilityTables( int a_index ) const { return( m_heatedCrossSections[0]->reactionHasURR_probabilityTables( a_index ) ); }
+        MCGIDI_HOST_DEVICE double threshold( MCGIDI_VectorSizeType a_index ) const { return( m_thresholds[a_index] ); }     /**< Returns the threshold for the reaction at index *a_index*. */
+        MCGIDI_HOST_DEVICE bool hasURR_probabilityTables( ) const { return( m_heatedCrossSections[0]->hasURR_probabilityTables( ) ); }
+        MCGIDI_HOST_DEVICE double URR_domainMin( ) const { return( m_heatedCrossSections[0]->URR_domainMin( ) ); }
+        MCGIDI_HOST_DEVICE double URR_domainMax( ) const { return( m_heatedCrossSections[0]->URR_domainMax( ) ); }
+        MCGIDI_HOST_DEVICE bool reactionHasURR_probabilityTables( int a_index ) const { return( m_heatedCrossSections[0]->reactionHasURR_probabilityTables( a_index ) ); }
 
-        HOST_DEVICE double crossSection(                              URR_protareInfos const &a_URR_protareInfos, int a_URR_index, int a_hashIndex, 
+        MCGIDI_HOST_DEVICE double crossSection(                              URR_protareInfos const &a_URR_protareInfos, int a_URR_index, int a_hashIndex, 
                 double a_temperature, double a_energy, bool a_sampling = false ) const ;
-        HOST_DEVICE void crossSectionVector( double a_temperature, double a_userFactor, int a_numberAllocated, double *a_crossSectionVector ) const ;
-        HOST_DEVICE double reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, int a_URR_index, int a_hashIndex, 
+        MCGIDI_HOST_DEVICE void crossSectionVector( double a_temperature, double a_userFactor, int a_numberAllocated, double *a_crossSectionVector ) const ;
+        MCGIDI_HOST_DEVICE double reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, int a_URR_index, int a_hashIndex, 
                 double a_temperature, double a_energy, bool a_sampling = false ) const ;
-        HOST_DEVICE double reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, int a_URR_index, double a_temperature, double a_energy_in ) const ;
-        HOST_DEVICE int sampleReaction(                               URR_protareInfos const &a_URR_protareInfos, int a_URR_index, int a_hashIndex, 
+        MCGIDI_HOST_DEVICE double reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, int a_URR_index, double a_temperature, double a_energy_in ) const ;
+        MCGIDI_HOST_DEVICE int sampleReaction(                               URR_protareInfos const &a_URR_protareInfos, int a_URR_index, int a_hashIndex, 
                 double a_temperature, double a_energy, double a_crossSection, double (*userrng)( void * ), void *rngState ) const ;
 
-        HOST_DEVICE double depositionEnergy(   int a_hashIndex, double a_temperature, double a_energy ) const ;
-        HOST_DEVICE double depositionMomentum( int a_hashIndex, double a_temperature, double a_energy ) const ;
-        HOST_DEVICE double productionEnergy(   int a_hashIndex, double a_temperature, double a_energy ) const ;
-        HOST_DEVICE double gain(               int a_hashIndex, double a_temperature, double a_energy, int a_particleIndex ) const ;
+        MCGIDI_HOST_DEVICE double depositionEnergy(   int a_hashIndex, double a_temperature, double a_energy ) const ;
+        MCGIDI_HOST_DEVICE double depositionMomentum( int a_hashIndex, double a_temperature, double a_energy ) const ;
+        MCGIDI_HOST_DEVICE double productionEnergy(   int a_hashIndex, double a_temperature, double a_energy ) const ;
+        MCGIDI_HOST_DEVICE double gain(               int a_hashIndex, double a_temperature, double a_energy, int a_particleIndex ) const ;
 
-        HOST void setUserParticleIndex( int a_particleIndex, int a_userParticleIndex );
-        HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
+        MCGIDI_HOST void setUserParticleIndex( int a_particleIndex, int a_userParticleIndex );
+        MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
+
+        MCGIDI_HOST void print( std::string const &a_indent, std::string const &a_iFormat, std::string const &a_energyFormat, std::string const &a_dFormat );
 };
 
 /*
@@ -544,19 +554,19 @@ class MultiGroupGain {
         Vector<double> m_gain;
 
     public:
-        HOST_DEVICE MultiGroupGain( );
-        HOST MultiGroupGain( int a_particleIndex, GIDI::Vector const &a_gain );
+        MCGIDI_HOST_DEVICE MultiGroupGain( );
+        MCGIDI_HOST MultiGroupGain( int a_particleIndex, GIDI::Vector const &a_gain );
 
-        HOST MultiGroupGain &operator=( MultiGroupGain const &a_multiGroupGain );
+        MCGIDI_HOST MultiGroupGain &operator=( MultiGroupGain const &a_multiGroupGain );
 
-        HOST_DEVICE int particleIndex( ) const { return( m_particleIndex ); }
-        HOST_DEVICE int userParticleIndex( ) const { return( m_userParticleIndex ); }
-        HOST void setUserParticleIndex( int a_particleIndex, int a_userParticleIndex ) { if( a_particleIndex == m_particleIndex ) m_userParticleIndex = a_userParticleIndex; }
-        HOST_DEVICE Vector<double> const &gain( ) const { return( m_gain ); }
-        HOST_DEVICE double gain( int a_hashIndex ) const { return( m_gain[a_hashIndex] ); }
+        MCGIDI_HOST_DEVICE int particleIndex( ) const { return( m_particleIndex ); }
+        MCGIDI_HOST_DEVICE int userParticleIndex( ) const { return( m_userParticleIndex ); }
+        MCGIDI_HOST void setUserParticleIndex( int a_particleIndex, int a_userParticleIndex ) { if( a_particleIndex == m_particleIndex ) m_userParticleIndex = a_userParticleIndex; }
+        MCGIDI_HOST_DEVICE Vector<double> const &gain( ) const { return( m_gain ); }
+        MCGIDI_HOST_DEVICE double gain( int a_hashIndex ) const { return( m_gain[a_hashIndex] ); }
 
-        HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST void write( FILE *a_file ) const ;
+        MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
+        MCGIDI_HOST void write( FILE *a_file ) const ;
 };
 
 /*
@@ -574,14 +584,14 @@ class HeatedReactionCrossSectionMultiGroup {
                                                     // This value is added to m_crossSection[m_offset] when sampling an isotope or reaction.
 
     public:
-        HOST_DEVICE HeatedReactionCrossSectionMultiGroup( );
-        HOST HeatedReactionCrossSectionMultiGroup( SetupInfo &a_setupInfo, Transporting::MC const &a_settings, int a_offset, 
+        MCGIDI_HOST_DEVICE HeatedReactionCrossSectionMultiGroup( );
+        MCGIDI_HOST HeatedReactionCrossSectionMultiGroup( SetupInfo &a_setupInfo, Transporting::MC const &a_settings, int a_offset, 
                 std::vector<double> const &a_crossSection, double a_threshold );
 
-        HOST_DEVICE double operator[]( MCGIDI_VectorSizeType a_index ) const { return( m_crossSection[a_index] ); }  /**< Returns the value of the cross section at multi-group index *a_index*. */
-        HOST_DEVICE double threshold( ) const { return( m_threshold ); }        /**< Returns the value of the **m_threshold**. */
-        HOST_DEVICE int offset( ) const { return( m_offset ); }                 /**< Returns the value of the **m_offset**. */
-        HOST_DEVICE double crossSection( std::size_t a_index, bool a_sampling = false ) const {
+        MCGIDI_HOST_DEVICE double operator[]( MCGIDI_VectorSizeType a_index ) const { return( m_crossSection[a_index] ); }  /**< Returns the value of the cross section at multi-group index *a_index*. */
+        MCGIDI_HOST_DEVICE double threshold( ) const { return( m_threshold ); }        /**< Returns the value of the **m_threshold**. */
+        MCGIDI_HOST_DEVICE int offset( ) const { return( m_offset ); }                 /**< Returns the value of the **m_offset**. */
+        MCGIDI_HOST_DEVICE double crossSection( std::size_t a_index, bool a_sampling = false ) const {
             int index = (int)a_index - m_offset;
             if( index < 0 ) return( 0 );
             if( index >= (int)m_crossSection.size( ) ) return( 0 );
@@ -592,9 +602,9 @@ class HeatedReactionCrossSectionMultiGroup {
             }
             return( _crossSection );
         }
-        HOST_DEVICE double augmentedThresholdCrossSection( ) const { return( m_augmentedThresholdCrossSection ); }  /**< Returns the value of the **m_augmentedThresholdCrossSection**. */
-        HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST void write( FILE *a_file, int a_reactionIndex ) const ;
+        MCGIDI_HOST_DEVICE double augmentedThresholdCrossSection( ) const { return( m_augmentedThresholdCrossSection ); }  /**< Returns the value of the **m_augmentedThresholdCrossSection**. */
+        MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
+        MCGIDI_HOST void write( FILE *a_file, int a_reactionIndex ) const ;
 };
 
 /*
@@ -614,38 +624,39 @@ class HeatedCrossSectionMultiGroup {
         Vector<HeatedReactionCrossSectionMultiGroup *> m_reactionCrossSections;
 
     public:
-        HOST_DEVICE HeatedCrossSectionMultiGroup( );
-        HOST HeatedCrossSectionMultiGroup( GIDI::ProtareSingle const &a_protare, SetupInfo &a_setupInfo, 
+        MCGIDI_HOST_DEVICE HeatedCrossSectionMultiGroup( );
+        MCGIDI_HOST HeatedCrossSectionMultiGroup( GIDI::ProtareSingle const &a_protare, SetupInfo &a_setupInfo, 
                 Transporting::MC const &a_settings, GIDI::Styles::TemperatureInfo const &a_temperatureInfo,
-                GIDI::Transporting::Particles const &a_particles, std::vector<GIDI::Reaction const *> const &a_reactions, std::string const &a_label );
-        HOST_DEVICE ~HeatedCrossSectionMultiGroup( );
+                GIDI::Transporting::Particles const &a_particles, std::vector<GIDI::Reaction const *> const &a_reactions, std::string const &a_label,
+                bool a_zeroReactions );
+        MCGIDI_HOST_DEVICE ~HeatedCrossSectionMultiGroup( );
 
-        HOST_DEVICE HeatedReactionCrossSectionMultiGroup *operator[]( MCGIDI_VectorSizeType a_index ) const { return( m_reactionCrossSections[a_index] ); }
+        MCGIDI_HOST_DEVICE HeatedReactionCrossSectionMultiGroup *operator[]( MCGIDI_VectorSizeType a_index ) const { return( m_reactionCrossSections[a_index] ); }
                                                                                 /**< Returns the HeatedReactionCrossSectionMultiGroup for the reaction at index *a_index *a_index*. */
-        HOST_DEVICE int numberOfReactions( ) const { return( (int) m_reactionCrossSections.size( ) ); }
+        MCGIDI_HOST_DEVICE int numberOfReactions( ) const { return( (int) m_reactionCrossSections.size( ) ); }
                                                                                 /**< Returns the number of reactions stored in *this*. */
 
-        HOST_DEVICE int thresholdOffset(                              int a_index ) const { return( m_reactionCrossSections[a_index]->offset( ) ); }
+        MCGIDI_HOST_DEVICE int thresholdOffset(                              int a_index ) const { return( m_reactionCrossSections[a_index]->offset( ) ); }
                                                                                 /**< Returns the offset for the cross section for the reaction with index *a_index*. */
-        HOST_DEVICE double threshold(                                 int a_index ) const { return( m_reactionCrossSections[a_index]->threshold( ) ); }
+        MCGIDI_HOST_DEVICE double threshold(                                 int a_index ) const { return( m_reactionCrossSections[a_index]->threshold( ) ); }
 
-        HOST_DEVICE Vector<double> &totalCrossSection( ) { return( m_totalCrossSection ); }    /**< Returns a reference to member *m_totalCrossSection*. */
-        HOST_DEVICE double crossSection(                              int a_hashIndex, bool a_sampling = false ) const ;
-        HOST_DEVICE double augmentedCrossSection(                     int a_hashIndex ) const { return( m_augmentedCrossSection[a_hashIndex] ); }
+        MCGIDI_HOST_DEVICE Vector<double> &totalCrossSection( ) { return( m_totalCrossSection ); }    /**< Returns a reference to member *m_totalCrossSection*. */
+        MCGIDI_HOST_DEVICE double crossSection(                              int a_hashIndex, bool a_sampling = false ) const ;
+        MCGIDI_HOST_DEVICE double augmentedCrossSection(                     int a_hashIndex ) const { return( m_augmentedCrossSection[a_hashIndex] ); }
                                                                                 /**< Returns the value of the of the augmented cross section the reaction at index *a_index*. */
-        HOST_DEVICE double reactionCrossSection( int a_reactionIndex, int a_hashIndex, bool a_sampling = false ) const {
+        MCGIDI_HOST_DEVICE double reactionCrossSection( int a_reactionIndex, int a_hashIndex, bool a_sampling = false ) const {
                 return( m_reactionCrossSections[a_reactionIndex]->crossSection( a_hashIndex, a_sampling ) ); }
                 /**< Returns the reaction's cross section for the reaction at index *a_reactionIndex* and multi-group index *a_hashIndex*. */
 
-        HOST_DEVICE double depositionEnergy(   int a_hashIndex ) const { return( m_depositionEnergy[a_hashIndex] ); }
-        HOST_DEVICE double depositionMomentum( int a_hashIndex ) const { return( m_depositionMomentum[a_hashIndex] ); }
-        HOST_DEVICE double productionEnergy(   int a_hashIndex ) const { return( m_productionEnergy[a_hashIndex] ); }
-        HOST_DEVICE double gain(               int a_hashIndex, int a_particleIndex ) const ;
+        MCGIDI_HOST_DEVICE double depositionEnergy(   int a_hashIndex ) const { return( m_depositionEnergy[a_hashIndex] ); }
+        MCGIDI_HOST_DEVICE double depositionMomentum( int a_hashIndex ) const { return( m_depositionMomentum[a_hashIndex] ); }
+        MCGIDI_HOST_DEVICE double productionEnergy(   int a_hashIndex ) const { return( m_productionEnergy[a_hashIndex] ); }
+        MCGIDI_HOST_DEVICE double gain(               int a_hashIndex, int a_particleIndex ) const ;
 
-        HOST void setUserParticleIndex( int a_particleIndex, int a_userParticleIndex );
+        MCGIDI_HOST void setUserParticleIndex( int a_particleIndex, int a_userParticleIndex );
 
-        HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST void write( FILE *a_file ) const ;
+        MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
+        MCGIDI_HOST void write( FILE *a_file ) const ;
 };
 
 /*
@@ -663,41 +674,41 @@ class HeatedCrossSectionsMultiGroup {
         Vector<HeatedCrossSectionMultiGroup *> m_heatedCrossSections;
 
     public:
-        HOST_DEVICE HeatedCrossSectionsMultiGroup( );
-        HOST_DEVICE ~HeatedCrossSectionsMultiGroup( );
+        MCGIDI_HOST_DEVICE HeatedCrossSectionsMultiGroup( );
+        MCGIDI_HOST_DEVICE ~HeatedCrossSectionsMultiGroup( );
 
-        HOST_DEVICE double minimumEnergy( ) const { return( m_projectileMultiGroupBoundariesCollapsed[0] ); }
-        HOST_DEVICE double maximumEnergy( ) const { return( m_projectileMultiGroupBoundariesCollapsed.back( ) ); }
-        HOST_DEVICE Vector<double> const &temperatures( ) const { return( m_temperatures ); }   /**< Returns the value of the **m_temperatures**. */
+        MCGIDI_HOST_DEVICE double minimumEnergy( ) const { return( m_projectileMultiGroupBoundariesCollapsed[0] ); }
+        MCGIDI_HOST_DEVICE double maximumEnergy( ) const { return( m_projectileMultiGroupBoundariesCollapsed.back( ) ); }
+        MCGIDI_HOST_DEVICE Vector<double> const &temperatures( ) const { return( m_temperatures ); }   /**< Returns the value of the **m_temperatures**. */
 
-        HOST void update( GIDI::ProtareSingle const &a_protare, SetupInfo &a_setupInfo, Transporting::MC const &a_settings, GIDI::Transporting::Particles const &a_particles, 
+        MCGIDI_HOST void update( GIDI::ProtareSingle const &a_protare, SetupInfo &a_setupInfo, Transporting::MC const &a_settings, GIDI::Transporting::Particles const &a_particles, 
                 GIDI::Styles::TemperatureInfos const &a_temperatureInfos, std::vector<GIDI::Reaction const *> const &a_reactions, 
-                std::vector<GIDI::Reaction const *> const &a_orphanProducts );
+                std::vector<GIDI::Reaction const *> const &a_orphanProducts, bool a_zeroReactions );
 
-        HOST_DEVICE int multiGroupThresholdIndex( MCGIDI_VectorSizeType a_index ) const { return( m_multiGroupThresholdIndex[a_index] ); }
+        MCGIDI_HOST_DEVICE int multiGroupThresholdIndex( MCGIDI_VectorSizeType a_index ) const { return( m_multiGroupThresholdIndex[a_index] ); }
                                                                                                     /**< Returns the threshold for the reaction at index *a_index*. */
-        HOST_DEVICE Vector<double> const &projectileMultiGroupBoundariesCollapsed( ) const { return( m_projectileMultiGroupBoundariesCollapsed ); }
+        MCGIDI_HOST_DEVICE Vector<double> const &projectileMultiGroupBoundariesCollapsed( ) const { return( m_projectileMultiGroupBoundariesCollapsed ); }
                                                                                                     /**< Returns the value of the **m_projectileMultiGroupBoundariesCollapsed**. */
-        HOST_DEVICE Vector<HeatedCrossSectionMultiGroup *> const &heatedCrossSections( ) const { return( m_heatedCrossSections ); }
+        MCGIDI_HOST_DEVICE Vector<HeatedCrossSectionMultiGroup *> const &heatedCrossSections( ) const { return( m_heatedCrossSections ); }
 
-        HOST_DEVICE double threshold( MCGIDI_VectorSizeType a_index ) const { return( m_thresholds[a_index] ); }     /**< Returns the threshold for the reaction at index *a_index*. */
+        MCGIDI_HOST_DEVICE double threshold( MCGIDI_VectorSizeType a_index ) const { return( m_thresholds[a_index] ); }     /**< Returns the threshold for the reaction at index *a_index*. */
 
-        HOST_DEVICE double crossSection(                              int a_hashIndex, double a_temperature, bool a_sampling = false ) const ;
-        HOST_DEVICE void crossSectionVector( double a_temperature, double a_userFactor, int a_numberAllocated, double *a_crossSectionVector ) const ;
-        HOST_DEVICE double reactionCrossSection( int a_reactionIndex, int a_hashIndex, double a_temperature, bool a_sampling = false ) const ;
-        HOST_DEVICE double reactionCrossSection( int a_reactionIndex, double a_temperature, double a_energy_in ) const ;
-        HOST_DEVICE int sampleReaction(                               int a_hashIndex, double a_temperature, double a_energy_in, double a_crossSection, 
+        MCGIDI_HOST_DEVICE double crossSection(                              int a_hashIndex, double a_temperature, bool a_sampling = false ) const ;
+        MCGIDI_HOST_DEVICE void crossSectionVector( double a_temperature, double a_userFactor, int a_numberAllocated, double *a_crossSectionVector ) const ;
+        MCGIDI_HOST_DEVICE double reactionCrossSection( int a_reactionIndex, int a_hashIndex, double a_temperature, bool a_sampling = false ) const ;
+        MCGIDI_HOST_DEVICE double reactionCrossSection( int a_reactionIndex, double a_temperature, double a_energy_in ) const ;
+        MCGIDI_HOST_DEVICE int sampleReaction(                               int a_hashIndex, double a_temperature, double a_energy_in, double a_crossSection, 
                         double (*userrng)( void * ), void *rngState ) const ;
 
-        HOST_DEVICE double depositionEnergy(   int a_hashIndex, double a_temperature ) const ;
-        HOST_DEVICE double depositionMomentum( int a_hashIndex, double a_temperature ) const ;
-        HOST_DEVICE double productionEnergy(   int a_hashIndex, double a_temperature ) const ;
-        HOST_DEVICE double gain(               int a_hashIndex, double a_temperature, int a_particleIndex ) const ;
+        MCGIDI_HOST_DEVICE double depositionEnergy(   int a_hashIndex, double a_temperature ) const ;
+        MCGIDI_HOST_DEVICE double depositionMomentum( int a_hashIndex, double a_temperature ) const ;
+        MCGIDI_HOST_DEVICE double productionEnergy(   int a_hashIndex, double a_temperature ) const ;
+        MCGIDI_HOST_DEVICE double gain(               int a_hashIndex, double a_temperature, int a_particleIndex ) const ;
 
-        HOST void setUserParticleIndex( int a_particleIndex, int a_userParticleIndex );
+        MCGIDI_HOST void setUserParticleIndex( int a_particleIndex, int a_userParticleIndex );
 
-        HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST void write( FILE *a_file, int a_temperatureIndex ) const ;
+        MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
+        MCGIDI_HOST void write( FILE *a_file, int a_temperatureIndex ) const ;
 };
 
 /*
@@ -714,15 +725,15 @@ class NuclideGammaBranchInfo {
         int m_residualStateIndex;
 
     public:
-        HOST_DEVICE NuclideGammaBranchInfo( );
-        HOST NuclideGammaBranchInfo( PoPI::NuclideGammaBranchInfo const &a_nuclideGammaBranchInfo, std::map<std::string, int> &a_stateNamesToIndices );
+        MCGIDI_HOST_DEVICE NuclideGammaBranchInfo( );
+        MCGIDI_HOST NuclideGammaBranchInfo( PoPI::NuclideGammaBranchInfo const &a_nuclideGammaBranchInfo, std::map<std::string, int> &a_stateNamesToIndices );
 
-        HOST_DEVICE double probability( ) const { return( m_probability ); }                                /**< Returns the value of the **m_probability**. */
-        HOST_DEVICE double photonEmissionProbability( ) const { return( m_photonEmissionProbability ); }    /**< Returns the value of the **m_photonEmissionProbability**. */
-        HOST_DEVICE double gammaEnergy( ) const { return( m_gammaEnergy ); }                                /**< Returns the value of the **m_gammaEnergy**. */
-        HOST_DEVICE int residualStateIndex( ) const { return( m_residualStateIndex ); }                     /**< Returns the value of the **m_residualStateIndex**. */
+        MCGIDI_HOST_DEVICE double probability( ) const { return( m_probability ); }                                /**< Returns the value of the **m_probability**. */
+        MCGIDI_HOST_DEVICE double photonEmissionProbability( ) const { return( m_photonEmissionProbability ); }    /**< Returns the value of the **m_photonEmissionProbability**. */
+        MCGIDI_HOST_DEVICE double gammaEnergy( ) const { return( m_gammaEnergy ); }                                /**< Returns the value of the **m_gammaEnergy**. */
+        MCGIDI_HOST_DEVICE int residualStateIndex( ) const { return( m_residualStateIndex ); }                     /**< Returns the value of the **m_residualStateIndex**. */
 
-        HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
+        MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
 };
 
 /*
@@ -739,13 +750,13 @@ class NuclideGammaBranchStateInfo {
         Vector<int> m_branches;
 
     public:
-        HOST_DEVICE NuclideGammaBranchStateInfo( );
-        HOST NuclideGammaBranchStateInfo( PoPI::NuclideGammaBranchStateInfo const &a_nuclideGammaBranchingInfo, 
+        MCGIDI_HOST_DEVICE NuclideGammaBranchStateInfo( );
+        MCGIDI_HOST NuclideGammaBranchStateInfo( PoPI::NuclideGammaBranchStateInfo const &a_nuclideGammaBranchingInfo, 
                 std::vector<NuclideGammaBranchInfo *> &a_nuclideGammaBranchInfos, std::map<std::string, int> &a_stateNamesToIndices );
 
-        HOST_DEVICE Vector<int> const &branches( ) const { return( m_branches ); }                      /**< Returns the value of the **m_branches**. */
+        MCGIDI_HOST_DEVICE Vector<int> const &branches( ) const { return( m_branches ); }                      /**< Returns the value of the **m_branches**. */
 
-        HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
+        MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
 };
 
 /*
@@ -771,38 +782,39 @@ class Product {
         OutputChannel *m_outputChannel;
 
     public:
-        HOST_DEVICE Product( );
-        HOST Product( GIDI::Product const *a_product, SetupInfo &a_setupInfo, Transporting::MC const &a_settings, GIDI::Transporting::Particles const &a_particles,
+        MCGIDI_HOST_DEVICE Product( );
+        MCGIDI_HOST Product( GIDI::Product const *a_product, SetupInfo &a_setupInfo, Transporting::MC const &a_settings, GIDI::Transporting::Particles const &a_particles,
                 bool a_isFission );
-        HOST Product( PoPI::Database const &a_pop, std::string const &a_ID, std::string const &a_label );
-        HOST_DEVICE ~Product( );
+        MCGIDI_HOST Product( PoPI::Database const &a_pop, std::string const &a_ID, std::string const &a_label );
+        MCGIDI_HOST_DEVICE ~Product( );
 
-        HOST String const &ID( ) const { return( m_ID ); }                                  /**< Returns the value of the **m_ID**. */
-        HOST_DEVICE int index( ) const { return( m_index ); }                               /**< Returns the value of the **m_index**. */
-        HOST_DEVICE int userParticleIndex( ) const { return( m_userParticleIndex ); }       /**< Returns the value of the **m_userParticleIndex**. */
-        HOST void setUserParticleIndex( int a_particleIndex, int a_userParticleIndex );
-        HOST_DEVICE String label( ) const { return( m_label ); }                            /**< Returns the value of the **m_label**. */
-        HOST_DEVICE double mass( ) const { return( m_mass ); }                              /**< Returns the value of the **m_mass**. */
-        HOST_DEVICE double excitationEnergy( ) const { return( m_excitationEnergy ); }      /**< Returns the value of the **m_excitationEnergy**. */
-        HOST_DEVICE TwoBodyOrder twoBodyOrder( ) const { return( m_twoBodyOrder ); }      /**< Returns the value of the **m_twoBodyOrder**. */
-        HOST_DEVICE int neutronIndex( ) const { return( m_neutronIndex ); }                 /**< Returns the value of the **m_neutronIndex**. */
-        HOST_DEVICE double finalQ( double a_x1 ) const ;
-        HOST_DEVICE bool hasFission( ) const ;
+        MCGIDI_HOST String const &ID( ) const { return( m_ID ); }                                  /**< Returns the value of the **m_ID**. */
+        MCGIDI_HOST_DEVICE int index( ) const { return( m_index ); }                               /**< Returns the value of the **m_index**. */
+        MCGIDI_HOST_DEVICE int userParticleIndex( ) const { return( m_userParticleIndex ); }       /**< Returns the value of the **m_userParticleIndex**. */
+        MCGIDI_HOST void setUserParticleIndex( int a_particleIndex, int a_userParticleIndex );
+        MCGIDI_HOST_DEVICE String label( ) const { return( m_label ); }                            /**< Returns the value of the **m_label**. */
+        MCGIDI_HOST_DEVICE double mass( ) const { return( m_mass ); }                              /**< Returns the value of the **m_mass**. */
+        MCGIDI_HOST_DEVICE double excitationEnergy( ) const { return( m_excitationEnergy ); }      /**< Returns the value of the **m_excitationEnergy**. */
+        MCGIDI_HOST_DEVICE TwoBodyOrder twoBodyOrder( ) const { return( m_twoBodyOrder ); }      /**< Returns the value of the **m_twoBodyOrder**. */
+        MCGIDI_HOST_DEVICE int neutronIndex( ) const { return( m_neutronIndex ); }                 /**< Returns the value of the **m_neutronIndex**. */
+        MCGIDI_HOST_DEVICE double finalQ( double a_x1 ) const ;
+        MCGIDI_HOST_DEVICE bool hasFission( ) const ;
 
 // FIXME (1) see FIXME (1) in MC class.
-        HOST_DEVICE Functions::Function1d const *multiplicity( ) const { return( m_multiplicity ); }      /**< Returns the value of the **m_multiplicity**. */
-        HOST void multiplicity( Functions::Function1d *a_multiplicity ) { m_multiplicity = a_multiplicity; }
+        MCGIDI_HOST_DEVICE Functions::Function1d const *multiplicity( ) const { return( m_multiplicity ); }      /**< Returns the value of the **m_multiplicity**. */
+        MCGIDI_HOST void setMultiplicity( Functions::Function1d *a_multiplicity ) { m_multiplicity = a_multiplicity; }
+        MCGIDI_HOST_DEVICE double productAverageMultiplicity( int a_id, double a_projectileEnergy ) const ;
 // FIXME (1) see FIXME (1) in MC class.
-        HOST_DEVICE Distributions::Distribution const *distribution( ) const { return( m_distribution ); }      /**< Returns the value of the **m_distribution**. */
-        HOST void distribution( Distributions::Distribution *a_distribution ) { m_distribution = a_distribution; }
+        MCGIDI_HOST_DEVICE Distributions::Distribution const *distribution( ) const { return( m_distribution ); }      /**< Returns the value of the **m_distribution**. */
+        MCGIDI_HOST void distribution( Distributions::Distribution *a_distribution ) { m_distribution = a_distribution; }
 // FIXME (1) see FIXME (1) in MC class.
-        HOST_DEVICE OutputChannel *outputChannel( ) { return( m_outputChannel ); }                  /**< Returns the value of the **m_outputChannel**. */
+        MCGIDI_HOST_DEVICE OutputChannel *outputChannel( ) { return( m_outputChannel ); }                  /**< Returns the value of the **m_outputChannel**. */
 
-        HOST_DEVICE void sampleProducts( Protare const *a_protare, double a_projectileEnergy, Sampling::Input &a_input, 
+        MCGIDI_HOST_DEVICE void sampleProducts( Protare const *a_protare, double a_projectileEnergy, Sampling::Input &a_input, 
                 double (*a_userrng)( void * ), void *a_rngState, Sampling::ProductHandler &a_products ) const ;
-        HOST_DEVICE void angleBiasing( Reaction const *a_reaction, int a_pid, double a_energy_in, double a_mu_lab, double &a_probability, double &a_energy_out,
+        MCGIDI_HOST_DEVICE void angleBiasing( Reaction const *a_reaction, int a_pid, double a_energy_in, double a_mu_lab, double &a_probability, double &a_energy_out,
                 double (*a_userrng)( void * ), void *a_rngState, double &a_cumulative_weight ) const ;
-        HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
+        MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
 };
 
 /*
@@ -818,16 +830,16 @@ class DelayedNeutron {
         Product m_product;                          /**< The GNDS <**product**> node. */
 
     public:
-        HOST_DEVICE DelayedNeutron( );
-        HOST DelayedNeutron( int a_index, GIDI::DelayedNeutron const *a_delayedNeutron, SetupInfo &a_setupInfo, Transporting::MC const &a_settings, GIDI::Transporting::Particles const &a_particles );
-        HOST_DEVICE ~DelayedNeutron( );
+        MCGIDI_HOST_DEVICE DelayedNeutron( );
+        MCGIDI_HOST DelayedNeutron( int a_index, GIDI::DelayedNeutron const *a_delayedNeutron, SetupInfo &a_setupInfo, Transporting::MC const &a_settings, GIDI::Transporting::Particles const &a_particles );
+        MCGIDI_HOST_DEVICE ~DelayedNeutron( );
 
-        HOST_DEVICE int delayedNeutronIndex( ) const { return( m_delayedNeutronIndex ); };
-        HOST_DEVICE double rate( ) const { return( m_rate ); }
-        HOST_DEVICE Product const &product( ) const { return( m_product ); }
-        HOST void setUserParticleIndex( int a_particleIndex, int a_userParticleIndex );
+        MCGIDI_HOST_DEVICE int delayedNeutronIndex( ) const { return( m_delayedNeutronIndex ); };
+        MCGIDI_HOST_DEVICE double rate( ) const { return( m_rate ); }
+        MCGIDI_HOST_DEVICE Product const &product( ) const { return( m_product ); }
+        MCGIDI_HOST void setUserParticleIndex( int a_particleIndex, int a_userParticleIndex );
 
-        HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
+        MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
 };
 
 /*
@@ -849,32 +861,34 @@ class OutputChannel {
         Vector<DelayedNeutron *> m_delayedNeutrons;
 
     public:
-        HOST_DEVICE OutputChannel( );
-        HOST OutputChannel( GIDI::OutputChannel const *a_outputChannel, SetupInfo &a_setupInfo, Transporting::MC const &a_settings, GIDI::Transporting::Particles const &a_particles );
-        HOST_DEVICE ~OutputChannel( );
+        MCGIDI_HOST_DEVICE OutputChannel( );
+        MCGIDI_HOST OutputChannel( GIDI::OutputChannel const *a_outputChannel, SetupInfo &a_setupInfo, Transporting::MC const &a_settings, GIDI::Transporting::Particles const &a_particles );
+        MCGIDI_HOST_DEVICE ~OutputChannel( );
 
-        HOST_DEVICE Product *operator[]( MCGIDI_VectorSizeType a_index ) { return( m_products[a_index] ); }  /**< Returns a pointer to the product at index *a_index*. */
+        MCGIDI_HOST_DEVICE Product *operator[]( MCGIDI_VectorSizeType a_index ) { return( m_products[a_index] ); }  /**< Returns a pointer to the product at index *a_index*. */
 
-        HOST_DEVICE int neutronIndex( ) const { return( m_neutronIndex ); }                 /**< Returns the value of the **m_neutronIndex**. */
-        HOST_DEVICE bool isTwoBody( ) const { return( m_channelType == ChannelType::twoBody ); }         /**< Returns true if output channel is two-body and false otherwise. */
-        HOST_DEVICE double finalQ( double a_x1 ) const ;
-        HOST_DEVICE bool isFission( ) const { return( m_isFission ); }                      /**< Returns the value of the **m_isFission**. */
-        HOST_DEVICE bool hasFission( ) const ;
+        MCGIDI_HOST_DEVICE int neutronIndex( ) const { return( m_neutronIndex ); }                 /**< Returns the value of the **m_neutronIndex**. */
+        MCGIDI_HOST_DEVICE bool isTwoBody( ) const { return( m_channelType == ChannelType::twoBody ); }         /**< Returns true if output channel is two-body and false otherwise. */
+        MCGIDI_HOST_DEVICE double finalQ( double a_x1 ) const ;
+        MCGIDI_HOST_DEVICE bool isFission( ) const { return( m_isFission ); }                      /**< Returns the value of the **m_isFission**. */
+        MCGIDI_HOST_DEVICE bool hasFission( ) const ;
 // FIXME (1) see FIXME (1) in MC class.
-        HOST_DEVICE Functions::Function1d *Q( ) { return( m_Q ); }                          /**< Returns the value of the **m_Q**. */
+        MCGIDI_HOST_DEVICE Functions::Function1d *Q( ) { return( m_Q ); }                          /**< Returns the value of the **m_Q**. */
 
-        HOST void setUserParticleIndex( int a_particleIndex, int a_userParticleIndex );
+        MCGIDI_HOST void setUserParticleIndex( int a_particleIndex, int a_userParticleIndex );
 // FIXME (1) see FIXME (1) in MC class.
-        HOST_DEVICE Vector<Product *> const &products( ) const { return( m_products ); }    /**< Returns the value of the **m_products**. */
+        MCGIDI_HOST_DEVICE Vector<Product *> const &products( ) const { return( m_products ); }    /**< Returns the value of the **m_products**. */
 
         Vector<DelayedNeutron *> delayedNeutrons( ) const { return( m_delayedNeutrons ); }
-        HOST_DEVICE DelayedNeutron const *delayedNeutron( int a_index ) const { return( m_delayedNeutrons[a_index] ); }
+        MCGIDI_HOST_DEVICE DelayedNeutron const *delayedNeutron( int a_index ) const { return( m_delayedNeutrons[a_index] ); }
 
-        HOST_DEVICE void sampleProducts( Protare const *a_protare, double a_projectileEnergy, Sampling::Input &a_input, 
+        MCGIDI_HOST_DEVICE double productAverageMultiplicity( int a_index, double a_projectileEnergy ) const ;
+
+        MCGIDI_HOST_DEVICE void sampleProducts( Protare const *a_protare, double a_projectileEnergy, Sampling::Input &a_input, 
                 double (*a_userrng)( void * ), void *a_rngState, Sampling::ProductHandler &a_products ) const ;
-        HOST_DEVICE void angleBiasing( Reaction const *a_reaction, int a_pid, double a_energy_in, double a_mu_lab, double &a_probability, double &a_energy_out, 
+        MCGIDI_HOST_DEVICE void angleBiasing( Reaction const *a_reaction, int a_pid, double a_energy_in, double a_mu_lab, double &a_probability, double &a_energy_out, 
                 double (*a_userrng)( void * ), void *a_rngState, double &a_cumulative_weight ) const ;
-        HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
+        MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
 };
 
 /*
@@ -910,54 +924,57 @@ class Reaction {
 // Still need m_availableEnergy and m_availableMomentum.
 
     public:
-        HOST_DEVICE Reaction( );
-        HOST Reaction( GIDI::Reaction const &a_reaction, SetupInfo &a_setupInfo, Transporting::MC const &a_settings, GIDI::Transporting::Particles const &a_particles,
+        MCGIDI_HOST_DEVICE Reaction( );
+        MCGIDI_HOST Reaction( GIDI::Reaction const &a_reaction, SetupInfo &a_setupInfo, Transporting::MC const &a_settings, GIDI::Transporting::Particles const &a_particles,
                 GIDI::Styles::TemperatureInfos const &a_temperatureInfos );
-        HOST_DEVICE ~Reaction( );
+        MCGIDI_HOST_DEVICE ~Reaction( );
 
-        inline HOST_DEVICE void updateProtareSingleInfo( ProtareSingle *a_protareSingle, int a_reactionIndex ) {
+        inline MCGIDI_HOST_DEVICE void updateProtareSingleInfo( ProtareSingle *a_protareSingle, int a_reactionIndex ) {
                 m_protareSingle = a_protareSingle;
                 m_reactionIndex = a_reactionIndex;
         }
-        HOST_DEVICE ProtareSingle const *protareSingle( ) const { return( m_protareSingle ); }   /**< Returns the value of the **m_protareSingle**. */
-        HOST_DEVICE int reactionIndex( ) const { return( m_reactionIndex ); }       /**< Returns the value of the **m_reactionIndex**. */
-        HOST_DEVICE String const &label( ) const { return( m_label ); }             /**< Returns the value of the **m_label**. */
-        HOST_DEVICE int ENDF_MT( ) const { return( m_ENDF_MT ); }                   /**< Returns the value of the **m_ENDF_MT**. */
-        HOST_DEVICE int ENDL_C( ) const { return( m_ENDL_C ); }                     /**< Returns the value of the **m_ENDL_C**. */
-        HOST_DEVICE int ENDL_S( ) const { return( m_ENDL_S ); }                     /**< Returns the value of the **m_ENDL_S**. */
-        HOST_DEVICE int neutronIndex( ) const { return( m_neutronIndex ); }         /**< Returns the value of the **m_neutronIndex**. */
-        HOST_DEVICE double finalQ( double a_x1 ) const { return( m_outputChannel.finalQ( a_x1 ) ); }    /**< Returns the Q-value for projectile energy *a_x1*. */
-        HOST_DEVICE bool hasFission( ) const { return( m_hasFission ); }            /**< Returns the value of the **m_hasFission**. */
-        HOST_DEVICE double projectileMass( ) const { return( m_projectileMass ); }  /**< Returns the value of the **m_projectileMass**. */
-        HOST_DEVICE double targetMass( ) const { return( m_targetMass ); }          /**< Returns the value of the **m_targetMass**. */
-        HOST_DEVICE double crossSectionThreshold( ) const { return( m_crossSectionThreshold ); }    /**< Returns the value of the **m_crossSectionThreshold**. */
-        HOST_DEVICE double crossSection( URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy ) const ;
-        HOST_DEVICE double crossSection( URR_protareInfos const &a_URR_protareInfos, double a_temperature, double a_energy ) const ;
+        MCGIDI_HOST_DEVICE ProtareSingle const *protareSingle( ) const { return( m_protareSingle ); }   /**< Returns the value of the **m_protareSingle**. */
+        MCGIDI_HOST_DEVICE int reactionIndex( ) const { return( m_reactionIndex ); }       /**< Returns the value of the **m_reactionIndex**. */
+        MCGIDI_HOST_DEVICE String const &label( ) const { return( m_label ); }             /**< Returns the value of the **m_label**. */
+        MCGIDI_HOST_DEVICE int ENDF_MT( ) const { return( m_ENDF_MT ); }                   /**< Returns the value of the **m_ENDF_MT**. */
+        MCGIDI_HOST_DEVICE int ENDL_C( ) const { return( m_ENDL_C ); }                     /**< Returns the value of the **m_ENDL_C**. */
+        MCGIDI_HOST_DEVICE int ENDL_S( ) const { return( m_ENDL_S ); }                     /**< Returns the value of the **m_ENDL_S**. */
+        MCGIDI_HOST_DEVICE int neutronIndex( ) const { return( m_neutronIndex ); }         /**< Returns the value of the **m_neutronIndex**. */
+        MCGIDI_HOST_DEVICE double finalQ( double a_x1 ) const { return( m_outputChannel.finalQ( a_x1 ) ); }    /**< Returns the Q-value for projectile energy *a_x1*. */
+        MCGIDI_HOST_DEVICE bool hasFission( ) const { return( m_hasFission ); }            /**< Returns the value of the **m_hasFission**. */
+        MCGIDI_HOST_DEVICE double projectileMass( ) const { return( m_projectileMass ); }  /**< Returns the value of the **m_projectileMass**. */
+        MCGIDI_HOST_DEVICE double targetMass( ) const { return( m_targetMass ); }          /**< Returns the value of the **m_targetMass**. */
+        MCGIDI_HOST_DEVICE double crossSectionThreshold( ) const { return( m_crossSectionThreshold ); }    /**< Returns the value of the **m_crossSectionThreshold**. */
+        MCGIDI_HOST_DEVICE double crossSection( URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy ) const ;
+        MCGIDI_HOST_DEVICE double crossSection( URR_protareInfos const &a_URR_protareInfos, double a_temperature, double a_energy ) const ;
 
-        HOST Vector<int> const &productIndices( ) const { return( m_productIndices ); }
-        HOST Vector<int> const &userProductIndices( ) const { return( m_userProductIndices ); }
-        HOST int productMultiplicities( int a_index ) const ;
-        HOST Vector<int> const &productIndicesTransportable( ) const { return( m_productIndicesTransportable ); }
-        HOST Vector<int> const &userProductIndicesTransportable( ) const { return( m_userProductIndicesTransportable ); }
+        MCGIDI_HOST Vector<int> const &productIndices( ) const { return( m_productIndices ); }
+        MCGIDI_HOST Vector<int> const &userProductIndices( ) const { return( m_userProductIndices ); }
+        MCGIDI_HOST int productMultiplicity( int a_index ) const ;
+        MCGIDI_HOST int productMultiplicities( int a_index )                               /**< This method is deprecated. Please use **productMultiplicity** instead. */
+                const { return( productMultiplicity( a_index ) ); }
+        MCGIDI_HOST_DEVICE double productAverageMultiplicity( int a_index, double a_projectileEnergy ) const ;
+        MCGIDI_HOST Vector<int> const &productIndicesTransportable( ) const { return( m_productIndicesTransportable ); }
+        MCGIDI_HOST Vector<int> const &userProductIndicesTransportable( ) const { return( m_userProductIndicesTransportable ); }
 
-        HOST_DEVICE OutputChannel const &outputChannel( ) const { return( m_outputChannel ); }              /**< Returns the value of the **m_outputChannel**. */
-        HOST_DEVICE int associatedOrphanProductIndex( ) const { return( m_associatedOrphanProductIndex ); } /**< Returns the value of the **m_associatedOrphanProductIndex**. */
-        HOST_DEVICE void associatedOrphanProductIndex( int a_associatedOrphanProductIndex ) { m_associatedOrphanProductIndex = a_associatedOrphanProductIndex; }
-        HOST_DEVICE Reaction *associatedOrphanProduct( ) const { return( m_associatedOrphanProduct ); }     /**< Returns the value of the **m_associatedOrphanProduct**. */
-        HOST_DEVICE void associatedOrphanProduct( Reaction *a_associatedOrphanProduct ) { m_associatedOrphanProduct = a_associatedOrphanProduct; }
-        HOST_DEVICE bool upscatterModelASupported( ) const { return( m_upscatterModelASupported ); }
-        HOST_DEVICE Vector<double> const &upscatterModelACrossSection( ) const { return( m_upscatterModelACrossSection ); } 
+        MCGIDI_HOST_DEVICE OutputChannel const &outputChannel( ) const { return( m_outputChannel ); }              /**< Returns the value of the **m_outputChannel**. */
+        MCGIDI_HOST_DEVICE int associatedOrphanProductIndex( ) const { return( m_associatedOrphanProductIndex ); } /**< Returns the value of the **m_associatedOrphanProductIndex**. */
+        MCGIDI_HOST_DEVICE void associatedOrphanProductIndex( int a_associatedOrphanProductIndex ) { m_associatedOrphanProductIndex = a_associatedOrphanProductIndex; }
+        MCGIDI_HOST_DEVICE Reaction *associatedOrphanProduct( ) const { return( m_associatedOrphanProduct ); }     /**< Returns the value of the **m_associatedOrphanProduct**. */
+        MCGIDI_HOST_DEVICE void associatedOrphanProduct( Reaction *a_associatedOrphanProduct ) { m_associatedOrphanProduct = a_associatedOrphanProduct; }
+        MCGIDI_HOST_DEVICE bool upscatterModelASupported( ) const { return( m_upscatterModelASupported ); }
+        MCGIDI_HOST_DEVICE Vector<double> const &upscatterModelACrossSection( ) const { return( m_upscatterModelACrossSection ); } 
                                                                                                             /**< Returns the value of the **m_upscatterModelACrossSection**. */
 
-        HOST void setUserParticleIndex( int a_particleIndex, int a_userParticleIndex );
+        MCGIDI_HOST void setUserParticleIndex( int a_particleIndex, int a_userParticleIndex );
 
-        HOST_DEVICE void sampleProducts( Protare const *a_protare, double a_projectileEnergy, Sampling::Input &a_input, 
+        MCGIDI_HOST_DEVICE void sampleProducts( Protare const *a_protare, double a_projectileEnergy, Sampling::Input &a_input, 
                 double (*a_userrng)( void * ), void *a_rngState, Sampling::ProductHandler &a_products ) const ;
-        HOST_DEVICE static void sampleNullProducts( Protare const &a_protare, double a_projectileEnergy, Sampling::Input &a_input, 
+        MCGIDI_HOST_DEVICE static void sampleNullProducts( Protare const &a_protare, double a_projectileEnergy, Sampling::Input &a_input, 
                 double (*a_userrng)( void * ), void *a_rngState, Sampling::ProductHandler &a_products );
-        HOST_DEVICE double angleBiasing( int a_pid, double a_energy_in, double a_mu_lab, double &a_energy_out, 
+        MCGIDI_HOST_DEVICE double angleBiasing( int a_pid, double a_energy_in, double a_mu_lab, double &a_energy_out, 
                 double (*a_userrng)( void * ), void *a_rngState, double *a_cumulative_weight = nullptr ) const ;
-        HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
+        MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
 };
 
 /*
@@ -997,79 +1014,81 @@ class Protare {
         bool m_isTNSL_ProtareSingle;                        /**< If *this* is a ProtareSingle instance with TNSL data *true* and otherwise *false*. */
 
     public:
-        HOST_DEVICE Protare( ProtareType a_protareType );
-        HOST Protare( ProtareType a_protareType, GIDI::Protare const &a_protare, PoPI::Database const &a_pops, Transporting::MC const &a_settings );
-        virtual HOST_DEVICE ~Protare( );
+        MCGIDI_HOST_DEVICE Protare( ProtareType a_protareType );
+        MCGIDI_HOST Protare( ProtareType a_protareType, GIDI::Protare const &a_protare, PoPI::Database const &a_pops, Transporting::MC const &a_settings );
+        virtual MCGIDI_HOST_DEVICE ~Protare( );
 
-        HOST_DEVICE String const &projectileID( ) const { return( m_projectileID ); }                       /**< Returns the value of the **m_projectileID** member. */
-        HOST_DEVICE int projectileIndex( ) const { return( m_projectileIndex ); }                           /**< Returns the value of the **m_projectileIndex** member. */
-        HOST_DEVICE int projectileUserIndex( ) const { return( m_projectileUserIndex ); }                   /**< Returns the value of the **m_projectileUserIndex** member. */
-        HOST_DEVICE double projectileMass( ) const { return( m_projectileMass ); }                          /**< Returns the value of the **m_projectileMass** member. */
-        HOST_DEVICE double projectileExcitationEnergy( ) const { return( m_projectileExcitationEnergy ); }  /**< Returns the value of the **m_projectileExcitationEnergy** member. */
+        MCGIDI_HOST_DEVICE String const &projectileID( ) const { return( m_projectileID ); }                       /**< Returns the value of the **m_projectileID** member. */
+        MCGIDI_HOST_DEVICE int projectileIndex( ) const { return( m_projectileIndex ); }                           /**< Returns the value of the **m_projectileIndex** member. */
+        MCGIDI_HOST_DEVICE int projectileUserIndex( ) const { return( m_projectileUserIndex ); }                   /**< Returns the value of the **m_projectileUserIndex** member. */
+        MCGIDI_HOST_DEVICE double projectileMass( ) const { return( m_projectileMass ); }                          /**< Returns the value of the **m_projectileMass** member. */
+        MCGIDI_HOST_DEVICE double projectileExcitationEnergy( ) const { return( m_projectileExcitationEnergy ); }  /**< Returns the value of the **m_projectileExcitationEnergy** member. */
 
-        HOST_DEVICE String const &targetID( ) const { return( m_targetID ); }                               /**< Returns the value of the **m_targetID** member. */
-        HOST_DEVICE int targetIndex( ) const { return( m_targetIndex ); }                                   /**< Returns the value of the **m_targetIndex** member. */
-        HOST_DEVICE int targetUserIndex( ) const { return( m_targetUserIndex ); }                           /**< Returns the value of the **m_targetUserIndex** member. */
-        HOST_DEVICE double targetMass( ) const { return( m_targetMass ); }                                  /**< Returns the value of the **m_targetMass** member. */
-        HOST_DEVICE double targetExcitationEnergy( ) const { return( m_targetExcitationEnergy ); }          /**< Returns the value of the **m_targetExcitationEnergy** member. */
+        MCGIDI_HOST_DEVICE String const &targetID( ) const { return( m_targetID ); }                               /**< Returns the value of the **m_targetID** member. */
+        MCGIDI_HOST_DEVICE int targetIndex( ) const { return( m_targetIndex ); }                                   /**< Returns the value of the **m_targetIndex** member. */
+        MCGIDI_HOST_DEVICE int targetUserIndex( ) const { return( m_targetUserIndex ); }                           /**< Returns the value of the **m_targetUserIndex** member. */
+        MCGIDI_HOST_DEVICE double targetMass( ) const { return( m_targetMass ); }                                  /**< Returns the value of the **m_targetMass** member. */
+        MCGIDI_HOST_DEVICE double targetExcitationEnergy( ) const { return( m_targetExcitationEnergy ); }          /**< Returns the value of the **m_targetExcitationEnergy** member. */
 
-        HOST_DEVICE int neutronIndex( ) const { return( m_neutronIndex ); }                                 /**< Returns the value of the **m_neutronIndex** member. */
-        HOST_DEVICE int userNeutronIndex( ) const { return( m_userNeutronIndex ); }                         /**< Returns the value of the **m_userNeutronIndex** member. */
-        HOST_DEVICE int photonIndex( ) const { return( m_photonIndex ); }                                   /**< Returns the value of the **m_photonIndex** member. */
-        HOST_DEVICE int userPhotonIndex( ) const { return( m_userPhotonIndex ); }                           /**< Returns the value of the **m_userPhotonIndex** member. */
-        HOST_DEVICE String evaluation( ) const { return( m_evaluation ); }                                  /**< Returns the value of the **m_evaluation** member. */
-        HOST GIDI::Frame projectileFrame( ) const { return( m_projectileFrame ); }                          /**< Returns the value of the **m_projectileFrame** member. */
+        MCGIDI_HOST_DEVICE int neutronIndex( ) const { return( m_neutronIndex ); }                                 /**< Returns the value of the **m_neutronIndex** member. */
+        MCGIDI_HOST_DEVICE int userNeutronIndex( ) const { return( m_userNeutronIndex ); }                         /**< Returns the value of the **m_userNeutronIndex** member. */
+        MCGIDI_HOST_DEVICE int photonIndex( ) const { return( m_photonIndex ); }                                   /**< Returns the value of the **m_photonIndex** member. */
+        MCGIDI_HOST_DEVICE int userPhotonIndex( ) const { return( m_userPhotonIndex ); }                           /**< Returns the value of the **m_userPhotonIndex** member. */
+        MCGIDI_HOST_DEVICE String evaluation( ) const { return( m_evaluation ); }                                  /**< Returns the value of the **m_evaluation** member. */
+        MCGIDI_HOST GIDI::Frame projectileFrame( ) const { return( m_projectileFrame ); }                          /**< Returns the value of the **m_projectileFrame** member. */
 
-        HOST Vector<int> const &productIndices( bool a_transportablesOnly ) const ;
-        HOST void productIndices( std::set<int> const &a_indices, std::set<int> const &a_transportableIndices );
-        HOST Vector<int> const &userProductIndices( bool a_transportablesOnly ) const ;
-        virtual HOST void setUserParticleIndex( int a_particleIndex, int a_userParticleIndex );
+        MCGIDI_HOST Vector<int> const &productIndices( bool a_transportablesOnly ) const ;
+        MCGIDI_HOST void productIndices( std::set<int> const &a_indices, std::set<int> const &a_transportableIndices );
+        MCGIDI_HOST Vector<int> const &userProductIndices( bool a_transportablesOnly ) const ;
+        virtual MCGIDI_HOST void setUserParticleIndex( int a_particleIndex, int a_userParticleIndex );
 
         virtual ProtareType protareType( ) const { return( m_protareType ); }                               /**< Returns the value of the **m_protareType** member. */    
-        HOST_DEVICE bool isTNSL_ProtareSingle( ) const { return( m_isTNSL_ProtareSingle ); }                /**< Returns the value of the **m_isTNSL_ProtareSingle** member. */
-        virtual HOST_DEVICE MCGIDI_VectorSizeType numberOfProtares( ) const = 0;                            /**< Returns the number of protares contained in *this*. */
-        virtual HOST_DEVICE ProtareSingle const *protare( MCGIDI_VectorSizeType a_index ) const = 0;        /**< Returns the **a_index** - 1 Protare contained in *this*. */
-        virtual HOST_DEVICE ProtareSingle const *protareWithReaction( int a_index ) const = 0;              /**< Returns the *ProtareSingle* that contains the (*a_index* - 1) reaction. */
+        MCGIDI_HOST_DEVICE bool isTNSL_ProtareSingle( ) const { return( m_isTNSL_ProtareSingle ); }                /**< Returns the value of the **m_isTNSL_ProtareSingle** member. */
+        virtual MCGIDI_HOST_DEVICE MCGIDI_VectorSizeType numberOfProtares( ) const = 0;                            /**< Returns the number of protares contained in *this*. */
+        virtual MCGIDI_HOST_DEVICE ProtareSingle const *protare( MCGIDI_VectorSizeType a_index ) const = 0;        /**< Returns the **a_index** - 1 Protare contained in *this*. */
+        virtual MCGIDI_HOST_DEVICE ProtareSingle       *protare( MCGIDI_VectorSizeType a_index )       = 0;        /**< Returns the **a_index** - 1 Protare contained in *this*. */
+        virtual MCGIDI_HOST_DEVICE ProtareSingle const *protareWithReaction( int a_index ) const = 0;              /**< Returns the *ProtareSingle* that contains the (*a_index* - 1) reaction. */
 
-        virtual HOST_DEVICE double minimumEnergy( ) const = 0;                                              /**< Returns the minimum cross section domain. */
-        virtual HOST_DEVICE double maximumEnergy( ) const = 0 ;                                             /**< Returns the maximum cross section domain. */
-        virtual HOST_DEVICE Vector<double> temperatures( MCGIDI_VectorSizeType a_index = 0 ) const = 0 ;    /**< Returns the list of temperatures for the requested ProtareSingle. */
+        virtual MCGIDI_HOST_DEVICE double minimumEnergy( ) const = 0;                                              /**< Returns the minimum cross section domain. */
+        virtual MCGIDI_HOST_DEVICE double maximumEnergy( ) const = 0 ;                                             /**< Returns the maximum cross section domain. */
+        virtual MCGIDI_HOST_DEVICE Vector<double> temperatures( MCGIDI_VectorSizeType a_index = 0 ) const = 0 ;    /**< Returns the list of temperatures for the requested ProtareSingle. */
 
-        virtual HOST Vector<double> const &projectileMultiGroupBoundaries( ) const = 0;
-        virtual HOST Vector<double> const &projectileMultiGroupBoundariesCollapsed( ) const = 0;
-        virtual HOST Vector<double> const &projectileFixedGrid( ) const = 0;
+        virtual MCGIDI_HOST Vector<double> const &projectileMultiGroupBoundaries( ) const = 0;
+        virtual MCGIDI_HOST Vector<double> const &projectileMultiGroupBoundariesCollapsed( ) const = 0;
+        virtual MCGIDI_HOST Vector<double> const &projectileFixedGrid( ) const = 0;
 
-        virtual HOST_DEVICE std::size_t numberOfReactions( ) const = 0;
-        virtual HOST_DEVICE Reaction const *reaction( int a_index ) const = 0;
-        virtual HOST_DEVICE std::size_t numberOfOrphanProducts( ) const = 0;
-        virtual HOST_DEVICE Reaction const *orphanProduct( int a_index ) const = 0;
+        virtual MCGIDI_HOST_DEVICE std::size_t numberOfReactions( ) const = 0;
+        virtual MCGIDI_HOST_DEVICE Reaction const *reaction( int a_index ) const = 0;
+        virtual MCGIDI_HOST_DEVICE std::size_t numberOfOrphanProducts( ) const = 0;
+        virtual MCGIDI_HOST_DEVICE Reaction const *orphanProduct( int a_index ) const = 0;
 
-        virtual HOST_DEVICE bool hasFission( ) const = 0;
+        virtual MCGIDI_HOST_DEVICE bool hasFission( ) const = 0;
 
-        virtual HOST_DEVICE int URR_index( ) const = 0;
-        virtual HOST_DEVICE bool hasURR_probabilityTables( ) const = 0;
-        virtual HOST_DEVICE double URR_domainMin( ) const = 0;
-        virtual HOST_DEVICE double URR_domainMax( ) const = 0;
-        virtual HOST_DEVICE bool reactionHasURR_probabilityTables( int a_index ) const = 0 ;
+        virtual MCGIDI_HOST_DEVICE int URR_index( ) const = 0;
+        virtual MCGIDI_HOST_DEVICE bool hasURR_probabilityTables( ) const = 0;
+        virtual MCGIDI_HOST_DEVICE double URR_domainMin( ) const = 0;
+        virtual MCGIDI_HOST_DEVICE double URR_domainMax( ) const = 0;
+        virtual MCGIDI_HOST_DEVICE bool reactionHasURR_probabilityTables( int a_index ) const = 0 ;
 
-        virtual HOST_DEVICE double threshold( MCGIDI_VectorSizeType a_index ) const = 0;
+        virtual MCGIDI_HOST_DEVICE double threshold( MCGIDI_VectorSizeType a_index ) const = 0;
 
-        virtual HOST_DEVICE double crossSection(                              URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, bool a_sampling = false ) const = 0;
-        virtual HOST_DEVICE void crossSectionVector( double a_temperature, double a_userFactor, int a_numberAllocated, double *a_crossSectionVector ) const = 0;
-        virtual HOST_DEVICE double reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, bool a_sampling = false ) const = 0;
-        virtual HOST_DEVICE double reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos,                  double a_temperature, double a_energy ) const = 0;
-        virtual HOST_DEVICE int sampleReaction(                               URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, double a_crossSection, double (*a_userrng)( void * ), void *a_rngState ) const = 0;
+        virtual MCGIDI_HOST_DEVICE double crossSection(                              URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, bool a_sampling = false ) const = 0;
+        virtual MCGIDI_HOST_DEVICE void crossSectionVector( double a_temperature, double a_userFactor, int a_numberAllocated, double *a_crossSectionVector ) const = 0;
+        virtual MCGIDI_HOST_DEVICE double reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, bool a_sampling = false ) const = 0;
+        virtual MCGIDI_HOST_DEVICE double reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos,                  double a_temperature, double a_energy ) const = 0;
+        virtual MCGIDI_HOST_DEVICE int sampleReaction(                               URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, double a_crossSection, double (*a_userrng)( void * ), void *a_rngState ) const = 0;
 
-        virtual HOST_DEVICE double depositionEnergy(   int a_hashIndex, double a_temperature, double a_energy ) const = 0;
-        virtual HOST_DEVICE double depositionMomentum( int a_hashIndex, double a_temperature, double a_energy ) const = 0;
-        virtual HOST_DEVICE double productionEnergy(   int a_hashIndex, double a_temperature, double a_energy ) const = 0;
-        virtual HOST_DEVICE double gain(               int a_hashIndex, double a_temperature, double a_energy, int a_particleIndex ) const = 0;
+        virtual MCGIDI_HOST_DEVICE double depositionEnergy(   int a_hashIndex, double a_temperature, double a_energy ) const = 0;
+        virtual MCGIDI_HOST_DEVICE double depositionMomentum( int a_hashIndex, double a_temperature, double a_energy ) const = 0;
+        virtual MCGIDI_HOST_DEVICE double productionEnergy(   int a_hashIndex, double a_temperature, double a_energy ) const = 0;
+        virtual MCGIDI_HOST_DEVICE double gain(               int a_hashIndex, double a_temperature, double a_energy, int a_particleIndex ) const = 0;
 
-        virtual HOST_DEVICE Vector<double> const &upscatterModelAGroupVelocities( ) const = 0;
+        virtual MCGIDI_HOST_DEVICE Vector<double> const &upscatterModelAGroupVelocities( ) const = 0;
 
-        virtual HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        virtual HOST_DEVICE long sizeOf( ) const { return sizeof(*this); }
-        HOST_DEVICE long memorySize( );
+        virtual MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
+        virtual MCGIDI_HOST_DEVICE long sizeOf( ) const { return sizeof(*this); }
+        MCGIDI_HOST_DEVICE long memorySize( );
+        MCGIDI_HOST_DEVICE void incrementMemorySize( long &a_totalMemory, long &a_sharedMemory );
 };
 
 /*
@@ -1100,84 +1119,86 @@ class ProtareSingle : public Protare {
         Vector<NuclideGammaBranchStateInfo *> m_nuclideGammaBranchStateInfos;       /**< List of all gamma branches for a nuclide. */
         Vector<NuclideGammaBranchInfo *> m_branches;                                /**< Condensed data on a nuclide's gamma branch including the gamma's energy, probability and the nuclide's residual state. */
 
-        HOST void setupNuclideGammaBranchStateInfos( SetupInfo &a_setupInfo, GIDI::ProtareSingle const &a_protare );
+        MCGIDI_HOST void setupNuclideGammaBranchStateInfos( SetupInfo &a_setupInfo, GIDI::ProtareSingle const &a_protare );
 
     public:
-        HOST_DEVICE ProtareSingle( );
-        HOST ProtareSingle( GIDI::ProtareSingle const &a_protare, PoPI::Database const &a_pops, Transporting::MC &a_settings, 
+        MCGIDI_HOST_DEVICE ProtareSingle( );
+        MCGIDI_HOST ProtareSingle( GIDI::ProtareSingle const &a_protare, PoPI::Database const &a_pops, Transporting::MC &a_settings, 
                 GIDI::Transporting::Particles const &a_particles, DomainHash const &a_domainHash, GIDI::Styles::TemperatureInfos const &a_temperatureInfos,
                 std::set<int> const &a_reactionsToExclude, int a_reactionsToExcludeOffset = 0, bool a_allowFixedGrid = true );
-        HOST_DEVICE ~ProtareSingle( );
+        MCGIDI_HOST_DEVICE ~ProtareSingle( );
 
-        HOST_DEVICE bool continuousEnergy( ) const { return( m_continuousEnergy ); }
-        HOST_DEVICE bool fixedGrid( ) const { return( m_fixedGrid ); }
-        HOST_DEVICE HeatedCrossSectionsContinuousEnergy const &heatedCrossSections( ) const { return( m_heatedCrossSections ); }  /**< Returns a reference to the **m_heatedCrossSections** member. */
-        HOST_DEVICE HeatedCrossSectionsMultiGroup const &heatedMultigroupCrossSections( ) const { return( m_heatedMultigroupCrossSections ); } /**< Returns a reference to the **m_heatedMultigroupCrossSections** member. */
+        MCGIDI_HOST_DEVICE bool continuousEnergy( ) const { return( m_continuousEnergy ); }
+        MCGIDI_HOST_DEVICE bool fixedGrid( ) const { return( m_fixedGrid ); }
+        MCGIDI_HOST_DEVICE HeatedCrossSectionsContinuousEnergy const &heatedCrossSections( ) const { return( m_heatedCrossSections ); }  /**< Returns a reference to the **m_heatedCrossSections** member. */
+        MCGIDI_HOST_DEVICE HeatedCrossSectionsContinuousEnergy &heatedCrossSections( ) { return( m_heatedCrossSections ); }              /**< Returns a reference to the **m_heatedCrossSections** member. */
+        MCGIDI_HOST_DEVICE HeatedCrossSectionsMultiGroup const &heatedMultigroupCrossSections( ) const { return( m_heatedMultigroupCrossSections ); } /**< Returns a reference to the **m_heatedMultigroupCrossSections** member. */
 
 // FIXME (1) see FIXME (1) in MC class.
-        HOST_DEVICE Vector<Reaction *> const &reactions( ) const { return( m_reactions ); }                 /**< Returns the value of the **m_reactions** member. */
+        MCGIDI_HOST_DEVICE Vector<Reaction *> const &reactions( ) const { return( m_reactions ); }                 /**< Returns the value of the **m_reactions** member. */
 // FIXME (1) see FIXME (1) in MC class.
-        HOST_DEVICE Vector<Reaction *> const &orphanProducts( ) const { return( m_orphanProducts ); }       /**< Returns the value of the **m_orphanProducts** member. */
+        MCGIDI_HOST_DEVICE Vector<Reaction *> const &orphanProducts( ) const { return( m_orphanProducts ); }       /**< Returns the value of the **m_orphanProducts** member. */
 
-        HOST_DEVICE void sampleBranchingGammas( Sampling::Input &a_input, double a_projectileEnergy, int initialStateIndex, 
+        MCGIDI_HOST_DEVICE void sampleBranchingGammas( Sampling::Input &a_input, double a_projectileEnergy, int initialStateIndex, 
                 double (*a_userrng)( void * ), void *a_rngState, Sampling::ProductHandler &a_products ) const ;
 
 // The rest are virtual methods defined in the Protare class.
-        HOST void setUserParticleIndex( int a_particleIndex, int a_userParticleIndex );
+        MCGIDI_HOST void setUserParticleIndex( int a_particleIndex, int a_userParticleIndex );
 
-        HOST_DEVICE MCGIDI_VectorSizeType numberOfProtares( ) const { return( 1 ); }                        /**< Returns the number of protares contained in *this*. */
-        HOST_DEVICE ProtareSingle const *protare( MCGIDI_VectorSizeType a_index ) const ;
-        HOST_DEVICE ProtareSingle const *protareWithReaction( int a_index ) const ;
+        MCGIDI_HOST_DEVICE MCGIDI_VectorSizeType numberOfProtares( ) const { return( 1 ); }                        /**< Returns the number of protares contained in *this*. */
+        MCGIDI_HOST_DEVICE ProtareSingle const *protare( MCGIDI_VectorSizeType a_index ) const ;
+        MCGIDI_HOST_DEVICE ProtareSingle       *protare( MCGIDI_VectorSizeType a_index );
+        MCGIDI_HOST_DEVICE ProtareSingle const *protareWithReaction( int a_index ) const ;
 
-        HOST_DEVICE double minimumEnergy( ) const { 
+        MCGIDI_HOST_DEVICE double minimumEnergy( ) const { 
             if( m_continuousEnergy ) return( m_heatedCrossSections.minimumEnergy( ) );
             return( m_heatedMultigroupCrossSections.minimumEnergy( ) ); }                                   /**< Returns the minimum cross section domain. */
-        HOST_DEVICE double maximumEnergy( ) const { 
+        MCGIDI_HOST_DEVICE double maximumEnergy( ) const { 
             if( m_continuousEnergy ) return( m_heatedCrossSections.maximumEnergy( ) );
             return( m_heatedMultigroupCrossSections.maximumEnergy( ) ); }                                   /**< Returns the maximum cross section domain. */
-        HOST_DEVICE Vector<double> temperatures( MCGIDI_VectorSizeType a_index = 0 ) const ;
+        MCGIDI_HOST_DEVICE Vector<double> temperatures( MCGIDI_VectorSizeType a_index = 0 ) const ;
 
-        HOST Vector<double> const &projectileMultiGroupBoundaries( ) const { return( m_projectileMultiGroupBoundaries ); }
+        MCGIDI_HOST Vector<double> const &projectileMultiGroupBoundaries( ) const { return( m_projectileMultiGroupBoundaries ); }
                                                                                                             /**< Returns the value of the **m_projectileMultiGroupBoundaries** member. */
-        virtual HOST Vector<double> const &projectileMultiGroupBoundariesCollapsed( ) const { return( m_projectileMultiGroupBoundariesCollapsed ); }
+        virtual MCGIDI_HOST Vector<double> const &projectileMultiGroupBoundariesCollapsed( ) const { return( m_projectileMultiGroupBoundariesCollapsed ); }
                                                                                                             /**< Returns the value of the **m_projectileMultiGroupBoundariesCollapsed** member. */
-        HOST Vector<double> const &projectileFixedGrid( ) const { return( m_projectileFixedGrid ); }                /**< Returns the value of the **m_projectileFixedGrid** member. */
+        MCGIDI_HOST Vector<double> const &projectileFixedGrid( ) const { return( m_projectileFixedGrid ); }                /**< Returns the value of the **m_projectileFixedGrid** member. */
 
-        HOST_DEVICE std::size_t numberOfReactions( ) const { return( m_reactions.size( ) ); }                       /**< Returns the number of reactions of *this*. */
-        HOST_DEVICE Reaction const *reaction( int a_index ) const { return( m_reactions[a_index] ); }               /**< Returns the (a_index-1)^th reaction of *this*. */
-        HOST_DEVICE std::size_t numberOfOrphanProducts( ) const { return( m_orphanProducts.size( ) ); }             /**< Returns the number of orphan products of *this*. */
-        HOST_DEVICE Reaction const *orphanProduct( int a_index ) const { return( m_orphanProducts[a_index] ); }     /**< Returns the (a_index-1)^th orphan product of *this*. */
+        MCGIDI_HOST_DEVICE std::size_t numberOfReactions( ) const { return( m_reactions.size( ) ); }                       /**< Returns the number of reactions of *this*. */
+        MCGIDI_HOST_DEVICE Reaction const *reaction( int a_index ) const { return( m_reactions[a_index] ); }               /**< Returns the (a_index-1)^th reaction of *this*. */
+        MCGIDI_HOST_DEVICE std::size_t numberOfOrphanProducts( ) const { return( m_orphanProducts.size( ) ); }             /**< Returns the number of orphan products of *this*. */
+        MCGIDI_HOST_DEVICE Reaction const *orphanProduct( int a_index ) const { return( m_orphanProducts[a_index] ); }     /**< Returns the (a_index-1)^th orphan product of *this*. */
 
-        HOST_DEVICE bool hasFission( ) const ;
-        HOST_DEVICE String interaction( ) const { return( m_interaction ); }
+        MCGIDI_HOST_DEVICE bool hasFission( ) const ;
+        MCGIDI_HOST_DEVICE String interaction( ) const { return( m_interaction ); }
 
-        HOST_DEVICE int URR_index( ) const { return( m_URR_index ); }
-        HOST_DEVICE void URR_index( int a_URR_index ) { m_URR_index = a_URR_index; }
-        HOST_DEVICE bool inURR( double a_energy ) const ;
-        HOST_DEVICE bool hasURR_probabilityTables( ) const { return( m_hasURR_probabilityTables ); }
-        HOST_DEVICE double URR_domainMin( ) const { return( m_URR_domainMin ); }
-        HOST_DEVICE double URR_domainMax( ) const { return( m_URR_domainMax ); }
-        HOST_DEVICE bool reactionHasURR_probabilityTables( int a_index ) const { return( m_heatedCrossSections.reactionHasURR_probabilityTables( a_index ) ); }
+        MCGIDI_HOST_DEVICE int URR_index( ) const { return( m_URR_index ); }
+        MCGIDI_HOST_DEVICE void URR_index( int a_URR_index ) { m_URR_index = a_URR_index; }
+        MCGIDI_HOST_DEVICE bool inURR( double a_energy ) const ;
+        MCGIDI_HOST_DEVICE bool hasURR_probabilityTables( ) const { return( m_hasURR_probabilityTables ); }
+        MCGIDI_HOST_DEVICE double URR_domainMin( ) const { return( m_URR_domainMin ); }
+        MCGIDI_HOST_DEVICE double URR_domainMax( ) const { return( m_URR_domainMax ); }
+        MCGIDI_HOST_DEVICE bool reactionHasURR_probabilityTables( int a_index ) const { return( m_heatedCrossSections.reactionHasURR_probabilityTables( a_index ) ); }
 
-        HOST_DEVICE double threshold( MCGIDI_VectorSizeType a_index ) const {
+        MCGIDI_HOST_DEVICE double threshold( MCGIDI_VectorSizeType a_index ) const {
             if( m_continuousEnergy ) return( m_heatedCrossSections.threshold( a_index ) );
             return( m_heatedMultigroupCrossSections.threshold( a_index ) ); }                                       /**< Returns the threshold for the reaction at index *a_index*. */
 
-        HOST_DEVICE double crossSection(                              URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, bool a_sampling = false ) const ;
-        HOST_DEVICE void crossSectionVector( double a_temperature, double a_userFactor, int a_numberAllocated, double *a_crossSectionVector ) const ;
-        HOST_DEVICE double reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, bool a_sampling = false ) const ;
-        HOST_DEVICE double reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos,                  double a_temperature, double a_energy ) const ;
-        HOST_DEVICE int sampleReaction(                               URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, double a_crossSection, double (*a_userrng)( void * ), void *a_rngState ) const ;
+        MCGIDI_HOST_DEVICE double crossSection(                              URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, bool a_sampling = false ) const ;
+        MCGIDI_HOST_DEVICE void crossSectionVector( double a_temperature, double a_userFactor, int a_numberAllocated, double *a_crossSectionVector ) const ;
+        MCGIDI_HOST_DEVICE double reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, bool a_sampling = false ) const ;
+        MCGIDI_HOST_DEVICE double reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos,                  double a_temperature, double a_energy ) const ;
+        MCGIDI_HOST_DEVICE int sampleReaction(                               URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, double a_crossSection, double (*a_userrng)( void * ), void *a_rngState ) const ;
 
-        HOST_DEVICE double depositionEnergy(   int a_hashIndex, double a_temperature, double a_energy ) const ;
-        HOST_DEVICE double depositionMomentum( int a_hashIndex, double a_temperature, double a_energy ) const ;
-        HOST_DEVICE double productionEnergy(   int a_hashIndex, double a_temperature, double a_energy ) const ;
-        HOST_DEVICE double gain(               int a_hashIndex, double a_temperature, double a_energy, int a_particleIndex ) const ;
+        MCGIDI_HOST_DEVICE double depositionEnergy(   int a_hashIndex, double a_temperature, double a_energy ) const ;
+        MCGIDI_HOST_DEVICE double depositionMomentum( int a_hashIndex, double a_temperature, double a_energy ) const ;
+        MCGIDI_HOST_DEVICE double productionEnergy(   int a_hashIndex, double a_temperature, double a_energy ) const ;
+        MCGIDI_HOST_DEVICE double gain(               int a_hashIndex, double a_temperature, double a_energy, int a_particleIndex ) const ;
 
-        HOST_DEVICE Vector<double> const &upscatterModelAGroupVelocities( ) const { return( m_upscatterModelAGroupVelocities ); }   /**< Returns a reference to the **m_upscatterModelAGroupVelocities** member. */
+        MCGIDI_HOST_DEVICE Vector<double> const &upscatterModelAGroupVelocities( ) const { return( m_upscatterModelAGroupVelocities ); }   /**< Returns a reference to the **m_upscatterModelAGroupVelocities** member. */
 
-        HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long sizeOf( ) const { return sizeof(*this); }
+        MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
+        MCGIDI_HOST_DEVICE long sizeOf( ) const { return sizeof(*this); }
 };
 
 /*
@@ -1195,65 +1216,66 @@ class ProtareComposite : public Protare {
         double m_maximumEnergy;                                             /**< The minimum of the maximum cross section domains. */
 
     public:
-        HOST_DEVICE ProtareComposite( );
-        HOST ProtareComposite( GIDI::ProtareComposite const &a_protare, PoPI::Database const &a_pops, Transporting::MC &a_settings, 
+        MCGIDI_HOST_DEVICE ProtareComposite( );
+        MCGIDI_HOST ProtareComposite( GIDI::ProtareComposite const &a_protare, PoPI::Database const &a_pops, Transporting::MC &a_settings, 
                 GIDI::Transporting::Particles const &a_particles, DomainHash const &a_domainHash, GIDI::Styles::TemperatureInfos const &a_temperatureInfos,
                 std::set<int> const &a_reactionsToExclude, int a_reactionsToExcludeOffset = 0, bool a_allowFixedGrid = true );
-        HOST_DEVICE ~ProtareComposite( );
+        MCGIDI_HOST_DEVICE ~ProtareComposite( );
 
         Vector<ProtareSingle *> protares( ) const { return( m_protares ); }       /**< Returns the value of the **m_protares** member. */
 
 // The rest are virtual methods defined in the Protare class.
-        HOST void setUserParticleIndex( int a_particleIndex, int a_userParticleIndex );
+        MCGIDI_HOST void setUserParticleIndex( int a_particleIndex, int a_userParticleIndex );
 
-        HOST_DEVICE MCGIDI_VectorSizeType numberOfProtares( ) const { return( m_protares.size( ) ); }     /**< Returns the number of protares contained in *this*. */
-        HOST_DEVICE ProtareSingle const *protare( MCGIDI_VectorSizeType a_index ) const ;
-        HOST_DEVICE ProtareSingle const *protareWithReaction( int a_index ) const ;
+        MCGIDI_HOST_DEVICE MCGIDI_VectorSizeType numberOfProtares( ) const { return( m_protares.size( ) ); }     /**< Returns the number of protares contained in *this*. */
+        MCGIDI_HOST_DEVICE ProtareSingle const *protare( MCGIDI_VectorSizeType a_index ) const ;
+        MCGIDI_HOST_DEVICE ProtareSingle       *protare( MCGIDI_VectorSizeType a_index );
+        MCGIDI_HOST_DEVICE ProtareSingle const *protareWithReaction( int a_index ) const ;
 
-        HOST_DEVICE double minimumEnergy( ) const { return( m_minimumEnergy ); }     /**< Returns the value of the **m_minimumEnergy** member. */
-        HOST_DEVICE double maximumEnergy( ) const { return( m_maximumEnergy ); }     /**< Returns the value of the **m_maximumEnergy** member. */
-        HOST_DEVICE Vector<double> temperatures( MCGIDI_VectorSizeType a_index = 0 ) const ;
+        MCGIDI_HOST_DEVICE double minimumEnergy( ) const { return( m_minimumEnergy ); }     /**< Returns the value of the **m_minimumEnergy** member. */
+        MCGIDI_HOST_DEVICE double maximumEnergy( ) const { return( m_maximumEnergy ); }     /**< Returns the value of the **m_maximumEnergy** member. */
+        MCGIDI_HOST_DEVICE Vector<double> temperatures( MCGIDI_VectorSizeType a_index = 0 ) const ;
 
-        HOST Vector<double> const &projectileMultiGroupBoundaries( ) const { return( m_protares[0]->projectileMultiGroupBoundaries( ) ); }    
+        MCGIDI_HOST Vector<double> const &projectileMultiGroupBoundaries( ) const { return( m_protares[0]->projectileMultiGroupBoundaries( ) ); }    
                                                                             /**< Returns the value of the **m_projectileMultiGroupBoundaries** member. */
-        HOST Vector<double> const &projectileMultiGroupBoundariesCollapsed( ) const { return( m_protares[0]->projectileMultiGroupBoundariesCollapsed( ) ); }
+        MCGIDI_HOST Vector<double> const &projectileMultiGroupBoundariesCollapsed( ) const { return( m_protares[0]->projectileMultiGroupBoundariesCollapsed( ) ); }
                                                                             /**< Returns the value of the **m_projectileMultiGroupBoundariesCollapsed** member. */
-        HOST Vector<double> const &projectileFixedGrid( ) const { return( m_protares[0]->projectileFixedGrid( ) ); }
+        MCGIDI_HOST Vector<double> const &projectileFixedGrid( ) const { return( m_protares[0]->projectileFixedGrid( ) ); }
                                                                             /**< Returns the value of the **m_projectileFixedGrid** member. */
 
-        HOST_DEVICE std::size_t numberOfReactions( ) const { return( m_numberOfReactions ); }
+        MCGIDI_HOST_DEVICE std::size_t numberOfReactions( ) const { return( m_numberOfReactions ); }
                                                                             /**< Returns the value of the **m_numberOfReactions** member. */
-        HOST_DEVICE Reaction const *reaction( int a_index ) const ;
-        HOST_DEVICE std::size_t numberOfOrphanProducts( ) const { return( m_numberOfOrphanProducts ); }
+        MCGIDI_HOST_DEVICE Reaction const *reaction( int a_index ) const ;
+        MCGIDI_HOST_DEVICE std::size_t numberOfOrphanProducts( ) const { return( m_numberOfOrphanProducts ); }
                                                                             /**< Returns the value of the **m_numberOfOrphanProducts** member. */
-        HOST_DEVICE Reaction const *orphanProduct( int a_index ) const ;
+        MCGIDI_HOST_DEVICE Reaction const *orphanProduct( int a_index ) const ;
 
-        HOST_DEVICE bool hasFission( ) const ;
+        MCGIDI_HOST_DEVICE bool hasFission( ) const ;
 
-        HOST_DEVICE int URR_index( ) const { return( -1 ); }
-        HOST_DEVICE bool hasURR_probabilityTables( ) const ;
-        HOST_DEVICE double URR_domainMin( ) const ;
-        HOST_DEVICE double URR_domainMax( ) const ;
-        HOST_DEVICE bool reactionHasURR_probabilityTables( int a_index ) const ;
+        MCGIDI_HOST_DEVICE int URR_index( ) const { return( -1 ); }
+        MCGIDI_HOST_DEVICE bool hasURR_probabilityTables( ) const ;
+        MCGIDI_HOST_DEVICE double URR_domainMin( ) const ;
+        MCGIDI_HOST_DEVICE double URR_domainMax( ) const ;
+        MCGIDI_HOST_DEVICE bool reactionHasURR_probabilityTables( int a_index ) const ;
 
-        HOST_DEVICE double threshold( MCGIDI_VectorSizeType a_index ) const ;
+        MCGIDI_HOST_DEVICE double threshold( MCGIDI_VectorSizeType a_index ) const ;
 
-        HOST_DEVICE double crossSection(                              URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, bool a_sampling = false ) const ;
-        HOST_DEVICE void crossSectionVector( double a_temperature, double a_userFactor, int a_numberAllocated, double *a_crossSectionVector ) const ;
-        HOST_DEVICE double reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, bool a_sampling = false ) const ;
-        HOST_DEVICE double reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos,                  double a_temperature, double a_energy ) const ;
-        HOST_DEVICE int sampleReaction(                               URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, double a_crossSection, double (*a_userrng)( void * ), void *a_rngState ) const ;
+        MCGIDI_HOST_DEVICE double crossSection(                              URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, bool a_sampling = false ) const ;
+        MCGIDI_HOST_DEVICE void crossSectionVector( double a_temperature, double a_userFactor, int a_numberAllocated, double *a_crossSectionVector ) const ;
+        MCGIDI_HOST_DEVICE double reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, bool a_sampling = false ) const ;
+        MCGIDI_HOST_DEVICE double reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos,                  double a_temperature, double a_energy ) const ;
+        MCGIDI_HOST_DEVICE int sampleReaction(                               URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, double a_crossSection, double (*a_userrng)( void * ), void *a_rngState ) const ;
 
-        HOST_DEVICE double depositionEnergy(   int a_hashIndex, double a_temperature, double a_energy ) const ;
-        HOST_DEVICE double depositionMomentum( int a_hashIndex, double a_temperature, double a_energy ) const ;
-        HOST_DEVICE double productionEnergy(   int a_hashIndex, double a_temperature, double a_energy ) const ;
-        HOST_DEVICE double gain(               int a_hashIndex, double a_temperature, double a_energy, int a_particleIndex ) const ;
+        MCGIDI_HOST_DEVICE double depositionEnergy(   int a_hashIndex, double a_temperature, double a_energy ) const ;
+        MCGIDI_HOST_DEVICE double depositionMomentum( int a_hashIndex, double a_temperature, double a_energy ) const ;
+        MCGIDI_HOST_DEVICE double productionEnergy(   int a_hashIndex, double a_temperature, double a_energy ) const ;
+        MCGIDI_HOST_DEVICE double gain(               int a_hashIndex, double a_temperature, double a_energy, int a_particleIndex ) const ;
 
-        HOST_DEVICE Vector<double> const &upscatterModelAGroupVelocities( ) const { return( m_protares[0]->upscatterModelAGroupVelocities( ) ); }
+        MCGIDI_HOST_DEVICE Vector<double> const &upscatterModelAGroupVelocities( ) const { return( m_protares[0]->upscatterModelAGroupVelocities( ) ); }
                                                                             /**< Returns a reference to the **m_upscatterModelAGroupVelocities** member. */
 
-        HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long sizeOf( ) const { return sizeof(*this); }
+        MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
+        MCGIDI_HOST_DEVICE long sizeOf( ) const { return sizeof(*this); }
 };
 
 /*
@@ -1272,70 +1294,71 @@ class ProtareTNSL : public Protare {
         ProtareSingle *m_protareWithoutElastic;                             /**< Same as *m_protare* but without elastic. */
 
     public:
-        HOST_DEVICE ProtareTNSL( );
-        HOST ProtareTNSL( GIDI::ProtareTNSL const &a_protare, PoPI::Database const &a_pops, Transporting::MC &a_settings, 
+        MCGIDI_HOST_DEVICE ProtareTNSL( );
+        MCGIDI_HOST ProtareTNSL( GIDI::ProtareTNSL const &a_protare, PoPI::Database const &a_pops, Transporting::MC &a_settings, 
                 GIDI::Transporting::Particles const &a_particles, DomainHash const &a_domainHash, GIDI::Styles::TemperatureInfos const &a_temperatureInfos,
                 std::set<int> const &a_reactionsToExclude, int a_reactionsToExcludeOffset = 0, bool a_allowFixedGrid = true );
-        HOST_DEVICE ~ProtareTNSL( );
+        MCGIDI_HOST_DEVICE ~ProtareTNSL( );
 
-        HOST_DEVICE ProtareSingle const *protareWithElastic( ) const { return( m_protareWithElastic ); }        /**< Returns the **m_protareWithElastic** member. */
-        HOST_DEVICE ProtareSingle const *TNSL( ) const { return( m_TNSL ); }                                    /**< Returns the **m_TNSL** member. */
-        HOST_DEVICE ProtareSingle const *protareWithoutElastic( ) const { return( m_protareWithoutElastic ); }  /**< Returns the **m_protareWithoutElastic** member. */
+        MCGIDI_HOST_DEVICE ProtareSingle const *protareWithElastic( ) const { return( m_protareWithElastic ); }        /**< Returns the **m_protareWithElastic** member. */
+        MCGIDI_HOST_DEVICE ProtareSingle const *TNSL( ) const { return( m_TNSL ); }                                    /**< Returns the **m_TNSL** member. */
+        MCGIDI_HOST_DEVICE ProtareSingle const *protareWithoutElastic( ) const { return( m_protareWithoutElastic ); }  /**< Returns the **m_protareWithoutElastic** member. */
 
-        HOST_DEVICE double TNSL_maximumEnergy( ) const { return( m_TNSL_maximumEnergy ); }
-        HOST_DEVICE double TNSL_maximumTemperature( ) const { return( m_TNSL_maximumTemperature ); }
+        MCGIDI_HOST_DEVICE double TNSL_maximumEnergy( ) const { return( m_TNSL_maximumEnergy ); }
+        MCGIDI_HOST_DEVICE double TNSL_maximumTemperature( ) const { return( m_TNSL_maximumTemperature ); }
 
 // The rest are virtual methods defined in the Protare class.
-        HOST void setUserParticleIndex( int a_particleIndex, int a_userParticleIndex );
+        MCGIDI_HOST void setUserParticleIndex( int a_particleIndex, int a_userParticleIndex );
 
-        HOST_DEVICE MCGIDI_VectorSizeType numberOfProtares( ) const { return( 2 ); }  /**< Always Returns 2. */
-        HOST_DEVICE ProtareSingle const *protare( MCGIDI_VectorSizeType a_index ) const ;
-        HOST_DEVICE ProtareSingle const *protareWithReaction( int a_index ) const ;
+        MCGIDI_HOST_DEVICE MCGIDI_VectorSizeType numberOfProtares( ) const { return( 2 ); }  /**< Always Returns 2. */
+        MCGIDI_HOST_DEVICE ProtareSingle const *protare( MCGIDI_VectorSizeType a_index ) const ;
+        MCGIDI_HOST_DEVICE ProtareSingle       *protare( MCGIDI_VectorSizeType a_index );
+        MCGIDI_HOST_DEVICE ProtareSingle const *protareWithReaction( int a_index ) const ;
 
-        HOST_DEVICE double minimumEnergy( ) const { return( m_protareWithElastic->minimumEnergy( ) ); }   /**< Returns the minimum cross section domain. */
-        HOST_DEVICE double maximumEnergy( ) const { return( m_protareWithElastic->maximumEnergy( ) ); }   /**< Returns the maximum cross section domain. */
-        HOST_DEVICE Vector<double> temperatures( MCGIDI_VectorSizeType a_index = 0 ) const ;
+        MCGIDI_HOST_DEVICE double minimumEnergy( ) const { return( m_protareWithElastic->minimumEnergy( ) ); }   /**< Returns the minimum cross section domain. */
+        MCGIDI_HOST_DEVICE double maximumEnergy( ) const { return( m_protareWithElastic->maximumEnergy( ) ); }   /**< Returns the maximum cross section domain. */
+        MCGIDI_HOST_DEVICE Vector<double> temperatures( MCGIDI_VectorSizeType a_index = 0 ) const ;
 
-        HOST Vector<double> const &projectileMultiGroupBoundaries( ) const { return( m_protareWithElastic->projectileMultiGroupBoundaries( ) ); }
+        MCGIDI_HOST Vector<double> const &projectileMultiGroupBoundaries( ) const { return( m_protareWithElastic->projectileMultiGroupBoundaries( ) ); }
                                                                             /**< Returns the value of the **m_projectileMultiGroupBoundaries** member. */
-        HOST Vector<double> const &projectileMultiGroupBoundariesCollapsed( ) const { return( m_protareWithElastic->projectileMultiGroupBoundariesCollapsed( ) ); }
+        MCGIDI_HOST Vector<double> const &projectileMultiGroupBoundariesCollapsed( ) const { return( m_protareWithElastic->projectileMultiGroupBoundariesCollapsed( ) ); }
                                                                             /**< Returns the value of the **m_projectileMultiGroupBoundariesCollapsed** member. */
-        HOST Vector<double> const &projectileFixedGrid( ) const { return( m_protareWithElastic->projectileFixedGrid( ) ); }
+        MCGIDI_HOST Vector<double> const &projectileFixedGrid( ) const { return( m_protareWithElastic->projectileFixedGrid( ) ); }
                                                                             /**< Returns the value of the **m_projectileFixedGrid** member. */
 
-        HOST_DEVICE std::size_t numberOfReactions( ) const { return( m_TNSL->numberOfReactions( ) + m_protareWithElastic->numberOfReactions( ) ); }
-        HOST_DEVICE Reaction const *reaction( int a_index ) const ;
-        HOST_DEVICE std::size_t numberOfOrphanProducts( ) const { return( m_protareWithElastic->numberOfOrphanProducts( ) ); }
+        MCGIDI_HOST_DEVICE std::size_t numberOfReactions( ) const { return( m_TNSL->numberOfReactions( ) + m_protareWithElastic->numberOfReactions( ) ); }
+        MCGIDI_HOST_DEVICE Reaction const *reaction( int a_index ) const ;
+        MCGIDI_HOST_DEVICE std::size_t numberOfOrphanProducts( ) const { return( m_protareWithElastic->numberOfOrphanProducts( ) ); }
                                                                             /**< Returns the number of orphan products in the normal ProtareSingle. */
-        HOST_DEVICE Reaction const *orphanProduct( int a_index ) const { return( m_protareWithElastic->orphanProduct( a_index ) ); }
+        MCGIDI_HOST_DEVICE Reaction const *orphanProduct( int a_index ) const { return( m_protareWithElastic->orphanProduct( a_index ) ); }
                                                                             /**< Returns the (a_index - 1 )^th orphan product in the normal ProtareSingle. */
 
-        HOST_DEVICE bool hasFission( ) const { return( m_protareWithElastic->hasFission( ) ); }    /* Returns the normal ProtareSingle's hasFission value. */
+        MCGIDI_HOST_DEVICE bool hasFission( ) const { return( m_protareWithElastic->hasFission( ) ); }    /* Returns the normal ProtareSingle's hasFission value. */
 
-        HOST_DEVICE int URR_index( ) const { return( -1 ); }
-        HOST_DEVICE bool hasURR_probabilityTables( ) const { return( m_protareWithElastic->hasURR_probabilityTables( ) ); }
-        HOST_DEVICE double URR_domainMin( ) const { return( m_protareWithElastic->URR_domainMin( ) ); }
-        HOST_DEVICE double URR_domainMax( ) const { return( m_protareWithElastic->URR_domainMax( ) ); }
-        HOST_DEVICE bool reactionHasURR_probabilityTables( int a_index ) const ;
+        MCGIDI_HOST_DEVICE int URR_index( ) const { return( -1 ); }
+        MCGIDI_HOST_DEVICE bool hasURR_probabilityTables( ) const { return( m_protareWithElastic->hasURR_probabilityTables( ) ); }
+        MCGIDI_HOST_DEVICE double URR_domainMin( ) const { return( m_protareWithElastic->URR_domainMin( ) ); }
+        MCGIDI_HOST_DEVICE double URR_domainMax( ) const { return( m_protareWithElastic->URR_domainMax( ) ); }
+        MCGIDI_HOST_DEVICE bool reactionHasURR_probabilityTables( int a_index ) const ;
 
-        HOST_DEVICE double threshold( MCGIDI_VectorSizeType a_index ) const ;
+        MCGIDI_HOST_DEVICE double threshold( MCGIDI_VectorSizeType a_index ) const ;
 
-        HOST_DEVICE double crossSection(                              URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, bool a_sampling = false ) const ;
-        HOST_DEVICE void crossSectionVector( double a_temperature, double a_userFactor, int a_numberAllocated, double *a_crossSectionVector ) const ;
-        HOST_DEVICE double reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, bool a_sampling = false ) const ;
-        HOST_DEVICE double reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos,                  double a_temperature, double a_energy ) const ;
-        HOST_DEVICE int sampleReaction(                               URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, double a_crossSection, double (*a_userrng)( void * ), void *a_rngState ) const ;
+        MCGIDI_HOST_DEVICE double crossSection(                              URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, bool a_sampling = false ) const ;
+        MCGIDI_HOST_DEVICE void crossSectionVector( double a_temperature, double a_userFactor, int a_numberAllocated, double *a_crossSectionVector ) const ;
+        MCGIDI_HOST_DEVICE double reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, bool a_sampling = false ) const ;
+        MCGIDI_HOST_DEVICE double reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos,                  double a_temperature, double a_energy ) const ;
+        MCGIDI_HOST_DEVICE int sampleReaction(                               URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, double a_crossSection, double (*a_userrng)( void * ), void *a_rngState ) const ;
 
-        HOST_DEVICE double depositionEnergy(   int a_hashIndex, double a_temperature, double a_energy ) const ;
-        HOST_DEVICE double depositionMomentum( int a_hashIndex, double a_temperature, double a_energy ) const ;
-        HOST_DEVICE double productionEnergy(   int a_hashIndex, double a_temperature, double a_energy ) const ;
-        HOST_DEVICE double gain(               int a_hashIndex, double a_temperature, double a_energy, int a_particleIndex ) const ;
+        MCGIDI_HOST_DEVICE double depositionEnergy(   int a_hashIndex, double a_temperature, double a_energy ) const ;
+        MCGIDI_HOST_DEVICE double depositionMomentum( int a_hashIndex, double a_temperature, double a_energy ) const ;
+        MCGIDI_HOST_DEVICE double productionEnergy(   int a_hashIndex, double a_temperature, double a_energy ) const ;
+        MCGIDI_HOST_DEVICE double gain(               int a_hashIndex, double a_temperature, double a_energy, int a_particleIndex ) const ;
 
-        HOST_DEVICE Vector<double> const &upscatterModelAGroupVelocities( ) const { return( m_protareWithElastic->upscatterModelAGroupVelocities( ) ); }
+        MCGIDI_HOST_DEVICE Vector<double> const &upscatterModelAGroupVelocities( ) const { return( m_protareWithElastic->upscatterModelAGroupVelocities( ) ); }
                                                                             /**< Returns a reference to the **m_upscatterModelAGroupVelocities** member. */
 
-        HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        HOST_DEVICE long sizeOf( ) const { return sizeof(*this); }
+        MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
+        MCGIDI_HOST_DEVICE long sizeOf( ) const { return sizeof(*this); }
 };
 
 /*
@@ -1343,17 +1366,17 @@ class ProtareTNSL : public Protare {
 =========================== Others =========================
 ============================================================
 */
-HOST Protare *protareFromGIDIProtare( GIDI::Protare const &a_protare, PoPI::Database const &a_pops, Transporting::MC &a_settings, GIDI::Transporting::Particles const &a_particles,
+MCGIDI_HOST Protare *protareFromGIDIProtare( GIDI::Protare const &a_protare, PoPI::Database const &a_pops, Transporting::MC &a_settings, GIDI::Transporting::Particles const &a_particles,
                 DomainHash const &a_domainHash, GIDI::Styles::TemperatureInfos const &a_temperatureInfos, std::set<int> const &a_reactionsToExclude,
                 int a_reactionsToExcludeOffset = 0, bool a_allowFixedGrid = true );
-HOST Vector<double> GIDI_VectorDoublesToMCGIDI_VectorDoubles( GIDI::Vector a_vector );
-HOST void addVectorItemsToSet( Vector<int> const &a_productIndicesFrom, std::set<int> &a_productIndicesTo );
+MCGIDI_HOST Vector<double> GIDI_VectorDoublesToMCGIDI_VectorDoubles( GIDI::Vector a_vector );
+MCGIDI_HOST void addVectorItemsToSet( Vector<int> const &a_productIndicesFrom, std::set<int> &a_productIndicesTo );
 
-HOST_DEVICE double sampleBetaFromMaxwellian( double (*a_userrng)( void * ), void *a_rngState );
-HOST_DEVICE bool sampleTargetBetaForUpscatterModelA( Protare const *a_protare, double a_projectileEnergy, Sampling::Input &a_input,
+MCGIDI_HOST_DEVICE double sampleBetaFromMaxwellian( double (*a_userrng)( void * ), void *a_rngState );
+MCGIDI_HOST_DEVICE bool sampleTargetBetaForUpscatterModelA( Protare const *a_protare, double a_projectileEnergy, Sampling::Input &a_input,
                 double (*a_userrng)( void * ), void *a_rngState );
-HOST_DEVICE void upScatterModelABoostParticle( Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState, Sampling::Product &a_product );
-HOST_DEVICE void MCGIDI_sampleKleinNishina( double a_k1, double (*a_userrng)( void * ), void *a_rngState, double *a_energyOut, double *a_mu );
+MCGIDI_HOST_DEVICE void upScatterModelABoostParticle( Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState, Sampling::Product &a_product );
+MCGIDI_HOST_DEVICE void MCGIDI_sampleKleinNishina( double a_k1, double (*a_userrng)( void * ), void *a_rngState, double *a_energyOut, double *a_mu );
 
 }           // End of namespace MCGIDI.
 

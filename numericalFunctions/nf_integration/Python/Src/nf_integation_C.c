@@ -71,7 +71,7 @@ static nfu_status nf_GnG_adaptiveQuadrature_C_integrandFunction( double x, doubl
     GnG_parameters *parameters = (GnG_parameters *) argList;
     PyObject *result;
 
-    result = PyEval_CallFunction( parameters->func, "(d,O)", x, parameters->argList );
+    result = PyObject_CallFunction( parameters->func, "(d,O)", x, parameters->argList );
     if( result == NULL ) return( nfu_badInput );
 
     if( PyFloat_Check( result ) ) {

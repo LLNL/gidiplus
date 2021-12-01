@@ -79,7 +79,7 @@ List of reactions
     reaction: H1 + (Mg27_e12 -> Mg27 + photon)        :  final Q = -1.82855 threshold = 6.20184
     reaction: H1 + (Mg27_e13 -> Mg27 + photon)        :  final Q = -1.82855 threshold = 6.45953
     reaction: H1 + (Mg27_e14 -> Mg27 + photon)        :  final Q = -1.82855 threshold = 6.61991
-    reaction: H1 + (Mg27_e15 -> Mg27 + photon)        :  final Q = -1.82855 threshold = 6.85155
+    reaction: H1 + (Mg27_e15 -> Mg27 + photon)        :  final Q = -1.82855 threshold = 6.85156
     reaction: H1 + (Mg27_e16 -> Mg27 + photon)        :  final Q = -1.82855 threshold = 6.90467
     reaction: H1 + (Mg27_e17 -> Mg27 + photon)        :  final Q = -1.82855 threshold = 7.07584
     reaction: H1 + (Mg27_e18 -> Mg27 + photon)        :  final Q = -1.82855 threshold = 7.11287
@@ -93,7 +93,7 @@ List of reactions
     reaction: H2 + (Mg26_e5 -> Mg26 + photon)         :  final Q = -6.04754 threshold = 10.7535
     reaction: H2 + (Mg26_e6 -> Mg26 + photon)         :  final Q = -6.04754 threshold = 10.7675
     reaction: H2 + (Mg26_e7 -> Mg26 + photon)         :  final Q = -6.04754 threshold = 10.786
-    reaction: H2 + (Mg26_e8 -> Mg26 + photon)         :  final Q = -6.04754 threshold = 11.2886
+    reaction: H2 + (Mg26_e8 -> Mg26 + photon)         :  final Q = -6.04754 threshold = 11.2887
     reaction: H2 + (Mg26_e9 -> Mg26 + photon)         :  final Q = -6.04754 threshold = 11.3571
     reaction: H2 + (Mg26_e10 -> Mg26 + photon)        :  final Q = -6.04754 threshold = 11.4317
     reaction: H2 + (Mg26_e11 -> Mg26 + photon)        :  final Q = -6.04754 threshold = 11.7622
@@ -122,7 +122,7 @@ List of reactions
     reaction: He4 + (Na24_e1 -> Na24 + photon)        :  final Q = -3.13033 threshold = 3.7373
     reaction: He4 + (Na24_e2 -> Na24 + photon)        :  final Q = -3.13033 threshold = 3.8317
     reaction: He4 + (Na24_e3 -> Na24 + photon)        :  final Q = -3.13033 threshold = 4.6389
-    reaction: He4 + (Na24_e4 -> Na24 + photon)        :  final Q = -3.13033 threshold = 4.64211
+    reaction: He4 + (Na24_e4 -> Na24 + photon)        :  final Q = -3.13033 threshold = 4.64212
     reaction: He4 + (Na24_e5 -> Na24 + photon)        :  final Q = -3.13033 threshold = 4.64419
     reaction: He4 + (Na24_e6 -> Na24 + photon)        :  final Q = -3.13033 threshold = 4.81644
     reaction: He4 + (Na24_e7 -> Na24 + photon)        :  final Q = -3.13033 threshold = 5.16247
@@ -146,6 +146,7 @@ List of reactions
     reaction: 2H1 + Na26 + photon                     :  final Q = -16.7999 threshold = 17.4279
     reaction: H1 + He4 + Ne23 + photon                :  final Q = -13.6838 threshold = 14.1953
     reaction: H2 + He4 + Ne22 + photon                :  final Q = -16.6594 threshold = 17.2821
+    reaction: sumOfRemainingOutputChannels            :  final Q = 0 threshold = 0
 
 temperature = 1.293e-08
     energy = 1e-12 crossSection = 13.3675

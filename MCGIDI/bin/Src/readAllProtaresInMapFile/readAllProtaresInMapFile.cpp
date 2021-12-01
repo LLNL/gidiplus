@@ -20,10 +20,13 @@
 
 static bool useSystem_strtod = true;
 static GIDI::Construction::Settings *constructionPtr = nullptr;
-static bool doParticlesProcessing = true;
 static bool doMultiGroup = false;
+static int errCount = 0;
 
-static char const *description = "Reads in all protares in the specified map file. Besides options, there must be one map file followed by one or more pops files.";
+static char const *description = "Reads in all protares in the specified map file. Besides options, there must be one map file followed by \n"
+    "one or more pops files. If an error occurs when reading a protare, the C++ 'throw' message is printed. Also,\n"
+    "for each protare all standard LLNL transportable particles with missing or unspecified distribution data will \n"
+    "be printed. The standard LLNL transportable particles are n, p, d, t, h, a and g";
 
 void subMain( int argc, char **argv );
 void walk( GIDI::Transporting::Particles &particles, std::string const &mapFilename, PoPI::Database const &pops );
@@ -33,12 +36,9 @@ void readProtare( GIDI::Transporting::Particles &particles, std::string const &p
 */
 int main( int argc, char **argv ) {
 
-    try {
-        subMain( argc, argv ); }
-    catch (std::exception &exception) {
-        std::cerr << exception.what( ) << std::endl;
-    }
+    subMain( argc, argv );
 
+    if( errCount > 0 ) exit( EXIT_FAILURE );
     exit( EXIT_SUCCESS );
 }
 /*
@@ -65,7 +65,7 @@ void subMain( int argc, char **argv ) {
 
     argv_options.parseArgv( argc, argv );
 
-    doMultiGroup = argv_options.find( "--mg" )->present( );
+//    doMultiGroup = argv_options.find( "--mg" )->present( ); // Currently not working as need to have option to get multi-group and flux information.
 
     if( argv_options.m_arguments.size( ) < 2 ) {
         std::cerr << std::endl << "----- Need map file name and at least one pops file -----" << std::endl << std::endl;
@@ -74,14 +74,11 @@ void subMain( int argc, char **argv ) {
 
     for( std::size_t i1 = 1; i1 < argv_options.m_arguments.size( ); ++i1 ) pops.addFile( argv[argv_options.m_arguments[i1]], true );
 
-    GIDI::Transporting::Groups_from_bdfls groups_from_bdfls( "../../GIDI/Test/bdfls" );
-    GIDI::Transporting::Fluxes_from_bdfls fluxes_from_bdfls( "../../GIDI/Test/bdfls", 0.0 );
-
     for( std::map<std::string, std::string>::iterator iter = particlesAndGIDs.begin( ); iter != particlesAndGIDs.end( ); ++iter ) {
-        GIDI::Transporting::MultiGroup multi_group = groups_from_bdfls.viaLabel( iter->second );
-        GIDI::Transporting::Particle particle( iter->first, multi_group );
+//        GIDI::Transporting::MultiGroup multi_group = groups_from_bdfls.viaLabel( iter->second );
+//        GIDI::Transporting::Particle particle( iter->first, multi_group );
+        GIDI::Transporting::Particle particle( iter->first );
 
-        particle.appendFlux( fluxes_from_bdfls.getViaFID( 1 ) );
         particles.add( particle );
     }
 
@@ -90,13 +87,7 @@ void subMain( int argc, char **argv ) {
     constructionPtr = &construction;
 
     std::string const &mapFilename( argv[argv_options.m_arguments[0]] );
-    try {
-        walk( particles, mapFilename, pops ); }
-    catch (char const *str) {
-        std::cout << str << std::endl; }
-    catch (std::string str) {
-        std::cout << str << std::endl;
-    }
+    walk( particles, mapFilename, pops );
 }
 /*
 =========================================================
@@ -119,7 +110,7 @@ void walk( GIDI::Transporting::Particles &particles, std::string const &mapFilen
             entry->libraries( libraries );
             readProtare( particles, path, pops, libraries, entry->name( ) == GIDI_protareChars ); }
         else {
-            std::cerr << "    ERROR: unknown map entry name: " << entry->name( ) << std::endl;
+            std::cout << "    ERROR: unknown map entry name: " << entry->name( ) << std::endl;
         }
     }
 }
@@ -132,6 +123,8 @@ void readProtare( GIDI::Transporting::Particles &particles, std::string const &p
     GIDI::ProtareSingle *protare = nullptr;
     MCGIDI::Protare *MCProtare = nullptr;
     std::set<int> reactionsToExclude;
+    std::string throwMessage;
+    std::string throwFunction( "GIDI::ProtareSingle" );
 
     try {
         std::cout << "        " << protareFilename << std::endl;
@@ -139,20 +132,45 @@ void readProtare( GIDI::Transporting::Particles &particles, std::string const &p
         GIDI::ParticleSubstitution particleSubstitution;
         protare = new GIDI::ProtareSingle( *constructionPtr, protareFilename, GIDI::FileType::XML, pops, particleSubstitution, a_libraries, 
                 GIDI_MapInteractionNuclearChars, a_targetRequiredInGlobalPoPs );
+        throwFunction = "post GIDI::ProtareSingle";                     // Unlikely for a throw to occur before "MCGIDI::ProtareSingle".
         GIDI::Styles::TemperatureInfos temperatures = protare->temperatures( );
 
 
         std::string label( temperatures[0].griddedCrossSection( ) );
         if( doMultiGroup ) label = temperatures[0].heatedMultiGroup( );
 
-        if( doParticlesProcessing ) particles.process( *protare, temperatures[0].heatedMultiGroup( ) );
-        doParticlesProcessing = false;
+        GIDI::Transporting::Settings baseSetting( protare->projectile( ).ID( ), GIDI::Transporting::DelayedNeutrons::on );
+        GIDI::Transporting::Particles particles2;
+        std::set<std::string> incompleteParticles;
+        protare->incompleteParticles( baseSetting, incompleteParticles );
+        std::vector<std::string> transportableIncompleteParticles;
+        for( auto particle = particles.particles( ).begin( ); particle != particles.particles( ).end( ); ++particle ) {
+            if( incompleteParticles.count( particle->first ) == 0 ) {
+                particles2.add( particle->second ); }
+            else {
+                transportableIncompleteParticles.push_back( particle->first );
+            }
+        }
+        if( transportableIncompleteParticles.size( ) > 0 ) {
+            std::cout << "            Incomplete transportable particles:";
+            for( auto iter = transportableIncompleteParticles.begin( ); iter != transportableIncompleteParticles.end( ); ++iter ) std::cout << " " << *iter;
+            std::cout << std::endl;
+        }
 
         MCGIDI::Transporting::MC MC( pops, protare->projectile( ).ID( ), &protare->styles( ), label, GIDI::Transporting::DelayedNeutrons::on, 30.0 );
-        MCProtare = new MCGIDI::ProtareSingle( *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude ); }
+        throwFunction = "MCGIDI::ProtareSingle";
+        MCProtare = new MCGIDI::ProtareSingle( *protare, pops, MC, particles2, domainHash, temperatures, reactionsToExclude ); }
     catch (char const *str) {
-        std::cout << str << std::endl;
-        exit( EXIT_FAILURE );
+        throwMessage = str; }
+    catch (std::string str) {
+        throwMessage = str; }
+    catch (std::exception &exception) {
+        throwMessage = exception.what( );
+    }
+
+    if( throwMessage != "" ) {
+        ++errCount;
+        std::cout << "ERROR: throw from " << throwFunction << " with message '" << throwMessage << "'" << std::endl;
     }
 
     delete MCProtare;

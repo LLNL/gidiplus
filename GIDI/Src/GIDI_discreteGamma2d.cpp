@@ -8,6 +8,7 @@
 */
 
 #include "GIDI.hpp"
+#include <HAPI.hpp>
 
 namespace GIDI {
 
@@ -20,12 +21,12 @@ namespace Functions {
 /* *********************************************************************************************************//**
  *
  * @param a_construction    [in]    Used to pass user options for parsing.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed and used to construct the XYs2d.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed and used to construct the XYs2d.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-DiscreteGamma2d::DiscreteGamma2d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+DiscreteGamma2d::DiscreteGamma2d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
         Function2dForm( a_construction, a_node, a_setupInfo, FormType::discreteGamma2d, a_parent ),
         m_domainMin( a_node.attribute( GIDI_domainMinChars ).as_double( ) ),
         m_domainMax( a_node.attribute( GIDI_domainMaxChars ).as_double( ) ),

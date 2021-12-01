@@ -80,7 +80,8 @@ err:
 bool FormatVersion::supported( ) {
 
     if( m_format == GNDS_formatVersion_1_10Chars ) return( true );
-    if( m_format == GNDS_formatVersion_2_0_LLNL_3Chars ) return( true );
+    if( m_format == GNDS_formatVersion_2_0Chars ) return( true );
+    if( m_format == GNDS_formatVersion_2_0_LLNL_4Chars ) return( true );
 
     return( false );
 }

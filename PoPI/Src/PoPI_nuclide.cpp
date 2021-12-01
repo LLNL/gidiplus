@@ -20,7 +20,7 @@ namespace PoPI {
 /*
 =========================================================
 */
-Nuclide::Nuclide( pugi::xml_node const &a_node, Database *a_DB, Isotope *a_isotope ) :
+Nuclide::Nuclide( HAPI::Node const &a_node, Database *a_DB, Isotope *a_isotope ) :
         Particle( a_node, Particle_class::nuclide, PoPI_nuclideChars, -1 ),
         m_isotope( a_isotope ),
         m_nucleus( a_node.child( PoPI_nucleusChars ), a_DB, this ) {

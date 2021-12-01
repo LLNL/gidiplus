@@ -5,11 +5,9 @@
 
 Executables = $(CppSource:.cpp=)
 
-local_CXXFLAGS = $(CXXFLAGS) \
-        -I$(PUGIXML_PATH)/include -L$(PUGIXML_PATH)/lib \
-        -I$(POPI_INCLUDE) -L$(POPI_LIB)
+local_CXXFLAGS += $(LIB_PATHS)
 
-LIBS = -lPoPI -lpugixml
+LIBS = -lPoPI -lHAPI -lnumericalfunctions -lstatusMessageReporting -lpugixml -lm $(HDF5_LIBS)
 
 default: $(Executables)
 

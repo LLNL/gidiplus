@@ -65,6 +65,8 @@ class Vector {
     private:
         std::vector<double> m_vector;                       /**< The list of elements, each is a double instance. */
 
+        void writeWithBoundaries2( FILE *a_file, char const *a_format, std::vector<double> const &a_boundaries, double a_epsilon ) const ;
+
     public:
         Vector( std::size_t a_number = 0 );
         Vector( std::vector<double> const &a_values );
@@ -103,6 +105,7 @@ class Vector {
         double sum( );
         void print( std::string const &a_prefix ) const ;
         void write( FILE *a_file, std::string const &a_prefix ) const ;
+        void writeWithBoundaries( FILE *a_file, char const *a_format, std::vector<double> const &a_boundaries, double a_epsilon ) const ;
 };
 
 /*

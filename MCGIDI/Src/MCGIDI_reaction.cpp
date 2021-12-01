@@ -19,7 +19,7 @@ namespace MCGIDI {
  * Default constructor used when broadcasting a Reaction as needed by MPI or GPUs.
  ***********************************************************************************************************/
 
-HOST_DEVICE Reaction::Reaction( ) :
+MCGIDI_HOST_DEVICE Reaction::Reaction( ) :
         m_protareSingle( nullptr ),
         m_reactionIndex( -1 ),
         m_label( ),
@@ -46,7 +46,7 @@ HOST_DEVICE Reaction::Reaction( ) :
  * @param a_temperatureInfos    [in]    The list of temperature data to extract from *a_protare*.
  ***********************************************************************************************************/
 
-HOST Reaction::Reaction( GIDI::Reaction const &a_reaction, SetupInfo &a_setupInfo, Transporting::MC const &a_settings, GIDI::Transporting::Particles const &a_particles,
+MCGIDI_HOST Reaction::Reaction( GIDI::Reaction const &a_reaction, SetupInfo &a_setupInfo, Transporting::MC const &a_settings, GIDI::Transporting::Particles const &a_particles,
             GIDI::Styles::TemperatureInfos const &a_temperatureInfos ) :
         m_protareSingle( nullptr ),
         m_reactionIndex( -1 ),
@@ -95,7 +95,7 @@ HOST Reaction::Reaction( GIDI::Reaction const &a_reaction, SetupInfo &a_setupInf
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE Reaction::~Reaction( ) {
+MCGIDI_HOST_DEVICE Reaction::~Reaction( ) {
 
 }
 
@@ -108,7 +108,7 @@ HOST_DEVICE Reaction::~Reaction( ) {
  * @param a_energy_in           [in]    The energy of the projectile.
  ***********************************************************************************************************/
 
-HOST_DEVICE double Reaction::crossSection( URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy_in ) const {
+MCGIDI_HOST_DEVICE double Reaction::crossSection( URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy_in ) const {
 
     return( m_protareSingle->reactionCrossSection( m_reactionIndex, a_URR_protareInfos, a_hashIndex, a_temperature, a_energy_in, false ) );
 }
@@ -121,28 +121,59 @@ HOST_DEVICE double Reaction::crossSection( URR_protareInfos const &a_URR_protare
  * @param a_energy_in           [in]    The energy of the projectile.
  ***********************************************************************************************************/
 
-HOST_DEVICE double Reaction::crossSection( URR_protareInfos const &a_URR_protareInfos, double a_temperature, double a_energy_in ) const {
+MCGIDI_HOST_DEVICE double Reaction::crossSection( URR_protareInfos const &a_URR_protareInfos, double a_temperature, double a_energy_in ) const {
 
     return( m_protareSingle->reactionCrossSection( m_reactionIndex, a_URR_protareInfos, a_temperature, a_energy_in ) );
 }
 
 
 /* *********************************************************************************************************//**
- * 
+ * Returns the multiplicity for outgoing particle with pops id *a_id*. If the multiplicity is energy dependent,
+ * the returned value is -1. For energy dependent multiplicities it is better to use the method **productAverageMultiplicity**.
  *
  * @param a_id                      [in]    The PoPs id of the requested particle.
  *
  * @return                                  The multiplicity value for the requested particle.
  ***********************************************************************************************************/
 
-HOST int Reaction::productMultiplicities( int a_id ) const {
+MCGIDI_HOST int Reaction::productMultiplicity( int a_id ) const {
 
     int i1 = 0;
+
     for( Vector<int>::iterator iter = m_productIndices.begin( ); iter != m_productIndices.end( ); ++iter, ++i1 ) {
         if( *iter == a_id ) return( m_productMultiplicities[i1] );
     }
 
     return( 0 );
+}
+
+/* *********************************************************************************************************//**
+ * Returns the energy dependent multiplicity for outgoing particle with pops id *a_id*. The returned value may not
+ * be an integer. Energy dependent multiplicity mainly occurs for photons and fission neutrons.
+ *
+ * @param a_id                      [in]    The PoPs id of the requested particle.
+ * @param a_projectileEnergy        [in]    The energy of the projectile.
+ *
+ * @return                                  The multiplicity value for the requested particle.
+ ***********************************************************************************************************/
+
+MCGIDI_HOST_DEVICE double Reaction::productAverageMultiplicity( int a_id, double a_projectileEnergy ) const {
+
+    double multiplicity = 0.0;
+
+    if( m_crossSectionThreshold > a_projectileEnergy ) return( multiplicity );
+
+    int i1 = 0;
+    for( Vector<int>::iterator iter = m_productIndices.begin( ); iter != m_productIndices.end( ); ++iter, ++i1 ) {
+        if( *iter == a_id ) {
+            multiplicity = m_productMultiplicities[i1];
+            break;
+        }
+    }
+
+    if( multiplicity < 0 ) multiplicity = m_outputChannel.productAverageMultiplicity( a_id, a_projectileEnergy );
+
+    return( multiplicity );
 }
 
 /* *********************************************************************************************************//**
@@ -152,7 +183,7 @@ HOST int Reaction::productMultiplicities( int a_id ) const {
  * @param a_userParticleIndex   [in]    The particle id specified by the user.
  ***********************************************************************************************************/
 
-HOST void Reaction::setUserParticleIndex( int a_particleIndex, int a_userParticleIndex ) {
+MCGIDI_HOST void Reaction::setUserParticleIndex( int a_particleIndex, int a_userParticleIndex ) {
 
     m_outputChannel.setUserParticleIndex( a_particleIndex, a_userParticleIndex );
 
@@ -176,7 +207,7 @@ HOST void Reaction::setUserParticleIndex( int a_particleIndex, int a_userParticl
  * @param a_products                [in]    The object to add all sampled products to.
  ***********************************************************************************************************/
 
-HOST_DEVICE void Reaction::sampleProducts( Protare const *a_protare, double a_projectileEnergy, Sampling::Input &a_input, 
+MCGIDI_HOST_DEVICE void Reaction::sampleProducts( Protare const *a_protare, double a_projectileEnergy, Sampling::Input &a_input, 
                 double (*a_userrng)( void * ), void *a_rngState, Sampling::ProductHandler &a_products ) const {
 
     a_input.m_reaction = this;
@@ -210,7 +241,7 @@ HOST_DEVICE void Reaction::sampleProducts( Protare const *a_protare, double a_pr
  * @param a_products                [in]    The object to add all sampled products to.
  ***********************************************************************************************************/
 
-HOST_DEVICE void Reaction::sampleNullProducts( Protare const &a_protare, double a_projectileEnergy, Sampling::Input &a_input, 
+MCGIDI_HOST_DEVICE void Reaction::sampleNullProducts( Protare const &a_protare, double a_projectileEnergy, Sampling::Input &a_input, 
         double (*a_userrng)( void * ), void *a_rngState, Sampling::ProductHandler &a_products ) {
 
     a_input.m_sampledType = Sampling::SampledType::uncorrelatedBody;
@@ -241,7 +272,7 @@ HOST_DEVICE void Reaction::sampleNullProducts( Protare const &a_protare, double 
  * @return                                  The weith that the particle is emitted into mu *a_mu_lab*.
  ***********************************************************************************************************/
 
-HOST_DEVICE double Reaction::angleBiasing( int a_pid, double a_energy_in, double a_mu_lab, double &a_energy_out, 
+MCGIDI_HOST_DEVICE double Reaction::angleBiasing( int a_pid, double a_energy_in, double a_mu_lab, double &a_energy_out, 
                 double (*a_userrng)( void * ), void *a_rngState, double *a_cumulative_weight ) const {
 
     double cumulative_weight1 = 0.0;
@@ -273,7 +304,7 @@ HOST_DEVICE double Reaction::angleBiasing( int a_pid, double a_energy_in, double
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void Reaction::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void Reaction::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     
     DATA_MEMBER_STRING( m_label, a_buffer, a_mode );

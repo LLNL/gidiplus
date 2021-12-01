@@ -26,7 +26,7 @@ namespace PoPI {
 ======================== DecayData =========================
 ============================================================
 */
-DecayData::DecayData( pugi::xml_node const &a_node ) :
+DecayData::DecayData( HAPI::Node const &a_node ) :
         m_decayModes( PoPI_decayModesChars ) {
 
     m_decayModes.appendFromParentNode2( a_node.child( PoPI_decayModesChars ), this );
@@ -73,7 +73,7 @@ void DecayData::toXMLList( std::vector<std::string> &a_XMLList, std::string cons
 ======================== DecayMode =========================
 ============================================================
 */
-DecayMode::DecayMode( pugi::xml_node const &a_node, DecayData const *a_decayData ) :
+DecayMode::DecayMode( HAPI::Node const &a_node, DecayData const *a_decayData ) :
         m_label( a_node.attribute( PoPI_labelChars ).value( ) ),
         m_mode( a_node.attribute( PoPI_modeChars ).value( ) ),
         m_probability( a_node.child( PoPI_probabilityChars ) ),
@@ -134,7 +134,7 @@ void DecayMode::toXMLList( std::vector<std::string> &a_XMLList, std::string cons
 ========================== Decay ===========================
 ============================================================
 */
-Decay::Decay( pugi::xml_node const &a_node, DecayMode const *a_decayMode ) :
+Decay::Decay( HAPI::Node const &a_node, DecayMode const *a_decayMode ) :
         m_index( a_node.attribute( PoPI_indexChars ).as_int( ) ),
         m_products( PoPI_productsChars ) {
 
@@ -169,7 +169,7 @@ void Decay::toXMLList( std::vector<std::string> &a_XMLList, std::string const &a
 ========================= Product ==========================
 ============================================================
 */
-Product::Product( pugi::xml_node const &a_node, Decay *a_DB ) :
+Product::Product( HAPI::Node const &a_node, Decay *a_DB ) :
         m_id( -1 ),
         m_pid( a_node.attribute( PoPI_pidChars ).value( ) ),
         m_label( a_node.attribute( PoPI_labelChars ).value( ) ) {

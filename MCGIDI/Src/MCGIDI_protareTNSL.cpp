@@ -23,7 +23,7 @@ namespace MCGIDI {
  * @return              
  ***********************************************************************************************************/
 
-static HOST GIDI::Styles::TemperatureInfos TNSL_temperatureInfos( GIDI::ProtareSingle const &a_protare, Transporting::MC &a_settings ) {
+static MCGIDI_HOST GIDI::Styles::TemperatureInfos TNSL_temperatureInfos( GIDI::ProtareSingle const &a_protare, Transporting::MC &a_settings ) {
 
     return( a_protare.temperatures( ) );
 }
@@ -38,7 +38,7 @@ static HOST GIDI::Styles::TemperatureInfos TNSL_temperatureInfos( GIDI::ProtareS
  * Default constructor used when broadcasting a Protare as needed by MPI or GPUs.
  ***********************************************************************************************************/
 
-HOST_DEVICE ProtareTNSL::ProtareTNSL( ) :
+MCGIDI_HOST_DEVICE ProtareTNSL::ProtareTNSL( ) :
         Protare( ProtareType::TNSL ),
         m_numberOfTNSLReactions( 0 ),
         m_TNSL_maximumEnergy( 0.0 ),
@@ -61,7 +61,7 @@ HOST_DEVICE ProtareTNSL::ProtareTNSL( ) :
  * @param a_allowFixedGrid              [in]    For internal (i.e., MCGIDI) use only. Users must use the default value.
  ***********************************************************************************************************/
 
-HOST ProtareTNSL::ProtareTNSL( GIDI::ProtareTNSL const &a_protare, PoPI::Database const &a_pops, Transporting::MC &a_settings, 
+MCGIDI_HOST ProtareTNSL::ProtareTNSL( GIDI::ProtareTNSL const &a_protare, PoPI::Database const &a_pops, Transporting::MC &a_settings, 
                 GIDI::Transporting::Particles const &a_particles, DomainHash const &a_domainHash, GIDI::Styles::TemperatureInfos const &a_temperatureInfos,
                 std::set<int> const &a_reactionsToExclude, int a_reactionsToExcludeOffset, bool a_allowFixedGrid ) :
         Protare( ProtareType::TNSL, a_protare, a_pops, a_settings ),
@@ -90,7 +90,7 @@ HOST ProtareTNSL::ProtareTNSL( GIDI::ProtareTNSL const &a_protare, PoPI::Databas
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-HOST_DEVICE ProtareTNSL::~ProtareTNSL( ) {
+MCGIDI_HOST_DEVICE ProtareTNSL::~ProtareTNSL( ) {
 
     delete m_protareWithElastic;
     delete m_TNSL;
@@ -104,7 +104,7 @@ HOST_DEVICE ProtareTNSL::~ProtareTNSL( ) {
  * @param a_userParticleIndex   [in]    The particle id specified by the user.
  ***********************************************************************************************************/
  
-HOST void ProtareTNSL::setUserParticleIndex( int a_particleIndex, int a_userParticleIndex ) {
+MCGIDI_HOST void ProtareTNSL::setUserParticleIndex( int a_particleIndex, int a_userParticleIndex ) {
 
     m_protareWithElastic->setUserParticleIndex( a_particleIndex, a_userParticleIndex );
     m_TNSL->setUserParticleIndex( a_particleIndex, a_userParticleIndex );
@@ -119,7 +119,22 @@ HOST void ProtareTNSL::setUserParticleIndex( int a_particleIndex, int a_userPart
  * @return                              Pointer to the requested protare or nullptr if invalid *a_index*..
  ***********************************************************************************************************/
 
-HOST_DEVICE ProtareSingle const *ProtareTNSL::protare( MCGIDI_VectorSizeType a_index ) const {
+MCGIDI_HOST_DEVICE ProtareSingle const *ProtareTNSL::protare( MCGIDI_VectorSizeType a_index ) const {
+
+    if( a_index == 0 ) return( m_protareWithElastic );
+    if( a_index == 1 ) return( m_TNSL );
+    return( nullptr );
+}
+
+/* *********************************************************************************************************//**
+ * Returns the pointer representing the (a_index - 1)th **ProtareSingle**.
+ *
+ * @param a_index               [in]    Index of the **ProtareSingle** to return. Can only be 0 or 1.
+ *
+ * @return                              Pointer to the requested protare or nullptr if invalid *a_index*..
+ ***********************************************************************************************************/
+
+MCGIDI_HOST_DEVICE ProtareSingle *ProtareTNSL::protare( MCGIDI_VectorSizeType a_index ) {
 
     if( a_index == 0 ) return( m_protareWithElastic );
     if( a_index == 1 ) return( m_TNSL );
@@ -134,7 +149,7 @@ HOST_DEVICE ProtareSingle const *ProtareTNSL::protare( MCGIDI_VectorSizeType a_i
  * @return                              Pointer to the requested protare or nullptr if invalid *a_index*..
  ***********************************************************************************************************/
 
-HOST_DEVICE ProtareSingle const *ProtareTNSL::protareWithReaction( int a_index ) const {
+MCGIDI_HOST_DEVICE ProtareSingle const *ProtareTNSL::protareWithReaction( int a_index ) const {
 
     int index = a_index - m_numberOfTNSLReactions;
 
@@ -151,12 +166,12 @@ HOST_DEVICE ProtareSingle const *ProtareTNSL::protareWithReaction( int a_index )
  * @return                              Vector of doubles.
  ***********************************************************************************************************/
 
-HOST_DEVICE Vector<double> ProtareTNSL::temperatures( MCGIDI_VectorSizeType a_index ) const {
+MCGIDI_HOST_DEVICE Vector<double> ProtareTNSL::temperatures( MCGIDI_VectorSizeType a_index ) const {
 
     if( a_index == 0 ) return( m_protareWithElastic->temperatures( 0 ) );
     if( a_index == 1 ) return( m_TNSL->temperatures( 0 ) );
 
-    THROW( "ProtareSingle::temperatures: a_index not 0 or 1." );
+    MCGIDI_THROW( "ProtareSingle::temperatures: a_index not 0 or 1." );
 
     Vector<double> temps;                           // Only to stop compilers from complaining.
     return( temps );
@@ -171,7 +186,7 @@ HOST_DEVICE Vector<double> ProtareTNSL::temperatures( MCGIDI_VectorSizeType a_in
  * @return                          The reaction at index *a_index*.
  ***********************************************************************************************************/
 
-HOST_DEVICE Reaction const *ProtareTNSL::reaction( int a_index ) const {
+MCGIDI_HOST_DEVICE Reaction const *ProtareTNSL::reaction( int a_index ) const {
 
     int index = a_index - m_numberOfTNSLReactions;
 
@@ -187,7 +202,7 @@ HOST_DEVICE Reaction const *ProtareTNSL::reaction( int a_index ) const {
  * @return                          *true* if the reaction has URR robability tables and false otherwise.
  ***********************************************************************************************************/
 
-HOST_DEVICE bool ProtareTNSL::reactionHasURR_probabilityTables( int a_index ) const {
+MCGIDI_HOST_DEVICE bool ProtareTNSL::reactionHasURR_probabilityTables( int a_index ) const {
 
     int index = a_index - m_numberOfTNSLReactions;
 
@@ -204,7 +219,7 @@ HOST_DEVICE bool ProtareTNSL::reactionHasURR_probabilityTables( int a_index ) co
  * @return                          The threshold for reaction at index *a_index*.
  ***********************************************************************************************************/
 
-HOST_DEVICE double ProtareTNSL::threshold( int a_index ) const {
+MCGIDI_HOST_DEVICE double ProtareTNSL::threshold( int a_index ) const {
 
     int index = a_index - m_numberOfTNSLReactions;
 
@@ -225,7 +240,7 @@ HOST_DEVICE double ProtareTNSL::threshold( int a_index ) const {
  * @return                              The total cross section.
  ***********************************************************************************************************/
 
-HOST_DEVICE double ProtareTNSL::crossSection( URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, bool a_sampling ) const {
+MCGIDI_HOST_DEVICE double ProtareTNSL::crossSection( URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, bool a_sampling ) const {
 
     double crossSection1 = 0.0;
 
@@ -248,7 +263,7 @@ HOST_DEVICE double ProtareTNSL::crossSection( URR_protareInfos const &a_URR_prot
  * @param   a_crossSectionVector        [in/out]    The energy dependent, total cross section to add cross section data to.
  ***********************************************************************************************************/
 
-HOST_DEVICE void ProtareTNSL::crossSectionVector( double a_temperature, double a_userFactor, int a_numberAllocated, double *a_crossSectionVector ) const {
+MCGIDI_HOST_DEVICE void ProtareTNSL::crossSectionVector( double a_temperature, double a_userFactor, int a_numberAllocated, double *a_crossSectionVector ) const {
 
     if( a_temperature <= m_TNSL_maximumTemperature ) {
         m_TNSL->crossSectionVector( a_temperature, a_userFactor, a_numberAllocated, a_crossSectionVector );
@@ -272,7 +287,7 @@ HOST_DEVICE void ProtareTNSL::crossSectionVector( double a_temperature, double a
  * @return                              The total cross section.
  ***********************************************************************************************************/
 
-HOST_DEVICE double ProtareTNSL::reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, bool a_sampling ) const {
+MCGIDI_HOST_DEVICE double ProtareTNSL::reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, bool a_sampling ) const {
 
     int index = a_reactionIndex - m_numberOfTNSLReactions;
     double crossSection1 = 0.0;
@@ -301,7 +316,7 @@ HOST_DEVICE double ProtareTNSL::reactionCrossSection( int a_reactionIndex, URR_p
  * @return                              The total cross section.
  ***********************************************************************************************************/
 
-HOST_DEVICE double ProtareTNSL::reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, double a_temperature, double a_energy ) const {
+MCGIDI_HOST_DEVICE double ProtareTNSL::reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, double a_temperature, double a_energy ) const {
 
     int index = a_reactionIndex - m_numberOfTNSLReactions;
     double crossSection1 = 0.0;
@@ -333,7 +348,7 @@ HOST_DEVICE double ProtareTNSL::reactionCrossSection( int a_reactionIndex, URR_p
  * @return                              The index of the sampled reaction.
  ***********************************************************************************************************/
 
-HOST_DEVICE int ProtareTNSL::sampleReaction( URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, double a_crossSection, double (*a_userrng)( void * ), void *a_rngState ) const {
+MCGIDI_HOST_DEVICE int ProtareTNSL::sampleReaction( URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, double a_crossSection, double (*a_userrng)( void * ), void *a_rngState ) const {
 
     int reactionIndex = 0;
 
@@ -364,7 +379,7 @@ HOST_DEVICE int ProtareTNSL::sampleReaction( URR_protareInfos const &a_URR_prota
  * @return                          The total deposition energy.
  ***********************************************************************************************************/
 
-HOST_DEVICE double ProtareTNSL::depositionEnergy( int a_hashIndex, double a_temperature, double a_energy ) const {
+MCGIDI_HOST_DEVICE double ProtareTNSL::depositionEnergy( int a_hashIndex, double a_temperature, double a_energy ) const {
 
     double deposition_energy = 0.0;
 
@@ -388,7 +403,7 @@ HOST_DEVICE double ProtareTNSL::depositionEnergy( int a_hashIndex, double a_temp
  * @return                          The total deposition momentum.
  ***********************************************************************************************************/
 
-HOST_DEVICE double ProtareTNSL::depositionMomentum( int a_hashIndex, double a_temperature, double a_energy ) const {
+MCGIDI_HOST_DEVICE double ProtareTNSL::depositionMomentum( int a_hashIndex, double a_temperature, double a_energy ) const {
 
     double deposition_momentum = 0.0;
 
@@ -412,7 +427,7 @@ HOST_DEVICE double ProtareTNSL::depositionMomentum( int a_hashIndex, double a_te
  * @return                          The total production energy.
  ***********************************************************************************************************/
 
-HOST_DEVICE double ProtareTNSL::productionEnergy( int a_hashIndex, double a_temperature, double a_energy ) const {
+MCGIDI_HOST_DEVICE double ProtareTNSL::productionEnergy( int a_hashIndex, double a_temperature, double a_energy ) const {
 
     double production_energy = 0.0;
 
@@ -437,7 +452,7 @@ HOST_DEVICE double ProtareTNSL::productionEnergy( int a_hashIndex, double a_temp
  * @return                      [in]    A vector of the length of the number of multi-group groups.
  ***********************************************************************************************************/
 
-HOST_DEVICE double ProtareTNSL::gain( int a_hashIndex, double a_temperature, double a_energy, int a_particleIndex ) const {
+MCGIDI_HOST_DEVICE double ProtareTNSL::gain( int a_hashIndex, double a_temperature, double a_energy, int a_particleIndex ) const {
 
     double gain1 = 0.0;
 
@@ -459,7 +474,9 @@ HOST_DEVICE double ProtareTNSL::gain( int a_hashIndex, double a_temperature, dou
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-HOST_DEVICE void ProtareTNSL::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void ProtareTNSL::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+
+    Protare::serialize( a_buffer, a_mode );
 
     int numberOfTNSLReactions = static_cast<int>( m_numberOfTNSLReactions );
     DATA_MEMBER_INT( numberOfTNSLReactions, a_buffer, a_mode );

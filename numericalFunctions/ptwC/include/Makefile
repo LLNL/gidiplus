@@ -13,6 +13,7 @@ sourceDir = ../Src
 
 default:
 	cp $(sourceDir)/nf_utilities.h .
+	cp $(sourceDir)/nf_buffer.h .
 
 clean:
 	rm -f *.h

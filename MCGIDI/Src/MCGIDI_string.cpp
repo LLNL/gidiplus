@@ -28,10 +28,10 @@ namespace MCGIDI {
 
 #define MCGIDI_MIN(x,y) ( ( (x) < (y) ) ? (x) : (y) )
 #define MCGIDI_SWAP(a,b,type) {type ttttttttt=a;a=b;b=ttttttttt;}
-HOST_DEVICE int MCGIDI_strcmp (const char *p1, const char *p2);
-HOST_DEVICE size_t MCGIDI_strlen (const char *str);
-HOST_DEVICE void MCGIDI_memmove(char *dest, const char *src, size_t n);
-HOST_DEVICE int MCGIDI_strncmp( const char * s1, const char * s2, size_t n );
+MCGIDI_HOST_DEVICE int MCGIDI_strcmp (const char *p1, const char *p2);
+MCGIDI_HOST_DEVICE size_t MCGIDI_strlen (const char *str);
+MCGIDI_HOST_DEVICE void MCGIDI_memmove(char *dest, const char *src, size_t n);
+MCGIDI_HOST_DEVICE int MCGIDI_strncmp( const char * s1, const char * s2, size_t n );
 
   const String::size_type String::npos = static_cast<size_t>(-1);
 
@@ -40,7 +40,7 @@ HOST_DEVICE int MCGIDI_strncmp( const char * s1, const char * s2, size_t n );
    * return nullptr. Loop until there is free memory.
    *
    */
-  HOST_DEVICE static char* malloc_never_null(const size_t b)
+  MCGIDI_HOST_DEVICE static char* malloc_never_null(const size_t b)
   {
       char *p;
 
@@ -56,7 +56,7 @@ HOST_DEVICE int MCGIDI_strncmp( const char * s1, const char * s2, size_t n );
    * @param s
    * @return
    */
-  HOST_DEVICE char* String::strdup_never_null(const char* s)
+  MCGIDI_HOST_DEVICE char* String::strdup_never_null(const char* s)
   {
       const size_t len = MCGIDI_strlen(s)+1;
       char *p2 = malloc_never_null(len);
@@ -66,14 +66,14 @@ HOST_DEVICE int MCGIDI_strncmp( const char * s1, const char * s2, size_t n );
       return p2;
   }
 
-  HOST_DEVICE String::String() : p( nullptr ), allocated_(0), size_(0) { }
+  MCGIDI_HOST_DEVICE String::String() : p( nullptr ), allocated_(0), size_(0) { }
 
-  HOST_DEVICE String::~String()
+  MCGIDI_HOST_DEVICE String::~String()
   {
       free(p);
   }
 
-  HOST_DEVICE String::String(const String& s)
+  MCGIDI_HOST_DEVICE String::String(const String& s)
     : p(nullptr)
   {
     p = malloc_never_null( s.size_ + 1 );  // copy only used part
@@ -82,12 +82,12 @@ HOST_DEVICE int MCGIDI_strncmp( const char * s1, const char * s2, size_t n );
     memcpy(p, s.p, size_ + 1);
   }
 
-  HOST_DEVICE String::String(const char* s)
+  MCGIDI_HOST_DEVICE String::String(const char* s)
   : p(strdup_never_null(s))
   {
   }
 
-  HOST_DEVICE String& String::operator=(const char* s)
+  MCGIDI_HOST_DEVICE String& String::operator=(const char* s)
   {
       if ( p != s ) {
         // s could point into our own string, so we have to allocate a new string
@@ -103,12 +103,12 @@ HOST_DEVICE int MCGIDI_strncmp( const char * s1, const char * s2, size_t n );
       return *this;
   }
 
-  HOST_DEVICE String& String::operator=(const String& s)
+  MCGIDI_HOST_DEVICE String& String::operator=(const String& s)
   {
       return operator=(s.p);
   }
 
-  HOST_DEVICE String& String::operator+=(const String& s)
+  MCGIDI_HOST_DEVICE String& String::operator+=(const String& s)
   {
     if (s.size_ > 0){
       this->reserve(size_ + s.size_);
@@ -119,7 +119,7 @@ HOST_DEVICE int MCGIDI_strncmp( const char * s1, const char * s2, size_t n );
   }
 
   // since p and s may overlap, we have to copy our own string first
-  HOST_DEVICE String& String::operator+=(const char* s)
+  MCGIDI_HOST_DEVICE String& String::operator+=(const char* s)
   {
       const size_type lens = MCGIDI_strlen(s);
       if (lens > 0){
@@ -138,14 +138,14 @@ HOST_DEVICE int MCGIDI_strncmp( const char * s1, const char * s2, size_t n );
       return *this;
   }
 
-  HOST_DEVICE String& String::operator+=(const char c)
+  MCGIDI_HOST_DEVICE String& String::operator+=(const char c)
   {
       push_back(c);
       return *this;
   }
 
 
-  HOST_DEVICE void String::push_back(const char c) {
+  MCGIDI_HOST_DEVICE void String::push_back(const char c) {
 
     if (size_ == allocated_ - 1) {
       size_t more =  (allocated_* 3) / 2; // factor 1.5
@@ -158,40 +158,40 @@ HOST_DEVICE int MCGIDI_strncmp( const char * s1, const char * s2, size_t n );
     p[size_] = 0;
   }
 
-  HOST_DEVICE bool String::operator==(const char* s) const
+  MCGIDI_HOST_DEVICE bool String::operator==(const char* s) const
   {
       return !MCGIDI_strcmp(p, s);
   }
 
-  HOST_DEVICE bool String::operator==(const String& s) const
+  MCGIDI_HOST_DEVICE bool String::operator==(const String& s) const
   {
       return !MCGIDI_strcmp(p, s.p);
   }
 
-  HOST_DEVICE void String::clearMemory()
+  MCGIDI_HOST_DEVICE void String::clearMemory()
   {
     String s;
     this->swap( s );
   }
 
-  HOST_DEVICE void String::clear()
+  MCGIDI_HOST_DEVICE void String::clear()
   {
       size_ = 0;
       p[0]  = 0;
   }
 
-  HOST_DEVICE String operator+(const String& lhs, const String& rhs)
+  MCGIDI_HOST_DEVICE String operator+(const String& lhs, const String& rhs)
   {
       return String(lhs) += rhs;
   }
 
-  HOST_DEVICE String String::substr(const size_type pos, size_type in_length) const
+  MCGIDI_HOST_DEVICE String String::substr(const size_type pos, size_type in_length) const
   {
       String s;
       const size_type len = size_;
 
       if ( pos > len )
-        THROW("MCGIDI::String::substr: pos index out of range");
+        MCGIDI_THROW("MCGIDI::String::substr: pos index out of range");
 
       size_type remain = len - pos;
 
@@ -209,27 +209,27 @@ HOST_DEVICE int MCGIDI_strncmp( const char * s1, const char * s2, size_t n );
 
 
   // checked access, accessing the NUL at end is allowed
-  HOST_DEVICE char& String::at(const size_type i)
+  MCGIDI_HOST_DEVICE char& String::at(const size_type i)
   {
       if ( i > MCGIDI_strlen(p) )
-        THROW( "MCGIDI::String::at(): index out_of_range");
+        MCGIDI_THROW( "MCGIDI::String::at(): index out_of_range");
 
       return p[i];
   }
-  HOST_DEVICE char String::at(const size_type i) const
+  MCGIDI_HOST_DEVICE char String::at(const size_type i) const
   {
       if ( i > MCGIDI_strlen(p) )
-        THROW("MCGIDI::String::at(): index out_of_range");
+        MCGIDI_THROW("MCGIDI::String::at(): index out_of_range");
 
       return p[i];
   }
 
-  HOST_DEVICE String& String::erase(size_type pos, size_type len)
+  MCGIDI_HOST_DEVICE String& String::erase(size_type pos, size_type len)
   {
     if (len > 0) {
 
       if ( pos >= size_ ) // user must not remove trailing 0
-        THROW("MCGIDI::String::erase: pos index out_of_range");
+        MCGIDI_THROW("MCGIDI::String::erase: pos index out_of_range");
 
       long s2 = size_;
       long remain = s2 - (long) pos - len;
@@ -248,7 +248,7 @@ HOST_DEVICE int MCGIDI_strncmp( const char * s1, const char * s2, size_t n );
     return *this;
   }
 
-  HOST_DEVICE String& String::append( const char* str, size_type n) {
+  MCGIDI_HOST_DEVICE String& String::append( const char* str, size_type n) {
     if (str && n > 0) {
       size_t lens = MCGIDI_strlen(str);
       if (n > lens)
@@ -262,9 +262,9 @@ HOST_DEVICE int MCGIDI_strncmp( const char * s1, const char * s2, size_t n );
     return *this;
   }
 
-  HOST_DEVICE int String::compare( size_type pos, size_type len, const String& str ) const {
+  MCGIDI_HOST_DEVICE int String::compare( size_type pos, size_type len, const String& str ) const {
     if (pos > size_)
-      THROW("MCGIDI::String::compare: pos index out of range");
+      MCGIDI_THROW("MCGIDI::String::compare: pos index out of range");
 
     if ( len > size_ - pos)
       len = size_ - pos; // limit len to available length
@@ -277,9 +277,9 @@ HOST_DEVICE int MCGIDI_strncmp( const char * s1, const char * s2, size_t n );
     return r;
   }
 
-  HOST_DEVICE int String::compare( size_type pos, size_type len, const char* str ) const {
+  MCGIDI_HOST_DEVICE int String::compare( size_type pos, size_type len, const char* str ) const {
     if (pos > size_)
-      THROW("MCGIDI::String::compare: pos index out of range");
+      MCGIDI_THROW("MCGIDI::String::compare: pos index out of range");
 
     if ( len > size_ - pos)
       len = size_ - pos; // limit len to available length
@@ -293,7 +293,7 @@ HOST_DEVICE int MCGIDI_strncmp( const char * s1, const char * s2, size_t n );
   }
 
 
-  HOST_DEVICE void String::my_realloc( size_type n, char ** address) {
+  MCGIDI_HOST_DEVICE void String::my_realloc( size_type n, char ** address) {
     if (address != nullptr && *address != nullptr) {
         p = *address;
         long delta = sizeof(char) * n;
@@ -309,23 +309,23 @@ HOST_DEVICE int MCGIDI_strncmp( const char * s1, const char * s2, size_t n );
         p = pnew;
       }
       else
-        THROW("MCGIDI::String::my_realloc out of memory");
+        MCGIDI_THROW("MCGIDI::String::my_realloc out of memory");
     }
    }
 
 
-  HOST_DEVICE void String::reserve( const size_type n, char ** address) {
+  MCGIDI_HOST_DEVICE void String::reserve( const size_type n, char ** address) {
     if (n >= allocated_ ) {
       this->my_realloc(n + 1, address);
       allocated_ = n + 1;
     }
   }
 
-  HOST_DEVICE void String::resize( const size_type n, char ** address) {
+  MCGIDI_HOST_DEVICE void String::resize( const size_type n, char ** address) {
     this->resize( n, 0, address );
   }
 
-  HOST_DEVICE void String::resize( const size_type n, const char c, char ** address) {
+  MCGIDI_HOST_DEVICE void String::resize( const size_type n, const char c, char ** address) {
     if (n < allocated_ ) {
       p[n] = 0;
       size_ = n;
@@ -339,7 +339,7 @@ HOST_DEVICE int MCGIDI_strncmp( const char * s1, const char * s2, size_t n );
     }
   }
 
-  HOST_DEVICE void String::swap( String& s ) {
+  MCGIDI_HOST_DEVICE void String::swap( String& s ) {
     MCGIDI_SWAP( allocated_, s.allocated_, size_t );
     MCGIDI_SWAP( size_,      s.size_,      size_t );
     MCGIDI_SWAP( p,          s.p,          char * );
@@ -347,14 +347,14 @@ HOST_DEVICE int MCGIDI_strncmp( const char * s1, const char * s2, size_t n );
 
 
   // Comparison
-  HOST_DEVICE bool operator<( const String& s1, const String& s2 ) {
+  MCGIDI_HOST_DEVICE bool operator<( const String& s1, const String& s2 ) {
     return MCGIDI_strcmp( s1.c_str(), s2.c_str() ) < 0;
   }
 
   /* Compare S1 and S2, returning less than, equal to or
      greater than zero if S1 is lexicographically less than,
      equal to or greater than S2.  */
-  HOST_DEVICE int MCGIDI_strcmp (const char *p1, const char *p2)
+  MCGIDI_HOST_DEVICE int MCGIDI_strcmp (const char *p1, const char *p2)
   {
     const unsigned char *s1 = (const unsigned char *) p1;
     const unsigned char *s2 = (const unsigned char *) p2;
@@ -383,7 +383,7 @@ HOST_DEVICE int MCGIDI_strncmp( const char * s1, const char * s2, size_t n );
 
   // A function to copy block of 'n' bytes from source
   // address 'src' to destination address 'dest'.
-  HOST_DEVICE void MCGIDI_memmove(char *dest, const char *src, size_t n)
+  MCGIDI_HOST_DEVICE void MCGIDI_memmove(char *dest, const char *src, size_t n)
   {
      // Typecast src and dest addresses to (char *)
      char *csrc = (char *)src;
@@ -403,7 +403,7 @@ HOST_DEVICE int MCGIDI_strncmp( const char * s1, const char * s2, size_t n );
      free(temp);
   }
 
-  HOST_DEVICE int MCGIDI_strncmp( const char * s1, const char * s2, size_t n )
+  MCGIDI_HOST_DEVICE int MCGIDI_strncmp( const char * s1, const char * s2, size_t n )
   {
       while ( n && *s1 && ( *s1 == *s2 ) )
       {

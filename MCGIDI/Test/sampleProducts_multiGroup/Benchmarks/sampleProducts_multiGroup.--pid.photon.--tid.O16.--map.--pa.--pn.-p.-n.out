@@ -11,7 +11,15 @@ reaction (  1) = H1 + N15  threshold = 12.1275
     energy = 24.255
     energy = 48.51
     energy = 97.02
-reaction (  2) = O + photon [coherent]  threshold = 0
+reaction (  2) = sumOfRemainingOutputChannels  threshold = 7.1619
+    energy = 7.1619
+    energy = 14.3238
+    energy = 28.6476
+        productIndex    3 KE = 5.2353
+    energy = 57.2952
+        productIndex    6 KE = 3.59631
+        productIndex    3 KE = 2.69496
+reaction (  3) = O + photon [coherent]  threshold = 0
     energy = 1e-13
         productIndex    3 KE = 1e-13
     energy = 2e-13
@@ -112,7 +120,7 @@ reaction (  2) = O + photon [coherent]  threshold = 0
         productIndex    3 KE = 28.1475
     energy = 56.295
         productIndex    3 KE = 56.295
-reaction (  3) = O + photon [incoherent]  threshold = 0
+reaction (  4) = O + photon [incoherent]  threshold = 0
     energy = 1e-13
         productIndex    3 KE = 1e-13
     energy = 2e-13
@@ -160,60 +168,60 @@ reaction (  3) = O + photon [incoherent]  threshold = 0
     energy = 4.1943e-07
         productIndex    3 KE = 4.1943e-07
     energy = 8.38861e-07
-        productIndex    3 KE = 8.3886e-07
+        productIndex    3 KE = 8.38858e-07
     energy = 1.67772e-06
-        productIndex    3 KE = 1.67772e-06
+        productIndex    3 KE = 1.67771e-06
     energy = 3.35544e-06
-        productIndex    3 KE = 3.3554e-06
+        productIndex    3 KE = 3.35541e-06
     energy = 6.71089e-06
-        productIndex    3 KE = 6.71074e-06
+        productIndex    3 KE = 6.71082e-06
     energy = 1.34218e-05
-        productIndex    3 KE = 1.34211e-05
+        productIndex    3 KE = 1.34214e-05
     energy = 2.68435e-05
-        productIndex    3 KE = 2.68416e-05
+        productIndex    3 KE = 2.68408e-05
     energy = 5.36871e-05
-        productIndex    3 KE = 5.36761e-05
+        productIndex    3 KE = 5.36779e-05
     energy = 0.000107374
-        productIndex    3 KE = 0.00010733
+        productIndex    3 KE = 0.000107329
     energy = 0.000214748
-        productIndex    3 KE = 0.000214672
+        productIndex    3 KE = 0.000214623
     energy = 0.000429497
-        productIndex    3 KE = 0.00042878
+        productIndex    3 KE = 0.000428795
     energy = 0.000858993
-        productIndex    3 KE = 0.000856244
+        productIndex    3 KE = 0.000856165
     energy = 0.00171799
-        productIndex    3 KE = 0.00171131
+        productIndex    3 KE = 0.00171209
     energy = 0.00343597
-        productIndex    3 KE = 0.00340134
+        productIndex    3 KE = 0.00339961
     energy = 0.00687195
-        productIndex    3 KE = 0.00669352
+        productIndex    3 KE = 0.00679606
     energy = 0.0137439
-        productIndex    3 KE = 0.0136271
+        productIndex    3 KE = 0.013046
     energy = 0.0274878
-        productIndex    3 KE = 0.0259488
+        productIndex    3 KE = 0.0249372
     energy = 0.0549756
-        productIndex    3 KE = 0.0506951
+        productIndex    3 KE = 0.0475814
     energy = 0.109951
-        productIndex    3 KE = 0.10309
+        productIndex    3 KE = 0.0922793
     energy = 0.219902
-        productIndex    3 KE = 0.175854
+        productIndex    3 KE = 0.158197
     energy = 0.439805
-        productIndex    3 KE = 0.324886
+        productIndex    3 KE = 0.424528
     energy = 0.879609
-        productIndex    3 KE = 0.38683
+        productIndex    3 KE = 0.521399
     energy = 1.75922
-        productIndex    3 KE = 1.11958
+        productIndex    3 KE = 0.324924
     energy = 3.51844
-        productIndex    3 KE = 0.940474
+        productIndex    3 KE = 1.36725
     energy = 7.03687
-        productIndex    3 KE = 0.815291
+        productIndex    3 KE = 0.477552
     energy = 14.0737
-        productIndex    3 KE = 2.57576
+        productIndex    3 KE = 1.37752
     energy = 28.1475
-        productIndex    3 KE = 9.23106
+        productIndex    3 KE = 1.43097
     energy = 56.295
-        productIndex    3 KE = 43.4126
-reaction (  4) = e- + O [photo-electric]  threshold = 0
+        productIndex    3 KE = 2.34772
+reaction (  5) = e- + O [photo-electric]  threshold = 0
     energy = 1e-13
     energy = 2e-13
     energy = 4e-13
@@ -264,7 +272,7 @@ reaction (  4) = e- + O [photo-electric]  threshold = 0
     energy = 14.0737
     energy = 28.1475
     energy = 56.295
-reaction (  5) = O + photon [pair production: electron field]  threshold = 1.022
+reaction (  6) = O + photon [pair production: electron field]  threshold = 1.022
     energy = 1.022
         productIndex    3 KE = 0.510999
         productIndex    3 KE = 0.510999

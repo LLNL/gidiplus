@@ -7,14 +7,15 @@ SHELL = /bin/ksh
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
-.PHONY: default check speeds clean realclean doDirs
+DIR_BINS = crossSection crossSection_multiGroup sampleProducts sampleReactions
+DIRS = Utilities $(DIR_BINS)
 
-DIRS = Utilities crossSection crossSection_multiGroup sampleProducts sampleReactions
+.PHONY: default check speeds clean realclean doDirs $(DIRS)
 
 default:
 	echo ""
 	echo "  -- MCGIDI/Speeds --"
-	$(MAKE) doDirs TARGET=default
+	$(MAKE) $(DIR_BINS)
 
 check:
 
@@ -22,6 +23,12 @@ speeds:
 	echo ""
 	echo "  -- MCGIDI/Speeds --"
 	$(MAKE) doDirs TARGET=speeds
+
+Utilities:
+	cd $@; $(MAKE)
+
+$(DIR_BINS): Utilities
+	cd $@; $(MAKE)
 
 clean:
 	$(MAKE) doDirs TARGET=clean

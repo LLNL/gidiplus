@@ -19,7 +19,7 @@ namespace GIDI {
  * Constructed from data in a <**outputChannel**> node.
  *
  * @param a_construction    [in]    Used to pass user options to the constructor.
- * @param a_node            [in]    The reaction pugi::xml_node to be parsed and used to construct the reaction.
+ * @param a_node            [in]    The reaction HAPI::Node to be parsed and used to construct the reaction.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops            [in]    The *external* PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs    [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
@@ -28,7 +28,7 @@ namespace GIDI {
  * @param a_styles          [in]    The <**styles**> node under the <**reactionSuite**> node.
  ***********************************************************************************************************/
 
-DelayedNeutron::DelayedNeutron( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, 
+DelayedNeutron::DelayedNeutron( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, 
                 PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Suite *a_parent, Styles::Suite const *a_styles ) :
         Form( a_node, a_setupInfo, FormType::delayedNeutron, a_parent ),
         m_delayedNeutronIndex( 0 ),
@@ -180,6 +180,17 @@ Vector DelayedNeutron::multiGroupAverageEnergy( Transporting::MG const &a_settin
 Vector DelayedNeutron::multiGroupAverageMomentum( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
 
     return( m_product.multiGroupAverageMomentum( a_settings, a_temperatureInfo, a_productID ) );
+}
+
+/* *********************************************************************************************************//**
+ * Added the product to *a_incompleteParticles* if the product's completeParticle returns *false*.
+ *
+ * @param       a_incompleteParticles   [out]   The list of particles whose **completeParticle** method returns *false*.
+ ***********************************************************************************************************/
+
+void DelayedNeutron::incompleteParticles( Transporting::Settings const &a_settings, std::set<std::string> &a_incompleteParticles ) const {
+
+    m_product.incompleteParticles( a_settings, a_incompleteParticles );
 }
 
 /* *********************************************************************************************************//**

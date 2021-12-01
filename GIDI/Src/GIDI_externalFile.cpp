@@ -26,14 +26,14 @@ ExternalFile::ExternalFile( std::string const &a_label, std::string const &a_pat
 }
 
 /* *********************************************************************************************************//**
- * @param a_node            [in]    The **pugi::xml_node** to be parsed to construct a GeneralEvaporation2d instance.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed to construct a GeneralEvaporation2d instance.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-ExternalFile::ExternalFile( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent ) :
+ExternalFile::ExternalFile( HAPI::Node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent ) :
         Form( a_node, a_setupInfo, FormType::externalFile ),
-        m_path( a_node.attribute( GIDI_pathChars ).value( ) ) {
+        m_path( a_node.attribute_as_string( GIDI_pathChars ) ) {
 
 }
 

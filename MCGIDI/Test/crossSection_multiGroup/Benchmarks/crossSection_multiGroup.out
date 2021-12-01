@@ -7,41 +7,41 @@ MCGIDI temperatures:
     1e-06
     0.0001
 
-                                 n + O16  threshold =            0  threshold =            0
-                     n + (O16_e1 -> O16)  threshold =      6.43088  threshold =      6.43088
-                     n + (O16_e2 -> O16)  threshold =      6.51646  threshold =      6.51646
-                     n + (O16_e3 -> O16)  threshold =       7.3533  threshold =       7.3533
-                     n + (O16_e4 -> O16)  threshold =       7.5656  threshold =       7.5656
-                     n + (O16_e5 -> O16)  threshold =      9.43138  threshold =      9.43138
-                     n + (O16_e6 -> O16)  threshold =       11.648  threshold =       11.648
-                     n + (O16_e7 -> O16)  threshold =      11.7787  threshold =      11.7787
-   n + (O16 -> O16 + photon) [continuum]  threshold =      10.1895  threshold =      10.1895
-                       2n + O15 + photon  threshold =      16.6516  threshold =      16.6516
-                   n + H1 + N15 + photon  threshold =      12.8924  threshold =      12.8924
-                                H1 + N16  threshold =      10.2445  threshold =      10.2445
-                    H1 + (N16_e1 -> N16)  threshold =      10.3722  threshold =      10.3722
-                    H1 + (N16_e2 -> N16)  threshold =      10.5602  threshold =      10.5602
-                    H1 + (N16_e3 -> N16)  threshold =      10.6671  threshold =      10.6671
-                                H2 + N15  threshold =      10.5275  threshold =      10.5275
-                    H2 + (N15_e1 -> N15)  threshold =        16.13  threshold =        16.13
-                    H2 + (N15_e2 -> N15)  threshold =       16.161  threshold =       16.161
-                    H2 + (N15_e3 -> N15)  threshold =      17.2502  threshold =      17.2502
-                    H2 + (N15_e4 -> N15)  threshold =      18.1338  threshold =      18.1338
-                    H2 + (N15_e5 -> N15)  threshold =       18.289  threshold =       18.289
-                    H2 + (N15_e6 -> N15)  threshold =      18.5718  threshold =      18.5718
-                    H2 + (N15_e7 -> N15)  threshold =      19.3645  threshold =      19.3645
-                    H2 + (N15_e8 -> N15)  threshold =      19.6394  threshold =      19.6394
-                                H3 + N14  threshold =      15.3921  threshold =      15.3921
-                    H3 + (N14_e1 -> N14)  threshold =      17.8507  threshold =      17.8507
-                    H3 + (N14_e2 -> N14)  threshold =      19.5891  threshold =      19.5891
-                               He4 + C13  threshold =      2.35532  threshold =      2.35532
-                   He4 + (C13_e1 -> C13)  threshold =      5.63954  threshold =      5.63954
-                   He4 + (C13_e2 -> C13)  threshold =      6.27217  threshold =      6.27217
-                   He4 + (C13_e3 -> C13)  threshold =      6.45215  threshold =      6.45215
-                            O17 + photon  threshold =            0  threshold =            0
-                  n + He4 + C12 + photon  threshold =      7.61359  threshold =      7.61359
-                       n + 4He4 + photon  threshold =      15.3472  threshold =      15.3472
-                     2He4 + Be9 + photon  threshold =      13.6743  threshold =      13.6743
+                                 n + O16  threshold =            0
+                     n + (O16_e1 -> O16)  threshold =      6.43088
+                     n + (O16_e2 -> O16)  threshold =      6.51646
+                     n + (O16_e3 -> O16)  threshold =       7.3533
+                     n + (O16_e4 -> O16)  threshold =       7.5656
+                     n + (O16_e5 -> O16)  threshold =      9.43138
+                     n + (O16_e6 -> O16)  threshold =       11.648
+                     n + (O16_e7 -> O16)  threshold =      11.7787
+   n + (O16 -> O16 + photon) [continuum]  threshold =      10.1895
+                       2n + O15 + photon  threshold =      16.6516
+                   n + H1 + N15 + photon  threshold =      12.8924
+                                H1 + N16  threshold =      10.2445
+                    H1 + (N16_e1 -> N16)  threshold =      10.3722
+                    H1 + (N16_e2 -> N16)  threshold =      10.5602
+                    H1 + (N16_e3 -> N16)  threshold =      10.6671
+                                H2 + N15  threshold =      10.5275
+                    H2 + (N15_e1 -> N15)  threshold =        16.13
+                    H2 + (N15_e2 -> N15)  threshold =       16.161
+                    H2 + (N15_e3 -> N15)  threshold =      17.2502
+                    H2 + (N15_e4 -> N15)  threshold =      18.1338
+                    H2 + (N15_e5 -> N15)  threshold =       18.289
+                    H2 + (N15_e6 -> N15)  threshold =      18.5718
+                    H2 + (N15_e7 -> N15)  threshold =      19.3645
+                    H2 + (N15_e8 -> N15)  threshold =      19.6394
+                                H3 + N14  threshold =      15.3921
+                    H3 + (N14_e1 -> N14)  threshold =      17.8507
+                    H3 + (N14_e2 -> N14)  threshold =      19.5891
+                               He4 + C13  threshold =      2.35532
+                   He4 + (C13_e1 -> C13)  threshold =      5.63954
+                   He4 + (C13_e2 -> C13)  threshold =      6.27217
+                   He4 + (C13_e3 -> C13)  threshold =      6.45215
+                            O17 + photon  threshold =            0
+                  n + He4 + C12 + photon  threshold =      7.61359
+                       n + 4He4 + photon  threshold =      15.3472
+                     2He4 + Be9 + photon  threshold =      13.6744
 
 List of reactions
     reaction: n + O16

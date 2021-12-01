@@ -15,7 +15,7 @@
 static char const *description = "This program prints the multi-group boundaries for each transportable particle in a GNDS file.";
 
 void main2( int argc, char **argv );
-void printVector( std::string const &prefix, std::string const &indent, std::vector<double> const &vector );
+void printVector( std::string const &prefix, std::string const &indent, nf_Buffer<double> const &vector );
 /*
 =========================================================
 */
@@ -92,7 +92,7 @@ void main2( int argc, char **argv ) {
 /*
 =========================================================
 */
-void printVector( std::string const &prefix, std::string const &indent, std::vector<double> const &vector ) {
+void printVector( std::string const &prefix, std::string const &indent, nf_Buffer<double> const &vector ) {
 
     std::cout << prefix << ": size = " << vector.size( ) << std::endl;
     std::cout << indent;

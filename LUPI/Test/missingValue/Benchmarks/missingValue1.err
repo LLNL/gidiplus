@@ -1,0 +1,9 @@
+ERROR 1620 in ArgumentParser::parse: insufficient arguments for 'P1' entered. Range of 1 to 1 required, 0 entered.
+ERROR 1620 in ArgumentParser::parse: insufficient arguments for 'P1' entered. Range of 1 to 1 required, 0 entered.
+ERROR 1310 in Positional::parse: too few values for positional argument 'P2' entered. Got 1 expect 2 to 3.
+ERROR 1610 in ArgumentParser::parse: additional positional argument found starting at index 7 (A5)
+ERROR 1610 in ArgumentParser::parse: additional positional argument found starting at index 8 (A4)
+ERROR 1220 in OptionAppend::parse: too many values for argument -a entered.
+ERROR 1600 in ArgumentParser::parse: invalid option '-a2'.
+ERROR 1210 in OptionAppend::parse: missing value for argument --as.
+ERROR 1200 in OptionStore::parse: missing value for argument --store.

@@ -22,7 +22,7 @@
 #define numberOfTalliesMinus2 ( numberOfTallies - 2 )
 
 int main2( int argc, char *argv[] );
-HOST_DEVICE double myRNG( uint64_t *state );
+MCGIDI_HOST_DEVICE double myRNG( uint64_t *state );
 
 /*
 =========================================================
@@ -32,15 +32,15 @@ class TallyProductHandler : public MCGIDI::Sampling::ProductHandler {
     public:
         int *m_tally;
 
-        HOST_DEVICE TallyProductHandler( ) : m_tally( nullptr ) {}
-        HOST_DEVICE ~TallyProductHandler( ) {}
+        MCGIDI_HOST_DEVICE TallyProductHandler( ) : m_tally( nullptr ) {}
+        MCGIDI_HOST_DEVICE ~TallyProductHandler( ) {}
 
-        HOST_DEVICE std::size_t size( ) { return 0; }
-        HOST_DEVICE void clear( ) {}
+        MCGIDI_HOST_DEVICE std::size_t size( ) { return 0; }
+        MCGIDI_HOST_DEVICE void clear( ) {}
 
-        HOST_DEVICE void setTally( int *a_tally ) { m_tally = a_tally; }
+        MCGIDI_HOST_DEVICE void setTally( int *a_tally ) { m_tally = a_tally; }
 
-        HOST_DEVICE void push_back( MCGIDI::Sampling::Product &a_product ) {
+        MCGIDI_HOST_DEVICE void push_back( MCGIDI::Sampling::Product &a_product ) {
 
             int index = static_cast<int>( log10( a_product.m_kineticEnergy ) ) + numberOfTalliesMinus2;
             if( index < 0 ) index = 0;
@@ -378,7 +378,7 @@ int main2( int argc, char *argv[] ) {                                   // main 
 /*
 =========================================================
 */
-HOST_DEVICE double myRNG( uint64_t *seed ) {
+MCGIDI_HOST_DEVICE double myRNG( uint64_t *seed ) {
 
    *seed = 2862933555777941757ULL * ( *seed ) + 3037000493ULL;      // Update state from the previous value.
    

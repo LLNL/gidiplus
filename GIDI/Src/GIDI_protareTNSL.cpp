@@ -473,7 +473,7 @@ bool ProtareTNSL::hasFission( ) const {
  * @return                              List of multi-group boundaries.
  ***********************************************************************************************************/
 
-std::vector<double> const &ProtareTNSL::groupBoundaries( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
+std::vector<double> const ProtareTNSL::groupBoundaries( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
 
     return( m_protare->groupBoundaries( a_settings, a_temperatureInfo, a_productID ) );
 }
@@ -637,8 +637,12 @@ Vector ProtareTNSL::multiGroupTransportCorrection( Transporting::MG const &a_set
     std::size_t size = matrixCollapsed.size( );
     std::vector<double> transportCorrection1( size, 0 );
 
-    if( a_transportCorrectionType == TransportCorrectionType::Pendlebury ) {
-        for( std::size_t index = 0; index < size; ++index ) transportCorrection1[index] = matrixCollapsed[index][index];
+    if( a_transportCorrectionType == TransportCorrectionType::None ) {
+        }
+    else if( a_transportCorrectionType == TransportCorrectionType::Pendlebury ) {
+        for( std::size_t index = 0; index < size; ++index ) transportCorrection1[index] = matrixCollapsed[index][index]; }
+    else {
+        throw Exception( "Unsupported transport correction: only None and Pendlebury (i.e., Pendlebury/Underhill) are currently supported." );
     }
     return( Vector( transportCorrection1 ) );
 }
@@ -839,7 +843,7 @@ void ProtareTNSL::TNSL_crossSectionSumCorrection( std::string const &a_label, Fu
 
     double projectileEnergyMax = m_TNSL->projectileEnergyMax( );
     Styles::GriddedCrossSection const *griddedCrossSection = m_protare->styles( ).get<Styles::GriddedCrossSection>( a_label );
-    std::vector<double> const energies = griddedCrossSection->grid( ).values( );
+    nf_Buffer<double> const energies = griddedCrossSection->grid( ).values( );
     Functions::Ys1d const *ys1d = m_elasticReaction->crossSection( ).get<Functions::Ys1d const>( a_label );
 
     std::size_t start = ys1d->start( );
@@ -862,6 +866,18 @@ stringAndDoublePairs ProtareTNSL::muCutoffForCoulombPlusNuclearElastic( ) const 
     stringAndDoublePairs stringAndDoublePairs1;
 
     return( stringAndDoublePairs1 );
+}
+
+/* *********************************************************************************************************//**
+ * Calls the **incompleteParticles** method for each **ProtareSingle** in *this*.
+ *  
+ * @param       a_incompleteParticles   [out]   The list of particles whose **completeParticle** method returns *false*.
+ ***********************************************************************************************************/
+ 
+void ProtareTNSL::incompleteParticles( Transporting::Settings const &a_settings, std::set<std::string> &a_incompleteParticles ) const {
+    
+    m_protare->incompleteParticles( a_settings, a_incompleteParticles );
+    m_TNSL->incompleteParticles( a_settings, a_incompleteParticles );
 }
 
 }

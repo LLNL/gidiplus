@@ -12,6 +12,7 @@
 #include <limits.h>
 
 #include "GIDI.hpp"
+#include <HAPI.hpp>
 
 #ifndef PATH_MAX
 #define PATH_MAX ( 4 * 4096 )
@@ -104,16 +105,16 @@ bool MapWalkDirectoryCallback( ProtareBase const *a_protareEntry, std::string co
 
 /* *********************************************************************************************************//**
  *
- * @param a_node        [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node        [in]    The **HAPI::Node** to be parsed.
  * @param a_basePath    [in]    A path prepended to this entry's path.
  * @param a_parent      [in]    Pointer to the *Map* containing *this*.
  ***********************************************************************************************************/
 
-BaseEntry::BaseEntry( pugi::xml_node const &a_node, std::string const &a_basePath, Map const *a_parent ) :
+BaseEntry::BaseEntry( HAPI::Node const &a_node, std::string const &a_basePath, Map const *a_parent ) :
         Ancestry( a_node.name( ) ),
         m_name( a_node.name( ) ),
         m_parent( a_parent ),
-        m_path( a_node.attribute( GIDI_pathChars ).value( ) ),
+        m_path( a_node.attribute_as_string( GIDI_pathChars ) ),
         m_cumulativePath( GIDI_addPaths( a_basePath, m_path ) ) {
 
 }
@@ -153,13 +154,13 @@ void BaseEntry::libraries( std::vector<std::string> &a_libraries ) const {
 
 /* *********************************************************************************************************//**
  *
- * @param a_node        [in]    The **pugi::xml_node** to be parsed to contruct a Import instance.
+ * @param a_node        [in]    The **HAPI::Node** to be parsed to contruct a Import instance.
  * @param a_pops        [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_basePath    [in]    A path prepended to this entry's path.
  * @param a_parent      [in]    Pointer to the *Map* containing *this*.
  ***********************************************************************************************************/
 
-Import::Import( pugi::xml_node const &a_node, PoPI::Database const &a_pops, std::string const &a_basePath, Map const *a_parent ) :
+Import::Import( HAPI::Node const &a_node, PoPI::Database const &a_pops, std::string const &a_basePath, Map const *a_parent ) :
         BaseEntry( a_node, a_basePath, a_parent ),
         m_map( nullptr ) {
 
@@ -240,17 +241,17 @@ void Import::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) co
 }
 
 /* *********************************************************************************************************//**
- * @param a_node        [in]    The **pugi::xml_node** to be parsed.
+ * @param a_node        [in]    The **HAPI::Node** to be parsed.
  * @param a_basePath    [in]    A path prepended to this entry's path.
  * @param a_parent      [in]    Pointer to the *Map* containing *this*.
  ***********************************************************************************************************/
 
-ProtareBase::ProtareBase( pugi::xml_node const &a_node, std::string const &a_basePath, Map const *const a_parent ) :
+ProtareBase::ProtareBase( HAPI::Node const &a_node, std::string const &a_basePath, Map const *const a_parent ) :
         BaseEntry( a_node, a_basePath, a_parent ),
-        m_projectileID( a_node.attribute( GIDI_projectileChars ).value( ) ),
-        m_targetID( a_node.attribute( GIDI_targetChars ).value( ) ),
-        m_evaluation( a_node.attribute( GIDI_evaluationChars ).value( ) ),
-        m_interaction( a_node.attribute( GIDI_interactionChars ).value( ) ) {
+        m_projectileID( a_node.attribute_as_string( GIDI_projectileChars ) ),
+        m_targetID( a_node.attribute_as_string( GIDI_targetChars ) ),
+        m_evaluation( a_node.attribute_as_string( GIDI_evaluationChars ) ),
+        m_interaction( a_node.attribute_as_string( GIDI_interactionChars ) ) {
 
 }
 
@@ -320,25 +321,28 @@ bool ProtareBase::isMatch( std::string const &a_projectileID, std::string const 
 
 /* *********************************************************************************************************//**
  *
- * @param a_node        [in]    The **pugi::xml_node** to be parsed to contruct a Protare entry instance.
+ * @param a_node        [in]    The **HAPI::Node** to be parsed to contruct a Protare entry instance.
  * @param a_pops        [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_basePath    [in]    A path prepended to this entry's path.
  * @param a_parent      [in]    Pointer to the *Map* containing *this*.
  ***********************************************************************************************************/
 
-Protare::Protare( pugi::xml_node const &a_node, PoPI::Database const &a_pops, std::string const &a_basePath, Map const *const a_parent ) :
+Protare::Protare( HAPI::Node const &a_node, PoPI::Database const &a_pops, std::string const &a_basePath, Map const *const a_parent ) :
         ProtareBase( a_node, a_basePath, a_parent ),
         m_isPhotoAtomic( false ) {
 
-    if( PoPI::IDs::photon == projectileID( ) ) {
-        PoPI::Base const &target( a_pops.get<PoPI::Base>( targetID( ) ) );
-        m_isPhotoAtomic = target.isChemicalElement( );
-    }
-
-    if( interaction( ) == "" ) {
+    if( interaction( ) == "" ) {                // Some old GNDS 1.10 files do not have an "interaction" attribute.
         setInteraction( GIDI_MapInteractionNuclearChars );
-        if( m_isPhotoAtomic ) setInteraction( GIDI_MapInteractionAtomicChars );
+        if( PoPI::IDs::photon == projectileID( ) ) {
+            try {
+                PoPI::Base const &target( a_pops.get<PoPI::Base>( targetID( ) ) );
+                m_isPhotoAtomic = target.isChemicalElement( ); }
+            catch (...) {                       // Let's ignore, but user must understand that m_interaction and m_isPhotoAtomic may be wrong.
+            }
+            if( m_isPhotoAtomic ) setInteraction( GIDI_MapInteractionAtomicChars );
+        }
     }
+    m_isPhotoAtomic = interaction( ) == GIDI_MapInteractionAtomicChars;
 }
 
 /* *********************************************************************************************************//**
@@ -360,7 +364,15 @@ GIDI::Protare *Protare::protare( Construction::Settings const &a_construction, P
 
     std::vector<std::string> libraries1;
     libraries( libraries1 );
-    return( new ProtareSingle( a_construction, path( ), FileType::XML, a_pops, a_particleSubstitution, libraries1, interaction( ), true ) );
+
+    FileType fileType;
+    if( path( ).compare( path( ).size( ) - 2, 2, "h5" ) == 0 ) {
+      fileType = GIDI::FileType::HDF; }
+    else {
+      fileType = GIDI::FileType::XML;
+    }
+
+    return( new ProtareSingle( a_construction, path( ), fileType, a_pops, a_particleSubstitution, libraries1, interaction( ), true ) );
 }
 
 
@@ -384,23 +396,23 @@ void Protare::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) c
 }
 /* *********************************************************************************************************//**
  *
- * @param a_node        [in]    The **pugi::xml_node** to be parsed to contruct a TNSL entry instance.
+ * @param a_node        [in]    The **HAPI::Node** to be parsed to contruct a TNSL entry instance.
  * @param a_pops        [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_basePath    [in]    A path prepended to this entry's path.
  * @param a_parent      [in]    Pointer to the *Map* containing *this*.
  ***********************************************************************************************************/
 
-TNSL::TNSL( pugi::xml_node const &a_node, PoPI::Database const &a_pops, std::string const &a_basePath, Map const *const a_parent ) :
+TNSL::TNSL( HAPI::Node const &a_node, PoPI::Database const &a_pops, std::string const &a_basePath, Map const *const a_parent ) :
         ProtareBase( a_node, a_basePath, a_parent ),
-        m_standardTarget( a_node.attribute( GIDI_standardTargetChars ).value( ) ),
-        m_standardEvaluation( a_node.attribute( GIDI_standardEvaluationChars ).value( ) ) {
+        m_standardTarget( a_node.attribute_as_string( GIDI_standardTargetChars ) ),
+        m_standardEvaluation( a_node.attribute_as_string( GIDI_standardEvaluationChars ) ) {
 
     setInteraction( GIDI_TNSLChars );
 
-    pugi::xml_node const &protare = a_node.child( GIDI_protareChars );              // Format 0.1 support. This format is deprecated.
-    if( protare.type( ) != pugi::node_null ) {
-        m_standardTarget = protare.attribute( GIDI_targetChars ).value( );
-        m_standardEvaluation = protare.attribute( GIDI_evaluationChars ).value( );
+    HAPI::Node const &protare = a_node.child( GIDI_protareChars );              // Format 0.1 support. This format is deprecated.
+    if( !protare.empty() ) {
+        m_standardTarget = protare.attribute_as_string( GIDI_targetChars );
+        m_standardEvaluation = protare.attribute_as_string( GIDI_evaluationChars );
     }
 }
 
@@ -426,7 +438,14 @@ GIDI::Protare *TNSL::protare( Construction::Settings const &a_construction, PoPI
     ParticleSubstitution particleSubstitution;
     std::vector<std::string> libraries1;
     libraries( libraries1 );
-    ProtareSingle *protare1 = new ProtareSingle( a_construction, path( ), FileType::XML, a_pops, particleSubstitution, libraries1, GIDI_TNSLChars, false );
+
+    FileType FT;
+    if (path( ).compare(path( ).size()-2,2,"h5") == 0)
+      FT = GIDI::FileType::HDF;
+    else
+      FT = GIDI::FileType::XML;
+
+    ProtareSingle *protare1 = new ProtareSingle( a_construction, path( ), FT, a_pops, particleSubstitution, libraries1, GIDI_TNSLChars, false );
 
     while( true ) {
         Map const *parent = map->parent( );
@@ -476,13 +495,13 @@ Map::Map( std::string const &a_fileName, PoPI::Database const &a_pops, Map const
 
 /* *********************************************************************************************************//**
  *
- * @param a_node        [in]    pugi::xml_node corresponding to the map node. 
+ * @param a_node        [in]    HAPI::Node corresponding to the map node
  * @param a_fileName    [in]    std::string, the name of the file containing this map.
  * @param a_pops        [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_parent      [in]    Pointer to the *Map* containing *this*.
  ***********************************************************************************************************/
 
-Map::Map( pugi::xml_node const &a_node, std::string const &a_fileName, PoPI::Database const &a_pops, Map const *a_parent ) :
+Map::Map( HAPI::Node const &a_node, std::string const &a_fileName, PoPI::Database const &a_pops, Map const *a_parent ) :
         Ancestry( a_node.name( ) ) {
 
     initialize( a_node, a_fileName, a_pops, a_parent );
@@ -498,27 +517,27 @@ Map::Map( pugi::xml_node const &a_node, std::string const &a_fileName, PoPI::Dat
 
 void Map::initialize( std::string const &a_fileName, PoPI::Database const &a_pops, Map const *a_parent ) {
 
-    pugi::xml_document doc;
-    pugi::xml_parse_result result = doc.load_file( a_fileName.c_str( ) );
-    if( result.status != pugi::status_ok ) throw Exception( "ERROR reading file '" + a_fileName + "': " + result.description( ) );
+    HAPI::File *doc = new HAPI::PugiXMLFile( a_fileName.c_str( ) );;
+    //if( result.status != pugi::status_ok ) throw Exception( "ERROR reading file '" + a_fileName + "': " + result.description( ) );
 
-    pugi::xml_node map = doc.first_child( );
+    HAPI::Node map = doc->first_child( );
 
-    if( strcmp( map.name( ), GIDI_mapChars ) != 0 ) throw Exception( "Invalid map file " + a_fileName );
+    if( strcmp( map.name( ).c_str( ), GIDI_mapChars ) != 0 ) throw Exception( "Invalid map file " + a_fileName );
 
     initialize( map, a_fileName, a_pops, a_parent );
+    delete doc;
 }
 
 /* *********************************************************************************************************//**
  * This method is called either by the constructor or by the other initialize method. Does most of the work of parsing
  *
- * @param a_node        [in]    pugi::xml_node corresponding to the map node.
+ * @param a_node        [in]    HAPI::Node corresponding to the map node.
  * @param a_fileName    [in]    std::string, the name of the file containing this map
  * @param a_pops        [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_parent      [in]    Pointer to the *Map* containing *this*.
  ***********************************************************************************************************/
 
-void Map::initialize( pugi::xml_node const &a_node, std::string const &a_fileName, PoPI::Database const &a_pops, Map const *a_parent ) {
+void Map::initialize( HAPI::Node const &a_node, std::string const &a_fileName, PoPI::Database const &a_pops, Map const *a_parent ) {
 
     m_parent = a_parent;
     m_fileName = a_fileName;
@@ -526,18 +545,19 @@ void Map::initialize( pugi::xml_node const &a_node, std::string const &a_fileNam
 
     std::string basePath = GIDI_basePath( m_realFileName );
 
-    std::string format = a_node.attribute( GIDI_formatChars ).value( );
-    if( format != GIDI_mapFormatVersion_0_2Chars ) {
+    std::string format = a_node.attribute_as_string( GIDI_formatChars );
+    if( ( format == GNDS_formatVersion_2_0_LLNL_4Chars ) || ( format == GIDI_mapFormatVersion_0_2Chars ) ) format = GNDS_formatVersion_2_0Chars;
+    if( format != GNDS_formatVersion_2_0Chars ) {
         if( format != GIDI_mapFormatVersion_0_1Chars ) throw Exception( "Unsupported map format" );
     }
 
-    m_library = a_node.attribute( GIDI_libraryChars ).value( );
-    for( pugi::xml_node child = a_node.first_child( ); child; child = child.next_sibling( ) ) {
-        if( strcmp( child.name( ), GIDI_importChars ) == 0 ) {
+    m_library = a_node.attribute_as_string( GIDI_libraryChars );
+    for( HAPI::Node child = a_node.first_child( ); !child.empty( ); child.to_next_sibling( ) ) {
+        if( strcmp( child.name( ).c_str( ), GIDI_importChars ) == 0 ) {
             m_entries.push_back( new Import( child, a_pops, basePath, this ) ); }
-        else if( strcmp( child.name( ), GIDI_protareChars ) == 0 ) {
+        else if( strcmp( child.name( ).c_str( ), GIDI_protareChars ) == 0 ) {
             m_entries.push_back( new Protare( child, a_pops, basePath, this ) ); }
-        else if( strcmp( child.name( ), GIDI_TNSLChars ) == 0 ) {
+        else if( strcmp( child.name( ).c_str( ), GIDI_TNSLChars ) == 0 ) {
             m_entries.push_back( new TNSL( child, a_pops, basePath, this ) ); }
         else {
             throw Exception( std::string( "Invalid entry '" ) + child.name( ) + std::string( "' in map file " ) + a_fileName );
@@ -827,7 +847,7 @@ void Map::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const
     a_writeInfo.push_back( header );
 
     attributes  = a_writeInfo.addAttribute( GIDI_libraryChars, m_library );
-    attributes += a_writeInfo.addAttribute( GIDI_formatChars, GIDI_mapFormatVersion_0_2Chars );
+    attributes += a_writeInfo.addAttribute( GIDI_formatChars, GNDS_formatVersion_2_0Chars );
 
     a_writeInfo.addNodeStarter( a_indent, moniker( ), attributes );
     for( auto iter = m_entries.begin( ); iter != m_entries.end( ); ++iter ) (*iter)->toXMLList( a_writeInfo, indent2 );

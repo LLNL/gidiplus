@@ -27,7 +27,7 @@ Base::Base( std::string const &a_id, Particle_class a_class ) :
 /*
 =========================================================
 */
-Base::Base( pugi::xml_node const &a_node, std::string const &a_label, Particle_class a_class ) :
+Base::Base( HAPI::Node const &a_node, std::string const &a_label, Particle_class a_class ) :
         m_id( a_node.attribute( a_label.c_str( ) ).value( ) ),
         m_class( a_class ),
         m_index( -1 ) {
@@ -52,7 +52,7 @@ IDBase::IDBase( std::string const &a_id, Particle_class a_class ) :
 /*
 =========================================================
 */
-IDBase::IDBase( pugi::xml_node const &a_node, Particle_class a_class ) :
+IDBase::IDBase( HAPI::Node const &a_node, Particle_class a_class ) :
         Base( a_node, PoPI_idChars, a_class ) {
 
 }
@@ -76,7 +76,7 @@ int IDBase::addToDatabase( Database *a_DB ) {
 ======================== SymbolBase ========================
 ============================================================
 */
-SymbolBase::SymbolBase( pugi::xml_node const &a_node, Particle_class a_class ) :
+SymbolBase::SymbolBase( HAPI::Node const &a_node, Particle_class a_class ) :
         Base( a_node, PoPI_symbolChars, a_class ) {
 
 }

@@ -1,4 +1,4 @@
-/...GIDI/Test/Data/MG_MC/neutrons/n-001_H_001.xml
+/.../GIDI/Test/Data/MG_MC/neutrons/n-001_H_001.xml
     projectile = n;    target = H1;    evaluation = ENDF/B-8.0
     Is TNSL protare = 1
         Number of reactions = 4
@@ -6,12 +6,12 @@
             n [thermalNeutronScatteringLaw incoherent-inelastic]
             n + H1
             H2 + photon
-/...GIDI/Test/Data/MG_MC/protons/p-001_H_001.xml
+/.../GIDI/Test/Data/MG_MC/protons/p-001_H_001.xml
     projectile = H1;    target = H1;    evaluation = ENDF/B-7.1
     Is TNSL protare = 0
         Number of reactions = 1
             H1 + H1
-/...GIDI/Test/Data/MG_MC/photo-atomic/photoat-001_H_000.xml
+/.../GIDI/Test/Data/MG_MC/photo-atomic/photoat-001_H_000.xml
     projectile = photon;    target = H1;    evaluation = ENDF/B-7.1
     Is TNSL protare = 0
         Number of reactions = 5

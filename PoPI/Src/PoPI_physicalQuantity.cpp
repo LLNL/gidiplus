@@ -21,7 +21,7 @@ namespace PoPI {
 /*
 =========================================================
 */
-PhysicalQuantity::PhysicalQuantity( pugi::xml_node const &a_node, PQ_class a_class ) :
+PhysicalQuantity::PhysicalQuantity( HAPI::Node const &a_node, PQ_class a_class ) :
         m_class( a_class ),
         m_tag( a_node.name( ) ),
         m_label( a_node.attribute( PoPI_labelChars ).value( ) ),
@@ -51,7 +51,7 @@ void PhysicalQuantity::toXMLList( std::vector<std::string> &a_XMLList, std::stri
 /*
 =========================================================
 */
-PQ_double::PQ_double( pugi::xml_node const &a_node ) :
+PQ_double::PQ_double( HAPI::Node const &a_node ) :
         PhysicalQuantity( a_node, PQ_class::Double ),
         m_value( 0.0 ) {
 
@@ -60,7 +60,7 @@ PQ_double::PQ_double( pugi::xml_node const &a_node ) :
 /*
 =========================================================
 */
-PQ_double::PQ_double( pugi::xml_node const &a_node, PQ_class a_class ) :
+PQ_double::PQ_double( HAPI::Node const &a_node, PQ_class a_class ) :
         PhysicalQuantity( a_node, a_class ),
         m_value( 0.0 ) {
 
@@ -106,7 +106,7 @@ std::string PQ_double::valueToString( void ) const {
 /*
 =========================================================
 */
-PQ_integer::PQ_integer( pugi::xml_node const &a_node ) :
+PQ_integer::PQ_integer( HAPI::Node const &a_node ) :
         PhysicalQuantity( a_node, PQ_class::integer ),
         m_value( a_node.attribute( PoPI_valueChars ).as_int( ) ) {
 }
@@ -137,7 +137,7 @@ std::string PQ_integer::valueToString( void ) const {
 /*
 =========================================================
 */
-PQ_fraction::PQ_fraction( pugi::xml_node const &a_node ) :
+PQ_fraction::PQ_fraction( HAPI::Node const &a_node ) :
         PhysicalQuantity( a_node, PQ_class::fraction ) {
 
 }
@@ -165,7 +165,7 @@ std::string PQ_fraction::valueToString( void ) const {
 /*
 =========================================================
 */
-PQ_string::PQ_string( pugi::xml_node const &a_node ) :
+PQ_string::PQ_string( HAPI::Node const &a_node ) :
         PhysicalQuantity( a_node, PQ_class::string ) {
 
 }
@@ -193,7 +193,7 @@ std::string PQ_string::valueToString( void ) const {
 /*
 =========================================================
 */
-PQ_shell::PQ_shell( pugi::xml_node const &a_node ) :
+PQ_shell::PQ_shell( HAPI::Node const &a_node ) :
         PQ_double( a_node, PQ_class::shell ) {
 
 }

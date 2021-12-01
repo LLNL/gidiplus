@@ -35,7 +35,7 @@ label = MultiGroup_002  temperature = 0.0001
                             O17 + photon  threshold =            0  threshold =            0
                   n + He4 + C12 + photon  threshold =      7.61359  threshold =      7.61359
                        n + 4He4 + photon  threshold =      15.3472  threshold =      15.3472
-                     2He4 + Be9 + photon  threshold =      13.6743  threshold =      13.6743
+                     2He4 + Be9 + photon  threshold =      13.6744  threshold =      13.6744
     reaction: n + O16
     reaction: n + (O16_e1 -> O16)
     reaction: n + (O16_e2 -> O16)

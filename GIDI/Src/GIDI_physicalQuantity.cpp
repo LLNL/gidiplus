@@ -8,6 +8,7 @@
 */
 
 #include "GIDI.hpp"
+#include <HAPI.hpp>
 
 namespace GIDI {
 
@@ -18,14 +19,14 @@ namespace GIDI {
 
 /* *********************************************************************************************************//**
  *
- * @param a_node            [in]     The **pugi::xml_node** to be parsed and used to construct the PhysicalQuantity.
+ * @param a_node            [in]     The **HAPI::Node** to be parsed and used to construct the PhysicalQuantity.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  ***********************************************************************************************************/
 
-PhysicalQuantity::PhysicalQuantity( pugi::xml_node const &a_node, SetupInfo &a_setupInfo ) :
+PhysicalQuantity::PhysicalQuantity( HAPI::Node const &a_node, SetupInfo &a_setupInfo ) :
         Form( a_node, a_setupInfo, FormType::physicalQuantity ),
-        m_value( a_node.attribute( GIDI_valueChars ).as_double( ) ),
-        m_unit( a_node.attribute( GIDI_unitChars ).value( ) ) {
+        m_value( a_node.attribute_as_double( GIDI_valueChars ) ),
+        m_unit( a_node.attribute_as_string( GIDI_unitChars ) ) {
 
 }
 

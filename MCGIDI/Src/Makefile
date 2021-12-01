@@ -7,9 +7,9 @@ SHELL = /bin/ksh
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
-include ../Makefile.paths
+GIDI_PLUS_PATH ?= $(abspath ../..)
 
-local_CXXFLAGS = $(CXXFLAGS) -I$(PUGIXML_INCLUDE) -I$(POPI_INCLUDE) -I$(SMR_INCLUDE) -I$(NF_INCLUDE) -I$(GIDI_INCLUDE)
+include $(GIDI_PLUS_PATH)/Makefile.paths
 
 .PHONY: default clean realclean
 
@@ -45,6 +45,6 @@ MCGIDI_sampling.hpp: MCGIDI_vector.hpp
 MCGIDI_functions.hpp: MCGIDI_dataBuffer.hpp
 
 clean:
-	rm -f *.o $(Archive) MCGIDI.cpp
+	rm -f $(CppObjs) $(Archive) MCGIDI.cpp
 
 realclean: clean

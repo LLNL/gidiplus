@@ -8,6 +8,7 @@
 */
 
 #include "GIDI.hpp"
+#include <HAPI.hpp>
 
 namespace GIDI {
 
@@ -21,11 +22,11 @@ namespace Functions {
  * Constructed from data in a <**product**> node.
  *
  * @param a_construction    [in]    Used to pass user options to the constructor.
- * @param a_node            [in]    The **pugi::xml_node** to be parsed and used to construct the Gridded3d.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed and used to construct the Gridded3d.
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  ***********************************************************************************************************/
 
-Gridded3d::Gridded3d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo ) :
+Gridded3d::Gridded3d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo ) :
         Function3dForm( a_construction, a_node, a_setupInfo, FormType::gridded3d ),
         m_data( a_node.child( GIDI_arrayChars ), a_setupInfo, a_construction.useSystem_strtod( ) ) {
 

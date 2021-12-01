@@ -9,7 +9,10 @@ SHELL = /bin/ksh
 
 # Should build with "make CXXFLAGS=-std=c++11"
 
-include ../Makefile.paths
+GIDI_PLUS_PATH ?= $(abspath ../..)
+CppSources := $(wildcard *.cpp)
+
+include $(GIDI_PLUS_PATH)/Makefile.paths
 
 .PHONY: default clean realclean
 
@@ -23,7 +26,6 @@ local_CXXFLAGS = $(CXXFLAGS) \
 
 LIBS = -lGIDI_testUtilities -lGIDI -lPoPI -lstatusMessageReporting -lnumericalfunctions -lpugixml
 
-CppSources := $(wildcard *.cpp)
 Executables := $(CppSources:%.cpp=%)
 
 default: $(Executables)

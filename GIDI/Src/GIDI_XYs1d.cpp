@@ -7,7 +7,10 @@
 # <<END-copyright>>
 */
 
+#include <LUPI.hpp>
 #include "GIDI.hpp"
+#include <HAPI.hpp>
+#include <sstream>
 
 static void mutualifyDomains( ptwXYPoints const *a_lhs, ptwXYPoints const *a_rhs, ptwXYPoints **ptwXY1, ptwXYPoints **ptwXY2 );
 
@@ -18,6 +21,19 @@ namespace Functions {
 /*! \class XYs1d
  * Class to store GNDS <**XYs1d**> node.
  */
+
+/* *********************************************************************************************************//**
+ * Constructor an empty XYs1d instance.
+ *
+ ***********************************************************************************************************/
+
+XYs1d::XYs1d( ) :
+        Function1dForm( GIDI_XYs1dChars, FormType::XYs1d, Axes(), ptwXY_interpolationLinLin, 0, 0.0 ) {
+
+    double dummy[2];
+
+    m_ptwXY = ptwXY_create2( nullptr, ptwXY_interpolationLinLin, 0, 0, 0, dummy, 0 );
+}
 
 /* *********************************************************************************************************//**
  * Constructor that uses an existing **ptwXYPoints** instance. The **m_ptwXY** member is set to **ptwXYPoints** (i.e., this
@@ -31,7 +47,7 @@ namespace Functions {
  ***********************************************************************************************************/
 
 XYs1d::XYs1d( Axes const &a_axes, ptwXY_interpolation a_interpolation, int a_index, double a_outerDomainValue ) :
-    Function1dForm( GIDI_XYs1dChars, FormType::XYs1d, a_axes, a_interpolation, a_index, a_outerDomainValue ) {
+        Function1dForm( GIDI_XYs1dChars, FormType::XYs1d, a_axes, a_interpolation, a_index, a_outerDomainValue ) {
 
     double dummy[2];
 
@@ -51,7 +67,7 @@ XYs1d::XYs1d( Axes const &a_axes, ptwXY_interpolation a_interpolation, int a_ind
  ***********************************************************************************************************/
 
 XYs1d::XYs1d( Axes const &a_axes, ptwXY_interpolation a_interpolation, std::vector<double> const &a_values, int a_index, double a_outerDomainValue ) :
-    Function1dForm( GIDI_XYs1dChars, FormType::XYs1d, a_axes, a_interpolation, a_index, a_outerDomainValue ) {
+        Function1dForm( GIDI_XYs1dChars, FormType::XYs1d, a_axes, a_interpolation, a_index, a_outerDomainValue ) {
 
     int64_t length = static_cast<int64_t>( a_values.size( ) ) / 2;
 
@@ -70,27 +86,33 @@ XYs1d::XYs1d( Axes const &a_axes, ptwXY_interpolation a_interpolation, std::vect
  ***********************************************************************************************************/
 
 XYs1d::XYs1d( Axes const &a_axes, ptwXYPoints *a_ptwXY, int a_index, double a_outerDomainValue ) :
-    Function1dForm( GIDI_XYs1dChars, FormType::XYs1d, a_axes, ptwXY_interpolationLinLin, a_index, a_outerDomainValue ),
-    m_ptwXY( a_ptwXY ) {
+        Function1dForm( GIDI_XYs1dChars, FormType::XYs1d, a_axes, ptwXY_interpolationLinLin, a_index, a_outerDomainValue ),
+        m_ptwXY( a_ptwXY ) {
 
 }
 
 /* *********************************************************************************************************//**
- * Constructs the instance from a **pugi::xml_node** instance.
+ * Constructs the instance from a HAPI::Node instance.
  *
  * @param a_construction        [in]    Used to pass user options for parsing.
- * @param a_node                [in]    The XYs1d pugi::xml_node to be parsed and to construct the instance.
+ * @param a_node                [in]    The XYs1d HAPI::Node to be parsed and to construct the instance.
  * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_parent              [in]    If imbedded in a two dimensional function, its pointers.
  ***********************************************************************************************************/
 
-XYs1d::XYs1d( Construction::Settings const &a_construction, pugi::xml_node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+XYs1d::XYs1d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
         Function1dForm( a_construction, a_node, a_setupInfo, FormType::XYs1d, a_parent ) {
 
-    char *endCharacter;
-
-    m_ptwXY = ptwXY_fromString( nullptr, a_node.child( GIDI_valuesChars ).text( ).get( ), ' ', interpolation( ), 
-            interpolationString( ).c_str( ), 12, 1e-3, &endCharacter, a_construction.useSystem_strtod( ) );
+    HAPI::Node values = a_node.child("values");
+    nf_Buffer<double> vals;
+    parseValuesOfDoubles( a_construction, values, a_setupInfo, vals );
+    int primarySize = vals.size() / 2, secondarySize = 0;
+    // not sure we really need a copy here...
+    double dvals[vals.size()];
+    for (size_t idx=0; idx<vals.size(); idx++)
+      dvals[idx] = vals[idx];
+    m_ptwXY = ptwXY_create( NULL, interpolation( ), interpolationString( ).c_str( ), 12, 1e-3, primarySize, secondarySize, primarySize,
+        dvals, 0 );
     if( m_ptwXY == nullptr ) throw Exception( "XYs1d::XYs1d: ptwXY_fromString failed" );
 }
 
@@ -163,7 +185,7 @@ XYs1d &XYs1d::operator+=( XYs1d const &a_rhs ) {
     sum = ptwXY_add_ptwXY( nullptr, ptwXY1, ptwXY2 );
     ptwXY_free( ptwXY1 );
     ptwXY_free( ptwXY2 );
-    if( sum == nullptr ) throw Exception( "XYs1d::operator+=: ptwXY_clone2 failed for sum" );
+    if( sum == nullptr ) throw Exception( "XYs1d::operator+=: ptwXY_add_ptwXY failed." );
 
     ptwXY_free( m_ptwXY );
     m_ptwXY = sum;
@@ -201,10 +223,48 @@ XYs1d &XYs1d::operator-=( XYs1d const &a_rhs ) {
     sum = ptwXY_sub_ptwXY( nullptr, ptwXY1, ptwXY2 );
     ptwXY_free( ptwXY1 );
     ptwXY_free( ptwXY2 );
-    if( sum == nullptr ) throw Exception( "XYs1d::operator+=: ptwXY_clone2 failed for sum" );
+    if( sum == nullptr ) throw Exception( "XYs1d::operator-=: ptwXY_sub_ptwXY failed." );
 
     ptwXY_free( m_ptwXY );
     m_ptwXY = sum;
+
+    return( *this );
+}
+
+/* *********************************************************************************************************//**
+ * Multiplies *this* with another **XYs1d** instances and returns the result.
+ *
+ * @param a_rhs         [in]    The **XYs1d** instance to multiply with this instance.
+ * @return                      An **XYs1d** instance that is the product of this and *a_rhs*.
+ ***********************************************************************************************************/
+
+XYs1d XYs1d::operator*( XYs1d const &a_rhs ) const {
+
+    XYs1d xys1d( *this );
+
+    xys1d *= a_rhs;
+    return( xys1d );
+}
+
+/* *********************************************************************************************************//**
+ * Multiplies an **XYs1d** instance from this.
+ *
+ * @param a_rhs         [in]    The **XYs1d** instance to subtract from this instance.
+ * @return                      This instance.
+ ***********************************************************************************************************/
+
+XYs1d &XYs1d::operator*=( XYs1d const &a_rhs ) {
+
+    ptwXYPoints *mul, *ptwXY1, *ptwXY2;
+
+    mutualifyDomains( m_ptwXY, a_rhs.ptwXY( ), &ptwXY1, &ptwXY2 );
+    mul = ptwXY_mul2_ptwXY( nullptr, ptwXY1, ptwXY2 );
+    ptwXY_free( ptwXY1 );
+    ptwXY_free( ptwXY2 );
+    if( mul == nullptr ) throw Exception( "XYs1d::operator*=: ptwXY_mul2_ptwXY failed." );
+
+    ptwXY_free( m_ptwXY );
+    m_ptwXY = mul;
 
     return( *this );
 }
@@ -284,6 +344,32 @@ std::vector<double> XYs1d::ysMappedToXs( std::vector<double> const &a_xs, std::s
     }
 
     return( _ys );
+}
+
+/* *********************************************************************************************************//**
+ * Returns an **XYs1d** instance that is a domain slice of *this* from **domainMin** to **domainMax**.
+ * If the minimum (maximum) of *this* is greater (less) than **domainMin** (**domainMax**) that domain is unchanged.
+ * If *this*'s minimum is less than **domainMin**, **a_fill** is true and there is no point at **domainMin**
+ * then an interpolated point is added at **domainMin**. Similarly for **domainMax**.
+ *
+ * @param a_domainMax           [in]    The minimum domain for the returned instance if *this*' minimum is less than **domainMin**.
+ * @param a_domainMax           [in]    The maximum domain for the returned instance if *this*' maximum is less than **domainMax**.
+ * @param a_fill                [in]    If true, values at **domainMin** and **domainMax** are added if needed.
+ *
+ * @return                              An **XYs1d** instance.
+ ***********************************************************************************************************/
+
+XYs1d XYs1d::domainSlice( double a_domainMin, double a_domainMax, bool a_fill ) const {
+
+    LUPI::StatusMessageReporting smr;
+    ptwXYPoints *ptwXY1 = ptwXY_clone2( smr.smr( ), m_ptwXY );
+    if( ptwXY1 == nullptr ) throw Exception( smr.constructMessage( "XYs1d::domainSlice", -1, true ) );
+
+    ptwXYPoints *ptwXYSliced = ptwXY_domainSlice( nullptr, ptwXY1, a_domainMin, a_domainMax, 10, a_fill ? 1 : 0 );
+    ptwXY_free( ptwXY1 );
+    if( ptwXYSliced == nullptr ) throw Exception( smr.constructMessage( "XYs1d::domainSlice", -1, true ) );
+
+    return( XYs1d( axes( ), ptwXYSliced, index( ), outerDomainValue( ) ) );
 }
 
 /* *********************************************************************************************************//**
@@ -389,6 +475,28 @@ void XYs1d::print( char const *a_format ) {
 void XYs1d::print( std::string const &a_format ) {
 
     print( a_format.c_str( ) );
+}
+
+/* *********************************************************************************************************//**
+ * This is a factory function for the XYs1d class that creates a XYs1d instance with the constant value
+ * of *a_value* for the domain from *a_domainMin* to *a_domainMax*.
+ *
+ * @param       a_axes              [in]    The axes for the function.
+ * @param       a_domainMin         [in]    The minimum of the domain for which the function is defined.
+ * @param       a_domainMax         [in]    The maximum of the domain for which the function is defined.
+ * @param       a_value             [in]    The y-value of the function over its domain.
+ ***********************************************************************************************************/
+
+XYs1d *XYs1d::makeConstantXYs1d( Axes const &a_axes, double a_domainMin, double a_domainMax, double a_value ) {
+
+    std::vector<double> points( 4 );
+
+    points[0] = a_domainMin;
+    points[1] = a_value;
+    points[2] = a_domainMax;
+    points[3] = a_value;
+
+     return( new XYs1d( a_axes, ptwXY_interpolationLinLin, points ) );
 }
 
 }               // End namespace Functions.

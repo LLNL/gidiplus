@@ -12,7 +12,7 @@ CppSources = $(sort $(wildcard *.cpp))
 CppObjs = $(CppSources:.cpp=.o)
 Archive = libutilities4Speed.a
 
-include ../../Makefile.paths
+include $(GIDI_PLUS_PATH)/Makefile.paths
 include ../Makefile.speeds
 
 default: $(Archive)

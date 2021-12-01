@@ -12,6 +12,7 @@
 #include <iomanip>
 #include <set>
 
+#include "LUPI.hpp"
 #include "MCGIDI.hpp"
 
 #include "MCGIDI_testUtilities.hpp"
@@ -126,9 +127,10 @@ int main( int argc, char **argv ) {
         if( prior_protare != protare_single ) i2 = 0;
         prior_protare = protare_single;
 
-        std::cout << std::setw( 5 ) << i1 << " " << std::setw( 40 ) << reaction.label( ).c_str( ) << std::setw( 12 ) << reaction.crossSectionThreshold( ) <<
-                std::setw( 12 ) << MCProtare->threshold( i1 ) <<
-                std::setw( 8 ) << heated_multigroup_cross_sections.thresholdOffset( i2 ) << std::endl;
+        std::cout << std::setw( 5 ) << i1 << " " << std::setw( 40 ) << reaction.label( ).c_str( ) << std::setw( 12 ) 
+                << LUPI::Misc::doubleToString3( "%12.6g", reaction.crossSectionThreshold( ), true )
+                << LUPI::Misc::doubleToString3( "%12.6g", MCProtare->threshold( i1 ), true )
+                << std::setw( 8 ) << heated_multigroup_cross_sections.thresholdOffset( i2 ) << std::endl;
     }
 
     std::cout << "Group boundaries" << std::endl;

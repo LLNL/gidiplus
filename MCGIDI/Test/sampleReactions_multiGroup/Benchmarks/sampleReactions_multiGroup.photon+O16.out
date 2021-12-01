@@ -4,6 +4,7 @@ Reaction info
                                                  threshold   threshold  offset
     0                                  n + O15     15.6638     15.6638      39
     1                                 H1 + N15     12.1275     12.1275      38
+    2             sumOfRemainingOutputChannels      7.1619      7.1619      38
 Group boundaries
   index    boundary  cross section      augmented    per-cent
                                     cross section      change
@@ -45,9 +46,9 @@ Group boundaries
      35       8.332              0              0           0
      36       9.373              0              0           0
      37       10.55              0              0           0
-     38       11.86 0.001390939597  0.00199965345          44  0.0006087139
-     39       13.35 0.001794736842   0.0022633427          26  0.0004686059
-     40          20 0.001794736842   0.0022633427          26
+     38       11.86 0.001762281879 0.002370995732          35  0.0006087139  0
+     39       13.35 0.002173563863 0.002642169721          22  0.0004686059
+     40          20 0.002173563863 0.002642169721          22
 temperature = 2.58522e-08
 energy =           1e-12  group index =    0
 energy =           2e-12  group index =    0
@@ -94,8 +95,8 @@ energy =     2.199023256  group index =   23
 energy =     4.398046511  group index =   29
 energy =     8.796093022  group index =   35
 energy =     17.59218604  group index =   39
-      crossSection = 0.001794736842  crossSectionAugmented = 0.0022633427 ratio = 1.261100038
-        0.244659  0.755341
-        0.505759  0.755341
-        0.224767  0.494434  0.000000  0.280799
-          224767    494434         0    280799
+      crossSection = 0.002173563863  crossSectionAugmented = 0.002642169721 ratio = 1.215593324
+        0.202017  0.623694  0.174288
+        0.417611  0.623694  0.174288
+        0.185765  0.582246  0.000000  0.000000  0.231989
+          185765    582246         0         0    231989

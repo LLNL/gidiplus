@@ -1289,7 +1289,7 @@ static nfu_status pointwiseXY_C_applyFunction2( statusMessageReporting *smr, ptw
     PyObject **f_args = (PyObject **) argList, *result;
     nfu_status status_nf = nfu_Okay;
 
-    result = PyEval_CallFunction( (PyObject *) f_args[0], "(d,O)", ptwXY->x, f_args[1] );
+    result = PyObject_CallFunction( (PyObject *) f_args[0], "(d,O)", ptwXY->x, f_args[1] );
     if( result == NULL ) return( nfu_badInput );
     if( pointwiseXY_C_PyNumberToFloat( result, &(ptwXY->y) ) != 0 ) {
         smr_setReportError2p( smr, nfu_SMR_libraryID, nfu_badInput, "could not convert returned value to float" );
@@ -1878,7 +1878,7 @@ BRB FIXME , check if smr is needed.
     GnG_parameters *parameters = (GnG_parameters *) argList;
     PyObject *result;
 
-    result = PyEval_CallFunction( parameters->func, "(d,O)", x, parameters->argList );
+    result = PyObject_CallFunction( parameters->func, "(d,O)", x, parameters->argList );
     if( result == NULL ) return( nfu_badInput );
 
     if( PyFloat_Check( result ) ) {
@@ -2224,20 +2224,20 @@ static PyObject *pointwiseXY_C_plot( pointwiseXY_CPy *self, PyObject *args ) {
     if( GnuplotModule == NULL ) return( NULL );
 
     if( ( Gnuplot = PyObject_GetAttrString( GnuplotModule, "Gnuplot" ) ) == NULL ) goto err;
-    if( ( g = PyEval_CallFunction( Gnuplot, "()" ) ) == NULL ) goto err;
-    if( PyEval_CallFunction( g, "(s)", "set style data linespoints" ) == NULL ) goto err;
+    if( ( g = PyObject_CallFunction( Gnuplot, "()" ) ) == NULL ) goto err;
+    if( PyObject_CallFunction( g, "(s)", "set style data linespoints" ) == NULL ) goto err;
 
     if( ( Data = PyObject_GetAttrString( GnuplotModule, "Data" ) ) == NULL ) goto err;
 
     if( ptwXY_length( NULL, self->ptwXY ) > 0 ) {
-        if( ( data = PyEval_CallFunction( Data, "(O)", self ) ) == NULL ) goto err; }
+        if( ( data = PyObject_CallFunction( Data, "(O)", self ) ) == NULL ) goto err; }
     else {
-        if( ( data = PyEval_CallFunction( Data, "([[d,d]])", -.9999, -.9999 ) ) == NULL ) goto err;
-        PyEval_CallFunction( g, "(s)", "set xrange [-1:1]" );
-        PyEval_CallFunction( g, "(s)", "set yrange [-1:1]" );
-        PyEval_CallFunction( g, "(s)", "set label 'Instance has no data' center at 0,0" );
+        if( ( data = PyObject_CallFunction( Data, "([[d,d]])", -.9999, -.9999 ) ) == NULL ) goto err;
+        PyObject_CallFunction( g, "(s)", "set xrange [-1:1]" );
+        PyObject_CallFunction( g, "(s)", "set yrange [-1:1]" );
+        PyObject_CallFunction( g, "(s)", "set label 'Instance has no data' center at 0,0" );
     }
-    if( PyEval_CallMethod( g, "plot", "(O)", data ) == NULL ) goto err;
+    if( PyObject_CallMethod( g, "plot", "(O)", data ) == NULL ) goto err;
 
     status = g;
     goto theEnd;
@@ -3123,7 +3123,7 @@ static nfu_status pointwiseXY_C_createFromFunction2( statusMessageReporting *smr
     PyObject **f_args = (PyObject **) argList, *result;
     nfu_status status_nf = nfu_Okay;
 
-    result = PyEval_CallFunction( (PyObject *) f_args[0], "(d,O)", x, f_args[1] );
+    result = PyObject_CallFunction( (PyObject *) f_args[0], "(d,O)", x, f_args[1] );
     if( result == NULL ) {
         f_args[2] = f_args[0];
         return( nfu_badInput );
@@ -3133,6 +3133,7 @@ static nfu_status pointwiseXY_C_createFromFunction2( statusMessageReporting *smr
         status_nf = nfu_badInput;
         f_args[2] = f_args[0];
     }
+
     Py_DECREF( result );
     return( status_nf );
 }

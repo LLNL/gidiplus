@@ -8,6 +8,7 @@
 */
 
 #include "GIDI.hpp"
+#include <HAPI.hpp>
 
 namespace GIDI {
 
@@ -17,22 +18,22 @@ namespace GIDI {
 
 /* *********************************************************************************************************//**
  *
- * @param a_node                [in]    The **pugi::xml_node** to be parsed and used to construct the Grid.
+ * @param a_node                [in]    The **HAPI::Node** to be parsed and used to construct the Grid.
  * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_useSystem_strtod    [in]    Flag passed to the function nfu_stringToListOfDoubles.
  ***********************************************************************************************************/
 
-Grid::Grid( pugi::xml_node const &a_node, SetupInfo &a_setupInfo, int a_useSystem_strtod ) :
+Grid::Grid( HAPI::Node const &a_node, SetupInfo &a_setupInfo, int a_useSystem_strtod ) :
         Axis( a_node, a_setupInfo, FormType::grid ),
-        m_style( a_node.attribute( GIDI_styleChars ).value( ) ),
+        m_style( a_node.attribute_as_string( GIDI_styleChars ) ),
         m_keyName( GIDI_indexChars ),
-        m_keyValue( a_node.attribute( GIDI_indexChars ).value( ) ) {
+        m_keyValue( a_node.attribute_as_string( GIDI_indexChars ) ) {
 
     if( href( ) == "" ) {
-        pugi::xml_node values = a_node.first_child( );
+        HAPI::Node values = a_node.first_child( );
         if( values.name( ) != std::string( GIDI_valuesChars ) ) throw Exception( "grid's first child not values" );
 
-        m_valueType = values.attribute( GIDI_valueTypeChars ).value( );
+        m_valueType = values.attribute_as_string( GIDI_valueTypeChars );
 
         parseValuesOfDoubles( values, a_setupInfo, m_values, a_useSystem_strtod );
     }
@@ -71,7 +72,7 @@ void Grid::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) cons
         attributes += a_writeInfo.addAttribute( GIDI_unitChars, unit( ) );
         attributes += a_writeInfo.addAttribute( GIDI_styleChars, style( ) );
         a_writeInfo.addNodeStarter( a_indent, moniker( ), attributes );
-        doublesToXMLList( a_writeInfo, indent2, m_values, 0, true, m_valueType );
+        doublesToXMLList( a_writeInfo, indent2, m_values.vector(), 0, true, m_valueType );
         a_writeInfo.addNodeEnder( moniker( ) ); }
     else {
         attributes += a_writeInfo.addAttribute( GIDI_hrefChars, href( ) );
