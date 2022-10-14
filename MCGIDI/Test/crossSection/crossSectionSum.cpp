@@ -28,6 +28,7 @@ int main( int argc, char **argv ) {
     GIDI::Protare *protare;
     GIDI::Transporting::Particles particles;
     std::set<int> reactionsToExclude;
+    LUPI::StatusMessageReporting smr1;
 
     std::cerr << "    " << __FILE__;
     for( int i1 = 1; i1 < argc; i1++ ) std::cerr << " " << argv[i1];
@@ -52,7 +53,7 @@ int main( int argc, char **argv ) {
     MCGIDI::DomainHash domainHash( 4000, 1e-8, 10 );
     MCGIDI::Protare *MCProtare;
     try {
-        MCProtare = MCGIDI::protareFromGIDIProtare( *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude ); }
+        MCProtare = MCGIDI::protareFromGIDIProtare( smr1, *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude ); }
     catch (char const *str) {
         std::cout << str << std::endl;
         exit( EXIT_FAILURE );

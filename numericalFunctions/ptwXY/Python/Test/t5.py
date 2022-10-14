@@ -11,8 +11,6 @@
 Some simple stuff that is not repeatable as pointers are printed.
 """
 
-from __future__ import print_function
-
 import random
 
 from numericalFunctions import pointwiseXY_C

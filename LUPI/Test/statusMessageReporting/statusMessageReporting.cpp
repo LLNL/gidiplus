@@ -54,7 +54,7 @@ void main2( int argc, char **argv ) {
     }
 
     for( int index = 0; index < numberOfReports + 1; ++index ) {
-        std::string message( smr.constructMessage( "Test", index, false ) );
+        std::string message( smr.constructFullMessage( "Test", index, false ) );
         std::cout << message << std::endl << std::endl;
     }
 

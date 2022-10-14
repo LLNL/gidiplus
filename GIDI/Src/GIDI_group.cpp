@@ -101,9 +101,9 @@ void Groups::addFile( std::string const &a_fileName ) {
 
     std::string formatVersionString = groups.attribute_as_string( GIDI_formatChars );
     if( formatVersionString == "" ) formatVersionString = GNDS_formatVersion_1_10Chars;
-    FormatVersion formatVersion;
+    LUPI::FormatVersion formatVersion;
     formatVersion.setFormat( formatVersionString );
-    if( !formatVersion.supported( ) ) throw Exception( "unsupport GND format version" );
+    if( !formatVersion.supported( ) ) throw Exception( "Unsupport GND format version" + formatVersionString );
     setupInfo.m_formatVersion = formatVersion;
 
     for( HAPI::Node child = groups.first_child( ); !child.empty( ); child.to_next_sibling( ) ) {

@@ -11,8 +11,6 @@
 Some simple stuff that should repeat.
 """
 
-from __future__ import print_function
-
 from numericalFunctions import pointwiseXY_C
 
 data = [ [ 1, 1. ], [ 3., 3.14 ], [ 4.5, -5 ], [ 6.6, 2 ] ]

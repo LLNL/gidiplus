@@ -40,6 +40,7 @@ int main( int argc, char **argv ) {
 */
 void main2( int argc, char **argv ) {
 
+    LUPI::StatusMessageReporting smr1;
     argvOptions argv_options( "availableEnergy", description );
     ParseTestOptions parseTestOptions( argv_options, argc, argv );
 
@@ -58,13 +59,13 @@ void main2( int argc, char **argv ) {
     std::string label( temperatures[0].heatedMultiGroup( ) );
     GIDI::Transporting::MG settings( protare->projectile( ).ID( ), GIDI::Transporting::Mode::multiGroup, GIDI::Transporting::DelayedNeutrons::on );
 
-    GIDI::Vector availableEnergy = protare->multiGroupAvailableEnergy( settings, temperatures[0] );
+    GIDI::Vector availableEnergy = protare->multiGroupAvailableEnergy( smr1, settings, temperatures[0] );
     std::string prefix( "Total available energy:: " );
     printVector( prefix, availableEnergy );
 
     for( std::size_t index = 0; index < protare->numberOfReactions( ); ++index ) {
         GIDI::Reaction const *reaction = protare->reaction( index );
-        GIDI::Vector availableEnergy = reaction->multiGroupAvailableEnergy( settings, temperatures[0] );
+        GIDI::Vector availableEnergy = reaction->multiGroupAvailableEnergy( smr1, settings, temperatures[0] );
         std::string string( reaction->label( ) );
 
         string = "    " + string + ":: ";

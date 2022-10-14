@@ -41,6 +41,7 @@ int main( int argc, char **argv ) {
 */
 int main2( int argc, char **argv ) {
 
+    LUPI::StatusMessageReporting smr1;
     argvOptions argv_options( "TNSL", description );
     ParseTestOptions parseTestOptions( argv_options, argc, argv );
 
@@ -99,39 +100,39 @@ int main2( int argc, char **argv ) {
     doubles = protare->groupBoundaries( settings, temperatures[0], PoPI::IDs::photon );
     printVectorOfDoubles( "Photon group boundaries :: ", doubles );
 
-    GIDI::Vector vector = protare->multiGroupInverseSpeed( settings, temperatures[0] );
+    GIDI::Vector vector = protare->multiGroupInverseSpeed( smr1, settings, temperatures[0] );
     printVector( "Inverse speed :: ", vector );
 
-    vector = protare->multiGroupCrossSection( settings, temperatures[0] );
+    vector = protare->multiGroupCrossSection( smr1, settings, temperatures[0] );
     printVector( "Total cross section :: ", vector );
 
-    vector = protare->multiGroupQ( settings, temperatures[0], false );
+    vector = protare->multiGroupQ( smr1, settings, temperatures[0], false );
     printVector( "Q (initial) :: ", vector );
-    vector = protare->multiGroupQ( settings, temperatures[0], true );
+    vector = protare->multiGroupQ( smr1, settings, temperatures[0], true );
     printVector( "Q (final)   :: ", vector );
 
-    vector = protare->multiGroupAvailableEnergy( settings, temperatures[0] );
+    vector = protare->multiGroupAvailableEnergy( smr1, settings, temperatures[0] );
     printVector( "Available energy   :: ", vector );
 
-    vector = protare->multiGroupAvailableMomentum( settings, temperatures[0] );
+    vector = protare->multiGroupAvailableMomentum( smr1, settings, temperatures[0] );
     printVector( "Available momentum :: ", vector );
 
-    vector = protare->multiGroupAverageEnergy( settings, temperatures[0], PoPI::IDs::neutron );
+    vector = protare->multiGroupAverageEnergy( smr1, settings, temperatures[0], PoPI::IDs::neutron );
     printVector( "Neutron average energy :: ", vector );
 
-    vector = protare->multiGroupAverageEnergy( settings, temperatures[0], PoPI::IDs::photon );
+    vector = protare->multiGroupAverageEnergy( smr1, settings, temperatures[0], PoPI::IDs::photon );
     printVector( "Photon average energy :: ", vector );
 
-    vector = protare->multiGroupAverageMomentum( settings, temperatures[0], PoPI::IDs::neutron );
+    vector = protare->multiGroupAverageMomentum( smr1, settings, temperatures[0], PoPI::IDs::neutron );
     printVector( "Neutron average momentum :: ", vector );
 
-    vector = protare->multiGroupAverageMomentum( settings, temperatures[0], PoPI::IDs::photon );
+    vector = protare->multiGroupAverageMomentum( smr1, settings, temperatures[0], PoPI::IDs::photon );
     printVector( "Photon average momentum :: ", vector );
 
-    vector = protare->multiGroupMultiplicity( settings, temperatures[0], PoPI::IDs::neutron );
+    vector = protare->multiGroupMultiplicity( smr1, settings, temperatures[0], PoPI::IDs::neutron );
     printVector( "Neutron multiplicity :: ", vector );
 
-    vector = protare->multiGroupMultiplicity( settings, temperatures[0], PoPI::IDs::photon );
+    vector = protare->multiGroupMultiplicity( smr1, settings, temperatures[0], PoPI::IDs::photon );
     printVector( "Photon multiplicity :: ", vector );
 
     std::set<std::string> ids;
@@ -142,14 +143,14 @@ int main2( int argc, char **argv ) {
     protare->productIDs( ids, particles, true );
     printIDs( "Product IDs (transportable) : ", ids );
 
-    for( int order = 0; order < protare->maximumLegendreOrder( settings, temperatures[0], PoPI::IDs::photon ); ++order ) {
+    for( int order = 0; order < protare->maximumLegendreOrder( smr1, settings, temperatures[0], PoPI::IDs::photon ); ++order ) {
 
         std::cout << "Data for Legendre order " << order << std::endl;
 
-        vector = protare->multiGroupTransportCorrection( settings, temperatures[0], particles, order, GIDI::TransportCorrectionType::Pendlebury, 0.0 );
+        vector = protare->multiGroupTransportCorrection( smr1, settings, temperatures[0], particles, order, GIDI::TransportCorrectionType::Pendlebury, 0.0 );
         printVector( "    Transport correction ::", vector );
 
-        GIDI::Matrix matrix = protare->multiGroupProductMatrix( settings, temperatures[0], particles, PoPI::IDs::neutron, order );
+        GIDI::Matrix matrix = protare->multiGroupProductMatrix( smr1, settings, temperatures[0], particles, PoPI::IDs::neutron, order );
         printMatrix( "    Neutron product matrix", -2, matrix );
     }
 

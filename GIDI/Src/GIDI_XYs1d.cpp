@@ -352,8 +352,8 @@ std::vector<double> XYs1d::ysMappedToXs( std::vector<double> const &a_xs, std::s
  * If *this*'s minimum is less than **domainMin**, **a_fill** is true and there is no point at **domainMin**
  * then an interpolated point is added at **domainMin**. Similarly for **domainMax**.
  *
- * @param a_domainMax           [in]    The minimum domain for the returned instance if *this*' minimum is less than **domainMin**.
- * @param a_domainMax           [in]    The maximum domain for the returned instance if *this*' maximum is less than **domainMax**.
+ * @param a_domainMin           [in]    The minimum domain for the returned instance if *this*' minimum is less than **domainMin*.
+ * @param a_domainMax           [in]    The maximum domain for the returned instance if *this*' maximum is less than **domainMax*.
  * @param a_fill                [in]    If true, values at **domainMin** and **domainMax** are added if needed.
  *
  * @return                              An **XYs1d** instance.
@@ -416,6 +416,29 @@ double XYs1d::evaluate( double a_x1 ) const {
 }
 
 /* *********************************************************************************************************//**
+ * Evaluates *this* at the X-values in *a_Xs*[*a_offset*:] and adds the results to *a_results*[*a_offset*:].
+ * *a_Xs* and *a_results* must be the same size otherwise a throw is executed.
+ *
+ * @param a_offset          [in]    The offset in *a_Xs* to start.
+ * @param a_Xs              [in]    The list of domain values to evaluate *this* at.
+ * @param a_results         [in]    The list whose values are added to by the Y-values of *this*.
+ * @param a_scaleFactor     [in]    A factor applied to each evaluation before it is added to *a_results*.
+ ***********************************************************************************************************/
+
+void XYs1d::mapToXsAndAdd( int a_offset, std::vector<double> const &a_Xs, std::vector<double> &a_results, double a_scaleFactor ) const {
+    
+    if( a_Xs.size( ) != a_results.size( ) ) throw Exception( "XYs1d::mapToXsAndAdd: a_Xs.size( ) != a_results.size( )" );
+    if( a_offset < 0 ) throw Exception( "XYs1d::mapToXsAndAdd: a_offset < 0." );
+
+    LUPI::StatusMessageReporting smr;
+    int64_t length = static_cast<int64_t>( a_Xs.size( ) );
+
+    nfu_status status = ptwXY_mapToXsAndAdd( smr.smr( ), m_ptwXY, a_offset, length, a_Xs.data( ), a_results.data( ), a_scaleFactor );
+    if( ( status != nfu_Okay ) && ( status != nfu_tooFewPoints ) )
+        throw Exception( smr.constructMessage( "XYs1d::mapToXsAndAdd", -1, true ) );
+}
+
+/* *********************************************************************************************************//**
  * Fills the argument *a_writeInfo* with the XML lines that represent *this*. Recursively enters each sub-node.
  *
  * @param       a_writeInfo         [in/out]    Instance containing incremental indentation and other information and stores the appended lines.
@@ -475,6 +498,18 @@ void XYs1d::print( char const *a_format ) {
 void XYs1d::print( std::string const &a_format ) {
 
     print( a_format.c_str( ) );
+}
+
+/* *********************************************************************************************************//**
+ * Writes the (x,y) values to *a_file*. The format string must have two double conversion specifiers (e.g., "    %12.3e %.6f").
+ *
+ * @param       a_file              [in]    The C FILE instance to write the data to.
+ * @param       a_format            [in]    The format string passed to the C printf function.
+ ***********************************************************************************************************/
+
+void XYs1d::write( FILE *a_file, std::string const &a_format ) {
+
+    ptwXY_simpleWrite( m_ptwXY, a_file, a_format.c_str( ) );
 }
 
 /* *********************************************************************************************************//**

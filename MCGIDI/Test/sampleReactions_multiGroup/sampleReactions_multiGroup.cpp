@@ -32,6 +32,7 @@ int main( int argc, char **argv ) {
     void *rngState = nullptr;
     unsigned long long seed = 1;
     std::set<int> reactionsToExclude;
+    LUPI::StatusMessageReporting smr1;
     GIDI::Construction::PhotoMode photo_mode = GIDI::Construction::PhotoMode::nuclearOnly;
 
     std::cerr << "    " << __FILE__;
@@ -101,7 +102,7 @@ int main( int argc, char **argv ) {
     MCGIDI::DomainHash domainHash( 4000, 1e-8, 10 );
     MCGIDI::Protare *MCProtare;
     try {
-        MCProtare = MCGIDI::protareFromGIDIProtare( *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude ); }
+        MCProtare = MCGIDI::protareFromGIDIProtare( smr1, *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude ); }
     catch (char const *str) {
         std::cout << str << std::endl;
         exit( EXIT_FAILURE );

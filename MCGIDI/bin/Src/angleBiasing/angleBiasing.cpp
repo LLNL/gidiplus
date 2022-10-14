@@ -53,6 +53,8 @@ void main2( int argc, char **argv ) {
     unsigned long long seed = 1;
     std::set<int> reactionsToExclude;
     GIDI::Transporting::Particles particles;
+    double temperature_keV_K = 2.582e-5;
+    LUPI::StatusMessageReporting smr1;
 
     std::map<std::string, std::string> particlesAndGIDs;
 
@@ -106,7 +108,7 @@ void main2( int argc, char **argv ) {
     }
 
     MCGIDI::DomainHash domainHash( 4000, 1e-8, 10 );
-    MCGIDI::Protare *MCProtare = MCGIDI::protareFromGIDIProtare( *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude );
+    MCGIDI::Protare *MCProtare = MCGIDI::protareFromGIDIProtare( smr1, *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude );
 
     int productIndex = pops[productID];
 
@@ -130,11 +132,11 @@ void main2( int argc, char **argv ) {
         MCGIDI::Sampling::ClientCodeRNGData clientCodeRNGData( float64RNG64, nullptr );
 
         double energy_out, weight;
-        weight = reaction->angleBiasing( productIndex, energy_in, mu_lab, energy_out, float64RNG64, nullptr );
+        weight = reaction->angleBiasing( productIndex, temperature_keV_K, energy_in, mu_lab, energy_out, float64RNG64, nullptr );
         double energyMin = energy_out, energyMax = energy_out;
 
         for( long sampleIndex = 0; sampleIndex < numberOfSamples; ++sampleIndex ) {
-            weight = reaction->angleBiasing( productIndex, energy_in, mu_lab, energy_out, float64RNG64, nullptr );
+            weight = reaction->angleBiasing( productIndex, temperature_keV_K, energy_in, mu_lab, energy_out, float64RNG64, nullptr );
             if( energy_out < energyMin ) energyMin = energy_out;
             if( energy_out > energyMax ) energyMax = energy_out;
         }
@@ -149,7 +151,7 @@ void main2( int argc, char **argv ) {
         Bins bins( numberOfBins, energyMin, energyMax );
 
         for( long sampleIndex = 0; sampleIndex < numberOfSamples; ++sampleIndex ) {
-            weight = reaction->angleBiasing( productIndex, energy_in, mu_lab, energy_out, float64RNG64, nullptr );
+            weight = reaction->angleBiasing( productIndex, temperature_keV_K, energy_in, mu_lab, energy_out, float64RNG64, nullptr );
             bins.accrue( energy_out, weight );
         }
 

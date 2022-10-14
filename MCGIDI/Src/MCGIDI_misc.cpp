@@ -20,10 +20,20 @@ namespace MCGIDI {
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-MCGIDI_HOST SetupInfo::SetupInfo( Protare &a_protare ) :
-        m_protare( a_protare ) {
+MCGIDI_HOST SetupInfo::SetupInfo( ProtareSingle &a_protare ) :
+        m_protare( a_protare ),
+        m_initialStateIndex( -1 ) {
 
 }
+
+/* *********************************************************************************************************//**
+ ***********************************************************************************************************/
+
+MCGIDI_HOST SetupInfo::~SetupInfo( ) {
+
+    for( auto iter = m_ACE_URR_protabilityTablesFromGIDI.begin( ); iter != m_ACE_URR_protabilityTablesFromGIDI.end( ); ++iter ) delete (*iter).second;
+}
+
 
 /* *********************************************************************************************************//**
  * @return                          The *index*.
@@ -387,6 +397,123 @@ MCGIDI_HOST_DEVICE void MCGIDI_sampleKleinNishina( double a_energyIn, double (*a
     *a_energyOut = energyOut;
 
     return;
+}
+
+/* *********************************************************************************************************//**
+ * This function returns a unique integer for the **Distributions::Type**. For internal use when broadcasting a
+ * distribution for MPI and GPUs needs.
+ *              
+ * @param a_type                [in]    The distribution's type.
+ *
+ * @return                              Returns a unique integer for the distribution type.
+ ***********************************************************************************************************/
+            
+MCGIDI_HOST_DEVICE int distributionTypeToInt( Distributions::Type a_type ) {
+
+    int distributionType = 0;
+
+    switch( a_type ) {
+    case Distributions::Type::none :
+        distributionType = 0;
+        break;
+    case Distributions::Type::unspecified :
+        distributionType = 1;
+        break;
+    case Distributions::Type::angularTwoBody :
+        distributionType = 2;
+        break;
+    case Distributions::Type::KalbachMann :
+        distributionType = 3;
+        break;
+    case Distributions::Type::uncorrelated :
+        distributionType = 4;
+        break;
+    case Distributions::Type::energyAngularMC :
+        distributionType = 5;
+        break;
+    case Distributions::Type::angularEnergyMC :
+        distributionType = 6;
+        break;
+    case Distributions::Type::coherentPhotoAtomicScattering :
+        distributionType = 7;
+        break;
+    case Distributions::Type::incoherentPhotoAtomicScattering :
+        distributionType = 8;
+        break;
+    case Distributions::Type::pairProductionGamma :
+        distributionType = 9;
+        break;
+    case Distributions::Type::coherentElasticTNSL :
+        distributionType = 10;
+        break;
+    case Distributions::Type::incoherentElasticTNSL :
+        distributionType = 11;
+        break;
+    case Distributions::Type::incoherentPhotoAtomicScatteringElectron :
+        distributionType = 12;
+        break;
+    }
+
+    return( distributionType );
+}
+
+/* *********************************************************************************************************//**
+ * This function returns the **Distributions::Type** corresponding to the integer returned by **distributionTypeToInt**.
+ *
+ * @param a_type                [in]    The value returned by **distributionTypeToInt**.
+ *
+ * @return                              The **Distributions::Type** corresponding to *a_type*.
+ ***********************************************************************************************************/
+
+MCGIDI_HOST_DEVICE Distributions::Type intToDistributionType( int a_type ) {
+
+    Distributions::Type type = Distributions::Type::none;
+
+    switch( a_type ) {
+    case 0 :
+        type = Distributions::Type::none;
+        break;
+    case 1 :
+        type = Distributions::Type::unspecified;
+        break;
+    case 2 :
+        type = Distributions::Type::angularTwoBody;
+        break;
+    case 3 :
+        type = Distributions::Type::KalbachMann;
+        break;
+    case 4 :
+        type = Distributions::Type::uncorrelated;
+        break;
+    case 5 :
+        type = Distributions::Type::energyAngularMC;
+        break;
+    case 6 :
+        type = Distributions::Type::angularEnergyMC;
+        break;
+    case 7 :
+        type = Distributions::Type::coherentPhotoAtomicScattering;
+        break;
+    case 8 :
+        type = Distributions::Type::incoherentPhotoAtomicScattering;
+        break;
+    case 9 :
+        type = Distributions::Type::pairProductionGamma;
+        break;
+    case 10 :
+        type = Distributions::Type::coherentElasticTNSL;
+        break;
+    case 11 :
+        type = Distributions::Type::incoherentElasticTNSL;
+        break;
+    case 12 :
+        type = Distributions::Type::incoherentPhotoAtomicScatteringElectron;
+        break;
+    default:
+        MCGIDI_THROW( "intToDistributionType: unsupported distribution type." );
+    }
+
+    return( type );
 }
 
 }

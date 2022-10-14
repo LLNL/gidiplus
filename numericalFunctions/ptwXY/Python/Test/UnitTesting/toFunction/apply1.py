@@ -9,8 +9,6 @@
 # This routine check that a raise in the applyFunction's callback function gets propagated up the stack.
 #
 
-from __future__ import print_function
-
 import os
 import sys
 

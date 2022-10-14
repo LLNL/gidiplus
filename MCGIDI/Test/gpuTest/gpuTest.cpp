@@ -9,10 +9,50 @@
 
 #include <iostream>
 
-#ifdef __CUDACC__
+#if defined(__CUDACC__) || defined (__HIP__)
 
+#if defined(__HIP_DEVICE_COMPILE__) || defined(__CUDA_ARCH__)
+    #define MC_ON_GPU 1
+#endif
+
+#if defined(__CUDACC__)
+
+    #define GPUTEST_GPU_MALLOC cudaMalloc
+    #define GPUTEST_GPU_FREE cudaFree
+    #define GPUTEST_GPU_MEMCPY cudaMemcpy
+    #define GPUTEST_GPU_MEMSET cudaMemset
+    #define GPUTEST_GPU_HTOD   cudaMemcpyHostToDevice
+    #define GPUTEST_GPU_DTOH   cudaMemcpyDeviceToHost
+    #define GPUTEST_PEEK_LAST_ERROR cudaPeekAtLastError
+    #define GPUTEST_DEVICE_SYNCH cudaDeviceSynchronize
+    #define GPUTEST_THREADID threadIdx.x
+    #define GPUTEST_BLOCKID blockIdx.x
+    #define GPUTEST_BLOCKDIM blockDim.x
+
+    #include <cuda.h>  
+
+#elif defined(__HIP__)
+
+    #define GPUTEST_GPU_MALLOC hipMalloc
+    #define GPUTEST_GPU_FREE hipFree
+    #define GPUTEST_GPU_MEMCPY hipMemcpy
+    #define GPUTEST_GPU_MEMSET hipMemset
+    #define GPUTEST_GPU_HTOD   hipMemcpyHostToDevice
+    #define GPUTEST_GPU_DTOH   hipMemcpyDeviceToHost
+    #define GPUTEST_PEEK_LAST_ERROR hipPeekAtLastError
+    #define GPUTEST_DEVICE_SYNCH hipDeviceSynchronize
+    #define GPUTEST_THREADID hipThreadIdx_x
+    #define GPUTEST_BLOCKID hipBlockIdx_x
+    #define GPUTEST_BLOCKDIM hipBlockDim_x
+
+    #include <hip/hip_version.h>
+    #include <hip/hip_runtime.h>
+    #include <hip/hip_runtime_api.h>
+    #include <hip/hip_common.h>
+
+#endif
 #include <stdio.h>
-#include <cuda.h>  
+#include <stdlib.h>
 #include <math.h>
 #include "MCGIDI.hpp"
 #include <sys/time.h>
@@ -45,7 +85,7 @@ class TallyProductHandler : public MCGIDI::Sampling::ProductHandler {
             int index = static_cast<int>( log10( a_product.m_kineticEnergy ) ) + numberOfTalliesMinus2;
             if( index < 0 ) index = 0;
             if( index > numberOfTalliesMinus1 ) index = numberOfTalliesMinus1;
-            #ifdef __CUDA_ARCH__
+            #ifdef MC_ON_GPU
             atomicAdd( &m_tally[index], 1 );
             #else
             m_tally[index]++;
@@ -64,7 +104,7 @@ __global__ void sample( MCGIDI::ProtareSingle *a_MCProtare, int a_numCollisions,
 
     products.setTally( a_tally );
 
-    int collisionIndex = blockIdx.x * blockDim.x + threadIdx.x;
+    int collisionIndex = GPUTEST_BLOCKID * GPUTEST_BLOCKDIM + GPUTEST_THREADID;
     if( collisionIndex >= a_numCollisions ) return;
 
     uint64_t seed = collisionIndex + 1;
@@ -86,9 +126,9 @@ __global__ void sample( MCGIDI::ProtareSingle *a_MCProtare, int a_numCollisions,
 /*
 =========================================================
 */
-__global__ void setUp( int a_numIsotopes, MCGIDI::DataBuffer **a_buf ) {  // Call this each isotope per block and one warp only (i.e. <<< number_isotopes, 32>>>)
+__global__ void setUp( int a_numIsotopes, MCGIDI::DataBuffer **a_buf ) {  // Call this each isotope per block and one warp only (i.e. <<< number_isotopes, MCGIDI_WARP_SIZE>>>)
 
-    int isotopeIndex = blockIdx.x;
+    int isotopeIndex = GPUTEST_BLOCKID;
 
     MCGIDI::DataBuffer *buf = a_buf[isotopeIndex];
     MCGIDI::ProtareSingle *MCProtare = new(buf->m_placementStart) MCGIDI::ProtareSingle( );
@@ -108,11 +148,8 @@ __global__ void printData( MCGIDI::ProtareSingle *MCProtare ) {       // Called 
 
     int numberOfReactions = MCProtare->reactions( ).size( );
 
-    MCGIDI::Sampling::Input input( true, MCGIDI::Sampling::Upscatter::Model::B );
-    MCGIDI::Sampling::MCGIDIVectorProductHandler products;
-
     for( int i1 = 0; i1 < numberOfReactions; ++i1 ) {
-        MCGIDI::Reaction const *reaction = MCProtare->reaction( i1 );               // This line causes a "nvlink warning".
+        MCGIDI::Reaction const *reaction = MCProtare->reaction( i1 );      // This line causes a "nvlink warning".
         double threshold = MCProtare->threshold( i1 );
         printf( "D: reaction(%d) = %s threshold = %g\n", i1, reaction->label( ).c_str( ), threshold );
     }
@@ -125,7 +162,7 @@ int main( int argc, char **argv ) {
 
     int status;
 
-    std::cerr << "    gpuTest - on CUDA" << std::endl;
+    std::cerr << "    gpuTest - on GPU" << std::endl;
 
     try {
         status = main2( argc, argv ); }
@@ -162,7 +199,10 @@ int main2( int argc, char *argv[] ) {                                   // main 
 
     int numberOfIsotopes = sizeof( isotopeNames ) / sizeof( isotopeNames[0] );
 
+    LUPI::StatusMessageReporting smr1;
     size_t my_size;
+
+#if defined(__CUDACC__)
     cudaDeviceSetLimit( cudaLimitStackSize, 80 * 1024 );
     cudaDeviceGetLimit( &my_size, cudaLimitStackSize ) ;
     printf( "cudaLimitStackSize =  %luk\n", my_size / 1024 );
@@ -172,6 +212,8 @@ int main2( int argc, char *argv[] ) {                                   // main 
     cudaDeviceSetLimit( cudaLimitPrintfFifoSize, 40 * 1024 * 1024 );
     cudaDeviceGetLimit( &my_size, cudaLimitPrintfFifoSize );
     printf( "cudaLimitPrintfFifoSize =  %luM\n", my_size / ( 1024 * 1024 ) );
+#elif defined(__HIP__)
+#endif
 
     int doPrint = 0;                    // doPrint == 0 means do not print out results from unpacked data
     int numCollisions = 100 * 1000;     // Number of sample reactions
@@ -187,10 +229,10 @@ int main2( int argc, char *argv[] ) {                                   // main 
     printf( "doPrint = %d, numCollisions = %g, numIsotopes = %d, doCompare = %d\n", doPrint, static_cast<double>( numCollisions ), numIsotopes, doCompare );
 
     std::vector<MCGIDI::Protare *>protares( numIsotopes );
-    std::string mapFilename( "/usr/gapps/Mercury/data/nuclear/endl/2009.3_gp3.17/gnd/all.map" );
-    PoPI::Database pops( "/usr/gapps/Mercury/data/nuclear/endl/2009.3/gnd/pops.xml" );
+    std::string mapFilename( "/usr/gapps/data/nuclear/development/GIDI3/Versions/V17/Data/ENDL2009/ENDL2009.4/all.map" );
+    PoPI::Database pops( "/usr/gapps/data/nuclear/common/pops.xml" );
 
-    std::ifstream meta_stream( "/usr/gapps/data/nuclear/development/GIDI3/Versions/V10/metastables_alias.xml" );
+    std::ifstream meta_stream( "/usr/gapps/data/nuclear/common/metastables_alias.xml" );
     std::string metastable_string( ( std::istreambuf_iterator<char>( meta_stream ) ), std::istreambuf_iterator<char>( ) );
     pops.addDatabase( metastable_string, false );
 
@@ -212,7 +254,7 @@ int main2( int argc, char *argv[] ) {                                   // main 
         particleList.add( projectile );
         std::set<int> exclusionSet;
 
-        protares[isoIndex] = MCGIDI::protareFromGIDIProtare( *protare, pops, MC, particleList, domainHash, temperatures, exclusionSet );
+        protares[isoIndex] = MCGIDI::protareFromGIDIProtare( smr1, *protare, pops, MC, particleList, domainHash, temperatures, exclusionSet );
     }
 
     MCGIDI::Protare *MCProtare = protares[numIsotopes-1];
@@ -246,25 +288,24 @@ int main2( int argc, char *argv[] ) {                                   // main 
     }
 
     MCGIDI::DataBuffer **deviceBuffers_d = nullptr;
-    cudaMalloc( (void **) &deviceBuffers_d, sizeof( MCGIDI::DataBuffer * ) * numIsotopes );
-    cudaMemcpy( deviceBuffers_d, &deviceBuffers_h[0], sizeof( MCGIDI::DataBuffer * ) * numIsotopes, cudaMemcpyHostToDevice );
+    GPUTEST_GPU_MALLOC( (void **) &deviceBuffers_d, sizeof( MCGIDI::DataBuffer * ) * numIsotopes );
+    GPUTEST_GPU_MEMCPY( deviceBuffers_d, &deviceBuffers_h[0], sizeof( MCGIDI::DataBuffer * ) * numIsotopes, GPUTEST_GPU_HTOD );
+    setUp<<< numIsotopes, MCGIDI_WARP_SIZE >>>( numIsotopes, deviceBuffers_d );
 
-    setUp<<< numIsotopes, 32 >>>( numIsotopes, deviceBuffers_d );
-
-    gpuErrchk( cudaPeekAtLastError( ) );
-    gpuErrchk( cudaDeviceSynchronize( ) );
+    gpuErrchk( GPUTEST_PEEK_LAST_ERROR( ) );
+    gpuErrchk( GPUTEST_DEVICE_SYNCH( ) );
 
     if( doPrint ) {
         printData<<<1, 1>>>( reinterpret_cast<MCGIDI::ProtareSingle *>( deviceProtares[numIsotopes-1] ) );
-        gpuErrchk( cudaPeekAtLastError( ) );
-        gpuErrchk( cudaDeviceSynchronize( ) );
+        gpuErrchk( GPUTEST_PEEK_LAST_ERROR( ) );
+        gpuErrchk( GPUTEST_DEVICE_SYNCH( ) );
     }
 
     if( doCompare > 0 ) {
         int isoIndex = numIsotopes-1;
         size_t cpuSize = protares[isoIndex]->memorySize( );
         char *gidiBytes = (char *) malloc( cpuSize );
-        cudaMemcpy( gidiBytes, deviceProtares[isoIndex], cpuSize, cudaMemcpyDeviceToHost );
+        GPUTEST_GPU_MEMCPY( gidiBytes, deviceProtares[isoIndex], cpuSize, GPUTEST_GPU_DTOH );
         if( doCompare == 1 ) {
             FILE *outFile = fopen( "gidi_data.bin", "wb" );
             fwrite( gidiBytes, sizeof( char ), cpuSize, outFile );
@@ -348,20 +389,20 @@ int main2( int argc, char *argv[] ) {                                   // main 
         timeval tv1, tv2;
         gettimeofday( &tv1, nullptr  );
         int *tally_d, GPU_tally[numberOfTallies];
-        cudaMalloc( (void **) &tally_d, numberOfTallies * sizeof( tally_d[0] ) ); 
-        cudaMemset( tally_d, 0, numberOfTallies * sizeof( tally_d[0] ) ); 
+        GPUTEST_GPU_MALLOC( (void **) &tally_d, numberOfTallies * sizeof( tally_d[0] ) ); 
+        GPUTEST_GPU_MEMSET( tally_d, 0, numberOfTallies * sizeof( tally_d[0] ) ); 
 
         MCGIDI::ProtareSingle *MCProtare_d = reinterpret_cast<MCGIDI::ProtareSingle *>( deviceProtares[numIsotopes-1] );
         sample<<<(numCollisions+255)/256, 256>>>( MCProtare_d, numCollisions, tally_d );
 
-        cudaDeviceSynchronize( );
+        GPUTEST_DEVICE_SYNCH( );
         gettimeofday( &tv2, nullptr );
 
-        cudaMemcpy( GPU_tally, tally_d, numberOfTallies * sizeof( tally_d[0] ), cudaMemcpyDeviceToHost );
+        GPUTEST_GPU_MEMCPY( GPU_tally, tally_d, numberOfTallies * sizeof( tally_d[0] ), GPUTEST_GPU_DTOH );
         printf( "Device tally:     " );
         for( int i = 0; i < numberOfTallies; i++ ) printf( "%8d ", GPU_tally[i] );
         printf( "\nDevice Total time = %f seconds\n", (double) ( tv2.tv_usec - tv1.tv_usec ) / 1000000 + (double) ( tv2.tv_sec - tv1.tv_sec ) );
-        cudaFree( tally_d );
+        GPUTEST_GPU_FREE( tally_d );
 
         printf( "Tally difference: " );
         for( int i = 0; i < numberOfTallies; i++ ) {

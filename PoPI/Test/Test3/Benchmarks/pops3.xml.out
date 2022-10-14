@@ -1,7 +1,11 @@
 <?xml version="1.0"?>
 <PoPs name="lPoPs" version="0.0.1" format="0.1">
   <aliases>
-    <particle id="gamma" pid="photon"/></aliases>
+    <particle id="gamma" pid="photon"/>
+    <particle id="d" pid="h2"/>
+    <particle id="t" pid="h3"/>
+    <particle id="h" pid="he3"/>
+    <particle id="a" pid="he4"/></aliases>
   <gaugeBosons>
     <gaugeBoson id="photon">
       <mass>
@@ -121,6 +125,8 @@
               <charge>
                 <integer label="default" value="0" unit="e"/></charge>
               <nucleus id="h1" index="0">
+                <mass>
+                  <double label="default" value="1.00727646681" unit="amu"/></mass>
                 <charge>
                   <integer label="default" value="1" unit="e"/></charge>
                 <energy>
@@ -133,6 +139,8 @@
               <charge>
                 <integer label="default" value="0" unit="e"/></charge>
               <nucleus id="h2" index="0">
+                <mass>
+                  <double label="default" value="2.01355321275" unit="amu"/></mass>
                 <charge>
                   <integer label="default" value="1" unit="e"/></charge>
                 <energy>
@@ -229,6 +237,8 @@
               <charge>
                 <integer label="default" value="0" unit="e"/></charge>
               <nucleus id="he4" index="0">
+                <mass>
+                  <double label="default" value="4.00150617913" unit="amu"/></mass>
                 <charge>
                   <integer label="default" value="2" unit="e"/></charge>
                 <energy>

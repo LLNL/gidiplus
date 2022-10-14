@@ -88,7 +88,7 @@ first letter of the *get* function capitalized and the prefix *set* added. For e
 
 \section GNDS_overviewSection GNDS overview related to GIDI
 
-This section presents a very briefly overview of **GNDS** with a main focus on how GIDI implements features of **GNDS**. Each
+This section presents a very brief overview of **GNDS** with a main focus on how GIDI implements features of **GNDS**. Each
 node in **GNDS** can be classified into 1 of 4 groups. Two of these node groups are list like. However, because GIDI is based on
 nuclear infrastructure code **FUDGE** (also developed at LLNL) that is mainly written in python, and since python has the builtin classes
 list, tuple, map and set, the each list-like node group in **GNDS** is called suite in **FUDGE** and GIDI. These suite node groups are 

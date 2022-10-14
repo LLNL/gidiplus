@@ -40,6 +40,7 @@ int main( int argc, char **argv ) {
 */
 void main2( int argc, char **argv ) {
 
+    LUPI::StatusMessageReporting smr1;
     argvOptions argv_options( "crossSections", description );
     ParseTestOptions parseTestOptions( argv_options, argc, argv );
 
@@ -64,14 +65,14 @@ void main2( int argc, char **argv ) {
 
     GIDI::Transporting::MG settings( protare->projectile( ).ID( ), GIDI::Transporting::Mode::multiGroup, GIDI::Transporting::DelayedNeutrons::on );
 
-    GIDI::Vector crossSection = protare->multiGroupCrossSection( settings, temperatures[0] );
+    GIDI::Vector crossSection = protare->multiGroupCrossSection( smr1, settings, temperatures[0] );
     std::string prefix( "Total cross section:: " );
     printVector( prefix, crossSection );
 
     for( std::size_t index = 0; index < protare->numberOfReactions( ); ++index ) {
         GIDI::Reaction const *reaction = protare->reaction( index );
 
-        GIDI::Vector crossSection = reaction->multiGroupCrossSection( settings, temperatures[0] );
+        GIDI::Vector crossSection = reaction->multiGroupCrossSection( smr1, settings, temperatures[0] );
         std::string string( reaction->label( ) );
         string = "    " + string + ":: ";
         printVector( string, crossSection );

@@ -114,7 +114,7 @@ void GeneralEvaporation2d::toXMLList_func( WriteInfo &a_writeInfo, std::string c
  ***********************************************************************************************************/
  
 SimpleMaxwellianFission2d::SimpleMaxwellianFission2d( Construction::Settings const &a_construction, HAPI::Node const &a_node,
-		SetupInfo &a_setupInfo, Suite *a_parent ) :
+		        SetupInfo &a_setupInfo, Suite *a_parent ) :
         Function2dForm( a_construction, a_node, a_setupInfo, FormType::simpleMaxwellianFission2d, a_parent ),
         m_U( a_node.child( GIDI_UChars ), a_setupInfo ),
         m_theta( data1dParse( a_construction, a_node.child( GIDI_thetaChars ).first_child( ), a_setupInfo, nullptr ) ) {
@@ -523,7 +523,7 @@ double Weighted_function2d::evaluate( double a_x2, double a_x1 ) const {
  ***********************************************************************************************************/
 
 WeightedFunctionals2d::WeightedFunctionals2d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
-		Suite *a_parent ) :
+		        Suite *a_parent ) :
         Function2dForm( a_construction, a_node, a_setupInfo, FormType::weightedFunctionals2d, a_parent ) {
 
     for( HAPI::Node child = a_node.first_child( ); !child.empty( ); child.to_next_sibling( ) ) {

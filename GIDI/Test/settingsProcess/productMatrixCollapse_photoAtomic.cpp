@@ -102,6 +102,7 @@ void productMatrixInfo2( GIDI::Protare *protare, GIDI::Styles::TemperatureInfo t
                         GIDI::Transporting::Groups_from_bdfls const &groups_from_bdfls,
                         GIDI::Transporting::Fluxes_from_bdfls const &fluxes_from_bdfls ) {
 
+    LUPI::StatusMessageReporting smr1;
     int offset = 4;
     int prefixLength = outputChannelStringMaximumLength( protare );
     if( prefixLength < 32 ) prefixLength = 32;
@@ -123,10 +124,10 @@ void productMatrixInfo2( GIDI::Protare *protare, GIDI::Styles::TemperatureInfo t
     particles.print( );
     std::cout << std::endl;
 
-    int maxOrder = protare->maximumLegendreOrder( settings, temperature, PoPI::IDs::photon );
+    int maxOrder = protare->maximumLegendreOrder( smr1, settings, temperature, PoPI::IDs::photon );
     std::string prefix( "Total gamma-gamma matrix:" );
     prefix.insert( prefix.size( ), offset + prefixLength + 1 - prefix.size( ), ' ' );
-    GIDI::Matrix uncollapsed = protare->multiGroupProductMatrix( settings, temperature, particles, PoPI::IDs::photon, 0 );
+    GIDI::Matrix uncollapsed = protare->multiGroupProductMatrix( smr1, settings, temperature, particles, PoPI::IDs::photon, 0 );
     printMatrix( prefix, maxOrder, uncollapsed );
 
     prefix = "Collapsed gamma-gamma matrix:";
@@ -134,10 +135,10 @@ void productMatrixInfo2( GIDI::Protare *protare, GIDI::Styles::TemperatureInfo t
     GIDI::Matrix collapsed = GIDI::collapse( uncollapsed, settings, particles, 0, PoPI::IDs::photon );
     printMatrix( prefix, maxOrder, collapsed );
 
-    maxOrder = protare->maximumLegendreOrder( settings, temperature, PoPI::IDs::neutron );
+    maxOrder = protare->maximumLegendreOrder( smr1, settings, temperature, PoPI::IDs::neutron );
     prefix = "Total gamma-neutron matrix:";
     prefix.insert( prefix.size( ), offset + prefixLength + 1 - prefix.size( ), ' ' );
-    uncollapsed = protare->multiGroupProductMatrix( settings, temperature, particles, PoPI::IDs::neutron, 0 );
+    uncollapsed = protare->multiGroupProductMatrix( smr1, settings, temperature, particles, PoPI::IDs::neutron, 0 );
     printMatrix( prefix, maxOrder, uncollapsed );
 
     prefix = "Collapsed gamma-neutron matrix:";
@@ -150,8 +151,8 @@ return;
     GIDI::Matrix summedCollapsed( 0, 0 );
     for( std::size_t index = 0; index < protare->numberOfReactions( ); ++index ) {
         GIDI::Reaction *reaction = protare->reaction( index );
-        int maxOrder = reaction->maximumLegendreOrder( settings, temperature, PoPI::IDs::photon );
-        GIDI::Matrix m1 = reaction->multiGroupProductMatrix( settings, temperature, particles, PoPI::IDs::photon, 0 );
+        int maxOrder = reaction->maximumLegendreOrder( smr1, settings, temperature, PoPI::IDs::photon );
+        GIDI::Matrix m1 = reaction->multiGroupProductMatrix( smr1, settings, temperature, particles, PoPI::IDs::photon, 0 );
         std::string string( reaction->label( ) );
 
         string += ":: ";

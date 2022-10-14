@@ -1,0 +1,83 @@
+/**
+
+\mainpage PoPI Library API Documentation
+
+\tableofcontents
+
+\section introductionSection Introduction
+
+The package **PoPI** (Properties of Particles Interface) is a C++ package for reading particle data as stored
+in the **PoPs** (Properties of Particles) node within the **GNDS** (Generalized Nuclear Data Structure) format. Herein, **GNDS PoPs** will
+be called **PoPs**.
+
+The package **PoPI** is not a stand-alone package but part of a larger package know as **GIDI**+. **GIDI**+ is developed by *Lawrance Livermore National Laboratory* (LLNL)
+and are available at /github.com/LLNL/gidiplus as one download.
+To use **PoPI**, one must also have the **statusMessageReporting**, **numericalFunctions** and **HAPI** libraries which are part of the **GIDI**+ package, as well as
+the **pugixml** library and optionally the **HDF5** library. The **pugixml** and **HDF5** libraries must be downloaded by the user and placed in the
+appropriate location. Please see the **GIDI**+ documentation for installing the **pugixml** and **HDF5** libraries.
+
+Please note that **PoPI** does not currently support units. Instead, it assumes that all masses are in *amu* units and all energies are in *MeV* units.
+
+\section nomenclatureSection Nomenclature
+
+All of the variables, functions and classes in the **PoPI** library reside in the **PoPI** namepace.
+All enums are scoped enums.
+Namespace, enum and class names start with a capital letter (e.g., PoPI::Particle, PoPI::Database).
+
+Class member variables use a camelcase name that is prefixed with *m_*, and are almost always private. For example,
+the start of the PoPI::Pariticle class is
+
+    class Particle : public IDBase {
+
+        private:
+            std::string m_family;
+            int m_hasNucleus;
+            PQ_suite m_mass;
+            PQ_suite m_spin;
+            PQ_suite m_parity;
+            PQ_suite m_charge;
+            PQ_suite m_halflife;
+            DecayData m_decayData;
+
+        ...
+    };
+
+Most varibles within a class can be accessed with a method that has the same name as the variable but without the prefix *m_*. For example, the
+method to access the **m_mass** variable of the **PoPI::Particle** instance is named **PoPI::Particle::mass**.
+
+\section usageSection Usage and Examples
+
+Currently, **PoPI** is mainly developed to read **PoPs** data from a file. The following examples will read in the **PoPs** files
+"pops.xml", and "metastables_alias.xml" which can be found in the **Test** directory.
+To read in the "pops.xml" file, create a **PoPI::Database** instance. For example,
+
+    PoPI::Database pops( "pops.xml" );
+
+Additional files can be added using the **PoPI::Database::addFile** method. For example, adding the "metastables_alias.xml" file as
+
+    pops.addFile( "metastables_alias.xml", 1 );
+
+Another way to read in the two files is to create an empty **PoPI::Database** instance and then call the method **PoPI::Database::addFile** 
+on the files as
+
+    PoPI::Database pops( );
+    pops.addFile( "pops.xml", 1 );
+    pops.addFile( "metastables_alias.xml", 1 );
+
+A particle in a **PoPI::Database** can be accessed using the **PoPI::Database::particle** method. For example, "O16" can be access as
+
+    PoPI::Particle const &O16 = pops.particle( "O16" );
+
+All **PoPI::PQ_suite** instances acts like a list. For example, the **PoPI::Particle::m_mass** is a **PoPI::PQ_suite** instance.
+
+To get the mass of a particle, it is best to use the method "PoPI::IDBase::massValue". For the *O16* instance in the prior example this will look like
+
+    std::cout << "O16 mass is " << O16.massValue( "amu" ) << " amu" << std::endl;
+
+Recall, units are currently not supported and all mass will be returned in unit of *amu*. However, the argument "amu" is required as
+units will be supported in the future. If a particle does not have a mass, a C++ *throw* will executed.
+
+In additions, the Test directory contains several tests that can be run (via the *make -s check* command) to verify that **PoPI** is working properly. The codes
+under this directory also provide examples of how to uses **PoPI**.
+
+ */

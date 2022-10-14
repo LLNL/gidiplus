@@ -9,7 +9,7 @@ SHELL = /bin/ksh
 
 .PHONY: default include docs check clean realclean
 
-DIRS = pugixml numericalFunctions HAPI PoPI GIDI MCGIDI
+DIRS = pugixml numericalFunctions LUPI HAPI RISI PoPI GIDI MCGIDI
 
 default: include
 

@@ -27,7 +27,8 @@ Grid::Grid( HAPI::Node const &a_node, SetupInfo &a_setupInfo, int a_useSystem_st
         Axis( a_node, a_setupInfo, FormType::grid ),
         m_style( a_node.attribute_as_string( GIDI_styleChars ) ),
         m_keyName( GIDI_indexChars ),
-        m_keyValue( a_node.attribute_as_string( GIDI_indexChars ) ) {
+        m_keyValue( a_node.attribute_as_string( GIDI_indexChars ) ),
+        m_interpolation( a_node.attribute_as_string( GIDI_interpolationChars ) ) {
 
     if( href( ) == "" ) {
         HAPI::Node values = a_node.first_child( );

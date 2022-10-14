@@ -100,8 +100,7 @@ void Axes::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) cons
  * *a_labelsAndUnits* argument. The number of Axis instances created is the size() of *a_labelsAndUnits*. Each
  * item of *a_labelsAndUnits* specifies the label and unit for an Axis instance.
  *
- * @param       a_writeInfo         [in/out]    Instance containing incremental indentation and other information and stores the appended lines.
- * @param       a_indent            [in]        The amount to indent *this* node.
+ * @param a_labelsAndUnits      [in]        The list of labels and units for each axis.
  ***********************************************************************************************************/
     
 Axes Axes::makeAxes( std::vector<std::pair<std::string, std::string>> const &a_labelsAndUnits ) {

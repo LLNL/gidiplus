@@ -172,7 +172,16 @@ class DataBuffer {
             return true;
         }
 
-#ifdef __CUDACC__
+#if defined(__CUDACC__) || defined (__HIP__)
+    #ifdef __CUDACC__
+        #define MCGIDI_GPU_MALLOC cudaMalloc
+        #define MCGIDI_GPU_MEMCPY cudaMemcpy
+        #define MCGIDI_GPU_HTOD   cudaMemcpyHostToDevice
+    #else
+        #define MCGIDI_GPU_MALLOC hipMalloc
+        #define MCGIDI_GPU_MEMCPY hipMemcpy
+        #define MCGIDI_GPU_HTOD   hipMemcpyHostToDevice
+    #endif
         // Copy this host object to the device and return its pointer
         MCGIDI_HOST DataBuffer *copyToDevice(size_t a_cpuSize, char *&a_protarePtr) {
 
@@ -182,30 +191,33 @@ class DataBuffer {
             buf_tmp.copyIndexes(*this);
             buf_tmp.m_maxPlacementSize = a_cpuSize;
 
-            gpuErrchk(cudaMalloc((void **) &buf_tmp.m_intData, sizeof(int) * m_intIndex));
-            gpuErrchk(cudaMemcpy(buf_tmp.m_intData, m_intData, sizeof(int) * m_intIndex, cudaMemcpyHostToDevice));
-            gpuErrchk(cudaMalloc((void **) &buf_tmp.m_floatData, sizeof(double) * m_floatIndex));
-            gpuErrchk(cudaMemcpy(buf_tmp.m_floatData, m_floatData, sizeof(double) * m_floatIndex, cudaMemcpyHostToDevice));
-            gpuErrchk(cudaMalloc((void **) &buf_tmp.m_charData, sizeof(char) * m_charIndex));
-            gpuErrchk(cudaMemcpy(buf_tmp.m_charData, m_charData, sizeof(char) * m_charIndex, cudaMemcpyHostToDevice));
-            gpuErrchk(cudaMalloc((void **) &buf_tmp.m_longData, sizeof(uint64_t) * m_longIndex));
-            gpuErrchk(cudaMemcpy(buf_tmp.m_longData, m_longData, sizeof(uint64_t) * m_longIndex, cudaMemcpyHostToDevice));
+            gpuErrchk(MCGIDI_GPU_MALLOC((void **) &buf_tmp.m_intData, sizeof(int) * m_intIndex));
+            gpuErrchk(MCGIDI_GPU_MEMCPY(buf_tmp.m_intData, m_intData, sizeof(int) * m_intIndex, MCGIDI_GPU_HTOD));
+            gpuErrchk(MCGIDI_GPU_MALLOC((void **) &buf_tmp.m_floatData, sizeof(double) * m_floatIndex));
+            gpuErrchk(MCGIDI_GPU_MEMCPY(buf_tmp.m_floatData, m_floatData, sizeof(double) * m_floatIndex, MCGIDI_GPU_HTOD));
+            gpuErrchk(MCGIDI_GPU_MALLOC((void **) &buf_tmp.m_charData, sizeof(char) * m_charIndex));
+            gpuErrchk(MCGIDI_GPU_MEMCPY(buf_tmp.m_charData, m_charData, sizeof(char) * m_charIndex, MCGIDI_GPU_HTOD));
+            gpuErrchk(MCGIDI_GPU_MALLOC((void **) &buf_tmp.m_longData, sizeof(uint64_t) * m_longIndex));
+            gpuErrchk(MCGIDI_GPU_MEMCPY(buf_tmp.m_longData, m_longData, sizeof(uint64_t) * m_longIndex, MCGIDI_GPU_HTOD));
 
-            gpuErrchk(cudaMalloc((void **) &buf_tmp.m_placementStart, buf_tmp.m_maxPlacementSize));
+            gpuErrchk(MCGIDI_GPU_MALLOC((void **) &buf_tmp.m_placementStart, buf_tmp.m_maxPlacementSize));
             // Set to 0 for easier byte comparisons. This may be removed after testing is done
             //gpuErrchk(cudaMemset((void *) buf_tmp.m_placementStart, 0, buf_tmp.m_maxPlacementSize));
             buf_tmp.m_placement = buf_tmp.m_placementStart;
 
             a_protarePtr = buf_tmp.m_placementStart;
 
-            gpuErrchk(cudaMalloc((void **) &devicePtr, sizeof(DataBuffer)));
-            gpuErrchk(cudaMemcpy(devicePtr, &buf_tmp, sizeof(DataBuffer), cudaMemcpyHostToDevice));
+            gpuErrchk(MCGIDI_GPU_MALLOC((void **) &devicePtr, sizeof(DataBuffer)));
+            gpuErrchk(MCGIDI_GPU_MEMCPY(devicePtr, &buf_tmp, sizeof(DataBuffer), MCGIDI_GPU_HTOD));
 
             // Don't need destructor trying to free the device memory.
             buf_tmp.nullOutPointers();
 
             return devicePtr;
         }
+    #undef MCGIDI_GPU_MALLOC
+    #undef MCGIDI_GPU_MEMCPY
+    #undef MCGIDI_GPU_HTOD
 #endif
 
     private:
@@ -246,19 +258,18 @@ class DataBuffer {
             {((buf).m_charIndex)++; member[size_index] = '\0'; }} \
      else if ( mode == DataBuffer::Mode::Memory ) { (buf).incrementPlacement(sizeof(char) * (member.size()+1)); } }
 
-// For threads of 32
-#ifdef __CUDA_ARCH__
+#if MCGIDI_WARP_SIZE > 1 and defined(MC_ON_GPU)
 #define DATA_MEMBER_VECTOR_DOUBLE(member, buf, mode) \
     { \
         size_t vector_size = member.size(); \
         DATA_MEMBER_INT(vector_size, (buf), mode); \
         if ( mode == DataBuffer::Mode::Unpack ) member.resize(vector_size, &(buf).m_placement); \
         size_t bufferIndex = (buf).m_floatIndex; \
-        for ( size_t member_index = 0; member_index < vector_size; member_index += 32, bufferIndex += 32 ) \
+        for ( size_t member_index = 0; member_index < vector_size; member_index += MCGIDI_WARP_SIZE, bufferIndex += MCGIDI_WARP_SIZE ) \
         { \
-            size_t thrMemberId = member_index+threadIdx.x; \
+            size_t thrMemberId = member_index+MCGIDI_THREADID; \
             if (thrMemberId >= vector_size) continue; \
-            member[thrMemberId] = (buf).m_floatData[bufferIndex + threadIdx.x]; \
+            member[thrMemberId] = (buf).m_floatData[bufferIndex + MCGIDI_THREADID]; \
         } \
         (buf).m_floatIndex += vector_size; \
     }
@@ -284,19 +295,18 @@ class DataBuffer {
     }
 #endif
 
-// For threads of 32
-#ifdef __CUDA_ARCH__
+#if MCGIDI_WARP_SIZE > 1 and defined(MC_ON_GPU)
 #define DATA_MEMBER_VECTOR_INT(member, buf, mode) \
     { \
         size_t vector_size = member.size(); \
         DATA_MEMBER_INT(vector_size, (buf), mode); \
         if ( mode == DataBuffer::Mode::Unpack ) member.resize(vector_size, &(buf).m_placement); \
         size_t bufferIndex = (buf).m_intIndex; \
-        for ( size_t member_index = 0; member_index < vector_size; member_index += 32, bufferIndex += 32 ) \
+        for ( size_t member_index = 0; member_index < vector_size; member_index += MCGIDI_WARP_SIZE, bufferIndex += MCGIDI_WARP_SIZE ) \
         { \
-            size_t thrMemberId = member_index+threadIdx.x; \
+            size_t thrMemberId = member_index+MCGIDI_THREADID; \
             if (thrMemberId >= vector_size) continue; \
-            member[thrMemberId] = (buf).m_intData[bufferIndex + threadIdx.x]; \
+            member[thrMemberId] = (buf).m_intData[bufferIndex + MCGIDI_THREADID]; \
         } \
         (buf).m_intIndex += vector_size; \
     }
@@ -322,15 +332,14 @@ class DataBuffer {
     }
 #endif
 
-// For threads of 32
-#ifdef __CUDA_ARCH__
+#if MCGIDI_WARP_SIZE > 1 and defined(MC_ON_GPU)
 #define DATA_MEMBER_CHAR_ARRAY( member, buf, mode ) { \
         size_t array_size = sizeof( member ); \
         size_t bufferIndex = (buf).m_charIndex; \
-        for ( size_t member_index = 0; member_index < array_size; member_index += 32, bufferIndex += 32 ) { \
-            size_t thrMemberId = member_index+threadIdx.x; \
+        for ( size_t member_index = 0; member_index < array_size; member_index += MCGIDI_WARP_SIZE, bufferIndex += MCGIDI_WARP_SIZE ) { \
+            size_t thrMemberId = member_index+MCGIDI_THREADID; \
             if( thrMemberId >= array_size ) continue; \
-            member[thrMemberId] = (buf).m_charData[bufferIndex + threadIdx.x]; \
+            member[thrMemberId] = (buf).m_charData[bufferIndex + MCGIDI_THREADID]; \
         } \
         (buf).m_charIndex += array_size; \
     }

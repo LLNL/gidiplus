@@ -44,10 +44,11 @@ Particles::~Particles( ) {
 
 Particle const *Particles::particle( std::string const &a_pid ) const {
 
-    std::map<std::string, Particle>::const_iterator particle = m_particles.find( a_pid );
+    for( auto particleIter = m_particles.begin( ); particleIter != m_particles.end( ); ++particleIter ) {
+        if( PoPI::compareSpecialParticleIDs( (*particleIter).first, a_pid ) ) return( &(*particleIter).second );
+    }
 
-    if( particle == m_particles.end( ) ) return( nullptr );
-    return( &(particle->second) );
+    return( nullptr );
 }
 
 /* *********************************************************************************************************//**
@@ -95,7 +96,7 @@ bool Particles::remove( std::string const &a_pid ) {
 
 bool Particles::hasParticle( std::string const &a_id ) const {
 
-    return( m_particles.find( a_id ) != m_particles.end( ) );
+    return( particle( a_id ) != nullptr );
 }
 
 /* *********************************************************************************************************//**
@@ -122,9 +123,7 @@ void Particles::process( Protare const &a_protare, std::string const &a_label ) 
         std::string pid = iter->first;
         Particle *particle = &(iter->second);
 
-        std::vector<double> const &groupBoundaries = heatedMultiGroup.groupBoundaries( pid );
-
-        particle->process( groupBoundaries );
+        particle->process( heatedMultiGroup.transportable( pid ) );
     }
 }
 
@@ -283,47 +282,54 @@ ProcessedFlux const *Particle::nearestProcessedFluxToTemperature( double a_tempe
  * For internal use only: should only be called from Particles::process. Determines the mapping of fine multi-group boundaries to coarse multi-group boundaries, 
  * and calculated multi-group fluxes from *m_fluxes*.
  *
- * @param a_boundaries              [in]    The fine group boundaries.
+ * @param a_transportable           [in]    The **Transportable** instance that specified the coarse multi-group information for collapsing.
  * @param a_epsilon                 [in]    Specifies how close a coarse multi-group boundary must be to a fine multi-group boundary to be considered the same boundary.
  ***********************************************************************************************************/
 
-void Particle::process( std::vector<double> const &a_boundaries, double a_epsilon ) {
+void Particle::process( Transportable const &a_transportable, double a_epsilon ) {
+
+    std::vector<double> groupBoundaries = a_transportable.groupBoundaries( );
+    std::string errInfo( "cannot collapse particle '" + m_pid 
+            + "' from multi-group '" + a_transportable.group( ).label( ) + "' of size " + std::to_string( groupBoundaries.size( ) ) 
+            + " to multi-group '" + m_multiGroup.label( ) + "' of size " + std::to_string( m_multiGroup.boundaries( ).size( ) ) );
 
     if( m_multiGroup.size( ) == 0 ) {
         if( m_mode != Transporting::Mode::MonteCarloContinuousEnergy ) throw Exception( "Multi-group boundaries not set for particle '" + m_pid + "'." ); }
     else {
         if( m_fineMultiGroup.size( ) > 0 ) {
-            if( m_fineMultiGroup.size( ) != a_boundaries.size( ) ) throw Exception( "Redefining particle's fine multi-group of different size not allowed." );
+            if( m_fineMultiGroup.size( ) != groupBoundaries.size( ) )
+                throw Exception( "For particle '" + m_pid + "', redefining particle's fine multi-group of different size not allowed." );
             for( std::size_t i1 = 0; i1 < m_fineMultiGroup.size( ); ++i1 ) {
-                if( fabs( m_fineMultiGroup[i1] - a_boundaries[i1] ) > a_epsilon * m_fineMultiGroup[i1] ) throw Exception( "Redefining particle's fine multi-group not allowed." );
+                if( fabs( m_fineMultiGroup[i1] - groupBoundaries[i1] ) > a_epsilon * m_fineMultiGroup[i1] )
+                    throw Exception( "For particle '" + m_pid + "', redefining particle's fine multi-group not allowed." );
             }
             return;                                 // Processing already done.
         }
 
-        int i1 = 0, n1 = (int) a_boundaries.size( );
+        int i1 = 0, n1 = (int) groupBoundaries.size( );
 
         while( i1 < n1 ) {
-            if( fabs( m_multiGroup[0] - a_boundaries[i1] ) <= a_epsilon * a_boundaries[i1] ) break;
+            if( fabs( m_multiGroup[0] - groupBoundaries[i1] ) <= a_epsilon * groupBoundaries[i1] ) break;
             ++i1;
         }
-        if( i1 == n1 ) throw Exception( "groups not compatible: 1" );
+        if( i1 == n1 ) throw Exception( "Groups not compatible: " + errInfo + "." );
         m_collapseIndices.push_back( i1 );
      
         for( int i2 = 1; i2 < (int) m_multiGroup.size( ); ++i2 ) {
             while( i1 < n1 ) {
-                if( fabs( m_multiGroup[i2] - a_boundaries[i1] ) <= a_epsilon * a_boundaries[i1] ) break;
+                if( fabs( m_multiGroup[i2] - groupBoundaries[i1] ) <= a_epsilon * groupBoundaries[i1] ) break;
                 ++i1;
             }
-            if( i1 == n1 ) throw Exception( "groups not compatible: 2" );
+            if( i1 == n1 ) throw Exception( "Group boundaries not compatible: " + errInfo + "." );
             m_collapseIndices.push_back( i1 );
         }
 
         for( std::size_t i2 = 0; i2 < m_fluxes.size( ); ++i2 ) {
-            ProcessedFlux __processedFlux( m_fluxes[i2].process( a_boundaries ) );
+            ProcessedFlux __processedFlux( m_fluxes[i2].process( groupBoundaries ) );
             m_processedFluxes.push_back( __processedFlux );
         }
 
-        m_fineMultiGroup.set( "", a_boundaries );
+        m_fineMultiGroup.set( "", groupBoundaries );
     }
 }
 
@@ -359,8 +365,8 @@ void Particle::print( std::string const &a_indent ) const {
  ***********************************************************************************************************/
 
 ProcessedFlux::ProcessedFlux( double a_temperature, std::vector<double> const &a_multiGroupFlux ) :
-    m_temperature( a_temperature ), 
-    m_multiGroupFlux( a_multiGroupFlux ) {
+        m_temperature( a_temperature ), 
+        m_multiGroupFlux( a_multiGroupFlux ) {
 
 }
 
@@ -369,8 +375,8 @@ ProcessedFlux::ProcessedFlux( double a_temperature, std::vector<double> const &a
  ***********************************************************************************************************/
 
 ProcessedFlux::ProcessedFlux( ProcessedFlux const &a_processedFlux ) :
-    m_temperature( a_processedFlux.temperature( ) ), 
-    m_multiGroupFlux( a_processedFlux.multiGroupFlux( ) ) {
+        m_temperature( a_processedFlux.temperature( ) ), 
+        m_multiGroupFlux( a_processedFlux.multiGroupFlux( ) ) {
 
 }
 

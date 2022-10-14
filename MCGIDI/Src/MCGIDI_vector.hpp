@@ -33,6 +33,13 @@ typedef int MCGIDI_VectorSizeType;
 #include <cuda_runtime_api.h>
 #endif
 
+#if defined(__HIP__)
+#include <hip/hip_version.h>
+#include <hip/hip_runtime.h>
+#include <hip/hip_runtime_api.h>
+#include <hip/hip_common.h>
+#endif
+
 #include <string.h>
 #include <stdio.h>
 #include "cassert"
@@ -64,13 +71,17 @@ class Vector
             case CPU_MEM:
                 _data = new T [_capacity];
                 break;
-#if defined(__CUDACC__) && !defined(__CUDA_ARCH__)
             case UVM_MEM:
-                void *ptr;
+            {
+                void *ptr = nullptr;
+#if defined(__CUDACC__) && !defined(__CUDA_ARCH__)
                 cudaMallocManaged(&ptr, _capacity*sizeof(T), cudaMemAttachGlobal);
+#elif defined(__HIP__) and !defined(__HIP_DEVICE_COMPILE__)
+                hipMallocManaged(&ptr, _capacity*sizeof(T), hipMemAttachGlobal);
+#endif
                 _data = new(ptr) T[_capacity]; 
                 break;
-#endif
+            }
             default:
                 _data = new T [_capacity];
                 break;
@@ -83,13 +94,17 @@ class Vector
             case CPU_MEM:
                 _data = new T [_capacity];
                 break;
-#if defined(__CUDACC__) && !defined(__CUDA_ARCH__)
             case UVM_MEM:
-                void *ptr;
+            {
+                void *ptr = nullptr;
+#if defined(__CUDACC__) && !defined(__CUDA_ARCH__)
                 cudaMallocManaged(&ptr, _capacity*sizeof(T), cudaMemAttachGlobal);
+#elif defined(__HIP__) and !defined(__HIP_DEVICE_COMPILE__)
+                hipMallocManaged(&ptr, _capacity*sizeof(T), hipMemAttachGlobal);
+#endif
                 _data = new(ptr) T[_capacity];
                 break;
-#endif
+            }
             default:
                 _data = new T [_capacity];
                 break;
@@ -107,13 +122,17 @@ class Vector
             case CPU_MEM:
                 _data = new T [_capacity];
                 break;
-#if defined(__CUDACC__) && !defined(__CUDA_ARCH__)
             case UVM_MEM:
-                void *ptr;
+            {
+                void *ptr = nullptr;
+#if defined(__CUDACC__) && !defined(__CUDA_ARCH__)
                 cudaMallocManaged(&ptr, _capacity*sizeof(T), cudaMemAttachGlobal);
+#elif defined(__HIP__) and !defined(__HIP_DEVICE_COMPILE__)
+                hipMallocManaged(&ptr, _capacity*sizeof(T), hipMemAttachGlobal);
+#endif
                 _data = new(ptr) T[_capacity];
                 break;
-#endif
+            }
             default:
                 _data = new T [_capacity];
                 break;
@@ -132,13 +151,17 @@ class Vector
             case CPU_MEM:
                 _data = new T [_capacity];
                 break;
-#if defined(__CUDACC__) && !defined(__CUDA_ARCH__)
             case UVM_MEM:
-                void *ptr;
+            {
+                void *ptr = nullptr;
+#if defined(__CUDACC__) && !defined(__CUDA_ARCH__)
                 cudaMallocManaged(&ptr, _capacity*sizeof(T), cudaMemAttachGlobal);
+#elif defined(__HIP__) and !defined(__HIP_DEVICE_COMPILE__)
+                hipMallocManaged(&ptr, _capacity*sizeof(T), hipMemAttachGlobal);
+#endif
                 _data = new(ptr) T[_capacity];
                 break;
-#endif
+            }
             default:
                 _data = new T [_capacity];
                 break;
@@ -153,13 +176,15 @@ class Vector
             case CPU_MEM:
                 delete[] _data; 
                 break;
-#if defined(__CUDACC__) && !defined(__CUDA_ARCH__)
             case UVM_MEM:
                  for (MCGIDI_VectorSizeType i=0; i < _size; ++i)
                    _data[i].~T();
+#if defined(__CUDACC__) && !defined(__CUDA_ARCH__)
                 cudaFree(_data);
-                break;
+#elif defined(__HIP__) and !defined(__HIP_DEVICE_COMPILE__)
+                hipFree(_data);
 #endif
+                break;
             default:
                 delete[] _data; 
                 break;
@@ -262,13 +287,17 @@ class Vector
                     *address += sizeof(T) * _capacity;
                 }
                 break;
-#if defined(__CUDACC__) && !defined(__CUDA_ARCH__)
             case UVM_MEM:
-                void *ptr;
+            {
+                void *ptr = nullptr;
+#if defined(__CUDACC__) && !defined(__CUDA_ARCH__)
                 cudaMallocManaged(&ptr, _capacity*sizeof(T), cudaMemAttachGlobal);
+#elif defined(__HIP__) and !defined(__HIP_DEVICE_COMPILE__)
+                hipMallocManaged(&ptr, _capacity*sizeof(T), hipMemAttachGlobal);
+#endif
                 _data = new(ptr) T[_capacity];
                 break;
-#endif
+            }
             default:
                 if (address == nullptr || *address == nullptr) _data = new T [_capacity];
                 else {
@@ -304,13 +333,17 @@ class Vector
                     *address += delta;
                 }
                 break;
-#if defined(__CUDACC__) && !defined(__CUDA_ARCH__)
             case UVM_MEM:
-                void *ptr;
+            {
+                void *ptr = nullptr;
+#if defined(__CUDACC__) && !defined(__CUDA_ARCH__)
                 cudaMallocManaged(&ptr, _capacity*sizeof(T), cudaMemAttachGlobal);
+#elif defined(__HIP__) and !defined(__HIP_DEVICE_COMPILE__)
+                hipMallocManaged(&ptr, _capacity*sizeof(T), hipMemAttachGlobal);
+#endif
                 _data = new(ptr) T[_capacity];
                 break;
-#endif
+            }
             default:
                 if (address == nullptr || *address == nullptr) _data = new T [_capacity];
                 else {
@@ -342,13 +375,17 @@ class Vector
                     *address += delta;
                 }
                 break;
-#if defined(__CUDACC__) && !defined(__CUDA_ARCH__)
             case UVM_MEM:
-                void *ptr;
+            {
+                void *ptr = nullptr;
+#if defined(__CUDACC__) && !defined(__CUDA_ARCH__)
                 cudaMallocManaged(&ptr, _capacity*sizeof(T), cudaMemAttachGlobal);
+#elif defined(__HIP__) and !defined(__HIP_DEVICE_COMPILE__)
+                hipMallocManaged(&ptr, _capacity*sizeof(T), hipMemAttachGlobal);
+#endif
                 _data = new(ptr) T[_capacity];
                 break;
-#endif
+            }
             default:
                 if (address == nullptr || *address == nullptr) _data = new T [_capacity];
                 else {

@@ -73,6 +73,26 @@ double Constant1d::evaluate( double a_x1 ) const {
 }
 
 /* *********************************************************************************************************//**
+ * Evaluates *this* at the X-values in *a_Xs*[*a_offset*:] and adds the results to *a_results*[*a_offset*:].
+ * *a_Xs* and *a_results* must be the same size otherwise a throw is executed.
+ *
+ * @param a_offset          [in]    The offset in *a_Xs* to start.
+ * @param a_Xs              [in]    The list of domain values to evaluate *this* at.
+ * @param a_results         [in]    The list whose values are added to by the Y-values of *this*.
+ * @param a_scaleFactor     [in]    A factor applied to each evaluation before it is added to *a_results*.
+ ***********************************************************************************************************/
+
+void Constant1d::mapToXsAndAdd( int a_offset, std::vector<double> const &a_Xs, std::vector<double> &a_results, double a_scaleFactor ) const {
+
+    if( a_Xs.size( ) != a_results.size( ) ) throw Exception( "Constant1d::mapToXsAndAdd: a_Xs.size( ) != a_results.size( )." );
+    if( a_offset < 0 ) throw Exception( "Constant1d::mapToXsAndAdd: a_offset < 0." );
+
+    for( std::size_t index = a_offset; index < a_Xs.size( ); ++index ) {
+        a_results[index] += a_scaleFactor * m_value;
+    }
+}
+
+/* *********************************************************************************************************//**
  * Fills the argument *a_writeInfo* with the XML lines that represent *this*. Recursively enters each sub-node.
  *
  * @param       a_writeInfo         [in/out]    Instance containing incremental indentation and other information and stores the appended lines.

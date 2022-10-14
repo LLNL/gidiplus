@@ -17,7 +17,7 @@ namespace MCGIDI {
 namespace Distributions {
 
 enum class Type { none, unspecified, angularTwoBody, KalbachMann, uncorrelated, energyAngularMC, angularEnergyMC, coherentPhotoAtomicScattering,
-        incoherentPhotoAtomicScattering, pairProductionGamma };
+        incoherentPhotoAtomicScattering, incoherentPhotoAtomicScatteringElectron, pairProductionGamma, coherentElasticTNSL, incoherentElasticTNSL };
 
 /*
 ============================================================
@@ -31,7 +31,7 @@ class Distribution {
         GIDI::Frame m_productFrame;                     /**< Specifies the frame the product data are given in. */
         double m_projectileMass;                        /**< The mass of the projectile. */
         double m_targetMass;                            /**< The mass of the target. */
-        double m_productMass;                                   /**< The mass of the first product. */
+        double m_productMass;                           /**< The mass of the first product. */
 
     public:
         MCGIDI_HOST_DEVICE Distribution( );
@@ -47,7 +47,7 @@ class Distribution {
         MCGIDI_HOST_DEVICE double productMass( ) const { return( m_productMass ); }                        /**< Returns the value of the **m_productMass**. */
 
         MCGIDI_HOST_DEVICE virtual void sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const = 0;
-        MCGIDI_HOST_DEVICE virtual double angleBiasing( Reaction const *a_reaction, double a_energy_in, double a_mu_lab, 
+        MCGIDI_HOST_DEVICE virtual double angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab, 
                 double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const = 0;
         MCGIDI_HOST_DEVICE virtual void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
 };
@@ -62,7 +62,7 @@ class AngularTwoBody : public Distribution {
     private:
         double m_residualMass;                                  /**< The mass of the second product (often the  residual). */
         double m_Q;                                             /**< FIX ME. */
-        double m_crossSectionThreshold;                         /**< Threshold value derived from cross section data via *evaluated* or *griddedCrossSection*. */
+        double m_twoBodyThreshold;                              /**< This is the T_1 value needed to do two-body kinematics (i.e., in the equation (K_{com,3_4} = m_2 * (K_1 - T_1) / (m_1 + m_2)). */
         bool m_Upscatter;                                       /**< Set to true if reaction is elastic which is the only reaction upscatter Model B is applied to. */
         Probabilities::ProbabilityBase2d *m_angular;
 
@@ -77,7 +77,7 @@ class AngularTwoBody : public Distribution {
         MCGIDI_HOST_DEVICE double Q( ) const { return( m_Q ); }                                            /**< Returns the value of the **m_Q**. */
         MCGIDI_HOST_DEVICE Probabilities::ProbabilityBase2d *angular( ) const { return( m_angular ); }     /**< Returns the value of the **m_angular**. */
         MCGIDI_HOST_DEVICE void sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const ;
-        MCGIDI_HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_energy_in, double a_mu_lab, 
+        MCGIDI_HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab, 
                 double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const ;
         MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
         MCGIDI_HOST_DEVICE bool Upscatter( ) const { return( m_Upscatter ); }                              /**< Returns the value of the **m_Upscatter**. */
@@ -102,7 +102,7 @@ class Uncorrelated : public Distribution {
         MCGIDI_HOST_DEVICE Probabilities::ProbabilityBase2d *angular( ) const { return( m_angular ); }     /**< Returns the value of the **m_angular**. */
         MCGIDI_HOST_DEVICE Probabilities::ProbabilityBase2d *energy( ) const { return( m_energy ); }       /**< Returns the value of the **m_energy**. */
         MCGIDI_HOST_DEVICE void sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const ;
-        MCGIDI_HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_energy_in, double a_mu_lab, 
+        MCGIDI_HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab, 
                 double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const ;
         MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
 };
@@ -126,7 +126,7 @@ class EnergyAngularMC : public Distribution {
         MCGIDI_HOST_DEVICE Probabilities::ProbabilityBase2d *energy( ) const { return( m_energy ); }       /**< Returns the value of the **m_energy**. */
         MCGIDI_HOST_DEVICE Probabilities::ProbabilityBase3d *angularGivenEnergy( ) const { return( m_angularGivenEnergy ); }   /**< Returns the value of the **m_angularGivenEnergy**. */
         MCGIDI_HOST_DEVICE void sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const ;
-        MCGIDI_HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_energy_in, double a_mu_lab, 
+        MCGIDI_HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab, 
                 double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const ;
         MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
 };
@@ -150,7 +150,7 @@ class AngularEnergyMC : public Distribution {
         MCGIDI_HOST_DEVICE Probabilities::ProbabilityBase2d *angular( ) const { return( m_angular ); }     /**< Returns the value of the **m_angular**. */
         MCGIDI_HOST_DEVICE Probabilities::ProbabilityBase3d *energyGivenAngular( ) const { return( m_energyGivenAngular ); }   /**< Returns the value of the **m_energyGivenAngular**. */
         MCGIDI_HOST_DEVICE void sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const ;
-        MCGIDI_HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_energy_in, double a_mu_lab, 
+        MCGIDI_HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab, 
                 double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const ;
         MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
 };
@@ -180,7 +180,7 @@ class KalbachMann : public Distribution {
         MCGIDI_HOST_DEVICE Functions::Function2d *r( ) const { return( m_r ); }                    /**< Returns the value of the **m_r**. */
         MCGIDI_HOST_DEVICE Functions::Function2d *a( ) const { return( m_a ); }                    /**< Returns the value of the **m_a**. */
         MCGIDI_HOST_DEVICE void sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const ;
-        MCGIDI_HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_energy_in, double a_mu_lab, 
+        MCGIDI_HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab, 
                 double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const ;
         MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
 
@@ -220,7 +220,7 @@ class CoherentPhotoAtomicScattering : public Distribution {
         MCGIDI_HOST_DEVICE double evaluate( double a_energyIn, double a_mu ) const ;
         MCGIDI_HOST_DEVICE double evaluateFormFactor( double a_energyIn, double a_mu ) const ;
         MCGIDI_HOST_DEVICE void sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const ;
-        MCGIDI_HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_energy_in, double a_mu_lab, 
+        MCGIDI_HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab, 
                 double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const ;
 
         MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
@@ -228,14 +228,14 @@ class CoherentPhotoAtomicScattering : public Distribution {
 
 /*
 ============================================================
-=============== IncoherentPhotoAtomicScattering ==============
+============== IncoherentPhotoAtomicScattering =============
 ============================================================
 */
 class IncoherentPhotoAtomicScattering : public Distribution {
 
     private:
         Vector<double> m_energies;                                  /**< FIX ME */
-        Vector<double> m_scatteringFunction;                        /**< FIX ME */
+        Vector<double> m_scatteringFactor;                          /**< FIX ME */
         Vector<double> m_a;                                         /**< FIX ME */
 
     public:
@@ -245,14 +245,32 @@ class IncoherentPhotoAtomicScattering : public Distribution {
 
         MCGIDI_HOST_DEVICE double energyRatio( double a_energyIn, double a_mu ) const ;
         MCGIDI_HOST_DEVICE double evaluateKleinNishina( double a_energyIn, double a_mu ) const ;
-        MCGIDI_HOST_DEVICE double evaluateScatteringFunction( double a_X ) const ;
+        MCGIDI_HOST_DEVICE double evaluateScatteringFactor( double a_X ) const ;
         MCGIDI_HOST_DEVICE void sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const ;
-        MCGIDI_HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_energy_in, double a_mu_lab, 
+        MCGIDI_HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab, 
                 double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const ;
         MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
 /*
         MCGIDI_HOST_DEVICE double evaluate( double E_in_lab, double mu );
 */
+};
+
+/*
+============================================================
+========== IncoherentPhotoAtomicScatteringElectron =========
+============================================================
+*/
+class IncoherentPhotoAtomicScatteringElectron : public Distribution {
+
+    public:
+        MCGIDI_HOST_DEVICE IncoherentPhotoAtomicScatteringElectron( );
+        MCGIDI_HOST IncoherentPhotoAtomicScatteringElectron( SetupInfo &a_setupInfo );
+        MCGIDI_HOST_DEVICE ~IncoherentPhotoAtomicScatteringElectron( );
+
+        MCGIDI_HOST_DEVICE void sample( double a_energy, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const ;
+        MCGIDI_HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab,
+                double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const ;
+        MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
 };
 
 /*
@@ -271,9 +289,60 @@ class PairProductionGamma : public Distribution {
         MCGIDI_HOST_DEVICE ~PairProductionGamma( );
 
         MCGIDI_HOST_DEVICE void sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const ;
-        MCGIDI_HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_energy_in, double a_mu_lab, 
+        MCGIDI_HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab, 
                 double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const ;
         MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
+};
+
+/*
+============================================================
+==================== CoherentElasticTNSL ===================
+============================================================
+*/
+class CoherentElasticTNSL : public Distribution {
+
+    private:
+        Interpolation m_temperatureInterpolation;
+        Vector<double> m_temperatures;
+        Vector<double> m_energies;
+        Vector<double> m_S_table;
+
+    public:
+        MCGIDI_HOST_DEVICE CoherentElasticTNSL( );
+        MCGIDI_HOST CoherentElasticTNSL( GIDI::DoubleDifferentialCrossSection::n_ThermalNeutronScatteringLaw::CoherentElastic const *a_coherentElasticTNSL, 
+                SetupInfo &a_setupInfo );
+        MCGIDI_HOST_DEVICE ~CoherentElasticTNSL( ) {}
+
+        MCGIDI_HOST_DEVICE void sample( double a_energy, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const ;
+        MCGIDI_HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab, 
+                double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const ;
+        MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
+};
+
+/*
+============================================================
+==================== IncoherentElasticTNSL ===================
+============================================================
+*/
+class IncoherentElasticTNSL : public Distribution {
+
+    private:
+        double m_temperatureToMeV_K;
+        Functions::Function1d *m_DebyeWallerIntegral;
+
+    public:
+        MCGIDI_HOST_DEVICE IncoherentElasticTNSL( );
+        MCGIDI_HOST IncoherentElasticTNSL( GIDI::DoubleDifferentialCrossSection::n_ThermalNeutronScatteringLaw::IncoherentElastic const *a_incoherentElasticTNSL, 
+                SetupInfo &a_setupInfo );
+        MCGIDI_HOST_DEVICE ~IncoherentElasticTNSL( ) {}
+
+        MCGIDI_HOST_DEVICE void sample( double a_energy, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const ;
+        MCGIDI_HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab,
+                double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const ;
+        MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
+
+        Functions::Function1d       *DebyeWallerIntegral( )       { return( m_DebyeWallerIntegral ); }
+        Functions::Function1d const *DebyeWallerIntegral( ) const { return( m_DebyeWallerIntegral ); }
 };
 
 /*
@@ -289,7 +358,7 @@ class Unspecified : public Distribution {
         MCGIDI_HOST_DEVICE ~Unspecified( );
 
         MCGIDI_HOST_DEVICE void sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const ;
-        MCGIDI_HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_energy_in, double a_mu_lab, 
+        MCGIDI_HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab, 
                 double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const ;
         MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
 };

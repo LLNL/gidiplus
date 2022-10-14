@@ -49,6 +49,7 @@ void main2( int argc, char **argv ) {
     GIDI::Fluxes fluxFile( "../../../GIDI/Test/fluxes.xml" );
     std::set<int> reactionsToExclude;
     GIDI::Transporting::Mode transportingMode( GIDI::Transporting::Mode::MonteCarloContinuousEnergy );
+    LUPI::StatusMessageReporting smr1;
 
     argvOptions argv_options( "memoryCheck", description );
     ParseTestOptions parseTestOptions( argv_options, argc, argv );
@@ -80,7 +81,7 @@ void main2( int argc, char **argv ) {
     particles.add( photon );
 
     MCGIDI::DomainHash domainHash( 4000, 1e-8, 10 );
-    MCGIDI::Protare *MCProtare = MCGIDI::protareFromGIDIProtare( *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude );
+    MCGIDI::Protare *MCProtare = MCGIDI::protareFromGIDIProtare( smr1, *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude );
 
     MCGIDI::Vector<MCGIDI::Protare *> protares( 1 );
     protares[0] = MCProtare;

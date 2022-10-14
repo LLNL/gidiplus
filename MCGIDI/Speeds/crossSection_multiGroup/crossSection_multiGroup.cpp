@@ -45,6 +45,7 @@ void main2( int argc, char **argv ) {
     PoPI::Database pops( "../../../GIDI/Test/pops.xml" );
     GIDI::Map::Map map( mapFilename, pops );
     std::set<int> reactionsToExclude;
+    LUPI::StatusMessageReporting smr1;
     clock_t time0, time1;
     long numberOfSamples = 10 * 1000 * 1000, sampleTemperatures = 0, sampleEnergies;
     std::vector<std::string> libraries;
@@ -81,7 +82,7 @@ void main2( int argc, char **argv ) {
     MCGIDI::MultiGroupHash multiGroupHash( *protare, temperature );
 
     MCGIDI::DomainHash domainHash( 4000, 1e-8, 100.0 );
-    MCGIDI::Protare *MCProtare = MCGIDI::protareFromGIDIProtare( *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude );
+    MCGIDI::Protare *MCProtare = MCGIDI::protareFromGIDIProtare( smr1, *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude );
     printTime( "    load MCGIDI", time1 );
 
     MCGIDI::Vector<MCGIDI::Protare *> protares( 1 );

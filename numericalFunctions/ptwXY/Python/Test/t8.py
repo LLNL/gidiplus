@@ -11,8 +11,6 @@
 This stuff should be repeatable. Simple test of operators '+', '-', '*', 'neg', 'abs', 'pow' and union method.
 """
 
-from __future__ import print_function
-
 import random
 
 from numericalFunctions import pointwiseXY_C

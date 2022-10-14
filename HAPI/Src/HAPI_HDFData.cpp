@@ -32,8 +32,8 @@ HDFData::HDFData() :
 HDFData::HDFData( hid_t node_id ) :
         m_node_id(node_id) {
 
-    m_length = H5Dget_storage_size(m_node_id);
     m_dataspace_id = H5Dget_space(m_node_id);
+    m_length = H5Sget_simple_extent_npoints(m_dataspace_id);
 
 }
 /*

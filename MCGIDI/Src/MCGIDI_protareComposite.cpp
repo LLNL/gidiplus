@@ -33,6 +33,7 @@ MCGIDI_HOST_DEVICE ProtareComposite::ProtareComposite( ) :
 }
 
 /* *********************************************************************************************************//**
+ * @param a_smr                         [Out]   If errors are not to be thrown, then the error is reported via this instance.
  * @param a_protare                     [in]    The GIDI::Protare whose data is to be used to construct *this*.
  * @param a_pops                        [in]    A PoPs Database instance used to get particle indices and possibly other particle information.
  * @param a_settings                    [in]    Used to pass user options to the *this* to instruct it which data are desired.
@@ -44,7 +45,7 @@ MCGIDI_HOST_DEVICE ProtareComposite::ProtareComposite( ) :
  * @param a_allowFixedGrid              [in]    For internal (i.e., MCGIDI) use only. Users must use the default value.
  ***********************************************************************************************************/
 
-MCGIDI_HOST ProtareComposite::ProtareComposite( GIDI::ProtareComposite const &a_protare, PoPI::Database const &a_pops, Transporting::MC &a_settings, 
+MCGIDI_HOST ProtareComposite::ProtareComposite( LUPI::StatusMessageReporting &a_smr, GIDI::ProtareComposite const &a_protare, PoPI::Database const &a_pops, Transporting::MC &a_settings, 
                 GIDI::Transporting::Particles const &a_particles, DomainHash const &a_domainHash, GIDI::Styles::TemperatureInfos const &a_temperatureInfos,
                 std::set<int> const &a_reactionsToExclude, int a_reactionsToExcludeOffset, bool a_allowFixedGrid ) :
         Protare( ProtareType::composite, a_protare, a_pops, a_settings ),
@@ -61,7 +62,7 @@ MCGIDI_HOST ProtareComposite::ProtareComposite( GIDI::ProtareComposite const &a_
     for( std::size_t i1 = 0; i1 < length; ++i1 ) {
         GIDI::Protare const *protare = protares[i1];
 
-        m_protares[i1] = static_cast<ProtareSingle *>( protareFromGIDIProtare( *protare, a_pops, a_settings, a_particles, a_domainHash, a_temperatureInfos, a_reactionsToExclude, a_reactionsToExcludeOffset, false ) );
+        m_protares[i1] = static_cast<ProtareSingle *>( protareFromGIDIProtare( a_smr, *protare, a_pops, a_settings, a_particles, a_domainHash, a_temperatureInfos, a_reactionsToExclude, a_reactionsToExcludeOffset, false ) );
 
         m_numberOfReactions += m_protares[i1]->numberOfReactions( );
         m_numberOfOrphanProducts += m_protares[i1]->numberOfOrphanProducts( );
@@ -101,6 +102,7 @@ MCGIDI_HOST_DEVICE ProtareComposite::~ProtareComposite( ) {
 
 MCGIDI_HOST void ProtareComposite::setUserParticleIndex( int a_particleIndex, int a_userParticleIndex ) {
 
+    Protare::setUserParticleIndex( a_particleIndex, a_userParticleIndex );
     for( auto iter = m_protares.begin( ); iter != m_protares.end( ); ++iter ) (*iter)->setUserParticleIndex( a_particleIndex, a_userParticleIndex );
 }
 
@@ -270,9 +272,9 @@ MCGIDI_HOST_DEVICE bool ProtareComposite::hasURR_probabilityTables( ) const {
 }
 
 /* *********************************************************************************************************//**
- * Returns true if one the the sub-protares of *this* has a unresolved resonance region (URR) data and false otherwise.
+ * Returns the minimum energy for the unresolved resonance region (URR) domain. If no URR data present, returns -1.
  *
- * @return                              true is if *this* has a URR data.
+ * @return                              The energy or -1 if not URR data present.
  ***********************************************************************************************************/
 
 MCGIDI_HOST_DEVICE double ProtareComposite::URR_domainMin( ) const {
@@ -292,7 +294,7 @@ MCGIDI_HOST_DEVICE double ProtareComposite::URR_domainMin( ) const {
 }
 
 /* *********************************************************************************************************//**
- * Returns true if one the the sub-protares of *this* has a unresolved resonance region (URR) data and false otherwise.
+ * Returns the maximum energy for the unresolved resonance region (URR) domain. If no URR data present, returns -1.
  *
  * @return                              true is if *this* has a URR data.
  ***********************************************************************************************************/

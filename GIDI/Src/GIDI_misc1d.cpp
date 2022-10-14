@@ -26,7 +26,7 @@ namespace Functions {
  ***********************************************************************************************************/
 
 ThermalNeutronScatteringLaw1d::ThermalNeutronScatteringLaw1d( Construction::Settings const &a_construction, HAPI::Node const &a_node,
-		SetupInfo &a_setupInfo, Suite *a_parent ) :
+		        SetupInfo &a_setupInfo, Suite *a_parent ) :
         Function1dForm( a_construction, a_node, a_setupInfo, FormType::thermalNeutronScatteringLaw1d, a_parent ),
         m_href( a_node.attribute_as_string( GIDI_hrefChars ) ) {
 

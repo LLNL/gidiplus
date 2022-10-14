@@ -9,7 +9,7 @@ SHELL = /bin/ksh
 
 .PHONY: default compile check clean realclean doDirs
 
-DIRS = alias constructing help missingValue positionalMultipleWithVariousRequired sameName statusMessageReporting
+DIRS = alias constructing help missingValue positionalMultipleWithVariousRequired sameName statusMessageReporting splitString
 
 default:
 

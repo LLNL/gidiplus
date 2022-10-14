@@ -72,6 +72,7 @@ void main2( int argc, char **argv ) {
 */
 void averageMomentum( GIDI::Protare *a_protare, PoPI::Database &a_pops, GIDI::Transporting::MG &a_settings, GIDI::Styles::TemperatureInfos temperatures, char const *a_productID ) {
 
+    LUPI::StatusMessageReporting smr1;
     std::string prefix( "Total average product energy" );
     std::string::size_type width = prefix.size( );
 
@@ -82,7 +83,7 @@ void averageMomentum( GIDI::Protare *a_protare, PoPI::Database &a_pops, GIDI::Tr
     }
 
     std::cout << std::endl << "Average product energy for product '" << a_productID << "':" << std::endl;
-    GIDI::Vector _averageMomentum = a_protare->multiGroupAverageMomentum( a_settings, temperatures[0], a_productID );
+    GIDI::Vector _averageMomentum = a_protare->multiGroupAverageMomentum( smr1, a_settings, temperatures[0], a_productID );
 
     prefix.insert( prefix.size( ), 4 + width - prefix.size( ), ' ' );
     prefix.insert( 0, 2, ' ' );
@@ -91,7 +92,7 @@ void averageMomentum( GIDI::Protare *a_protare, PoPI::Database &a_pops, GIDI::Tr
 
     for( std::size_t index = 0; index < a_protare->numberOfReactions( ); ++index ) {
         GIDI::Reaction const *reaction = a_protare->reaction( index );
-        GIDI::Vector _averageMomentum = reaction->multiGroupAverageMomentum( a_settings, temperatures[0], a_productID );
+        GIDI::Vector _averageMomentum = reaction->multiGroupAverageMomentum( smr1, a_settings, temperatures[0], a_productID );
         std::string string( reaction->label( ) );
 
         string.insert( string.size( ), width - string.size( ), ' ' );

@@ -101,19 +101,15 @@ void main2( int argc, char **argv ) {
     std::cout << std::endl << "Slope Axes" << std::endl;
     writeInfo.print( );
 
-    GIDI::Functions::XYs1d *f1d = GIDI::Functions::XYs1d::makeConstantXYs1d( offsetAxes, domainMin, domainMax, offset );
-    GIDI::Functions::XYs1d offsetXYs1d = *f1d;
-    delete f1d;
+    GIDI::Functions::XYs1d *offsetXYs1d = GIDI::Functions::XYs1d::makeConstantXYs1d( offsetAxes, domainMin, domainMax, offset );
     writeInfo.clear( );
-    offsetXYs1d.toXMLList( writeInfo, "  " );
+    offsetXYs1d->toXMLList( writeInfo, "  " );
     std::cout << std::endl << "Offset" << std::endl;
     writeInfo.print( );
 
-    f1d = GIDI::Functions::XYs1d::makeConstantXYs1d( slopeAxes, domainMin, domainMax, slope );
-    GIDI::Functions::XYs1d slopeXYs1d = *f1d;
-    delete f1d;
+    GIDI::Functions::XYs1d *slopeXYs1d = GIDI::Functions::XYs1d::makeConstantXYs1d( slopeAxes, domainMin, domainMax, slope );
     writeInfo.clear( );
-    slopeXYs1d.toXMLList( writeInfo, "  " );
+    slopeXYs1d->toXMLList( writeInfo, "  " );
     std::cout << std::endl << "Slope" << std::endl;
     writeInfo.print( );
 
@@ -144,5 +140,7 @@ void main2( int argc, char **argv ) {
         }
     }
 
+    delete offsetXYs1d;
+    delete slopeXYs1d;
     delete protare;
 }

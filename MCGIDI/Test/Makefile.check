@@ -11,7 +11,7 @@ ifndef COMPILE_UTILITIES
 endif
 
 
-LIBS =  -lGIDI_testUtilities -lMCGIDI_testUtilities -lMCGIDI -lGIDI -lPoPI -lHAPI -lLUPI \
+LIBS =  -lGIDI_testUtilities -lMCGIDI_testUtilities -lMCGIDI -lGIDI -lPoPI -lHAPI -lRISI -lLUPI \
         -lnumericalfunctions -lstatusMessageReporting -lpugixml -lexpat -lm $(HDF5_LIBS)
 
 default: $(Executables)

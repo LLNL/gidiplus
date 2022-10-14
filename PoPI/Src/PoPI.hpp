@@ -20,6 +20,7 @@
 #include <fstream>
 #include <exception>
 
+#include <LUPI.hpp>
 #include <HAPI.hpp>
 
 namespace PoPI {
@@ -42,7 +43,20 @@ namespace PoPI {
 #define PoPI_unorthodoxChars "unorthodox"
 #define PoPI_aliasesChars "aliases"
 
-enum class Particle_class { gaugeBoson, lepton, baryon, unorthodox, nuclide, nucleus, chemicalElement, isotope, alias, metaStable };
+/*! \enum Particle_class
+ * This enum represents the various type of allowed particle types.
+ */
+
+enum class Particle_class { gaugeBoson,         /**< Specifies that the particle is a gauge boson. */
+                            lepton,             /**< Specifies that the particle is a lepton. */
+                            baryon,             /**< Specifies that the particle is a baryon. */
+                            unorthodox,         /**< Specifies that the particle is an unorthodox. */
+                            nuclide,            /**< Specifies that the particle is a nuclide. */
+                            nucleus,            /**< Specifies that the particle is a nucleus. */
+                            chemicalElement,    /**< Specifies that the particle is a chemicalElement. */
+                            isotope,            /**< Specifies that the particle is a isotope. */
+                            alias,              /**< Specifies that the particle is a alias. */
+                            metaStable          /**< Specifies that the particle is a metaStable. */ };
 
 #define PoPI_massChars "mass"
 #define PoPI_spinChars "spin"
@@ -65,10 +79,28 @@ enum class Particle_class { gaugeBoson, lepton, baryon, unorthodox, nuclide, nuc
 #define PoPI_pidChars "pid"
 #define PoPI_nameChars "name"
 #define PoPI_versionChars "version"
-#define PoPI_particleChars "particle"
+#define PoPI_aliasChars "alias"
 #define PoPI_metaStableChars "metaStable"
+#define PoPI_particleChars "particle"
 
-enum class PQ_class { Double, integer, fraction, string, shell };
+/*! \enum PQ_class
+ * This enum represents the various type of allowed physcial quantity types.
+ */
+
+enum class PQ_class { Double,       /**< Specifies that the physcial quantity is a double. */
+                      integer,      /**< Specifies that the physcial quantity is an integer. */
+                      fraction,     /**< Specifies that the physcial quantity is a fraction. */
+                      string,       /**< Specifies that the physcial quantity is a string. */
+                      shell         /**< Specifies that the physcial quantity is a shell. */ };
+
+/*! \enum SpecialParticleID_mode
+ * This enum specifies how the light charged particle ids are handled. The light charged particles ids are familiarly known as
+ * p, d, t, h and a.
+ */
+
+enum class SpecialParticleID_mode { familiar,   /**< Treat ids as the familiar p, d, t, h and a. */
+                                    nuclide,    /**< Treat ids as the familiar p, d, t, h and a as h1, h2, h3, he3 and he4, respectively. */
+                                    nucleus     /**< Treat ids as the familiar p, d, t, h and a as H1, H2, H3, He3 and He4, respectively. */ };
 
 class NuclideGammaBranchStateInfos;
 class Base;
@@ -84,22 +116,35 @@ class Database;
 
 void appendXMLEnd( std::vector<std::string> &a_XMLList, std::string const &a_label );
 
-int particleZ( Base const &a_particle, bool isNeutronProtonANucleon = false );
-int particleZ( Database const &a_pops, int a_index, bool isNeutronProtonANucleon = false );
-int particleZ( Database const &a_pops, std::string const &a_id, bool isNeutronProtonANucleon = false );
+int particleZ( Base const &a_particle, bool a_isNeutronProtonANucleon = false );
+int particleZ( Database const &a_pops, int a_index, bool a_isNeutronProtonANucleon = false );
+int particleZ( Database const &a_pops, std::string const &a_id, bool a_isNeutronProtonANucleon = false );
 
-int particleA( Base const &a_particle, bool isNeutronProtonANucleon = false );
-int particleA( Database const &a_pops, int a_index, bool isNeutronProtonANucleon = false );
-int particleA( Database const &a_pops, std::string const &a_id, bool isNeutronProtonANucleon = false );
+int particleA( Base const &a_particle, bool a_isNeutronProtonANucleon = false );
+int particleA( Database const &a_pops, int a_index, bool a_isNeutronProtonANucleon = false );
+int particleA( Database const &a_pops, std::string const &a_id, bool a_isNeutronProtonANucleon = false );
 
-int particleZA( Base const &a_particle, bool isNeutronProtonANucleon = false );
-int particleZA( Database const &a_pops, int a_index, bool isNeutronProtonANucleon = false );
-int particleZA( Database const &a_pops, std::string const &a_id, bool isNeutronProtonANucleon = false );
+int particleZA( Base const &a_particle, bool a_isNeutronProtonANucleon = false );
+int particleZA( Database const &a_pops, int a_index, bool a_isNeutronProtonANucleon = false );
+int particleZA( Database const &a_pops, std::string const &a_id, bool a_isNeutronProtonANucleon = false );
+
+int particleMetaStableIndex( Base const &a_particle );
+int particleMetaStableIndex( Database const &a_pops, int a_index );
+int particleMetaStableIndex( Database const &a_pops, std::string const &a_id );
+
+std::string specialParticleID( SpecialParticleID_mode a_mode, std::string const &a_id );
+bool compareSpecialParticleIDs( std::string const &a_id1, std::string const &a_id2 );
 
 struct IDs {
     static std::string const photon;
+    static std::string const electron;
     static std::string const neutron;
     static std::string const proton;
+    static std::string const familiarPhoton;
+    static std::string const familiarDeuteron;
+    static std::string const familiarTriton;
+    static std::string const familiarHelion;
+    static std::string const familiarAlpha;
 };
 
 typedef std::vector<Base *> ParticleList;
@@ -110,6 +155,7 @@ typedef std::vector<SymbolBase *> SymbolList;
 ======================== Exception =========================
 ============================================================
 */
+
 class Exception : public std::runtime_error {
 
     public :
@@ -117,60 +163,39 @@ class Exception : public std::runtime_error {
 
 };
 
-/*
-============================================================
-====================== FormatVersion =======================
-============================================================
-*/
-class FormatVersion {
-
-    private:
-        std::string m_format;               /**< The GNDS format version. */
-        int m_major;                        /**< The GNDS format major value as an integer. */
-        int m_minor;                        /**< The GNDS format minor value as an integer. */
-        std::string m_patch;                /**< The GNDS format patch string. This will be an empty string except for unofficial formats. */
-
-    public:
-        FormatVersion( );
-        FormatVersion( std::string const &a_formatVersion );
-        FormatVersion( FormatVersion const &a_formatVersion );
-
-        std::string const &format( ) const { return( m_format ); }
-        int major( ) const { return( m_major ); }
-        int minor( ) const { return( m_minor ); }
-        std::string const &patch( ) const { return( m_patch ); }
-
-        bool setFormat( std::string const &a_formatVersion );
-        bool supported( );
-};
+/*! \class Suite
+ * This is the base class for all suite like members.
+ */
 
 /*
 ============================================================
 ========================== Suite ===========================
 ============================================================
 */
+
 template <class T, class T2>
 class Suite {
 
     private:
-        std::string m_label;
-        std::vector<T *> m_items;
+        std::string m_moniker;                                  /**< The moniker (i.e., name) of the suite. */
+        std::vector<T *> m_items;                               /**< The list of all items in the suite. */
 
     public:
-        Suite( std::string const &a_label ) : m_label( a_label ) { };
+        Suite( std::string const &a_moniker ) : m_moniker( a_moniker ) { }
         ~Suite( );
         void appendFromParentNode( HAPI::Node const &a_node, Database *a_DB, T2 *a_parent );
         void appendFromParentNode2( HAPI::Node const &a_node, T2 *a_parent );
 
-        std::string::size_type size( void ) const { return( m_items.size( ) ); }
-        T &operator[]( int a_index ) const { return( *m_items[a_index] ); }
-        std::string &label( void ) { return( m_label ); }
+        std::string::size_type size( void ) const { return( m_items.size( ) ); }        /**< Returns the number of items in the suite. */
+        T &operator[]( int a_index ) const { return( *m_items[a_index] ); }             /**< Returns the item at index *a_index*. */
+        std::string const &moniker( void ) { return( m_moniker ); }                     /**< Returns the value of the *m_moniker* member. */
 
         void toXMLList( std::vector<std::string> &a_XMLList, std::string const &a_indent1 ) const ;
 };
-/*
-=========================================================
-*/
+
+/* *********************************************************************************************************//**
+ ***********************************************************************************************************/
+
 template <class T, class T2>
 Suite<T, T2>::~Suite( ) {
 
@@ -181,9 +206,15 @@ Suite<T, T2>::~Suite( ) {
 // Ask Adam why next line does not work.
 //    for( std::vector<T *>::iterator iter = m_items.begin( ); iter != m_items.end( ); ++iter ) delete *iter;
 }
-/*
-=========================================================
-*/
+
+/* *********************************************************************************************************//**
+ * Adds the children of *a_node* to the suite and to *a_DB*.
+ *
+ * @param a_node            [in]    The **HAPI::Node** to be parsed.
+ * @param a_DB              [in]    The **PoPI::Database** instance to add the constructed items to.
+ * @param a_parent          [in]    The parent suite that will contain *this*.
+ ***********************************************************************************************************/
+
 template <class T, class T2>
 void Suite<T, T2>::appendFromParentNode( HAPI::Node const &a_node, Database *a_DB, T2 *a_parent ) {
 
@@ -192,9 +223,14 @@ void Suite<T, T2>::appendFromParentNode( HAPI::Node const &a_node, Database *a_D
         m_items.push_back( item );
     }
 }
-/*
-=========================================================
-*/
+
+/* *********************************************************************************************************//**
+ * Adds the children of *a_node* to the suite.
+ *
+ * @param a_node            [in]    The **HAPI::Node** to be parsed.
+ * @param a_parent          [in]    The parent suite that will contain *this*.
+ ***********************************************************************************************************/
+
 template <class T, class T2>
 void Suite<T, T2>::appendFromParentNode2( HAPI::Node const &a_node, T2 *a_parent ) {
 
@@ -203,9 +239,14 @@ void Suite<T, T2>::appendFromParentNode2( HAPI::Node const &a_node, T2 *a_parent
         m_items.push_back( item );
     }
 }
-/*
-=========================================================
-*/
+
+/* *********************************************************************************************************//**
+ * Creates an XML representation of the suite.
+ *
+ * @param a_XMLList         [in]    The list the XML lines are added to.
+ * @param a_indent1         [in]    The amount to indent the XML text.
+ ***********************************************************************************************************/
+
 template <class T, class T2>
 void Suite<T, T2>::toXMLList( std::vector<std::string> &a_XMLList, std::string const &a_indent1 ) const {
 
@@ -214,11 +255,11 @@ void Suite<T, T2>::toXMLList( std::vector<std::string> &a_XMLList, std::string c
 
     if( _size == 0 ) return;
 
-    std::string header = a_indent1 + "<" + m_label + ">";
+    std::string header = a_indent1 + "<" + m_moniker + ">";
     a_XMLList.push_back( header );
     for( std::string::size_type i1 = 0; i1 < _size; ++i1 ) m_items[i1]->toXMLList( a_XMLList, indent2 );
 
-    appendXMLEnd( a_XMLList, m_label );
+    appendXMLEnd( a_XMLList, m_moniker );
 }
 
 /*
@@ -226,24 +267,25 @@ void Suite<T, T2>::toXMLList( std::vector<std::string> &a_XMLList, std::string c
 ===================== PhysicalQuantity =====================
 ============================================================
 */
+
 class PhysicalQuantity {
 
     private:
-        PQ_class m_class;
-        std::string m_tag;
-        std::string m_label;
-        std::string m_valueString;
-        std::string m_unit;
+        PQ_class m_class;                           /**< The class for the physical quanity. */
+        std::string m_tag;                          /**< The name of the physical quanity. */
+        std::string m_label;                        /**< The label for the physical quanity. */
+        std::string m_valueString;                  /**< The string value of the physical quanity. */
+        std::string m_unit;                         /**< The unit of the physical quanity. */
 
     public:
         PhysicalQuantity( HAPI::Node const &a_node, PQ_class a_class );
         virtual ~PhysicalQuantity( );
 
-        PQ_class Class( void ) const { return( m_class ); }
-        std::string const &tag( void ) const { return( m_tag ); }
-        std::string const &label( void ) const { return( m_label ); }
-        std::string const &valueString( void ) const { return( m_valueString ); }
-        std::string const &unit( void ) const { return( m_unit ); }
+        PQ_class Class( void ) const { return( m_class ); }                         /**< Returns the value of the *m_class* member. */
+        std::string const &tag( void ) const { return( m_tag ); }                   /**< Returns the value of the *m_tag* member. */
+        std::string const &label( void ) const { return( m_label ); }               /**< Returns the value of the *m_label* member. */
+        std::string const &valueString( void ) const { return( m_valueString ); }   /**< Returns the value of the *valueString* member. */
+        std::string const &unit( void ) const { return( m_unit ); }                 /**< Returns the value of the *m_unit* member. */
 
         void toXMLList( std::vector<std::string> &a_XMLList, std::string const &a_indent1 ) const ;
         virtual std::string valueToString( void ) const = 0;
@@ -254,20 +296,22 @@ class PhysicalQuantity {
 ========================= PQ_double ========================
 ============================================================
 */
+
 class PQ_double : public PhysicalQuantity {
 
     private:
-        double m_value;
+        double m_value;                         /**< The double value of the physical quanity. */
+        void initialize( );
 
     public:
         PQ_double( HAPI::Node const &a_node );
         PQ_double( HAPI::Node const &a_node, PQ_class a_class );
-        void initialize( );
         virtual ~PQ_double( );
 
-        double value( void ) const { return( m_value ); }
+        double value( void ) const { return( m_value ); }                           /**< Returns the value of the *m_value* member. */
         double value( char const *a_unit ) const ;
         double value( std::string const &a_unit ) const { return( value( a_unit.c_str( ) ) ); }
+                                                                                    /**< Returns the value of the *m_value* member in units of *a_unit*. */
         virtual std::string valueToString( void ) const ;
 };
 
@@ -276,26 +320,28 @@ class PQ_double : public PhysicalQuantity {
 ========================= PQ_integer =======================
 ============================================================
 */
+
 class PQ_integer : public PhysicalQuantity {
 
     private:
-        int m_value;
+        int m_value;                            /**< The integer value of the physical quanity. */
 
     public:
         PQ_integer ( HAPI::Node const &a_node );
         virtual ~PQ_integer( );
 
-        int value( void ) const { return( m_value ); }
+        int value( void ) const { return( m_value ); }                              /**< Returns the value of the *m_value* member. */
         int value( char const *a_unit ) const ;
         int value( std::string const &a_unit ) const { return( value( a_unit.c_str( ) ) ); }
         virtual std::string valueToString( void ) const ;
 };
 
 /*
-============================================================
+==============================================================
 ========================= PQ_fraction ========================
-============================================================
+==============================================================
 */
+
 class PQ_fraction : public PhysicalQuantity {
 
     public:
@@ -305,6 +351,7 @@ class PQ_fraction : public PhysicalQuantity {
         std::string value( void ) const ;
         std::string value( char const *a_unit ) const ;
         std::string value( std::string const &a_unit ) const { return( value( a_unit.c_str( ) ) ); }
+                                                                                    /**< Returns the value of the *m_value* member in units of *a_unit*. */
         virtual std::string valueToString( void ) const ;
 };
 
@@ -313,15 +360,17 @@ class PQ_fraction : public PhysicalQuantity {
 ========================= PQ_string ========================
 ============================================================
 */
+
 class PQ_string : public PhysicalQuantity {
 
     public:
         PQ_string( HAPI::Node const &a_node );
         virtual ~PQ_string( );
 
-        std::string value( void ) const { return( valueString( ) ); }
+        std::string value( void ) const { return( valueString( ) ); }               /**< Returns the value returned by calling the **valueString** methods. */
         std::string value( char const *a_unit ) const ;
         std::string value( std::string const &a_unit ) const { return( value( a_unit.c_str( ) ) ); }
+                                                                                    /**< Returns the value of the *m_value* member in units of *a_unit*. */
         virtual std::string valueToString( void ) const ;
 };
 
@@ -330,6 +379,7 @@ class PQ_string : public PhysicalQuantity {
 ========================= PQ_shell =========================
 ============================================================
 */
+
 class PQ_shell : public PQ_double {
 
     public:
@@ -342,6 +392,7 @@ class PQ_shell : public PQ_double {
 ========================= PQ_suite =========================
 ============================================================
 */
+
 class PQ_suite : public std::vector<PhysicalQuantity *> {
 
     private:
@@ -361,29 +412,32 @@ class PQ_suite : public std::vector<PhysicalQuantity *> {
 ================== NuclideGammaBranchInfo ==================
 ============================================================
 */
+
 class NuclideGammaBranchInfo {
 
     private:
-        double m_probability;
-        double m_photonEmissionProbability;
-        double m_gammaEnergy;
-        std::string m_residualState;
+        double m_probability;                               /**< The probability that the level decays to state *m_residualState*. */
+        double m_photonEmissionProbability;                 /**< The conditional probability the the decay emitted a photon. */
+        double m_gammaEnergy;                               /**< The energy of the emitted photon. */
+        std::string m_residualState;                        /**< The state the residual is left in after photon decay. */
 
     public:
         NuclideGammaBranchInfo( double a_probability, double a_photonEmissionProbability, double a_gammaEnergy, std::string const &a_residualState );
         NuclideGammaBranchInfo( NuclideGammaBranchInfo const &a_nuclideGammaBranchInfo );
 
-        double probability( ) const { return( m_probability ); }
+        double probability( ) const { return( m_probability ); }                        /**< Returns the value of the *m_probability* member. */
         double photonEmissionProbability( ) const { return( m_photonEmissionProbability ); }
-        double gammaEnergy( ) const { return( m_gammaEnergy ); }
-        std::string const &residualState( ) const { return( m_residualState ); }
-};
+                                                                                        /**< Returns the value of the *m_photonEmissionProbability* member. */
+        double gammaEnergy( ) const { return( m_gammaEnergy ); }                        /**< Returns the value of the *m_gammaEnergy* member. */
+        std::string const &residualState( ) const { return( m_residualState ); }        /**< Returns the value of the *m_residualState* member. */
+};      
 
 /*
-============================================================
+==============================================================
 ================= NuclideGammaBranchStateInfo ================
-============================================================
+==============================================================
 */
+
 class NuclideGammaBranchStateInfo {
 
     private:
@@ -407,10 +461,11 @@ class NuclideGammaBranchStateInfo {
 };
 
 /*
-============================================================
+==============================================================
 ================ NuclideGammaBranchStateInfos ================
-============================================================
+==============================================================
 */
+
 class NuclideGammaBranchStateInfos {
 
     private:
@@ -432,34 +487,38 @@ class NuclideGammaBranchStateInfos {
 =========================== Base ===========================
 ============================================================
 */
+
 class Base {
 
     private:
-        std::string m_id;
-        Particle_class m_class;
-        int m_index;
+        std::string m_id;                               /**< The **PoPs** id for the particle or **PoPs** symbol for a chemicalElement or isotope. */
+        Particle_class m_class;                         /**< The **Particle_class** for the particle, chemicalElement or isotope. */
+        int m_index;                                    /**< The for the particle, chemicalElement or isotope. */
 
     public:
         Base( std::string const &a_id, Particle_class a_class );
         Base( HAPI::Node const &a_node, std::string const &a_label, Particle_class a_class );
         virtual ~Base( );
 
-        std::string const &ID( void ) const { return( m_id ); }
-        int index( void ) const { return( m_index ); }
-        void setIndex( int a_index ) { m_index = a_index; }
-        Particle_class Class( void ) const { return( m_class ); }
-        virtual bool isParticle( ) const { return( true ); }
+        std::string const &ID( void ) const { return( m_id ); }                             /**< Returns a *const* reference to the *m_id* member of *this*. */
+        int index( void ) const { return( m_index ); }                                      /**< Returns the value of the *m_index* member of *this*. */
+        void setIndex( int a_index ) { m_index = a_index; }                                 /**< Sets the value of the *m_index* member of *this* to *a_index*. */
+        Particle_class Class( void ) const { return( m_class ); }                           /**< Returns the value of the *m_class* member of *this*. */
+        virtual bool isParticle( ) const { return( true ); }                                /**< Returns **true** if *this* is a **Particle** and **false** it *this* is a **ChemicalElement** or **Isotope** instance. */
         bool isAlias( void ) const { return( ( m_class == Particle_class::alias ) || isMetaStableAlias( ) ); }
+                                                                                            /**< Returns **true** if *this* is an **Alias** or **MetaStable** instance and **false** otherwise. */
         bool isMetaStableAlias( void ) const { return( m_class == Particle_class::metaStable ); }
+                                                                                            /**< Returns **true** if *this* is a **MetaStable** instance and **false** otherwise. */
 
-        bool isGaugeBoson( ) const { return( m_class == Particle_class::gaugeBoson ); }
-        bool isLepton( ) const { return( m_class == Particle_class::lepton ); }
-        bool isBaryon( ) const { return( m_class == Particle_class::baryon ); };
-        bool isUnorthodox( ) const { return( m_class == Particle_class::unorthodox ); }
-        bool isNucleus( ) const { return( m_class == Particle_class::nucleus ); }
-        bool isNuclide( ) const { return( m_class == Particle_class::nuclide ); }
-        bool isIsotope( ) const { return( m_class == Particle_class::isotope ); }
+        bool isGaugeBoson( ) const { return( m_class == Particle_class::gaugeBoson ); }     /**< Returns **true** if *this* is a **GaugeBoson** instance and **false** otherwise. */
+        bool isLepton( ) const { return( m_class == Particle_class::lepton ); }             /**< Returns **true** if *this* is a **Lepton** instance and **false** otherwise. */
+        bool isBaryon( ) const { return( m_class == Particle_class::baryon ); }             /**< Returns **true** if *this* is a **Baryon** instance and **false** otherwise. */
+        bool isUnorthodox( ) const { return( m_class == Particle_class::unorthodox ); }     /**< Returns **true** if *this* is a **Unorthodox** instance and **false** otherwise. */
+        bool isNucleus( ) const { return( m_class == Particle_class::nucleus ); }           /**< Returns **true** if *this* is a **Nucleus** instance and **false** otherwise. */
+        bool isNuclide( ) const { return( m_class == Particle_class::nuclide ); }           /**< Returns **true** if *this* is a **Nuclide** instance and **false** otherwise. */
+        bool isIsotope( ) const { return( m_class == Particle_class::isotope ); }           /**< Returns **true** if *this* is a **Isotope** instance and **false** otherwise. */
         bool isChemicalElement( ) const { return( m_class == Particle_class::chemicalElement ); }
+                                                                                            /**< Returns **true** if *this* is a **ChemicalElement** instance and **false** otherwise. */
 };
 
 /*
@@ -467,6 +526,7 @@ class Base {
 ========================== IDBase ==========================
 ============================================================
 */
+
 class IDBase : public Base {
 
     public:
@@ -475,6 +535,7 @@ class IDBase : public Base {
         virtual ~IDBase( );       // BRB This should be virtual but I cannot get it to work without crashing.
 
         int addToDatabase( Database *a_DB );
+        virtual double massValue2( Database const &a_DB, std::string const &a_unit ) const = 0;
 };
 
 /*
@@ -482,13 +543,14 @@ class IDBase : public Base {
 ======================== SymbolBase ========================
 ============================================================
 */
+
 class SymbolBase : public Base {
 
     public:
         SymbolBase( HAPI::Node const &a_node, Particle_class a_class );
         ~SymbolBase( );
 
-        std::string const &symbol( ) const { return( ID( ) ); }
+        std::string const &symbol( ) const { return( ID( ) ); }                             /**< Returns the value of the symbol. */
 
         int addToSymbols( Database *a_DB );
         bool isParticle( ) const { return( false ); }
@@ -499,6 +561,7 @@ class SymbolBase : public Base {
 ========================= Product ==========================
 ============================================================
 */
+
 class Product {
 
     private:
@@ -522,10 +585,13 @@ class Product {
 ========================== Decay ===========================
 ============================================================
 */
+
 class Decay {
 
     private:
         int m_index;
+        std::string m_mode;
+        bool m_complete;
         Suite<Product, Decay> m_products;
 
     public:
@@ -533,6 +599,8 @@ class Decay {
         ~Decay( );
 
         int index( void ) const { return( m_index ); }
+        std::string const &mode( ) const { return( m_mode ); }
+        bool complete( ) const { return( m_complete ); }
         Suite<Product, Decay> const &products( void ) const { return( m_products ); }
         void toXMLList( std::vector<std::string> &a_XMLList, std::string const &a_indent1 ) const ;
 };
@@ -542,6 +610,7 @@ class Decay {
 ======================== DecayMode =========================
 ============================================================
 */
+
 class DecayMode {
 
     private:
@@ -570,6 +639,7 @@ class DecayMode {
 ======================== DecayData =========================
 ============================================================
 */
+
 class DecayData {
 
     private:
@@ -590,34 +660,38 @@ class DecayData {
 ========================= Particle =========================
 ============================================================
 */
+
 class Particle : public IDBase {
 
     private:
-        std::string m_family;
-        int m_hasNucleus;           // 0 = no, -1 = yes and 1 = is nucleus
-        PQ_suite m_mass;
-        PQ_suite m_spin;
-        PQ_suite m_parity;
-        PQ_suite m_charge;
-        PQ_suite m_halflife;
-        DecayData m_decayData;
+        std::string m_family;                           /**< The family of the particle. */
+        int m_hasNucleus;                               /**< Indicates if the particle is or contains a nucleus. 0 = no, -1 = yes and 1 = is nucleus. */
+        PQ_suite m_mass;                                /**< A suite storing the mass physical quantities for the particle. */
+        PQ_suite m_spin;                                /**< A suite storing the spin physical quantities for the particle. */
+        PQ_suite m_parity;                              /**< A suite storing the parity physical quantities for the particle. */
+        PQ_suite m_charge;                              /**< A suite storing the charge physical quantities for the particle. */
+        PQ_suite m_halflife;                            /**< A suite storing the halflife physical quantities for the particle. */
+        DecayData m_decayData;                          /**< Stores the decay data for the particle. */
 
     public:
         Particle( HAPI::Node const &a_node, Particle_class a_class, std::string const &a_family, int a_hasNucleus = 0 );
         virtual ~Particle( );
 
-        std::string const &family( void ) const { return( m_family ); }
-        int hasNucleus( void ) const { return( m_hasNucleus ); }
+        std::string const &family( void ) const { return( m_family ); }         /**< Returns a *const* reference to the *m_family* member. */
+        int hasNucleus( void ) const { return( m_hasNucleus ); }                /**< Returns the value of the *m_hasNucleus* member. */
 
-        virtual PQ_suite const &mass( void ) const { return( m_mass ); }
+        virtual PQ_suite const &mass( void ) const { return( m_mass ); }        /**< Returns a *const* reference to the *m_mass* member. */
         virtual double massValue( char const *a_unit ) const ;
         double massValue( std::string const &a_unit ) const { return( massValue( a_unit.c_str( ) ) ); }
+                                                                                /**< Returns the value of massValue( a_unit.c_str( ) ). */
+        double massValue2( Database const &a_DB, std::string const &a_unit ) const { return( massValue( a_unit ) ); }
+                                                                                /**< Returns the value of massValue( a_unit.c_str( ) ). */
 
-        PQ_suite const &spin( ) const { return( m_spin ); }
-        PQ_suite const &parity( ) const { return( m_parity ); }
-        PQ_suite const &charge( ) const { return( m_charge ); }
-        PQ_suite const &halflife( ) const { return( m_halflife ); }
-        DecayData const &decayData( ) const { return( m_decayData ); }
+        PQ_suite const &spin( ) const { return( m_spin ); }                     /**< Returns a *const* reference to the *m_spin* member. */
+        PQ_suite const &parity( ) const { return( m_parity ); }                 /**< Returns a *const* reference to the *m_parity* member. */
+        PQ_suite const &charge( ) const { return( m_charge ); }                 /**< Returns a *const* reference to the *m_charge* member. */
+        PQ_suite const &halflife( ) const { return( m_halflife ); }             /**< Returns a *const* reference to the *m_halflife* member. */
+        DecayData const &decayData( ) const { return( m_decayData ); }          /**< Returns a *const* reference to the *m_decayData* member. */
 
         void toXMLList( std::vector<std::string> &a_XMLList, std::string const &a_indent1 ) const ;
         virtual std::string toXMLListExtraAttributes( void ) const ;
@@ -629,6 +703,7 @@ class Particle : public IDBase {
 ======================== GaugeBoson ========================
 ============================================================
 */
+
 class GaugeBoson : public Particle {
 
     public:
@@ -641,10 +716,11 @@ class GaugeBoson : public Particle {
 ========================== Lepton ==========================
 ============================================================
 */
+
 class Lepton : public Particle {
 
     private:
-        std::string m_generation;
+        std::string m_generation;                                               /**< The generation of the lepton (i.e., electronic, muonic or tauonic). */
 
     public:
         Lepton( HAPI::Node const &a_node, Database *a_DB, Database *a_parent );
@@ -659,9 +735,8 @@ class Lepton : public Particle {
 ========================== Baryon ==========================
 ============================================================
 */
-class Baryon : public Particle {
 
-    private:
+class Baryon : public Particle {
 
     public:
         Baryon( HAPI::Node const &a_node, Database *a_DB, Database *a_parent );
@@ -673,9 +748,8 @@ class Baryon : public Particle {
 ======================== Unorthodox ========================
 ============================================================
 */
-class Unorthodox : public Particle {
 
-    private:
+class Unorthodox : public Particle {
 
     public:
         Unorthodox( HAPI::Node const &a_node, Database *a_DB, Database *a_parent );
@@ -687,28 +761,30 @@ class Unorthodox : public Particle {
 ========================== Nucleus =========================
 ============================================================
 */
+
 class Nucleus : public Particle {
 
     private:
-        Nuclide *m_nuclide;
-        int m_Z;
-        int m_A;
-        std::string m_levelName;
-        int m_levelIndex;
-        PQ_suite m_energy;
+        Nuclide *m_nuclide;                                 /**< The parent nuclide of *this*. */
+        int m_Z;                                            /**< The atomic number of the parent nuclide. */
+        int m_A;                                            /**< The atomic mass number of the parent nuclide. */
+        std::string m_levelName;                            /**< The string representationn of *m_levelIndex*. */
+        int m_levelIndex;                                   /**< The index of the excited nucleus state. */
+        PQ_suite m_energy;                                  /**< A suite storing the physical quantities representing the nucleus excited energy for the particle.. */
 
     public:
         Nucleus( HAPI::Node const &node, Database *a_DB, Nuclide *a_parent );
         virtual ~Nucleus( );
 
-        int Z( void ) const { return( m_Z ); }
-        int A( void ) const { return( m_A ); }
-        std::string const &levelName( ) const { return( m_levelName ); }
-        int levelIndex( void ) const { return( m_levelIndex ); }
+        Nuclide const *nuclide( ) const { return( m_nuclide ); }                    /**< Returns a *const* reference to the *m_nuclide* member. */
+        int Z( void ) const { return( m_Z ); }                                      /**< Returns a *const* reference to the *m_Z* member. */
+        int A( void ) const { return( m_A ); }                                      /**< Returns a *const* reference to the *m_A* member. */
+        std::string const &levelName( ) const { return( m_levelName ); }            /**< Returns a *const* reference to the *m_levelName* member of *this*. */
+        int levelIndex( void ) const { return( m_levelIndex ); }                    /**< Returns a *const* reference to the *m_levelIndex* member. */
         std::string const &atomsID( void ) const ;
 
         double massValue( char const *a_unit ) const ;
-        PQ_suite const &energy( void ) const { return( m_energy ); }
+        PQ_suite const &energy( void ) const { return( m_energy ); }                /**< Returns a *const* reference to the *m_energy* member. */
         double energy( std::string const &a_unit ) const ;
         virtual std::string toXMLListExtraAttributes( void ) const ;
         virtual void toXMLListExtraElements( std::vector<std::string> &a_XMLList, std::string const &a_indent1 ) const ;
@@ -719,11 +795,12 @@ class Nucleus : public Particle {
 ========================== Nuclide =========================
 ============================================================
 */
+
 class Nuclide : public Particle {
 
     private:
-        Isotope *m_isotope;
-        Nucleus m_nucleus;
+        Isotope *m_isotope;                                 /**< A pointer to the parent isotope. */
+        Nucleus m_nucleus;                                  /**< The nucleus for *this* nuclide. */
 
     public:
         Nuclide( HAPI::Node const &a_node, Database *a_DB, Isotope *a_parent );
@@ -732,16 +809,17 @@ class Nuclide : public Particle {
         int Z( void ) const;
         int A( void ) const;
         std::string const &levelName( void ) const { return( m_nucleus.levelName( ) ); }
-        int levelIndex( void ) const { return( m_nucleus.levelIndex( ) ); }
+                                                                                /**< Returns the result of calling m_nucleus.levelName( ). */
+        int levelIndex( void ) const { return( m_nucleus.levelIndex( ) ); }     /**< Returns the result of calling m_nucleus.levelIndex( ). */
         std::string const &atomsID( void ) const ;
 
-        Isotope const *isotope( ) const { return( m_isotope ); }
-
-        Nucleus const &nucleus( ) const { return( m_nucleus ); }
+        Isotope const *isotope( ) const { return( m_isotope ); }                /**< Returns a *const* reference to the *m_isotope* member. */
+        Nucleus const &nucleus( ) const { return( m_nucleus ); }                /**< Returns a *const* reference to the *m_nucleus* member. */
 
         PQ_suite const &baseMass( void ) const ;
         double massValue( char const *a_unit ) const ;
         double levelEnergy( std::string const &a_unit ) const { return( m_nucleus.energy( a_unit ) ); }
+                                                                                /**< Returns the result of calling m_nucleus.energy( a_unit ). */
 
         void calculateNuclideGammaBranchStateInfos( PoPI::Database const &a_pops, NuclideGammaBranchStateInfos &a_nuclideGammaBranchStateInfos ) const ;
         virtual void toXMLListExtraElements( std::vector<std::string> &a_XMLList, std::string const &a_indent1 ) const ;
@@ -752,22 +830,23 @@ class Nuclide : public Particle {
 ========================= Isotope ==========================
 ============================================================
 */
+
 class Isotope : public SymbolBase {
 
     private:
-        ChemicalElement *m_chemicalElement;
-        int m_Z;
-        int m_A;
-        Suite<Nuclide, Isotope> m_nuclides;
+        ChemicalElement *m_chemicalElement;         /**< A pointer to the parent chemical element. */
+        int m_Z;                                    /**< A atomic number for the isotope. */
+        int m_A;                                    /**< The atomic mass number for the isotope. */
+        Suite<Nuclide, Isotope> m_nuclides;         /**< The suite of nuclides for this isotope. */
 
     public:
         Isotope( HAPI::Node const &a_node, Database *a_DB, ChemicalElement *a_parent );
         virtual ~Isotope( );
 
-        ChemicalElement const *chemicalElement( ) const { return( m_chemicalElement ); }
-        int Z( void ) const { return( m_Z ); }
-        int A( void ) const { return( m_A ); }
-        Suite<Nuclide, Isotope> const &nuclides( ) const { return( m_nuclides ); }
+        ChemicalElement const *chemicalElement( ) const { return( m_chemicalElement ); }    /**< Returns a *const* reference to the *m_isotope* member. */
+        int Z( void ) const { return( m_Z ); }                                  /**< Returns the value of the *m_Z* member. */
+        int A( void ) const { return( m_A ); }                                  /**< Returns the value of the *m_A* member. */
+        Suite<Nuclide, Isotope> const &nuclides( ) const { return( m_nuclides ); }          /**< Returns a *const* reference to the *m_nuclides* member. */
 
         void calculateNuclideGammaBranchStateInfos( PoPI::Database const &a_pops, NuclideGammaBranchStateInfos &a_nuclideGammaBranchStateInfos ) const ;
         void toXMLList( std::vector<std::string> &a_XMLList, std::string const &a_indent1 ) const ;
@@ -778,21 +857,22 @@ class Isotope : public SymbolBase {
 ===================== ChemicalElement ======================
 ============================================================
 */
+
 class ChemicalElement : public SymbolBase {
 
     private:
-        int m_Z;
-        std::string m_name;
-        Suite<Isotope, ChemicalElement> m_isotopes;
+        int m_Z;                                        /**< A atomic number for all isotopes in *thie* chemical element. */
+        std::string m_name;                             /**< The name of the chemical element. */
+        Suite<Isotope, ChemicalElement> m_isotopes;     /**< The suite of isotopes for this chemical element. */
 
     public:
        ChemicalElement( HAPI::Node const &a_node, Database *a_DB, Database *a_parent );
         virtual ~ChemicalElement( );
 
-        int Z( void ) const { return( m_Z ); }
-        std::string const &name( void ) const { return( m_name ); }
+        int Z( void ) const { return( m_Z ); }                          /**< Returns the value of the *m_Z* member. */
+        std::string const &name( void ) const { return( m_name ); }     /**< Returns the value of the *m_name* member. */
 
-        Suite<Isotope, ChemicalElement> const &isotopes( ) const { return( m_isotopes ); }
+        Suite<Isotope, ChemicalElement> const &isotopes( ) const { return( m_isotopes ); }  /**< Returns a *const* reference to the *m_isotopes* member. */
 
         void calculateNuclideGammaBranchStateInfos( PoPI::Database const &a_pops, NuclideGammaBranchStateInfos &a_nuclideGammaBranchStateInfos ) const ;
         void toXMLList( std::vector<std::string> &a_XMLList, std::string const &a_indent1 ) const ;
@@ -800,22 +880,26 @@ class ChemicalElement : public SymbolBase {
 
 /*
 ============================================================
-=========================== Alias ==========================
+=========================== Alias ==========================        // FIXME, there should be an alias base class that Alias and MetaStable inherit from.
 ============================================================
 */
+
 class Alias : public IDBase {
 
     private:
-        std::string m_pid;
-        int m_pidIndex;
+        std::string m_pid;                      /**< The id of the particle *this* is an alias for. */
+        int m_pidIndex;                         /**< The index of the particle with id *m_pid*. */
 
     public:
         Alias( HAPI::Node const &a_node, Database *a_DB, Particle_class a_class = Particle_class::alias );
         virtual ~Alias( );
 
-        std::string const &pid( void ) const { return( m_pid ); }
-        int pidIndex( void ) const { return( m_pidIndex ); }
-        void setPidIndex( int a_index ) { m_pidIndex = a_index; }
+        std::string const &pid( void ) const { return( m_pid ); }       /**< Returns a *const* reference to the *m_pid* member of *this*. */
+        int pidIndex( void ) const { return( m_pidIndex ); }            /**< Returns a *const* reference to the *m_pidIndex* member of *this*. */
+        void setPidIndex( int a_index ) { m_pidIndex = a_index; }       /**< Set the member *m_pidIndex* to *a_index*. */
+
+        double massValue2( Database const &a_DB, std::string const &a_unit ) const ;
+
         void toXMLList( std::vector<std::string> &a_XMLList, std::string const &a_indent1 ) const ;
 };
 
@@ -824,16 +908,17 @@ class Alias : public IDBase {
 ======================== MetaStable ========================
 ============================================================
 */
+
 class MetaStable : public Alias {
 
     private:
-        int m_metaStableIndex;
+        int m_metaStableIndex;                  /**< The meta-stable index for *this*. */
 
     public:
         MetaStable( HAPI::Node const &a_node, Database *a_DB );
         virtual ~MetaStable( );
 
-        int metaStableIndex( void ) const { return( m_metaStableIndex ); }
+        int metaStableIndex( void ) const { return( m_metaStableIndex ); }                          /**< Returns the value of the *m_metaStableIndex* member. */
         void toXMLList( std::vector<std::string> &a_XMLList, std::string const &a_indent1 ) const ;
 };
 
@@ -842,25 +927,28 @@ class MetaStable : public Alias {
 ========================= Database =========================
 ============================================================
 */
+
 class Database {
 
     private:
-        FormatVersion m_formatVersion;
-        std::string m_name;
-        std::string m_version;
-        ParticleList m_list;
+        LUPI::FormatVersion m_formatVersion;                            /**< The **GNDS** **format** attribute of the first file read. */
+        std::string m_name;                                             /**< The **GNDS** **name** of the first file read in. */
+        std::string m_version;                                          /**< The **GNDS** **version** of the first file read in. */
+        ParticleList m_list;                                            /**< The internal list of the particles. */
         std::map<std::string,int> m_map;               // Be careful with this as a map[key] will add key if it is not in the map.
-        SymbolList m_symbolList;
+                                                                        /**< This maps each particle id to a unique index. */
+        SymbolList m_symbolList;                                        /**< The internal list of the symbols. */
         std::map<std::string,int> m_symbolMap;         // Be careful with this as a map[key] will add key if it is not in the map.
+                                                                        /**< This maps each symbol to a unique index. */
 
-        std::vector<Alias *> m_unresolvedAliases;
-        std::vector<Alias *> m_aliases;
+        std::vector<Alias *> m_unresolvedAliases;                       /**< This is used internally to store aliases when a **PoPs** node is being parsed as the aliases onde is parsed before the particles are parsed. */
+        std::vector<Alias *> m_aliases;                                 /**< Represents the **PoPs** *aliases* node which contains a list of the **PoPs** **alias** and **metaStable** nodes. */
 
-        Suite<GaugeBoson, Database> m_gaugeBosons;
-        Suite<Lepton, Database> m_leptons;
-        Suite<Baryon, Database> m_baryons;
-        Suite<ChemicalElement, Database> m_chemicalElements;
-        Suite<Unorthodox, Database> m_unorthodoxes;
+        Suite<GaugeBoson, Database> m_gaugeBosons;                      /**< Represents the **PoPs** **gaugeBosons** node which contains a list of the **PoPs** **gaugeBoson** nodes. */
+        Suite<Lepton, Database> m_leptons;                              /**< Represents the **PoPs** **leptons** node which contains a list of the **PoPs** **lepton** nodes. */
+        Suite<Baryon, Database> m_baryons;                              /**< Represents the **PoPs** **baryons** node which contains a list of the **PoPs** **baryon** nodes. */
+        Suite<ChemicalElement, Database> m_chemicalElements;            /**< Represents the **PoPs** **chemicalElements** node which contains a list of the **PoPs** **chemicalElement** nodes. */
+        Suite<Unorthodox, Database> m_unorthodoxes;                     /**< Represents the **PoPs** **unorthodoxes** node which contains a list of the **PoPs** **unorthodox** nodes. */
 
     public:
         Database( );
@@ -868,41 +956,47 @@ class Database {
         Database( HAPI::Node const &a_database );
         ~Database( );
 
-        FormatVersion const &formatVersion( void ) const { return( m_formatVersion ); }
-        std::string const &name( void ) const { return( m_name ); }
-        std::string const &version( void ) const { return( m_version ); }
+        LUPI::FormatVersion const &formatVersion( void ) const { return( m_formatVersion ); }   /**< Returns a *const* *reference* to the *m_formatVersion* variable of *this*. */
+        std::string const &name( void ) const { return( m_name ); }                         /**< Returns a *const* *reference* to the *m_name* variable of *this*. */
+        std::string const &version( void ) const { return( m_version ); }                   /**< Returns a *const* *reference* to the *m_version* variable of *this*. */
 
-        std::vector<Alias *> aliases( ) { return( m_aliases ); }
+        std::vector<Alias *> aliases( ) { return( m_aliases ); }                            /**< Returns a *const* *reference* to the *m_aliases* variable of *this*. */
 
         void addFile( char const *a_fileName, bool a_warnIfDuplicate );
         void addFile( std::string const &a_fileName, bool a_warnIfDuplicate );
         void addDatabase( std::string const &a_string, bool a_warnIfDuplicate );
         void addDatabase( HAPI::Node const &a_database, bool a_warnIfDuplicate );
-        void addAlias( Alias *a_alias ) { m_aliases.push_back( a_alias ); }
+        void addAlias( Alias *a_alias ) { m_aliases.push_back( a_alias ); }                 /**< Added the **Alias** *a_alias* to *this*. */
 
-        std::string::size_type size( void ) const { return( m_list.size( ) ); }
+        std::string::size_type size( void ) const { return( m_list.size( ) ); }             /**< Returns the number of particle in *this*. */
         int operator[]( std::string const &a_id ) const ;
         template<typename T> T const &get( std::string const &a_id ) const ;
         template<typename T> T const &get( int a_index ) const ;
-        Particle const &particle( std::string const &a_id ) const { return( get<Particle>( a_id ) ); }
-        Particle const &particle( int &a_index ) const { return( get<Particle>( a_index ) ); }
-        ParticleList const &particleList( ) const { return( m_list ); }
-        SymbolList symbolList( ) const { return( m_symbolList ); }
+        Particle const &particle( std::string const &a_id ) const { return( get<Particle>( a_id ) ); }  /**< Returns a *const* *reference* to the particle with id *a_id*. */
+        Particle const &particle( int a_index ) const { return( get<Particle>( a_index ) ); }           /**< Returns a *const* *reference* to the particle with index *a_index*. */
+        IDBase const &idBase( std::string const &a_id ) const { return( get<IDBase>( a_id ) ); }        /**< Returns a *const* *reference* to a **IDBase** instance with id *a_id*. */
+        IDBase const &idBase( int &a_index ) const { return( get<IDBase>( a_index ) ); }                /**< Returns a *const* *reference* to a **IDBase** instance with id *a_index*. */
+        ParticleList const &particleList( ) const { return( m_list ); }                                 /**< Returns a *const* *reference* to the *m_list* variable of *this*. */
+        SymbolList symbolList( ) const { return( m_symbolList ); }                                      /**< Returns a *const* *reference* to the *m_symbolList* variable of *this*. */
 
         bool exists( std::string const &a_id ) const ;
         bool exists( int a_index ) const ;
 
         Suite<ChemicalElement, Database> const &chemicalElements( ) const { return( m_chemicalElements ); }
+                                                                                            /**< Returns a *const* *reference* to the *m_chemicalElements* variable of *this*. */
 
-        bool isParticle( std::string const &a_id ) const { return( get<Base>( a_id ).isParticle( ) ); }
-        bool isParticle( int a_index ) const { return( m_list[a_index]->isParticle( ) ); }
-        bool isAlias( std::string const &a_id ) const { return( get<Base>( a_id ).isAlias( ) ); }
-        bool isAlias( int a_index ) const { return( m_list[a_index]->isAlias( ) ); }
+        bool isParticle( std::string const &a_id ) const { return( get<Base>( a_id ).isParticle( ) ); } /**< Returns **true** if *a_id* is a particle and **false** otherwise. */
+        bool isParticle( int a_index ) const { return( m_list[a_index]->isParticle( ) ); }              /**< Returns **true** if *a_index* is a particle and **false** otherwise. */
+        bool isAlias( std::string const &a_id ) const { return( get<Base>( a_id ).isAlias( ) ); }       /**< Returns **true** if *a_id* is an alias and **false** otherwise. */
+        bool isAlias( int a_index ) const { return( m_list[a_index]->isAlias( ) ); }                    /**< Returns **true** if *a_index* is an alias and **false** otherwise. */
         bool isMetaStableAlias( std::string const &a_id ) const { return( get<Base>( a_id ).isMetaStableAlias( ) ); }
+                                                                                                        /**< Returns **true** if *a_id* is a meta-stable and **false** otherwise. */
         bool isMetaStableAlias( int a_index ) const { return( m_list[a_index]->isMetaStableAlias( ) ); }
+                                                                                                        /**< Returns **true** if *a_index* is a meta-stable and **false** otherwise. */
+        std::vector<std::string> aliasReferences( std::string const &a_id );
 
-        std::string final( std::string const &a_id, bool returnAtMetaStableAlias = false ) const ;
-        int final( int a_index, bool returnAtMetaStableAlias = false ) const ;
+        std::string final( std::string const &a_id, bool a_returnAtMetaStableAlias = false ) const ;
+        int final( int a_index, bool a_returnAtMetaStableAlias = false ) const ;
 
         int add( Base *a_item );
         int addSymbol( SymbolBase *a_item );
@@ -911,24 +1005,35 @@ class Database {
 
         void saveAs( std::string const &a_fileName ) const ;
         void toXMLList( std::vector<std::string> &a_XMLList, std::string const &a_indent1 ) const ;
-        void print( void );
+        void print( bool a_printIndices );
 };
 
-/*
-=========================================================
-*/
+/* *********************************************************************************************************//**
+ * Returns the partile in *this* that has index *a_index*.
+ *
+ * @param a_index                       [in]    The index of the particle to return.
+ *
+ * @return                                      A *const* reference to the particle at index *a_index*.
+ ***********************************************************************************************************/
+
 template<typename T> T const &Database::get( int a_index ) const {
 
     Base *particle = m_list[a_index];
-    if( particle == nullptr ) throw std::range_error( "particle not in database" );
+    if( particle == nullptr ) throw std::range_error( std::string( "particle not in database" ) );
     T const *object = dynamic_cast<T const *>( particle );
     if( object == nullptr ) throw std::bad_cast( );
 
     return( *object );
 }
-/*
-=========================================================
-*/
+
+/* *********************************************************************************************************//**
+ * Returns the partile in *this* that has index *a_index*.
+ *
+ * @param a_id                          [in]    The **PoPs** id of the particle to return.
+ *
+ * @return                                      A *const* reference to the particle with id *a_id*.
+ ***********************************************************************************************************/
+
 template<typename T> T const &Database::get( std::string const &a_id ) const {
 
     int index = (*this)[a_id];
@@ -941,8 +1046,7 @@ template<typename T> T const &Database::get( std::string const &a_id ) const {
 
 double getPhysicalQuantityAsDouble( PhysicalQuantity const &a_physicalQuantity );
 double getPhysicalQuantityOfSuiteAsDouble( PQ_suite const &a_suite, bool a_allowEmpty = false, double a_emptyValue = 0.0 );
-std::vector<std::string> splitString( std::string const &a_string, char a_delimiter );
-bool stringToInt( std::string const &a_string, int &a_value );
+bool supportedFormat( LUPI::FormatVersion const &a_formatVersion );
 
 }
 

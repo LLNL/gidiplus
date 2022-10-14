@@ -20,9 +20,7 @@ using std::endl;
 
 int main( int argc, char **argv ) {
 
-// FIXME (Caleb Mattoon)
-// #ifndef HAPI_USE_HDF5
-#if 1
+#ifndef HAPI_USE_HDF5
     std::cerr << "    " << "parseHDF5 - no opt" << std::endl;
 #else
   try {
@@ -33,7 +31,6 @@ int main( int argc, char **argv ) {
     HAPI::File *file = new HAPI::HDFFile( protareFilename.c_str() );
     HAPI::Node protare = file->first_child();
 
-    cout << "Start reading:" << endl;
     cout << "projectile: " << protare.attribute("projectile").value() << ", ";
     cout << "target: " << protare.attribute("target").value() << endl;
 
@@ -87,7 +84,7 @@ int main( int argc, char **argv ) {
 
     cout << "Access non-existent attr:";
     HAPI::Attribute noSuchAttr = protare.attribute("noSuchAttribute");
-    cout << "  name = 'noSuchAttribute', value = '" << noSuchAttr.value() << "'" << endl;
+    cout << "  name = '', value = '" << noSuchAttr.value() << "'" << endl;
 
     delete file;
   }

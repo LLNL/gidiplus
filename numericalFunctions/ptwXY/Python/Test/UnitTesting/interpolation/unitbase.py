@@ -5,8 +5,6 @@
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
-from __future__ import print_function
-
 import os
 import sys
 sys.path.insert( 0, '../../Utilities' )

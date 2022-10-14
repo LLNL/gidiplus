@@ -27,7 +27,7 @@ namespace GIDI {
  ***********************************************************************************************************/
 
 Transportable::Transportable( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
-		PoPI::Database const &a_pops, Suite *a_parent ) :
+		        PoPI::Database const &a_pops, Suite *a_parent ) :
         Form( a_node, a_setupInfo, FormType::transportable, a_parent ),
         m_conserve( a_node.attribute_as_string( GIDI_conserveChars ) ),
         m_group( a_construction, a_node.child( GIDI_groupChars ), a_setupInfo, a_pops ) {

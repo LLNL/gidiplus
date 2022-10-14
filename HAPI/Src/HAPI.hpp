@@ -15,12 +15,12 @@
 #include <vector>
 #include <stdexcept>
 
+#include <LUPI.hpp>
 #include <nf_buffer.h>
-
+#include <nf_utilities.h>
 
 #ifdef HAPI_USE_PUGIXML
 #include <pugixml.hpp>
-#include <nf_utilities.h>
 #endif
 
 #ifdef HAPI_USE_HDF5
@@ -29,6 +29,8 @@
 #endif
 
 namespace HAPI {
+
+enum class NodeInteralType { pugiXML, HDF5 };
 
 // container classes for reading in from various data sources:
 
@@ -103,9 +105,16 @@ class Data_internal {
  */
 class Node_internal {
 
+    private:
+        NodeInteralType m_type;
+
     public:
-        Node_internal() { };
+        Node_internal( NodeInteralType a_type );
+        Node_internal( Node_internal const &a_node );
         virtual ~Node_internal() = 0;
+
+        NodeInteralType type( ) const { return( m_type ); }
+
         virtual std::string attribute(const char* name) = 0;
         virtual int attribute_as_int(const char* name) = 0;
         virtual long attribute_as_long(const char* name) = 0;
@@ -159,6 +168,7 @@ class Node {
     public:
         Node();
         Node( Node_internal *a_node );
+        Node( Node const &a_node );
         ~Node();
         inline Attribute attribute(const char* a_name) const{
             return Attribute(m_node, a_name);
@@ -249,6 +259,7 @@ class PugiXMLNode : public Node_internal {
         PugiXMLNode(pugi::xml_node a_node);
         PugiXMLNode(const PugiXMLNode &other);
         virtual ~PugiXMLNode();
+
         std::string attribute(const char* name);
         int attribute_as_int(const char* name);
         long attribute_as_long(const char* name);
@@ -325,6 +336,7 @@ class HDFNode : public Node_internal {
         explicit HDFNode(hid_t a_file_id);
         HDFNode(const HDFNode &other);
         virtual ~HDFNode();
+
         //Attribute attribute(char const *name);
         std::string attribute(const char* name);
         int attribute_as_int(const char* name);

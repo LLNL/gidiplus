@@ -42,7 +42,7 @@ Legendre1d::Legendre1d( Axes const &a_axes, int a_index, double a_outerDomainVal
 Legendre1d::Legendre1d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
         Function1dForm( a_construction, a_node, a_setupInfo, FormType::Legendre1d, a_parent ) {
 
-  nf_Buffer<double> coeff;
+    nf_Buffer<double> coeff;
     parseValuesOfDoubles( a_construction, a_node.child( GIDI_valuesChars ), a_setupInfo, coeff );
     m_coefficients = coeff.vector();
 }
@@ -99,7 +99,7 @@ void Legendre1d::toXMLList_func( WriteInfo &a_writeInfo, std::string const &a_in
         if( a_inRegions ) {
             attributes = a_writeInfo.addAttribute( GIDI_indexChars, intToString( index( ) ) ); }
         else {
-            if( label( ) != "" ) attributes = a_writeInfo.addAttribute( GIDI_labelChars, label( ) );
+            if( keyValue( ) != "" ) attributes = a_writeInfo.addAttribute( keyName( ), keyValue( ) );
         }
     }
 

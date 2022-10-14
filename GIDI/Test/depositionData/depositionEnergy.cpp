@@ -42,6 +42,7 @@ int main( int argc, char **argv ) {
 */
 void main2( int argc, char **argv ) {
 
+    LUPI::StatusMessageReporting smr1;
     argvOptions argv_options( "depositionEnergy", description );
     ParseTestOptions parseTestOptions( argv_options, argc, argv );
 
@@ -82,7 +83,7 @@ void main2( int argc, char **argv ) {
     }
 
     GIDI::Vector depositionEnergy;
-    depositionEnergy += protare->multiGroupDepositionEnergy( settings, temperatures[0], particles );
+    depositionEnergy += protare->multiGroupDepositionEnergy( smr1, settings, temperatures[0], particles );
     std::string prefix( "Deposition energy       ::" );
     printVector( prefix, depositionEnergy );
 
@@ -90,15 +91,15 @@ void main2( int argc, char **argv ) {
     for( std::size_t index = 0; index < protare->numberOfReactions( ); ++index ) {
         GIDI::Reaction const *reaction = protare->reaction( index );
 
-        depositionEnergySum += reaction->multiGroupDepositionEnergy( settings, temperatures[0], particles );
+        depositionEnergySum += reaction->multiGroupDepositionEnergy( smr1, settings, temperatures[0], particles );
     }
 
     GIDI::Vector photonAverageEnergy;
     for( std::size_t index = 0; index < protare->numberOfOrphanProducts( ); ++index ) {
         GIDI::Reaction const *reaction = protare->orphanProduct( index );
 
-        depositionEnergySum -= reaction->multiGroupAverageEnergy( settings, temperatures[0], PoPI::IDs::photon );
-        photonAverageEnergy += reaction->multiGroupAverageEnergy( settings, temperatures[0], PoPI::IDs::photon );
+        depositionEnergySum -= reaction->multiGroupAverageEnergy( smr1, settings, temperatures[0], PoPI::IDs::photon );
+        photonAverageEnergy += reaction->multiGroupAverageEnergy( smr1, settings, temperatures[0], PoPI::IDs::photon );
     }
 
     prefix = "Deposition energy sum   ::";

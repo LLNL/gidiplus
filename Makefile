@@ -9,12 +9,12 @@ SHELL = /bin/ksh
 
 # These must be set by hand when we do a release.
 gidiplus_major = 3
-gidiplus_minor = 22
+gidiplus_minor = 25
 baseTag = GIDI_plus.$(gidiplus_major).$(gidiplus_minor).0
 
 CXXFLAGS += -std=c++11
 
-DIRS_GIDI_plus = LUPI HAPI PoPI GIDI MCGIDI include lib Doc
+DIRS_GIDI_plus = LUPI HAPI PoPI RISI GIDI MCGIDI include lib Doc
 DIRS = pugixml numericalFunctions $(DIRS_GIDI_plus)
 
 GIDI_PLUS_PATH ?= $(abspath .)
@@ -35,6 +35,7 @@ default: pugixml
 	@echo "INFO: CFLAGS         = $(CFLAGS)"
 	@echo "INFO: PREFIX         = $(PREFIX)"
 	@echo "INFO: PUGIXML_PATH   = $(PUGIXML_PATH)"
+	@echo "INFO: HDF5_PATH      = $(HDF5_PATH)"
 	@echo "INFO: HDF5_INCLUDE   = $(HDF5_INCLUDE)"
 	@echo "INFO: HDF5_LIB       = $(HDF5_LIB)"
 	cd pugixml; $(MAKE) default

@@ -72,21 +72,21 @@ class Input {
     public:
         double m_temperature;                       /**< Set by user. */
 
-        Upscatter::Model m_upscatterModel;           /**< BRB */
+        Upscatter::Model m_upscatterModel;          /**< The upscatter model to use when sampling a target's velocity. */
                                                 // The rest of the members are set by MCGIDI methods.
                                                 // These five are used for upscatter model A.
-        bool m_dataInTargetFrame;                   /**< BRB */
-        double m_projectileBeta;                    /**< BRB */
+        bool m_dataInTargetFrame;                   /**< **true if the data are in the target's frame and **false** otherwise. */
+        double m_projectileBeta;                    /**< The beta = speed / c of the projectile. */
         double m_relativeMu;                        /**< BRB */
-        double m_targetBeta;                        /**< BRB */
-        double m_relativeBeta;                      /**< BRB */
-        double m_projectileEnergy;                  /**< BRB */
+        double m_targetBeta;                        /**< The beta = speed / c of the target. */
+        double m_relativeBeta;                      /**< The beta = speed / c of the relative speed between the projectile and the target.*/
+        double m_projectileEnergy;                  /**< The energy of the projectile. */
 
         SampledType m_sampledType;                  /**< BRB */
-        Reaction const *m_reaction;                 /**< BRB */
+        Reaction const *m_reaction;                 /**< The current reaction whose products are being sampled. */
 
-        double m_projectileMass;                    /**< BRB */
-        double m_targetMass;                        /**< BRB */
+        double m_projectileMass;                    /**< The mass of the projectile. */
+        double m_targetMass;                        /**< The mass of the target. */
 
         GIDI::Frame m_frame;                        /**< The frame the product data are returned in. */
 

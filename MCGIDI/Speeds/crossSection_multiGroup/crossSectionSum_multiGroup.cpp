@@ -49,6 +49,7 @@ void main2( int argc, char **argv ) {
     long numberOfSamples = 1000 * 1000, sampled = 0;
     char label1[1024];
     std::vector<std::string> libraries;
+    LUPI::StatusMessageReporting smr1;
 
     std::cout << __FILE__;
     for( int i1 = 1; i1 < argc; i1++ ) std::cout << " " << argv[i1];
@@ -80,7 +81,7 @@ void main2( int argc, char **argv ) {
     MCGIDI::MultiGroupHash multiGroupHash( *protare, temperature );
 
     MCGIDI::DomainHash domainHash( 4000, 1e-8, 100.0 );
-    MCGIDI::Protare *MCProtare = MCGIDI::protareFromGIDIProtare( *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude );
+    MCGIDI::Protare *MCProtare = MCGIDI::protareFromGIDIProtare( smr1, *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude );
     printTime( "    load MCGIDI: ", time1 );
 
     std::size_t numberOfReactions = MCProtare->numberOfReactions( );

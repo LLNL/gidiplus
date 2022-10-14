@@ -89,7 +89,8 @@ void main2( int argc, char **argv ) {                        // Useful for detec
     MC.want_URR_probabilityTables( true );
 
     MCGIDI::DomainHash domainHash( 4000, 1e-8, 10 );
-    MCGIDI::Protare *MC_protare = MCGIDI::protareFromGIDIProtare( *GIDI_protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude );
+    LUPI::StatusMessageReporting smr1;
+    MCGIDI::Protare *MC_protare = MCGIDI::protareFromGIDIProtare( smr1, *GIDI_protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude );
 
     MCGIDI::Vector<MCGIDI::Protare *> protares( 1 );
     protares[0] = MC_protare;

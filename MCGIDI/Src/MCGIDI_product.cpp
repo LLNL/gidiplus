@@ -41,12 +41,13 @@ MCGIDI_HOST_DEVICE Product::Product( ) :
  * @param a_isFission           [in]    *true* if parent channel is a fission channel and *false* otherwise.
  ***********************************************************************************************************/
 
-MCGIDI_HOST Product::Product( GIDI::Product const *a_product, SetupInfo &a_setupInfo, Transporting::MC const &a_settings, GIDI::Transporting::Particles const &a_particles,
-                bool a_isFission ) :
+MCGIDI_HOST Product::Product( GIDI::Product const *a_product, SetupInfo &a_setupInfo, Transporting::MC const &a_settings, 
+                GIDI::Transporting::Particles const &a_particles, bool a_isFission ) :
         m_ID( a_product->particle( ).ID( ).c_str( ) ),
         m_index( MCGIDI_popsIndex( a_settings.pops( ), a_product->particle( ).ID( ) ) ),
         m_userParticleIndex( -1 ),
         m_label( a_product->label( ).c_str( ) ),
+        m_isCompleteParticle( a_product->isCompleteParticle( ) ),
         m_mass( a_product->particle( ).mass( "MeV/c**2" ) ),         // Includes nuclear excitation energy.
         m_excitationEnergy( a_product->particle( ).excitationEnergy( ).value( ) ),
         m_twoBodyOrder( a_setupInfo.m_twoBodyOrder ),
@@ -204,6 +205,7 @@ MCGIDI_HOST_DEVICE void Product::sampleProducts( Protare const *a_protare, doubl
  *
  * @param a_reaction                [in]    The reaction containing the particle which this distribution describes.
  * @param a_pid                     [in]    The index of the particle to emit.
+ * @param a_temperature             [in]    Specifies the temperature of the material.
  * @param a_energy_in               [in]    The energy of the incident particle.
  * @param a_mu_lab                  [in]    The desired mu in the lab frame for the emitted particle.
  * @param a_weight                  [in]    The weight of emitting outgoing particle into lab angle *a_mu_lab*.
@@ -213,11 +215,11 @@ MCGIDI_HOST_DEVICE void Product::sampleProducts( Protare const *a_protare, doubl
  * @param a_cumulative_weight       [in]    The sum of the multiplicity for other outgoing particles with index *a_pid*.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE void Product::angleBiasing( Reaction const *a_reaction, int a_pid, double a_energy_in, double a_mu_lab, double &a_weight, double &a_energy_out,
-                double (*a_userrng)( void * ), void *a_rngState, double &a_cumulative_weight ) const {
+MCGIDI_HOST_DEVICE void Product::angleBiasing( Reaction const *a_reaction, int a_pid, double a_temperature, double a_energy_in, double a_mu_lab, 
+                double &a_weight, double &a_energy_out, double (*a_userrng)( void * ), void *a_rngState, double &a_cumulative_weight ) const {
 
     if( m_outputChannel != nullptr ) {
-        m_outputChannel->angleBiasing( a_reaction, a_pid, a_energy_in, a_mu_lab, a_weight, a_energy_out, a_userrng, a_rngState, a_cumulative_weight ); }
+        m_outputChannel->angleBiasing( a_reaction, a_pid, a_temperature, a_energy_in, a_mu_lab, a_weight, a_energy_out, a_userrng, a_rngState, a_cumulative_weight ); }
     else {
         if( index( ) != a_pid ) return;
 
@@ -229,7 +231,7 @@ MCGIDI_HOST_DEVICE void Product::angleBiasing( Reaction const *a_reaction, int a
         if( m_multiplicity->type( ) == Function1dType::branching ) { // Needs to handle F1_Branching.
             }
         else {
-            probability = m_distribution->angleBiasing( a_reaction, a_energy_in, a_mu_lab, a_userrng, a_rngState, energy_out );
+            probability = m_distribution->angleBiasing( a_reaction, a_temperature, a_energy_in, a_mu_lab, a_userrng, a_rngState, energy_out );
         }
 
         double weight = m_multiplicity->evaluate( a_energy_in ) * probability;
@@ -255,6 +257,7 @@ MCGIDI_HOST_DEVICE void Product::serialize( DataBuffer &a_buffer, DataBuffer::Mo
     DATA_MEMBER_INT( m_index, a_buffer, a_mode );
     DATA_MEMBER_INT( m_userParticleIndex, a_buffer, a_mode );
     DATA_MEMBER_STRING( m_label, a_buffer, a_mode );
+    DATA_MEMBER_CAST( m_isCompleteParticle, a_buffer, a_mode, bool );
     DATA_MEMBER_FLOAT( m_mass, a_buffer, a_mode );
     DATA_MEMBER_FLOAT( m_excitationEnergy, a_buffer, a_mode );
 
@@ -288,47 +291,18 @@ MCGIDI_HOST_DEVICE void Product::serialize( DataBuffer &a_buffer, DataBuffer::Mo
 
     m_multiplicity = serializeFunction1d( a_buffer, a_mode, m_multiplicity );
 
-    int distributionType = 0;
     Distributions::Type type = Distributions::Type::none;
     if( m_distribution != nullptr ) type = m_distribution->type( );
-    switch( type ) {
-    case Distributions::Type::none :
-        break;
-    case Distributions::Type::unspecified :
-        distributionType = 1;
-        break;
-    case Distributions::Type::angularTwoBody :
-        distributionType = 2;
-        break;
-    case Distributions::Type::KalbachMann :
-        distributionType = 3;
-        break;
-    case Distributions::Type::uncorrelated :
-        distributionType = 4;
-        break;
-    case Distributions::Type::energyAngularMC :
-        distributionType = 5;
-        break;
-    case Distributions::Type::angularEnergyMC :
-        distributionType = 6;
-        break;
-    case Distributions::Type::coherentPhotoAtomicScattering :
-        distributionType = 7;
-        break;
-    case Distributions::Type::incoherentPhotoAtomicScattering :
-        distributionType = 8;
-        break;
-    case Distributions::Type::pairProductionGamma :
-        distributionType = 9;
-        break;
-    }
+    int distributionType = distributionTypeToInt( type );
     DATA_MEMBER_INT( distributionType, a_buffer, a_mode );
+    type = intToDistributionType( distributionType );
+    
     if( a_mode == DataBuffer::Mode::Unpack ) {
-        switch( distributionType ) {
-        case 0 :
+        switch( type ) {
+        case Distributions::Type::none :
             m_distribution = nullptr;
             break;
-        case 1 :
+        case Distributions::Type::unspecified :
             if (a_buffer.m_placement != nullptr) {
                 m_distribution = new(a_buffer.m_placement) Distributions::Unspecified;
                 a_buffer.incrementPlacement( sizeof( Distributions::Unspecified ) ); }
@@ -336,7 +310,7 @@ MCGIDI_HOST_DEVICE void Product::serialize( DataBuffer &a_buffer, DataBuffer::Mo
                 m_distribution = new Distributions::Unspecified;
             }
             break;
-        case 2 :
+        case Distributions::Type::angularTwoBody :
             if (a_buffer.m_placement != nullptr) {
                 m_distribution = new(a_buffer.m_placement) Distributions::AngularTwoBody;
                 a_buffer.incrementPlacement( sizeof( Distributions::AngularTwoBody ) ); }
@@ -344,7 +318,7 @@ MCGIDI_HOST_DEVICE void Product::serialize( DataBuffer &a_buffer, DataBuffer::Mo
                 m_distribution = new Distributions::AngularTwoBody;
             }
             break;
-        case 3 :
+        case Distributions::Type::KalbachMann :
             if (a_buffer.m_placement != nullptr) {
                 m_distribution = new(a_buffer.m_placement) Distributions::KalbachMann;
                 a_buffer.incrementPlacement( sizeof( Distributions::KalbachMann ) ); }
@@ -352,7 +326,7 @@ MCGIDI_HOST_DEVICE void Product::serialize( DataBuffer &a_buffer, DataBuffer::Mo
                 m_distribution = new Distributions::KalbachMann;
             }
             break;
-        case 4 :
+        case Distributions::Type::uncorrelated :
             if (a_buffer.m_placement != nullptr) {
                 m_distribution = new(a_buffer.m_placement) Distributions::Uncorrelated;
                 a_buffer.incrementPlacement( sizeof( Distributions::Uncorrelated ) ); }
@@ -360,7 +334,7 @@ MCGIDI_HOST_DEVICE void Product::serialize( DataBuffer &a_buffer, DataBuffer::Mo
                 m_distribution = new Distributions::Uncorrelated;
             }
             break;
-        case 5 :
+        case Distributions::Type::energyAngularMC :
             if (a_buffer.m_placement != nullptr) {
                 m_distribution = new(a_buffer.m_placement) Distributions::EnergyAngularMC;
                 a_buffer.incrementPlacement( sizeof( Distributions::EnergyAngularMC ) ); }
@@ -368,7 +342,7 @@ MCGIDI_HOST_DEVICE void Product::serialize( DataBuffer &a_buffer, DataBuffer::Mo
                 m_distribution = new Distributions::EnergyAngularMC;
             }
             break;
-        case 6 :
+        case Distributions::Type::angularEnergyMC :
             if (a_buffer.m_placement != nullptr) {
                 m_distribution = new(a_buffer.m_placement) Distributions::AngularEnergyMC;
                 a_buffer.incrementPlacement( sizeof( Distributions::AngularEnergyMC ) ); }
@@ -376,7 +350,7 @@ MCGIDI_HOST_DEVICE void Product::serialize( DataBuffer &a_buffer, DataBuffer::Mo
                 m_distribution = new Distributions::AngularEnergyMC;
             }
             break;
-        case 7 :
+        case Distributions::Type::coherentPhotoAtomicScattering :
             if( a_buffer.m_placement != nullptr ) {
                  m_distribution = new(a_buffer.m_placement) Distributions::CoherentPhotoAtomicScattering;
                  a_buffer.incrementPlacement( sizeof( Distributions::CoherentPhotoAtomicScattering ) ); }
@@ -384,7 +358,7 @@ MCGIDI_HOST_DEVICE void Product::serialize( DataBuffer &a_buffer, DataBuffer::Mo
                  m_distribution = new Distributions::CoherentPhotoAtomicScattering;
              }
              break;
-        case 8 :
+        case Distributions::Type::incoherentPhotoAtomicScattering :
             if( a_buffer.m_placement != nullptr ) {
                  m_distribution = new(a_buffer.m_placement) Distributions::IncoherentPhotoAtomicScattering;
                  a_buffer.incrementPlacement( sizeof( Distributions::IncoherentPhotoAtomicScattering ) ); }
@@ -392,7 +366,7 @@ MCGIDI_HOST_DEVICE void Product::serialize( DataBuffer &a_buffer, DataBuffer::Mo
                  m_distribution = new Distributions::IncoherentPhotoAtomicScattering;
              }
              break;
-        case 9 :
+        case Distributions::Type::pairProductionGamma :
             if( a_buffer.m_placement != nullptr ) {
                  m_distribution = new(a_buffer.m_placement) Distributions::PairProductionGamma;
                  a_buffer.incrementPlacement( sizeof( Distributions::PairProductionGamma ) ); }
@@ -400,38 +374,71 @@ MCGIDI_HOST_DEVICE void Product::serialize( DataBuffer &a_buffer, DataBuffer::Mo
                  m_distribution = new Distributions::PairProductionGamma;
              }
              break;
+        case Distributions::Type::coherentElasticTNSL :
+            if( a_buffer.m_placement != nullptr ) {
+                 m_distribution = new(a_buffer.m_placement) Distributions::CoherentElasticTNSL;
+                 a_buffer.incrementPlacement( sizeof( Distributions::CoherentElasticTNSL ) ); }
+             else {
+                 m_distribution = new Distributions::CoherentElasticTNSL;
+             }
+             break;
+        case Distributions::Type::incoherentElasticTNSL :
+            if( a_buffer.m_placement != nullptr ) {
+                 m_distribution = new(a_buffer.m_placement) Distributions::IncoherentElasticTNSL;
+                 a_buffer.incrementPlacement( sizeof( Distributions::IncoherentElasticTNSL ) ); }
+             else {
+                 m_distribution = new Distributions::IncoherentElasticTNSL;
+             }
+             break;
+        case Distributions::Type::incoherentPhotoAtomicScatteringElectron :
+            if( a_buffer.m_placement != nullptr ) {
+                 m_distribution = new(a_buffer.m_placement) Distributions::IncoherentPhotoAtomicScatteringElectron;
+                 a_buffer.incrementPlacement( sizeof( Distributions::IncoherentPhotoAtomicScatteringElectron ) ); }
+             else {
+                 m_distribution = new Distributions::IncoherentPhotoAtomicScatteringElectron;
+             }
+             break;
         }
     }
     if( a_mode == DataBuffer::Mode::Memory ) {
-        switch( distributionType ) {
-        case 0 :
+        switch( type ) {
+        case Distributions::Type::none :
             break;
-        case 1 :
+        case Distributions::Type::unspecified :
             a_buffer.incrementPlacement( sizeof( Distributions::Unspecified ) );
             break;
-        case 2 :
+        case Distributions::Type::angularTwoBody :
             a_buffer.incrementPlacement( sizeof( Distributions::AngularTwoBody ) );
             break;
-        case 3 :
+        case Distributions::Type::KalbachMann :
             a_buffer.incrementPlacement( sizeof( Distributions::KalbachMann ) );
             break;
-        case 4 :
+        case Distributions::Type::uncorrelated :
             a_buffer.incrementPlacement( sizeof( Distributions::Uncorrelated ) );
             break;
-        case 5 :
+        case Distributions::Type::energyAngularMC :
             a_buffer.incrementPlacement( sizeof( Distributions::EnergyAngularMC ) );
             break;
-        case 6 :
+        case Distributions::Type::angularEnergyMC :
             a_buffer.incrementPlacement( sizeof( Distributions::AngularEnergyMC ) );
             break;
-        case 7 :
+        case Distributions::Type::coherentPhotoAtomicScattering :
              a_buffer.incrementPlacement( sizeof( Distributions::CoherentPhotoAtomicScattering ) );
              break;
-        case 8 :
+        case Distributions::Type::incoherentPhotoAtomicScattering :
              a_buffer.incrementPlacement( sizeof( Distributions::IncoherentPhotoAtomicScattering ) );
              break;
-        case 9 :
+        case Distributions::Type::pairProductionGamma :
              a_buffer.incrementPlacement( sizeof( Distributions::PairProductionGamma ) );
+             break;
+        case Distributions::Type::coherentElasticTNSL :
+             a_buffer.incrementPlacement( sizeof( Distributions::CoherentElasticTNSL ) );
+             break;
+        case Distributions::Type::incoherentElasticTNSL :
+             a_buffer.incrementPlacement( sizeof( Distributions::IncoherentElasticTNSL ) );
+             break;
+        case Distributions::Type::incoherentPhotoAtomicScatteringElectron :
+             a_buffer.incrementPlacement( sizeof( Distributions::IncoherentPhotoAtomicScatteringElectron ) );
              break;
         }
     }

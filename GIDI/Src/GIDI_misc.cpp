@@ -17,6 +17,8 @@
 
 namespace GIDI {
 
+static std::size_t startIndexAttribute( HAPI::Node const &a_node );
+
 /* *********************************************************************************************************//**
  * This function takes a file path and returns its real path. On a Unix system, the system function realPath is called.
  *
@@ -137,11 +139,11 @@ void parseValuesOfDoubles( HAPI::Node const &a_node, SetupInfo &a_setupInfo, nf_
     std::string href = a_node.attribute_as_string( GIDI_hrefChars );
 
     if( href != "" ) {
-        size_t offset = a_node.attribute_as_long( GIDI_offsetChars );
-        size_t count = a_node.attribute_as_long( GIDI_countChars );
-        if( a_setupInfo.m_dataManager == nullptr )
+        std::size_t startIndex = startIndexAttribute( a_node );
+        std::size_t count = a_node.attribute_as_long( GIDI_countChars );
+        if( a_setupInfo.m_protare->dataManager( ) == nullptr )
             throw Exception( "parseValuesOfDoubles: Cannot read from HDF5 file as GIDI+ was compiled without HDF5 support." );
-        a_setupInfo.m_dataManager->getDoubles( a_values, offset, offset + count ); }
+        a_setupInfo.m_protare->dataManager( )->getDoubles( a_values, startIndex, startIndex + count ); }
     else {
         HAPI::Data data = a_node.data( );
         data.getDoubles( a_values ); // FIXME overload getDoubles() to take std::vector argument, avoid extra copy?
@@ -158,6 +160,7 @@ void parseValuesOfDoubles( HAPI::Node const &a_node, SetupInfo &a_setupInfo, nf_
  *
  * @param a_construction        [in]    Used to pass user options to the constructor.
  * @param a_node                [in]    The **HAPI::Node** node whose text is to be converted into a list of ints.
+ * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_values              [in]    The list to fill with the converted values.
  ***********************************************************************************************************/
 
@@ -170,6 +173,7 @@ void parseValuesOfInts( Construction::Settings const &a_construction, HAPI::Node
  * This function converts the text of a **HAPI::Node** into a list of ints.
  *
  * @param a_node                [in]    The **HAPI::Node** node whoses text is to be converted into a list of ints.
+ * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_values              [in]    The list to fill with the converted values.
  ***********************************************************************************************************/
 
@@ -178,11 +182,11 @@ void parseValuesOfInts( HAPI::Node const &a_node, SetupInfo &a_setupInfo, nf_Buf
     std::string href = a_node.attribute_as_string( GIDI_hrefChars );
 
     if( href != "" ) {
-        size_t offset = a_node.attribute_as_long( GIDI_offsetChars );
-        size_t count = a_node.attribute_as_long( GIDI_countChars );
-        if( a_setupInfo.m_dataManager == nullptr )
+        std::size_t startIndex = startIndexAttribute( a_node );
+        std::size_t count = a_node.attribute_as_long( GIDI_countChars );
+        if( a_setupInfo.m_protare->dataManager( ) == nullptr )
             	throw Exception( "parseValuesOfInts: Cannot read from HDF5 file as GIDI+ was compiled without HDF5 support." );
-        a_setupInfo.m_dataManager->getInts( a_values, offset, offset + count ); }
+        a_setupInfo.m_protare->dataManager( )->getInts( a_values, startIndex, startIndex + count ); }
     else {
         HAPI::Data data = a_node.data( );
         data.getInts( a_values ); // FIXME overload getDoubles() to take std::vector argument, avoid extra copy?
@@ -280,7 +284,7 @@ void WriteInfo::print( ) {
  * This function returns an frame enum representing a **HAPI::Node**'s attribute with name *a_name*.
  *
  * @param a_node        [in]    The **HAPI::Node** node whoses attribute named *a_node* is to be parsed to determine the frame.
- * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
+ * @param a_setupInfo   [in]    Information create my the Protare constructor to help in parsing.
  * @param a_name        [in]    The name of the attribute to parse.
  *
  * @return                      The *frame* enum representing the node's frame.
@@ -538,6 +542,30 @@ void energy2dToXMLList( WriteInfo &a_writeInfo, std::string const &a_moniker, st
     a_writeInfo.addNodeStarter( a_indent, a_moniker, "" );
     a_function->toXMLList( a_writeInfo, indent2 );
     a_writeInfo.addNodeEnder( a_moniker );
+}
+
+/* *********************************************************************************************************//**
+ * For internal use only.
+ *
+ * @param a_node                [in]    The **HAPI::Node** node whose text is to be converted into a list of doubles.
+ *
+ * @return                              returns the startIndex attribute of *a_node*.
+ ***********************************************************************************************************/
+
+
+static std::size_t startIndexAttribute( HAPI::Node const &a_node ) {
+
+    std::size_t startIndex = 0;
+
+    std::string attribute = a_node.attribute_as_string( GIDI_startIndexChars );
+    if( attribute != "" ) {
+        startIndex = a_node.attribute_as_long( GIDI_startIndexChars ); }
+    else {
+        attribute = a_node.attribute_as_string( GIDI_offsetChars );
+        if( attribute != "" ) startIndex = a_node.attribute_as_long( GIDI_offsetChars );
+    }
+
+    return( startIndex );
 }
 
 }               // End namespace GIDI.

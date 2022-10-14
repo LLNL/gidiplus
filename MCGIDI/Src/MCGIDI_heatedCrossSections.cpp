@@ -22,53 +22,96 @@ static MCGIDI_HOST GIDI::Vector collapseAndcheckZeroReaction( GIDI::Vector &a_ve
                 GIDI::Transporting::Particles const &a_particles, double a_temperature, bool a_zeroReactions );
 static void writeVector( FILE *a_file, std::string const &a_prefix, int a_offset, Vector<double> const &a_vector );
 
-/*
-============================================================
-======= HeatedReactionCrossSectionContinuousEnergy =========
-============================================================
-*/
+/*! \class HeatedReactionCrossSectionContinuousEnergy
+ * Class to store a reaction's cross section.
+ */
+
+/* *********************************************************************************************************//**
+ * Simple constructor needed for broadcasting.
+ ***********************************************************************************************************/
+
 MCGIDI_HOST_DEVICE HeatedReactionCrossSectionContinuousEnergy::HeatedReactionCrossSectionContinuousEnergy( ) :
         m_offset( 0 ),
         m_threshold( 0.0 ),
         m_crossSection( ),
-        m_URR_probabilityTables( nullptr ) {
+        m_URR_mode( Transporting::URR_mode::none ),
+        m_URR_probabilityTables( nullptr ),
+        m_ACE_URR_probabilityTables( nullptr ) {
 
 }
-/*
-============================================================
-*/
+
+/* *********************************************************************************************************//**
+ * @param a_offset                  [in]    The offset of the first cross section point in the energy grid.
+ * @param a_threshold               [in]    The threshold for the reaction.
+ * @param a_crossSection            [in]    The cross section for the reaction.
+ ***********************************************************************************************************/
+
 MCGIDI_HOST HeatedReactionCrossSectionContinuousEnergy::HeatedReactionCrossSectionContinuousEnergy( int a_offset, double a_threshold, Vector<double> &a_crossSection ) :
         m_offset( a_offset ),
         m_threshold( a_threshold ),
         m_crossSection( a_crossSection ),
-        m_URR_probabilityTables( nullptr ) {
+        m_URR_mode( Transporting::URR_mode::none ),
+        m_URR_probabilityTables( nullptr ),
+        m_ACE_URR_probabilityTables( nullptr ) {
 
 }
-/*
-============================================================
-*/
-MCGIDI_HOST HeatedReactionCrossSectionContinuousEnergy::HeatedReactionCrossSectionContinuousEnergy( double a_threshold, GIDI::Functions::Ys1d const &a_crossSection, Probabilities::ProbabilityBase2d *a_URR_probabilityTables ) :
+
+/* *********************************************************************************************************//**
+ * @param a_threshold                   [in]    The threshold for the reaction.
+ * @param a_crossSection                [in]    The cross section for the reaction.
+ * @param a_URR_probabilityTables       [in]    The pdf style URR probability tables.
+ * @param a_ACE_URR_probabilityTables   [in]    The ACE style URR probability tables.
+ ***********************************************************************************************************/
+
+MCGIDI_HOST HeatedReactionCrossSectionContinuousEnergy::HeatedReactionCrossSectionContinuousEnergy( double a_threshold, 
+                GIDI::Functions::Ys1d const &a_crossSection, Probabilities::ProbabilityBase2d *a_URR_probabilityTables,
+                ACE_URR_probabilityTables *a_ACE_URR_probabilityTables ) :
         m_offset( a_crossSection.start( ) ),
         m_threshold( a_threshold ),
         m_crossSection( a_crossSection.Ys( ) ),
-        m_URR_probabilityTables( a_URR_probabilityTables ) {
+        m_URR_probabilityTables( a_URR_probabilityTables ),
+        m_ACE_URR_probabilityTables( a_ACE_URR_probabilityTables ) {
 
+    if( m_URR_probabilityTables != nullptr ) {
+        m_URR_mode = Transporting::URR_mode::pdfs; }
+    else if( m_ACE_URR_probabilityTables != nullptr ) {
+        m_URR_mode = Transporting::URR_mode::ACE_URR_protabilityTables;
+    }
 }
-/*
-============================================================
-*/
+
+/* *********************************************************************************************************//**
+ ***********************************************************************************************************/
+
+MCGIDI_HOST_DEVICE HeatedReactionCrossSectionContinuousEnergy::~HeatedReactionCrossSectionContinuousEnergy( ) {
+
+    delete m_URR_probabilityTables;
+    delete m_ACE_URR_probabilityTables;
+}
+
+/* *********************************************************************************************************//**
+ * Returns the minimum energy for the unresolved resonance region (URR) domain. If no URR data present, returns -1.
+ *
+ * @return                              true is if *this* has a URR data.
+ ***********************************************************************************************************/
+
 MCGIDI_HOST_DEVICE double HeatedReactionCrossSectionContinuousEnergy::URR_domainMin( ) const {
 
     if( m_URR_probabilityTables != nullptr ) return( m_URR_probabilityTables->domainMin( ) );
+    if( m_ACE_URR_probabilityTables != nullptr ) return( m_ACE_URR_probabilityTables->domainMin( ) );
 
     return( -1.0 );    
 }
-/*
-============================================================
-*/
+
+/* *********************************************************************************************************//**
+ * Returns the maximum energy for the unresolved resonance region (URR) domain. If no URR data present, returns -1.
+ *
+ * @return                              true is if *this* has a URR data.
+ ***********************************************************************************************************/
+
 MCGIDI_HOST_DEVICE double HeatedReactionCrossSectionContinuousEnergy::URR_domainMax( ) const {
 
     if( m_URR_probabilityTables != nullptr ) return( m_URR_probabilityTables->domainMax( ) );
+    if( m_ACE_URR_probabilityTables != nullptr ) return( m_ACE_URR_probabilityTables->domainMax( ) );
 
     return( -1.0 );    
 }
@@ -86,20 +129,23 @@ MCGIDI_HOST_DEVICE void HeatedReactionCrossSectionContinuousEnergy::serialize( D
     DATA_MEMBER_INT( m_offset, a_buffer, a_mode );
     DATA_MEMBER_FLOAT(  m_threshold, a_buffer, a_mode  );
     DATA_MEMBER_VECTOR_DOUBLE( m_crossSection, a_buffer, a_mode );
+    m_URR_mode = serializeURR_mode( m_URR_mode,  a_buffer, a_mode );
     m_URR_probabilityTables = serializeProbability2d( a_buffer, a_mode, m_URR_probabilityTables );
+    m_ACE_URR_probabilityTables = serializeACE_URR_probabilityTables( m_ACE_URR_probabilityTables, a_buffer, a_mode );
 }
 
 /* *********************************************************************************************************//**
  * Print to *std::cout* the content of *this*. This is mainly meant for debugging.
  *
+ * @param a_protareSingle       [in]    The ProtareSingle instance *this* resides in.
  * @param a_indent              [in]    The buffer to read or write data to depending on *a_mode*.
  * @param a_iFormat             [in]    C printf format specifier for any interger that is printed (e.g., "%3d").
  * @param a_energyFormat        [in]    C printf format specifier for any interger that is printed (e.g., "%20.12e").
  * @param a_dFormat             [in]    C printf format specifier for any interger that is printed (e.g., "%14.7e").
  ***********************************************************************************************************/
 
-MCGIDI_HOST void HeatedReactionCrossSectionContinuousEnergy::print( std::string const &a_indent, std::string const &a_iFormat, std::string const &a_energyFormat,
-                std::string const &a_dFormat ) {
+MCGIDI_HOST void HeatedReactionCrossSectionContinuousEnergy::print( ProtareSingle const *a_protareSingle, std::string const &a_indent, 
+                std::string const &a_iFormat, std::string const &a_energyFormat, std::string const &a_dFormat ) const {
 
     std::cout << a_indent << "# Offset = " << m_offset << std::endl;
     std::cout << a_indent << "# Threshold = " << m_threshold << std::endl;
@@ -117,7 +163,7 @@ MCGIDI_HOST void HeatedReactionCrossSectionContinuousEnergy::print( std::string 
 
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
-ContinuousEnergyGain::ContinuousEnergyGain( ) :
+MCGIDI_HOST_DEVICE ContinuousEnergyGain::ContinuousEnergyGain( ) :
         m_particleIndex( -1 ),
         m_userParticleIndex( -1 ) {
 
@@ -171,14 +217,15 @@ MCGIDI_HOST_DEVICE void ContinuousEnergyGain::serialize( DataBuffer &a_buffer, D
 /* *********************************************************************************************************//**
  * Print to *std::cout* the content of *this*. This is mainly meant for debugging.
  *
+ * @param a_protareSingle       [in]    The ProtareSingle instance *this* resides in.
  * @param a_indent              [in]    The buffer to read or write data to depending on *a_mode*.
  * @param a_iFormat             [in]    C printf format specifier for any interger that is printed (e.g., "%3d").
  * @param a_energyFormat        [in]    C printf format specifier for any interger that is printed (e.g., "%20.12e").
  * @param a_dFormat             [in]    C printf format specifier for any interger that is printed (e.g., "%14.7e").
  ***********************************************************************************************************/
 
-MCGIDI_HOST void ContinuousEnergyGain::print( std::string const &a_indent, std::string const &a_iFormat, std::string const &a_energyFormat,
-                std::string const &a_dFormat ) {
+MCGIDI_HOST void ContinuousEnergyGain::print( ProtareSingle const *a_protareSingle, std::string const &a_indent, std::string const &a_iFormat, 
+                std::string const &a_energyFormat, std::string const &a_dFormat ) const {
 
     std::cout << std::endl;
     std::cout << a_indent << "# Particle index = " << m_particleIndex << std::endl;
@@ -235,7 +282,8 @@ MCGIDI_HOST HeatedCrossSectionContinuousEnergy::HeatedCrossSectionContinuousEner
         m_productionEnergy( ),
         m_gains( ),
         m_reactionsInURR_region( ),
-        m_reactionCrossSections( ) {
+        m_reactionCrossSections( ),
+        m_ACE_URR_probabilityTables( nullptr ) {
 
     std::string label( a_temperatureInfo.griddedCrossSection( ) );
     std::string URR_label( a_temperatureInfo.URR_probabilityTables( ) );
@@ -244,6 +292,7 @@ MCGIDI_HOST HeatedCrossSectionContinuousEnergy::HeatedCrossSectionContinuousEner
             static_cast<GIDI::Styles::GriddedCrossSection const &>( *a_settings.styles( )->get<GIDI::Styles::Base>( label ) );
     GIDI::Grid const &grid = griddedCrossSectionStyle.grid( );
 
+    std::vector<double> const *energiesPointer;
     std::vector<double> const &energies = grid.data( ).vector();
     std::vector<double> const &fixedGridPoints = a_settings.fixedGridPoints( );
     std::vector<int> fixedGridIndices( fixedGridPoints.size( ) );
@@ -251,8 +300,10 @@ MCGIDI_HOST HeatedCrossSectionContinuousEnergy::HeatedCrossSectionContinuousEner
         for( int i1 = 0; i1 < static_cast<int>( fixedGridPoints.size( ) ); ++i1 ) {
             fixedGridIndices[i1] = static_cast<int>( binarySearchVector( fixedGridPoints[i1], energies ) );
         }
+        energiesPointer = &fixedGridPoints;
         m_energies = fixedGridPoints; }
     else {
+        energiesPointer = &energies;
         m_energies = energies;
     }
 
@@ -264,6 +315,7 @@ MCGIDI_HOST HeatedCrossSectionContinuousEnergy::HeatedCrossSectionContinuousEner
     GIDI::Functions::Ys1d totalCrossSection( axes, ptwXY_interpolationLinLin, 0, dummy );
     GIDI::Functions::Ys1d fixedGridCrossSection( axes, ptwXY_interpolationLinLin, 0, fixedGridPoints );
     m_reactionCrossSections.resize( a_reactions.size( ) );
+    m_URR_mode = Transporting::URR_mode::none;
     for( std::vector<GIDI::Reaction const *>::const_iterator reactionIter = a_reactions.begin( ); reactionIter != a_reactions.end( ); ++reactionIter, ++reactionIndex ) {
         GIDI::Suite const &reactionCrossSectionSuite = (*reactionIter)->crossSection( );
         GIDI::Functions::Ys1d const *reactionCrossSection3 = reactionCrossSectionSuite.get<GIDI::Functions::Ys1d>( label );
@@ -273,12 +325,26 @@ MCGIDI_HOST HeatedCrossSectionContinuousEnergy::HeatedCrossSectionContinuousEner
             for( std::size_t index = 0; index < reactionCrossSectionZeroReactions->size( ); ++index ) reactionCrossSectionZeroReactions->set( index, 0.0 );
             reactionCrossSection3 = reactionCrossSectionZeroReactions;
         }
-        Probabilities::ProbabilityBase2d *URR_probabilityTables = nullptr;
 
-        if( a_settings.want_URR_probabilityTables( ) & ( URR_label != "" ) ) {
+        Probabilities::ProbabilityBase2d *URR_probabilityTables = nullptr;
+        if( ( a_settings._URR_mode( ) == Transporting::URR_mode::pdfs ) && ( URR_label != "" ) ) {
             if( reactionCrossSectionSuite.has( URR_label ) ) {
                 GIDI::Functions::URR_probabilityTables1d const &URR_probability_tables1d( *reactionCrossSectionSuite.get<GIDI::Functions::URR_probabilityTables1d>( URR_label ) );
                 URR_probabilityTables = Probabilities::parseProbability2d( URR_probability_tables1d.function2d( ), nullptr );
+                m_URR_mode = Transporting::URR_mode::pdfs;
+            }
+        }
+
+        ACE_URR_probabilityTables *ACE_URR_probabilityTables1 = nullptr;
+        if( a_settings._URR_mode( ) == Transporting::URR_mode::ACE_URR_protabilityTables ) {
+            auto URR_iter = a_setupInfo.m_ACE_URR_protabilityTablesFromGIDI.find( URR_label );
+            if( URR_iter != a_setupInfo.m_ACE_URR_protabilityTablesFromGIDI.end( ) ) {
+                auto ACE_URR_probabilityTablesIter = (*URR_iter).second->m_ACE_URR_probabilityTables.find( (*reactionIter)->label( ) );
+                if( ACE_URR_probabilityTablesIter != (*URR_iter).second->m_ACE_URR_probabilityTables.end( ) ) {
+                    ACE_URR_probabilityTables1 = (*ACE_URR_probabilityTablesIter).second;
+                    (*ACE_URR_probabilityTablesIter).second = nullptr;          // Set to nullptr so destructor of m_ACE_URR_probabilityTables does not delete.
+                    m_URR_mode = Transporting::URR_mode::ACE_URR_protabilityTables;
+                }
             }
         }
 
@@ -302,7 +368,8 @@ MCGIDI_HOST HeatedCrossSectionContinuousEnergy::HeatedCrossSectionContinuousEner
             reactionCrossSection3 = &fixedGridCrossSection;
         }
 
-        m_reactionCrossSections[reactionIndex] = new HeatedReactionCrossSectionContinuousEnergy( (*reactionIter)->crossSectionThreshold( ), *reactionCrossSection3, URR_probabilityTables );
+        m_reactionCrossSections[reactionIndex] = new HeatedReactionCrossSectionContinuousEnergy( (*reactionIter)->crossSectionThreshold( ), 
+                *reactionCrossSection3, URR_probabilityTables, ACE_URR_probabilityTables1 );
         totalCrossSection += *reactionCrossSection3;
 
         delete reactionCrossSectionZeroReactions;
@@ -314,11 +381,24 @@ MCGIDI_HOST HeatedCrossSectionContinuousEnergy::HeatedCrossSectionContinuousEner
         std::vector<int> reactions_in_URR_region;
 
         for( int reactionIndex = 0; reactionIndex < numberOfReactions( ); ++reactionIndex ) {
-            if( m_reactionCrossSections[reactionIndex]->threshold( ) < URR_domainMax( ) ) reactions_in_URR_region.push_back( reactionIndex );
+            if( m_reactionCrossSections[reactionIndex]->threshold( ) < URR_domainMax( ) ) {
+                reactions_in_URR_region.push_back( reactionIndex );
+            }
         }
 
         m_reactionsInURR_region.resize( reactions_in_URR_region.size( ) );
         for( std::size_t i1 = 0; i1 < reactions_in_URR_region.size( ); ++i1 ) m_reactionsInURR_region[i1] = reactions_in_URR_region[i1];
+
+        if( a_settings._URR_mode( ) == Transporting::URR_mode::ACE_URR_protabilityTables ) {
+            auto URR_iter = a_setupInfo.m_ACE_URR_protabilityTablesFromGIDI.find( URR_label );
+            if( URR_iter != a_setupInfo.m_ACE_URR_protabilityTablesFromGIDI.end( ) ) {
+                auto ACE_URR_probabilityTablesIter = (*URR_iter).second->m_ACE_URR_probabilityTables.find( "total" );
+                if( ACE_URR_probabilityTablesIter != (*URR_iter).second->m_ACE_URR_probabilityTables.end( ) ) {
+                    m_ACE_URR_probabilityTables = (*ACE_URR_probabilityTablesIter).second;
+                    (*ACE_URR_probabilityTablesIter).second = nullptr;          // Set to nullptr so destructor of m_ACE_URR_probabilityTables does not delete.
+                }
+            }
+        }
     }
 
     m_depositionEnergy.resize( totalCrossSection.length( ), 0.0 );
@@ -328,12 +408,14 @@ MCGIDI_HOST HeatedCrossSectionContinuousEnergy::HeatedCrossSectionContinuousEner
     m_gains.resize( a_particles.particles( ).size( ) );
     int i1 = 0;
     int projectileGainIndex = -1;
+    int photonGainIndex = -1;
     for( std::map<std::string, GIDI::Transporting::Particle>::const_iterator particle = a_particles.particles( ).begin( ); particle != a_particles.particles( ).end( );
                     ++particle, ++i1 ) {
         int particleIndex = a_setupInfo.m_particleIndices[particle->first];
 
         if( particleIndex == a_setupInfo.m_protare.projectileIndex( ) ) projectileGainIndex = i1;
         m_gains[i1] = ContinuousEnergyGain( particleIndex, totalCrossSection.length( ) );
+        if( particle->first == PoPI::IDs::photon ) photonGainIndex = i1;
     }
 
     std::vector< std::vector<double> > gains( a_particles.particles( ).size( ) );
@@ -347,7 +429,7 @@ MCGIDI_HOST HeatedCrossSectionContinuousEnergy::HeatedCrossSectionContinuousEner
 
         HeatedReactionCrossSectionContinuousEnergy *MCGIDI_reaction_cross_section = nullptr;
         GIDI::Reaction const *reaction = nullptr;
-        GIDI::Functions::Ys1d const *reactionCrossSection = nullptr;
+        GIDI::Functions::Ys1d const *reactionCrossSection = nullptr;                // If nullptr, reaction is an orphanProduct node.
         GIDI::Functions::Function1dForm const *available_energy = nullptr;
         GIDI::Functions::Function1dForm const *available_momentum = nullptr;
         if( reactionIndex < a_reactions.size( ) ) {
@@ -362,51 +444,98 @@ MCGIDI_HOST HeatedCrossSectionContinuousEnergy::HeatedCrossSectionContinuousEner
             reactionCrossSection = reactionCrossSectionSuite.get<GIDI::Functions::Ys1d>( label );
             offset = reactionCrossSection->start( );
         }
+        if( a_settings.useSlowerContinuousEnergyConversion( ) ) {                   // Old way which is slow as it does one energy at a time.
+            for( int energy_index = offset; energy_index < m_energies.size( ); ++energy_index ) {
+                double energy = m_energies[energy_index];
 
-        for( int energy_index = offset; energy_index < m_energies.size( ); ++energy_index ) {
-            double energy = m_energies[energy_index];
+                if( reactionCrossSection == nullptr ) {
+                    deposition_energy[energy_index] = available_energy->evaluate( energy );
+                    deposition_momentum[energy_index] = available_momentum->evaluate( energy );
+                    production_energy[energy_index] = deposition_energy[energy_index] - energy;
+                }
 
+                int i1 = 0;
+                for( std::map<std::string, GIDI::Transporting::Particle>::const_iterator particle = a_particles.particles( ).begin( ); particle != a_particles.particles( ).end( ); 
+                        ++particle, ++i1 ) {
+                    double product_energy, product_momentum, product_gain;
+
+                    if( particle->first == PoPI::IDs::electron ) continue;      // As of this coding, electrons are not complete in GNDS files.
+                                                                                // When they are, this statement can be removed.
+                    if( ( reactionCrossSection != nullptr ) && ( particle->first != PoPI::IDs::photon ) ) continue;
+
+                    if( reaction->isPairProduction( ) && ( particle->first == PoPI::IDs::photon ) ) {
+                        product_energy = 0.0;
+                        product_momentum = 0.0;
+                        product_gain = 2.0; }
+                    else {
+                        reaction->continuousEnergyProductData( a_settings, particle->first, energy, product_energy, product_momentum, 
+                                product_gain, true );
+                    }
+                    if( i1 == projectileGainIndex ) --product_gain;
+
+                    deposition_energy[energy_index] -= product_energy;
+                    deposition_momentum[energy_index] -= product_momentum;
+                    gains[i1][energy_index] = product_gain;
+                }
+            } }
+        else {                                          // New way which is hopefully faster.
             if( reactionCrossSection == nullptr ) {
-                deposition_energy[energy_index] = available_energy->evaluate( energy );
-                deposition_momentum[energy_index] = available_momentum->evaluate( energy );
-                production_energy[energy_index] = deposition_energy[energy_index] - energy;
+                available_energy->mapToXsAndAdd( offset, *energiesPointer, deposition_energy, 1.0 );
+                available_momentum->mapToXsAndAdd( offset, *energiesPointer, deposition_momentum, 1.0 );
+                for( int energyIndex = offset; energyIndex < m_energies.size( ); ++energyIndex ) {
+                    production_energy[energyIndex] = deposition_energy[energyIndex] - m_energies[energyIndex];
+                }
             }
 
             int i1 = 0;
-            for( std::map<std::string, GIDI::Transporting::Particle>::const_iterator particle = a_particles.particles( ).begin( ); particle != a_particles.particles( ).end( ); 
-                    ++particle, ++i1 ) {
-                double product_energy, product_momentum, product_gain;
-
+            for( std::map<std::string, GIDI::Transporting::Particle>::const_iterator particle = a_particles.particles( ).begin( );
+                        particle != a_particles.particles( ).end( ); ++particle, ++i1 ) {
+                if( particle->first == PoPI::IDs::electron ) continue;      // As of this coding, electrons are not complete in GNDS files.
+                                                                            // When they are, this statement can be removed.
                 if( ( reactionCrossSection != nullptr ) && ( particle->first != PoPI::IDs::photon ) ) continue;
 
                 if( reaction->isPairProduction( ) && ( particle->first == PoPI::IDs::photon ) ) {
-                    product_energy = 0.0;
-                    product_momentum = 0.0;
-                    product_gain = 2.0; }
+                    for( int energyIndex = offset; energyIndex < m_energies.size( ); ++energyIndex ) gains[i1][energyIndex] = 2.0; }
                 else {
-                    reaction->continuousEnergyProductData( particle->first, energy, product_energy, product_momentum, product_gain );
+                    reaction->mapContinuousEnergyProductData( a_settings, particle->first, *energiesPointer, offset, deposition_energy, 
+                            deposition_momentum, gains[i1], true );
                 }
-                if( i1 == projectileGainIndex ) --product_gain;
 
-                deposition_energy[energy_index] -= product_energy;
-                deposition_momentum[energy_index] -= product_momentum;
-                gains[i1][energy_index] = product_gain;
+                if( i1 == projectileGainIndex ) {
+                    for( int energyIndex = offset; energyIndex < m_energies.size( ); ++energyIndex ) --gains[i1][energyIndex];
+                }
             }
         }
 
-        double cross_section = 0.0;
-        for( int energy_index = offset; energy_index < m_energies.size( ); ++energy_index ) {
+        if( a_particles.hasParticle( PoPI::IDs::photon ) ) {
+            if( a_setupInfo.m_initialStateIndices.find( reaction->label( ) ) != a_setupInfo.m_initialStateIndices.end( ) ) {
+                int initialStateIndex = a_setupInfo.m_initialStateIndices[reaction->label( )];
+                if( initialStateIndex >= 0 ) {
+                    NuclideGammaBranchStateInfo *nuclideGammaBranchStateInfo = a_setupInfo.m_protare.nuclideGammaBranchStateInfos( )[initialStateIndex];
+                    double multiplicity = nuclideGammaBranchStateInfo->multiplicity( );
+                    double averageGammaEnergy = nuclideGammaBranchStateInfo->averageGammaEnergy( );
+
+                    for( int energyIndex = offset; energyIndex < m_energies.size( ); ++energyIndex ) {
+                        deposition_energy[energyIndex] -= averageGammaEnergy;
+                        if( photonGainIndex >= 0 ) gains[photonGainIndex][energyIndex] += multiplicity;
+                    }
+                }
+            }
+        }
+
+        double crossSection = 0.0;
+        for( int energyIndex = offset; energyIndex < m_energies.size( ); ++energyIndex ) {
             if( reactionCrossSection == nullptr ) {
-                cross_section = MCGIDI_reaction_cross_section->crossSection( energy_index ); }
+                crossSection = MCGIDI_reaction_cross_section->crossSection( energyIndex ); }
             else {
-                cross_section = (*reactionCrossSection)[energy_index-offset];
+                crossSection = (*reactionCrossSection)[energyIndex-offset];
             }
 
-            m_depositionEnergy[energy_index] += cross_section * deposition_energy[energy_index];
-            m_depositionMomentum[energy_index] += cross_section * deposition_momentum[energy_index];
-            m_productionEnergy[energy_index] += cross_section * production_energy[energy_index];
+            m_depositionEnergy[energyIndex] += crossSection * deposition_energy[energyIndex];
+            m_depositionMomentum[energyIndex] += crossSection * deposition_momentum[energyIndex];
+            m_productionEnergy[energyIndex] += crossSection * production_energy[energyIndex];
             for( MCGIDI_VectorSizeType i1 = 0; i1 < m_gains.size( ); ++i1 ) {
-                m_gains[i1].adjustGain( energy_index, cross_section * gains[i1][energy_index] );
+                m_gains[i1].adjustGain( energyIndex, crossSection * gains[i1][energyIndex] );
             }
         }
     }
@@ -418,6 +547,7 @@ MCGIDI_HOST HeatedCrossSectionContinuousEnergy::HeatedCrossSectionContinuousEner
 MCGIDI_HOST_DEVICE HeatedCrossSectionContinuousEnergy::~HeatedCrossSectionContinuousEnergy( ) {
 
     for( Vector<HeatedReactionCrossSectionContinuousEnergy *>::const_iterator iter = m_reactionCrossSections.begin( ); iter < m_reactionCrossSections.end( ); ++iter ) delete *iter;
+    delete m_ACE_URR_probabilityTables;
 }
 /*
 =========================================================
@@ -460,23 +590,27 @@ MCGIDI_HOST_DEVICE int HeatedCrossSectionContinuousEnergy::evaluationInfo( int a
     *a_energyFraction = ( m_energies[index1+1] - a_energy ) / ( m_energies[index1+1] - m_energies[index1] );
     return( index1 );
 }
-/*
-=========================================================
-*/
+
+/* *********************************************************************************************************//**
+ * Returns true if *this* has a unresolved resonance region (URR) data and false otherwise.
+ *
+ * @return                              true is if *this* has a URR data.
+ ***********************************************************************************************************/
+
 MCGIDI_HOST_DEVICE bool HeatedCrossSectionContinuousEnergy::hasURR_probabilityTables( ) const {
 
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < m_reactionCrossSections.size( ); ++i1 ) {
-        HeatedReactionCrossSectionContinuousEnergy *reactionCrossSection = m_reactionCrossSections[i1];
-
-        if( reactionCrossSection->hasURR_probabilityTables( ) ) return( true );
-    }
-
-    return( false );
+    return( m_URR_mode != Transporting::URR_mode::none );
 }
-/*
-=========================================================
-*/
+
+/* *********************************************************************************************************//**
+ * Returns the minimum energy for the unresolved resonance region (URR) domain. If no URR data present, returns -1.
+ *
+ * @return                              true is if *this* has a URR data.
+ ***********************************************************************************************************/
+
 MCGIDI_HOST_DEVICE double HeatedCrossSectionContinuousEnergy::URR_domainMin( ) const {
+
+    if( m_ACE_URR_probabilityTables != nullptr ) return( m_ACE_URR_probabilityTables->domainMin( ) );
 
     for( MCGIDI_VectorSizeType i1 = 0; i1 < m_reactionCrossSections.size( ); ++i1 ) {
         HeatedReactionCrossSectionContinuousEnergy *reactionCrossSection = m_reactionCrossSections[i1];
@@ -486,10 +620,16 @@ MCGIDI_HOST_DEVICE double HeatedCrossSectionContinuousEnergy::URR_domainMin( ) c
 
     return( -1.0 );
 }
-/*
-=========================================================
-*/
+
+/* *********************************************************************************************************//**
+ * Returns the maximum energy for the unresolved resonance region (URR) domain. If no URR data present, returns -1.
+ *
+ * @return                              true is if *this* has a URR data.
+ ***********************************************************************************************************/
+
 MCGIDI_HOST_DEVICE double HeatedCrossSectionContinuousEnergy::URR_domainMax( ) const {
+
+    if( m_ACE_URR_probabilityTables != nullptr ) return( m_ACE_URR_probabilityTables->domainMax( ) );
 
     for( MCGIDI_VectorSizeType i1 = 0; i1 < m_reactionCrossSections.size( ); ++i1 ) {
         HeatedReactionCrossSectionContinuousEnergy *reactionCrossSection = m_reactionCrossSections[i1];
@@ -502,7 +642,8 @@ MCGIDI_HOST_DEVICE double HeatedCrossSectionContinuousEnergy::URR_domainMax( ) c
 /*
 =========================================================
 */
-MCGIDI_HOST_DEVICE double HeatedCrossSectionContinuousEnergy::crossSection( URR_protareInfos const &a_URR_protareInfos, int a_URR_index, int a_hashIndex, double a_energy, bool a_sampling ) const {
+MCGIDI_HOST_DEVICE double HeatedCrossSectionContinuousEnergy::crossSection( URR_protareInfos const &a_URR_protareInfos, int a_URR_index, 
+                int a_hashIndex, double a_energy, bool a_sampling ) const {
 
     double energy_fraction;
     int energy_index = evaluationInfo( a_hashIndex, a_energy, &energy_fraction );
@@ -512,11 +653,10 @@ MCGIDI_HOST_DEVICE double HeatedCrossSectionContinuousEnergy::crossSection( URR_
 
         if( URR_protare_info.m_inURR ) {
             double cross_section = 0.0;
-
             for( MCGIDI_VectorSizeType i1 = 0; i1 < m_reactionsInURR_region.size( ); ++i1 ) {
-                cross_section += reactionCrossSection2( m_reactionsInURR_region[i1], a_URR_protareInfos, a_URR_index, a_energy, energy_index, energy_fraction, false );
+                cross_section += reactionCrossSection2( m_reactionsInURR_region[i1], a_URR_protareInfos, a_URR_index, a_energy, 
+                        energy_index, energy_fraction, false );
             }
-
             return( cross_section );
         }
     }
@@ -526,7 +666,8 @@ MCGIDI_HOST_DEVICE double HeatedCrossSectionContinuousEnergy::crossSection( URR_
 /*
 =========================================================
 */
-MCGIDI_HOST_DEVICE double HeatedCrossSectionContinuousEnergy::reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, int a_URR_index, int a_hashIndex, double a_energy, bool a_sampling ) const {
+MCGIDI_HOST_DEVICE double HeatedCrossSectionContinuousEnergy::reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, 
+                int a_URR_index, int a_hashIndex, double a_energy, bool a_sampling ) const {
 
     double energyFraction;
 
@@ -536,21 +677,26 @@ MCGIDI_HOST_DEVICE double HeatedCrossSectionContinuousEnergy::reactionCrossSecti
 /*
 =========================================================
 */
-MCGIDI_HOST_DEVICE double HeatedCrossSectionContinuousEnergy::reactionCrossSection2( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, int a_URR_index, 
-        double a_energy, int a_energyIndex, double a_energyFraction, bool a_sampling ) const {
+MCGIDI_HOST_DEVICE double HeatedCrossSectionContinuousEnergy::reactionCrossSection2( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, 
+                int a_URR_index, double a_energy, int a_energyIndex, double a_energyFraction, bool a_sampling ) const {
 
     HeatedReactionCrossSectionContinuousEnergy const &reaction = *m_reactionCrossSections[a_reactionIndex];
     double URR_cross_section_factor = 1.0;
 
     if( a_URR_index >= 0 ) {
         URR_protareInfo const &URR_protare_info = a_URR_protareInfos[a_URR_index];
-
         if( URR_protare_info.m_inURR ) {
-            if( reaction.URR_probabilityTables( ) != nullptr ) URR_cross_section_factor = reaction.URR_probabilityTables( )->sample( a_energy, URR_protare_info.m_rng_Value, nullptr, nullptr );
+            if( m_URR_mode == Transporting::URR_mode::pdfs ) {
+                if( reaction.URR_probabilityTables( ) != nullptr )
+                    URR_cross_section_factor = reaction.URR_probabilityTables( )->sample( a_energy, URR_protare_info.m_rng_Value, nullptr, nullptr ); }
+            else if( m_URR_mode == Transporting::URR_mode::ACE_URR_protabilityTables ) {
+                if( reaction._ACE_URR_probabilityTables( ) != nullptr ) 
+                    URR_cross_section_factor = reaction._ACE_URR_probabilityTables( )->sample( a_energy, URR_protare_info.m_rng_Value );
+            }
         }
     }
 
-    return( URR_cross_section_factor * ( a_energyFraction * reaction.crossSection( a_energyIndex ) + ( 1.0 - a_energyFraction ) * reaction.crossSection( a_energyIndex+1 ) ) );
+    return( URR_cross_section_factor * ( a_energyFraction * reaction.crossSection( a_energyIndex ) + ( 1.0 - a_energyFraction ) * reaction.crossSection( a_energyIndex + 1 ) ) );
 }
 
 /*
@@ -675,7 +821,9 @@ MCGIDI_HOST_DEVICE void HeatedCrossSectionContinuousEnergy::serialize( DataBuffe
     DATA_MEMBER_VECTOR_DOUBLE( m_depositionEnergy, a_buffer, a_mode );
     DATA_MEMBER_VECTOR_DOUBLE( m_depositionMomentum, a_buffer, a_mode );
     DATA_MEMBER_VECTOR_DOUBLE( m_productionEnergy, a_buffer, a_mode );
+    m_URR_mode = serializeURR_mode( m_URR_mode,  a_buffer, a_mode );
     DATA_MEMBER_VECTOR_INT( m_reactionsInURR_region, a_buffer, a_mode );
+    m_ACE_URR_probabilityTables = serializeACE_URR_probabilityTables( m_ACE_URR_probabilityTables, a_buffer, a_mode );
 
     MCGIDI_VectorSizeType vectorSize = m_reactionCrossSections.size( );
     int vectorSizeInt = (int) vectorSize;
@@ -713,14 +861,15 @@ MCGIDI_HOST_DEVICE void HeatedCrossSectionContinuousEnergy::serialize( DataBuffe
 /* *********************************************************************************************************//**
  * Print to *std::cout* the content of *this*. This is mainly meant for debugging.
  * 
+ * @param a_protareSingle       [in]    The ProtareSingle instance *this* resides in.
  * @param a_indent              [in]    The buffer to read or write data to depending on *a_mode*.
  * @param a_iFormat             [in]    C printf format specifier for any interger that is printed (e.g., "%3d").
  * @param a_energyFormat        [in]    C printf format specifier for any interger that is printed (e.g., "%20.12e").
  * @param a_dFormat             [in]    C printf format specifier for any interger that is printed (e.g., "%14.7e").
  ***********************************************************************************************************/
 
-MCGIDI_HOST void HeatedCrossSectionContinuousEnergy::print( std::string const &a_indent, std::string const &a_iFormat, 
-                std::string const &a_energyFormat, std::string const &a_dFormat ) {
+MCGIDI_HOST void HeatedCrossSectionContinuousEnergy::print( ProtareSingle const *a_protareSingle, std::string const &a_indent, 
+                std::string const &a_iFormat, std::string const &a_energyFormat, std::string const &a_dFormat ) const {
 
     char const *dFormat = a_dFormat.c_str( );
     std::string indent2 = a_indent + "  ";
@@ -735,18 +884,43 @@ MCGIDI_HOST void HeatedCrossSectionContinuousEnergy::print( std::string const &a
     std::cout << std::endl;
     MCGIDI_VectorSizeType energySize = static_cast<MCGIDI_VectorSizeType>( m_energies.size( ) );
     std::cout << a_indent << "# Number of energies = " << m_energies.size( ) << std::endl;
+    std::cout << "#      projectile              total              deposition           deposition          production" << std::endl;
+    std::cout << "#        energy             cross section           energy              momentum             energy"<< std::endl;
+    std::cout << "#====================================================================================================="<< std::endl;
     for( MCGIDI_VectorSizeType index = 0; index != energySize; ++index ) {
         std::cout << LUPI::Misc::argumentsToString( lineFormat.c_str( ), m_energies[index], m_totalCrossSection[index], m_depositionEnergy[index], 
                 m_depositionMomentum[index], m_productionEnergy[index] ) << std::endl;
     }
 
-    for( auto iter = m_gains.begin( ); iter != m_gains.end( ); ++iter ) iter->print( a_indent, a_iFormat, a_energyFormat, a_dFormat );
+    for( auto iter = m_gains.begin( ); iter != m_gains.end( ); ++iter ) iter->print( a_protareSingle, a_indent, a_iFormat, a_energyFormat, a_dFormat );
+
+    std::cout << std::endl;
+    std::cout << "# URR mode is ";
+    if( m_URR_mode == Transporting::URR_mode::none ) {
+        std::cout << "none" << std::endl; }
+    else if( m_URR_mode == Transporting::URR_mode::pdfs ) {
+        std::cout << "pdfs" << std::endl; }
+    else if( m_URR_mode == Transporting::URR_mode::ACE_URR_protabilityTables ) {
+        std::cout << "ACE style protability tables" << std::endl; }
+    else {
+        std::cout << "Oops, need to code into print method." << std::endl;
+    }
+
+    std::cout << a_indent << "# Index of reactions in URR region:";
+    for( auto reactionIter = m_reactionsInURR_region.begin( ); reactionIter != m_reactionsInURR_region.end( ); ++reactionIter ) {
+        std::cout << indent2 << LUPI::Misc::argumentsToString( a_iFormat.c_str( ), *reactionIter ) << std::endl;
+    }
+    std::cout << std::endl;
+
     int reactionIndex = 0;
     std::cout << std::endl;
-    std::cout << a_indent << "# Number of reaction = " << m_reactionCrossSections.size( ) << std::endl;
+    std::cout << a_indent << "# Number of reactions = " << m_reactionCrossSections.size( ) << std::endl;
     for( auto iter = m_reactionCrossSections.begin( ); iter != m_reactionCrossSections.end( ); ++iter, ++reactionIndex ) {
+        Reaction const *reaction = a_protareSingle->reaction( reactionIndex );
+
         std::cout << a_indent << "# Reaction number " << reactionIndex << std::endl;
-        (*iter)->print( a_indent, a_iFormat, a_energyFormat, a_dFormat );
+        std::cout << a_indent << "# Reaction label: " << reaction->label( ).c_str( ) << std::endl;
+        (*iter)->print( a_protareSingle, a_indent, a_iFormat, a_energyFormat, a_dFormat );
     }
 }
 
@@ -773,6 +947,7 @@ MCGIDI_HOST_DEVICE HeatedCrossSectionsContinuousEnergy::~HeatedCrossSectionsCont
 /* *********************************************************************************************************//**
  * Fills in *this* with the requested temperature data.
  *
+ * @param a_smr                         [Out]   If errors are not to be thrown, then the error is reported via this instance.
  * @param a_setupInfo                   [in]    Used internally when constructing a Protare to pass information to other components.
  * @param a_settings                    [in]    Used to pass user options to the *this* to instruct it which data are desired.
  * @param a_particles                   [in]    List of transporting particles and their information (e.g., multi-group boundaries and fluxes).
@@ -784,9 +959,9 @@ MCGIDI_HOST_DEVICE HeatedCrossSectionsContinuousEnergy::~HeatedCrossSectionsCont
  * @param a_zeroReactions               [in]    Special case where no reaction in a protare is wanted so the first one is used but its cross section is set to 0.0 at all energies.
  ***********************************************************************************************************/
 
-MCGIDI_HOST void HeatedCrossSectionsContinuousEnergy::update( SetupInfo &a_setupInfo, Transporting::MC const &a_settings, GIDI::Transporting::Particles const &a_particles, 
-                DomainHash const &a_domainHash, GIDI::Styles::TemperatureInfos const &a_temperatureInfos, std::vector<GIDI::Reaction const *> const &a_reactions, 
-                std::vector<GIDI::Reaction const *> const &a_orphanProducts, bool a_fixedGrid, bool a_zeroReactions ) {
+MCGIDI_HOST void HeatedCrossSectionsContinuousEnergy::update( LUPI::StatusMessageReporting &a_smr, SetupInfo &a_setupInfo, Transporting::MC const &a_settings, 
+                GIDI::Transporting::Particles const &a_particles, DomainHash const &a_domainHash, GIDI::Styles::TemperatureInfos const &a_temperatureInfos, 
+                std::vector<GIDI::Reaction const *> const &a_reactions, std::vector<GIDI::Reaction const *> const &a_orphanProducts, bool a_fixedGrid, bool a_zeroReactions ) {
 
     m_temperatures.reserve( a_temperatureInfos.size( ) );
     m_heatedCrossSections.reserve( a_temperatureInfos.size( ) );
@@ -800,10 +975,20 @@ MCGIDI_HOST void HeatedCrossSectionsContinuousEnergy::update( SetupInfo &a_setup
     m_thresholds.resize( m_heatedCrossSections[0]->numberOfReactions( ) );
     for( int i1 = 0; i1 < m_heatedCrossSections[0]->numberOfReactions( ); ++i1 ) m_thresholds[i1] = m_heatedCrossSections[0]->threshold( i1 );
 }
-/*
-=========================================================
-*/
-MCGIDI_HOST_DEVICE double HeatedCrossSectionsContinuousEnergy::crossSection( URR_protareInfos const &a_URR_protareInfos, int a_URR_index, int a_hashIndex, double a_temperature, double a_energy, bool a_sampling ) const {
+
+/* *********************************************************************************************************//**
+ * Returns the cross section for target temperature *a_temperature* and projectile energy *a_energy*.
+ *
+ * @param a_URR_protareInfos    [in]    URR information.
+ * @param a_URR_index           [in]    If not negative, specifies the index in *a_URR_protareInfos*.
+ * @param a_hashIndex           [in]    Specifies the continuous energy or multi-group index.
+ * @param a_temperature         [in]    The temperature of the target.
+ * @param a_energy              [in]    The energy of the projectile.
+ * @param a_sampling            [in]    If *true* the cross section is to be used for sampling, otherwise, just for looking up.
+ ***********************************************************************************************************/
+
+MCGIDI_HOST_DEVICE double HeatedCrossSectionsContinuousEnergy::crossSection( URR_protareInfos const &a_URR_protareInfos, int a_URR_index, 
+                int a_hashIndex, double a_temperature, double a_energy, bool a_sampling ) const {
 
     int i1, number_of_temperatures = static_cast<int>( m_temperatures.size( ) );
     double cross_section;
@@ -910,8 +1095,8 @@ MCGIDI_HOST_DEVICE double HeatedCrossSectionsContinuousEnergy::reactionCrossSect
 /*
 =========================================================
 */
-MCGIDI_HOST_DEVICE int HeatedCrossSectionsContinuousEnergy::sampleReaction( URR_protareInfos const &a_URR_protareInfos, int a_URR_index, int a_hashIndex, double a_temperature, 
-                double a_energy, double a_crossSection, double (*userrng)( void * ), void *rngState ) const {
+MCGIDI_HOST_DEVICE int HeatedCrossSectionsContinuousEnergy::sampleReaction( URR_protareInfos const &a_URR_protareInfos, int a_URR_index, 
+                int a_hashIndex, double a_temperature, double a_energy, double a_crossSection, double (*userrng)( void * ), void *rngState ) const {
 
     int i1, sampled_reaction_index, temperatureIndex1, temperatureIndex2, number_of_temperatures = static_cast<int>( m_temperatures.size( ) );
     double sampleCrossSection = a_crossSection * userrng( rngState );
@@ -936,27 +1121,42 @@ MCGIDI_HOST_DEVICE int HeatedCrossSectionsContinuousEnergy::sampleReaction( URR_
 
     if( temperatureIndex1 == temperatureIndex2 ) {
         for( sampled_reaction_index = 0; sampled_reaction_index < numberOfReactions; ++sampled_reaction_index ) {
-            crossSectionSum += heatedCrossSection1.reactionCrossSection2( sampled_reaction_index, a_URR_protareInfos, a_URR_index, a_energy, energyIndex1, energyFraction1 );
+            crossSectionSum += heatedCrossSection1.reactionCrossSection2( sampled_reaction_index, a_URR_protareInfos, a_URR_index, a_energy, 
+                    energyIndex1, energyFraction1 );
             if( crossSectionSum >= sampleCrossSection ) break;
         } }
     else {
-        double temperatureFraction2 = ( a_temperature - m_temperatures[temperatureIndex1] ) / ( m_temperatures[temperatureIndex2] - m_temperatures[temperatureIndex1] );
+        double temperatureFraction2 = ( a_temperature - m_temperatures[temperatureIndex1] ) 
+                / ( m_temperatures[temperatureIndex2] - m_temperatures[temperatureIndex1] );
         double temperatureFraction1 = 1.0 - temperatureFraction2;
         HeatedCrossSectionContinuousEnergy &heatedCrossSection2 = *m_heatedCrossSections[temperatureIndex2];
         int energyIndex2 = heatedCrossSection2.evaluationInfo( a_hashIndex, a_energy, &energyFraction2 );
 
         for( sampled_reaction_index = 0; sampled_reaction_index < numberOfReactions; ++sampled_reaction_index ) {
             if( m_thresholds[sampled_reaction_index] >= a_energy ) continue;
-            crossSectionSum += temperatureFraction1 * heatedCrossSection1.reactionCrossSection2( sampled_reaction_index, a_URR_protareInfos, a_URR_index, a_energy, energyIndex1, energyFraction1 );
-            crossSectionSum += temperatureFraction2 * heatedCrossSection2.reactionCrossSection2( sampled_reaction_index, a_URR_protareInfos, a_URR_index, a_energy, energyIndex2, energyFraction2 );
+            crossSectionSum += temperatureFraction1 * heatedCrossSection1.reactionCrossSection2( sampled_reaction_index, a_URR_protareInfos, 
+                    a_URR_index, a_energy, energyIndex1, energyFraction1 );
+            crossSectionSum += temperatureFraction2 * heatedCrossSection2.reactionCrossSection2( sampled_reaction_index, a_URR_protareInfos, 
+                    a_URR_index, a_energy, energyIndex2, energyFraction2 );
             if( crossSectionSum >= sampleCrossSection ) break;
         }
     }
 
     if( sampled_reaction_index == numberOfReactions ) {
-        if( crossSectionSum < ( 1.0 - 1e-8 ) * a_crossSection ) MCGIDI_THROW( "HeatedCrossSectionsContinuousEnergy::sampleReaction: crossSectionSum less than a_crossSection" );
+        if( crossSectionSum < ( 1.0 - 1e-8 ) * a_crossSection ) {
+#if MCGIDI_ON_GPU
+            printf( "HeatedCrossSectionsContinuousEnergy::sampleReaction: crossSectionSum %.17e less than a_crossSection =  %.17e.", 
+                    crossSectionSum, a_crossSection );
+#else
+            std::string errorString = "HeatedCrossSectionsContinuousEnergy::sampleReaction: crossSectionSum " 
+                    + LUPI::Misc::doubleToString3( "%.17e", crossSectionSum ) + " less than a_crossSection = " 
+                    + LUPI::Misc::doubleToString3( "%.17e", a_crossSection ) + ".";
+            MCGIDI_THROW( errorString.c_str( ) );
+#endif
+        }
         for( sampled_reaction_index = 0; sampled_reaction_index < numberOfReactions; ++sampled_reaction_index ) {   // This should rarely happen so just pick the first reaction with non-zero cross section.
-            if( heatedCrossSection1.reactionCrossSection2( sampled_reaction_index, a_URR_protareInfos, a_URR_index, a_energy, energyIndex1, energyFraction1, true ) > 0 ) break;
+            if( heatedCrossSection1.reactionCrossSection2( sampled_reaction_index, a_URR_protareInfos, a_URR_index, a_energy, energyIndex1, 
+                    energyFraction1, true ) > 0 ) break;
         }
     }
 
@@ -1123,17 +1323,26 @@ MCGIDI_HOST_DEVICE void HeatedCrossSectionsContinuousEnergy::serialize( DataBuff
 /* *********************************************************************************************************//**
  * Print to *std::cout* the content of *this*. This is mainly meant for debugging.
  *
+ * @param a_protareSingle       [in]    The GIDI::ProtareSingle instance that contains *this*.
  * @param a_indent              [in]    The buffer to read or write data to depending on *a_mode*.
  * @param a_iFormat             [in]    C printf format specifier for any interger that is printed (e.g., "%3d").
  * @param a_energyFormat        [in]    C printf format specifier for any interger that is printed (e.g., "%20.12e").
  * @param a_dFormat             [in]    C printf format specifier for any interger that is printed (e.g., "%14.7e").
  ***********************************************************************************************************/
 
-MCGIDI_HOST void HeatedCrossSectionsContinuousEnergy::print( std::string const &a_indent, std::string const &a_iFormat, 
-                std::string const &a_energyFormat, std::string const &a_dFormat ) {
+MCGIDI_HOST void HeatedCrossSectionsContinuousEnergy::print( ProtareSingle const *a_protareSingle, std::string const &a_indent,
+                std::string const &a_iFormat, std::string const &a_energyFormat, std::string const &a_dFormat ) const {
 
+    std::cout << "Temperatures present:" << std::endl;
+    for( auto temperatureIter = m_temperatures.begin( ); temperatureIter != m_temperatures.end( ); ++temperatureIter ) {
+        std::cout << LUPI::Misc::argumentsToString( a_dFormat.c_str( ), *temperatureIter ) << std::endl;
+    }
+    std::cout << "Reaction thresholds:" << std::endl;
+    for( auto reactionIter = m_thresholds.begin( ); reactionIter != m_thresholds.end( ); ++reactionIter ) {
+        std::cout << LUPI::Misc::argumentsToString( a_dFormat.c_str( ), *reactionIter ) << std::endl;
+    }
     for( auto heatedCrossSections = m_heatedCrossSections.begin( ); heatedCrossSections != m_heatedCrossSections.end( ); ++heatedCrossSections ) {
-        (*heatedCrossSections)->print( a_indent, a_iFormat, a_energyFormat, a_dFormat );
+        (*heatedCrossSections)->print( a_protareSingle, a_indent, a_iFormat, a_energyFormat, a_dFormat );
     }
 }
 
@@ -1251,6 +1460,7 @@ MCGIDI_HOST_DEVICE void HeatedReactionCrossSectionMultiGroup::serialize( DataBuf
  * This method writes the multi-group data.
  *
  * @param a_file                [in]    The buffer to read or write data to depending on *a_mode*.
+ * @param a_reactionIndex       [in]    The index of the reaction.
  ***********************************************************************************************************/
 
 MCGIDI_HOST void HeatedReactionCrossSectionMultiGroup::write( FILE *a_file, int a_reactionIndex ) const {
@@ -1271,7 +1481,7 @@ MCGIDI_HOST_DEVICE HeatedCrossSectionMultiGroup::HeatedCrossSectionMultiGroup( )
 /*
 =========================================================
 */
-MCGIDI_HOST HeatedCrossSectionMultiGroup::HeatedCrossSectionMultiGroup( GIDI::ProtareSingle const &a_protare, SetupInfo &a_setupInfo, 
+MCGIDI_HOST HeatedCrossSectionMultiGroup::HeatedCrossSectionMultiGroup( LUPI::StatusMessageReporting &a_smr, GIDI::ProtareSingle const &a_protare, SetupInfo &a_setupInfo, 
                 Transporting::MC const &a_settings, GIDI::Styles::TemperatureInfo const &a_temperatureInfo, 
                 GIDI::Transporting::Particles const &a_particles, std::vector<GIDI::Reaction const *> const &a_reactions, std::string const &a_label,
                 bool a_zeroReactions ) :
@@ -1279,7 +1489,12 @@ MCGIDI_HOST HeatedCrossSectionMultiGroup::HeatedCrossSectionMultiGroup( GIDI::Pr
         m_augmentedCrossSection( ),
         m_reactionCrossSections( ) {
 
-    GIDI::Transporting::MG multi_group_settings( a_settings.projectileID( ), GIDI::Transporting::Mode::multiGroup, a_settings.delayedNeutrons( ) );
+    GIDI::Transporting::Mode transportMode = GIDI::Transporting::Mode::multiGroup;
+    if( ( a_settings.upscatterModel( ) == Sampling::Upscatter::Model::B ) || ( a_settings.upscatterModel( ) == Sampling::Upscatter::Model::BSnLimits ) 
+            || ( a_settings.upscatterModel( ) == Sampling::Upscatter::Model::A ) )
+        transportMode = GIDI::Transporting::Mode::multiGroupWithSnElasticUpScatter;
+    GIDI::Transporting::MG multi_group_settings( a_settings.projectileID( ), transportMode, a_settings.delayedNeutrons( ) );
+    multi_group_settings.setThrowOnError( a_settings.throwOnError( ) );
 
     GIDI::Axes axes;
     std::vector<double> dummy;
@@ -1289,8 +1504,10 @@ MCGIDI_HOST HeatedCrossSectionMultiGroup::HeatedCrossSectionMultiGroup( GIDI::Pr
     m_reactionCrossSections.reserve( a_reactions.size( ) );
     int index = 0;                                      // Only used for debugging.
     GIDI::Transporting::MG MG_settings( a_settings.projectileID( ), GIDI::Transporting::Mode::multiGroup, a_settings.delayedNeutrons( ) );
+    MG_settings.setThrowOnError( a_settings.throwOnError( ) );
+
     for( std::vector<GIDI::Reaction const *>::const_iterator reactionIter = a_reactions.begin( ); reactionIter != a_reactions.end( ); ++reactionIter, ++index ) {
-        GIDI::Vector crossSectionVector = (*reactionIter)->multiGroupCrossSection( MG_settings, a_temperatureInfo );
+        GIDI::Vector crossSectionVector = (*reactionIter)->multiGroupCrossSection( a_smr, MG_settings, a_temperatureInfo );
 
         vector = GIDI::collapse( crossSectionVector, a_settings, a_particles, 0.0 );
 
@@ -1317,15 +1534,15 @@ MCGIDI_HOST HeatedCrossSectionMultiGroup::HeatedCrossSectionMultiGroup( GIDI::Pr
         m_augmentedCrossSection[m_reactionCrossSections[i1]->offset( )] += m_reactionCrossSections[i1]->augmentedThresholdCrossSection( );
 
 
-    vector = a_protare.multiGroupDepositionEnergy( multi_group_settings, a_temperatureInfo, a_particles );
+    vector = a_protare.multiGroupDepositionEnergy( a_smr, multi_group_settings, a_temperatureInfo, a_particles );
     vector = collapseAndcheckZeroReaction( vector, a_settings, a_particles, 0.0, a_zeroReactions );
     m_depositionEnergy = GIDI_VectorDoublesToMCGIDI_VectorDoubles( vector );
 
-    vector = a_protare.multiGroupDepositionMomentum( multi_group_settings, a_temperatureInfo, a_particles );
+    vector = a_protare.multiGroupDepositionMomentum( a_smr, multi_group_settings, a_temperatureInfo, a_particles );
     vector = collapseAndcheckZeroReaction( vector, a_settings, a_particles, 0.0, a_zeroReactions );
     m_depositionMomentum = GIDI_VectorDoublesToMCGIDI_VectorDoubles( vector );
 
-    vector = a_protare.multiGroupQ( multi_group_settings, a_temperatureInfo, true );
+    vector = a_protare.multiGroupQ( a_smr, multi_group_settings, a_temperatureInfo, true );
     vector = collapseAndcheckZeroReaction( vector, a_settings, a_particles, 0.0, a_zeroReactions );
     m_productionEnergy = GIDI_VectorDoublesToMCGIDI_VectorDoubles( vector );
 
@@ -1335,7 +1552,7 @@ MCGIDI_HOST HeatedCrossSectionMultiGroup::HeatedCrossSectionMultiGroup( GIDI::Pr
     for( std::map<std::string, GIDI::Transporting::Particle>::const_iterator particle = particles.begin( ); particle != particles.end( ); ++particle, ++i1 ) {
         int particleIndex = a_setupInfo.m_particleIndices[particle->first];
 
-        vector = a_protare.multiGroupGain( multi_group_settings, a_temperatureInfo, particle->first );
+        vector = a_protare.multiGroupGain( a_smr, multi_group_settings, a_temperatureInfo, particle->first );
         vector = collapseAndcheckZeroReaction( vector, a_settings, a_particles, 0.0, a_zeroReactions );
         m_gains[i1] = MultiGroupGain( particleIndex, vector );
     }
@@ -1492,6 +1709,7 @@ MCGIDI_HOST_DEVICE HeatedCrossSectionsMultiGroup::~HeatedCrossSectionsMultiGroup
 /* *********************************************************************************************************//**
  * Fills in *this* with the requested temperature data.
  *
+ * @param a_smr                         [Out]   If errors are not to be thrown, then the error is reported via this instance.
  * @param a_protare                     [in]    The GIDI::Protare used to constuct the Protare that *this* is a part of.
  * @param a_setupInfo                   [in]    Used internally when constructing a Protare to pass information to other components.
  * @param a_settings                    [in]    Used to pass user options to the *this* to instruct it which data are desired.
@@ -1499,9 +1717,10 @@ MCGIDI_HOST_DEVICE HeatedCrossSectionsMultiGroup::~HeatedCrossSectionsMultiGroup
  * @param a_temperatureInfos            [in]    The list of temperatures to use.
  * @param a_reactions                   [in]    The list of reactions to use.
  * @param a_orphanProducts              [in]    The list of orphan products to use.
+ * @param a_zeroReactions               [in]    Special case where no reaction in a protare is wanted so the first one is used but its cross section is set to 0.0 at all energies.
  ***********************************************************************************************************/
 
-MCGIDI_HOST void HeatedCrossSectionsMultiGroup::update( GIDI::ProtareSingle const &a_protare, SetupInfo &a_setupInfo, Transporting::MC const &a_settings, 
+MCGIDI_HOST void HeatedCrossSectionsMultiGroup::update( LUPI::StatusMessageReporting &a_smr, GIDI::ProtareSingle const &a_protare, SetupInfo &a_setupInfo, Transporting::MC const &a_settings, 
                 GIDI::Transporting::Particles const &a_particles, GIDI::Styles::TemperatureInfos const &a_temperatureInfos, 
                 std::vector<GIDI::Reaction const *> const &a_reactions, std::vector<GIDI::Reaction const *> const &a_orphanProducts,
                 bool a_zeroReactions ) {
@@ -1511,7 +1730,7 @@ MCGIDI_HOST void HeatedCrossSectionsMultiGroup::update( GIDI::ProtareSingle cons
 
     for( GIDI::Styles::TemperatureInfos::const_iterator iter = a_temperatureInfos.begin( ); iter != a_temperatureInfos.end( ); ++iter ) {
         m_temperatures.push_back( iter->temperature( ).value( ) );
-        m_heatedCrossSections.push_back( new HeatedCrossSectionMultiGroup( a_protare, a_setupInfo, a_settings, *iter, a_particles, a_reactions,
+        m_heatedCrossSections.push_back( new HeatedCrossSectionMultiGroup( a_smr, a_protare, a_setupInfo, a_settings, *iter, a_particles, a_reactions,
                 iter->heatedMultiGroup( ), a_zeroReactions ) );
     }
 
@@ -1881,8 +2100,25 @@ MCGIDI_HOST void HeatedCrossSectionsMultiGroup::write( FILE *a_file, int a_tempe
     if( a_temperatureIndex >= m_temperatures.size( ) ) return;
 
     printf( "HeatedCrossSectionsMultiGroup::write for temperature %.4e\n", m_temperatures[a_temperatureIndex] );
+
+    fprintf( a_file, "    boundaries index                           " );
+    std::string space( 14, ' ' );
+    for( int index = 0; index < m_projectileMultiGroupBoundariesCollapsed.size( ); ++index ) {
+        fprintf( a_file, "%s%6d", space.c_str( ), index );
+    }
+    fprintf( a_file, "\n" );
     writeVector( a_file, "boundaries", 0, m_projectileMultiGroupBoundariesCollapsed );
+
     m_heatedCrossSections[a_temperatureIndex]->write( a_file );
+}
+
+/* *********************************************************************************************************//**
+ * This method calls write for every temperature dataset in *this* with the file type stdout.
+ ***********************************************************************************************************/
+
+MCGIDI_HOST void HeatedCrossSectionsMultiGroup::print( ) const {
+
+    for( int index = 0; index < m_heatedCrossSections.size( ); ++index ) write( stdout, index );
 }
 
 /* *********************************************************************************************************//**
@@ -1903,6 +2139,7 @@ static MCGIDI_HOST void checkZeroReaction( GIDI::Vector &a_vector, bool a_zeroRe
  * @param a_vector              [in]    The vector to collapse.
  * @param a_settings            [in]    Used to pass user options to the *this* to instruct it which data are desired.
  * @param a_particles           [in]    List of transporting particles and their information (e.g., multi-group boundaries and fluxes).
+ * @param a_temperature         [in]    The temperature or the material.
  * @param a_zeroReactions       [in]    If true all elements of the returned **GIDI::Vector** are set to 0.0.
  ***********************************************************************************************************/
 
@@ -1918,6 +2155,7 @@ static MCGIDI_HOST GIDI::Vector collapseAndcheckZeroReaction( GIDI::Vector &a_ve
 /* *********************************************************************************************************//**
  * @param a_file                [in]    The buffer to read or write data to depending on *a_mode*.
  * @param a_prefix              [in]    The prefix that starts the beginning of the line that the vector data are written to.
+ * @param a_offset              [in]    Specifies the number of spaces to indent the line.
  * @param a_vector              [in]    The vector to write.
  ***********************************************************************************************************/
 

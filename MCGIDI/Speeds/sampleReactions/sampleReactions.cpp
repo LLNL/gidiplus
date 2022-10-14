@@ -46,6 +46,7 @@ void main2( int argc, char **argv ) {
     GIDI::Transporting::Particles particles;
     std::vector<std::string> libraries;
     std::set<int> reactionsToExclude;
+    LUPI::StatusMessageReporting smr1;
     clock_t time0, time1;
     long numberOfSamples = 1000 * 1000, sampleTemperatures = 0, sampleEnergies = 0;
 
@@ -66,7 +67,7 @@ void main2( int argc, char **argv ) {
     MCGIDI::Transporting::MC MC( pops, "n", &protare->styles( ), label, GIDI::Transporting::DelayedNeutrons::on, 20.0 );
 
     MCGIDI::DomainHash domainHash( 4000, 1e-8, 100.0 );
-    MCGIDI::Protare *MCProtare = MCGIDI::protareFromGIDIProtare( *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude );
+    MCGIDI::Protare *MCProtare = MCGIDI::protareFromGIDIProtare( smr1, *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude );
     printTime( "    load MCGIDI: ", time1 );
 
     MCGIDI::Vector<MCGIDI::Protare *> protares( 1 );

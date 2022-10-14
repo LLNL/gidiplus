@@ -14,18 +14,18 @@ namespace GIDI {
 namespace Functions {
 
 /*! \class URR_probabilityTables1d
- * Class for the GNDS <**URR_probabilityTables1d**> node.
+ * Class for the **GNDS* **URR_probabilityTables1d** node.
  */
 
 /* *********************************************************************************************************//**
- * @param a_construction    [in]    Used to pass user options to the constructor.
- * @param a_node            [in]    The **HAPI::Node** to be parsed.
+ * @param a_construction        [in]    Used to pass user options to the constructor.
+ * @param a_node                [in]    The **HAPI::Node** to be parsed.
  * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
- * @param a_parent          [in]     The parent GIDI::Suite.
+ * @param a_parent              [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
 URR_probabilityTables1d::URR_probabilityTables1d( Construction::Settings const &a_construction, HAPI::Node const &a_node,
-		SetupInfo &a_setupInfo, Suite *a_parent ) :
+		        SetupInfo &a_setupInfo, Suite *a_parent ) :
         Function1dForm( a_construction, a_node, a_setupInfo, FormType::URR_probabilityTables1d, a_parent ),
         m_function2d( data2dParse( a_construction, a_node.first_child( ), a_setupInfo, nullptr ) ) {
 

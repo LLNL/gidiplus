@@ -1,0 +1,21 @@
+maxLevel = 99
+energyMax = 20 MeV
+Seed targets:
+RIS file name ../Data/MG_MC/all_maps.ris
+
+H1
+  H1: ENDF/B-7.1
+  Li6: ENDF/B-7.1
+n
+  Al27: ENDF/B-8.0
+  Fe56: ENDF/B-7.1
+  H1: ENDF/B-8.0
+  O16: ENDF/B-7.1
+  Th227: JENDL-7.1
+photon
+  O16: ENDF/B-7.1
+
+Products:
+U239 replaced with 
+U242 replaced with 
+U229 replaced with 

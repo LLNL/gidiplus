@@ -59,6 +59,11 @@ void main2( int argc, char **argv ) {
 
         std::cout << "    " << std::setw( 3 ) << i1 << " " << std::setw( 3 ) << reaction->ENDL_C( ) << " " << reaction->label( ) << std::endl;
     }
+    GIDI::ProtareSingle const *protareSingle = protare->protare( 0 );
+    GIDI::Reaction const *reaction = protareSingle->nuclearPlusCoulombInterferenceOnlyReaction( );
+    if( reaction != nullptr ) {
+        std::cout << "    " << std::setw( 3 ) << "-" << " " << std::setw( 3 ) << reaction->ENDL_C( ) << " " << reaction->label( ) << std::endl;
+    }
 
     std::set<int> CValues;
     for( std::size_t i1 = 0; i1 < argv_options.m_arguments.size( ); ++i1 ) CValues.insert( asInt( argv[argv_options.m_arguments[i1]] ) );

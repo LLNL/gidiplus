@@ -20,7 +20,7 @@ void Suite::registerBinaryFiles(std::string a_parentDir, SetupInfo &a_setupInfo)
 
 #ifdef HAPI_USE_HDF5
     if (this->has( "HDF" )) {
-        a_setupInfo.m_dataManager = new HAPI::HDFDataManager( a_parentDir + "/" + this->get<ExternalFile>( "HDF" )->path() );
+        a_setupInfo.m_protare->setDataManager( new HAPI::HDFDataManager( a_parentDir + "/" + this->get<ExternalFile>( "HDF" )->path( ) ) );
     }
 #endif
 }

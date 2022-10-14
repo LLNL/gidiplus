@@ -457,11 +457,16 @@ class PrimaryGamma2d : public ProbabilityBase2d {
     private:
         double m_primaryEnergy;
         double m_massFactor;
+        String m_finalState;
 
     public:
         MCGIDI_HOST_DEVICE PrimaryGamma2d( );
         MCGIDI_HOST PrimaryGamma2d( GIDI::Functions::PrimaryGamma2d const &a_primaryGamma2d, SetupInfo *a_setupInfo );
         MCGIDI_HOST_DEVICE ~PrimaryGamma2d( );
+
+        double primaryEnergy( ) const { return( m_primaryEnergy ); }
+        double massFactor( ) const { return( m_massFactor ); }
+        String const &finalState( ) const { return( m_finalState ); }
 
         MCGIDI_HOST_DEVICE double evaluate( double a_x2, double a_x1 ) const ;
         MCGIDI_HOST_DEVICE double sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const { return( m_primaryEnergy + a_x2 * m_massFactor ); }

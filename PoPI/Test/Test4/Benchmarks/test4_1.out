@@ -1,18 +1,18 @@
 
-Co58_m1  final = 1163  final2 = 9937
-         final = 1163  final2 = 1163
-         final = 1163  final2 = 9937
-         isAlias( 1163 ) = 0  isMetaStableAlias( 1163 ) = 0
-         isAlias( 9937 ) = 1  isMetaStableAlias( 9937 ) = 1
+Co58_m1  final = 1167  final2 = 9941
+         final = 1167  final2 = 1167
+         final = 1167  final2 = 9941
+         isAlias( 1167 ) = 0  isMetaStableAlias( 1167 ) = 0
+         isAlias( 9941 ) = 1  isMetaStableAlias( 9941 ) = 1
 
-Ag110_m1  final = 2521  final2 = 9938
-         final = 2521  final2 = 2521
-         final = 2521  final2 = 9938
-         isAlias( 2521 ) = 0  isMetaStableAlias( 2521 ) = 0
-         isAlias( 9938 ) = 1  isMetaStableAlias( 9938 ) = 1
+Ag110_m1  final = 2525  final2 = 9942
+         final = 2525  final2 = 2525
+         final = 2525  final2 = 9942
+         isAlias( 2525 ) = 0  isMetaStableAlias( 2525 ) = 0
+         isAlias( 9942 ) = 1  isMetaStableAlias( 9942 ) = 1
 
-Am242_m1  final = 6049  final2 = 9939
-         final = 6049  final2 = 6049
-         final = 6049  final2 = 9939
-         isAlias( 6049 ) = 0  isMetaStableAlias( 6049 ) = 0
-         isAlias( 9939 ) = 1  isMetaStableAlias( 9939 ) = 1
+Am242_m1  final = 6053  final2 = 9943
+         final = 6053  final2 = 6053
+         final = 6053  final2 = 9943
+         isAlias( 6053 ) = 0  isMetaStableAlias( 6053 ) = 0
+         isAlias( 9943 ) = 1  isMetaStableAlias( 9943 ) = 1

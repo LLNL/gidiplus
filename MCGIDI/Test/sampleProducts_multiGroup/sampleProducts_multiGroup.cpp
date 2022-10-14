@@ -33,6 +33,7 @@ int main( int argc, char **argv ) {
     double energyDomainMax = 20.0;
     std::size_t numberOfFissionSamples = 100 * 1000;
     std::set<int> reactionsToExclude;
+    LUPI::StatusMessageReporting smr1;
     GIDI::Construction::PhotoMode photo_mode = GIDI::Construction::PhotoMode::nuclearOnly;
 
     std::cerr << "    " << __FILE__;
@@ -106,7 +107,7 @@ int main( int argc, char **argv ) {
     MCGIDI::DomainHash domainHash( 4000, 1e-8, 10 );
     MCGIDI::Protare *MCProtare;
     try {
-        MCProtare = MCGIDI::protareFromGIDIProtare( *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude ); }
+        MCProtare = MCGIDI::protareFromGIDIProtare( smr1, *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude ); }
     catch (char const *str) {
         std::cout << str << std::endl;
         exit( EXIT_FAILURE );
@@ -132,7 +133,8 @@ int main( int argc, char **argv ) {
             for( std::size_t i2 = 0; i2 < products.size( ); ++i2 ) {
                 MCGIDI::Sampling::Product const &product = products[i2];
 
-                std::cout << "        productIndex " << std::setw( 4 ) << product.m_productIndex;
+                PoPI::Particle const &particle = pops.particle( product.m_productIndex );
+                std::cout << "        productIndex " << std::setw( 12 ) << particle.ID( );
                 if( product.m_sampledType == MCGIDI::Sampling::SampledType::unspecified ) {
                     std::cout << " unspecified distribution" << std::endl; }
                 else {

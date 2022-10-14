@@ -62,7 +62,8 @@ void main2( int argc, char **argv ) {
 
     MCGIDI::DomainHash domainHash( 4000, 1e-8, 10 );
     std::set<int> reactionsToExclude;
-    MCGIDI::Protare *MCProtare = MCGIDI::protareFromGIDIProtare( *protare, pops, settings, particles, domainHash, temperatures, reactionsToExclude );
+    LUPI::StatusMessageReporting smr1;
+    MCGIDI::Protare *MCProtare = MCGIDI::protareFromGIDIProtare( smr1, *protare, pops, settings, particles, domainHash, temperatures, reactionsToExclude );
 
     MCProtare->setUserParticleIndex( pops[PoPI::IDs::neutron], 0 );
     MCProtare->setUserParticleIndex( pops["H2"], 10 );

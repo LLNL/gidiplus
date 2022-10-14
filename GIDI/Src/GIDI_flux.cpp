@@ -91,7 +91,7 @@ void Fluxes::addFile( std::string const &a_fileName ) {
 
     std::string formatVersionString = fluxes.attribute_as_string( GIDI_formatChars );
     if( formatVersionString == "" ) formatVersionString = GNDS_formatVersion_1_10Chars;
-    FormatVersion formatVersion;
+    LUPI::FormatVersion formatVersion;
     formatVersion.setFormat( formatVersionString );
     if( !formatVersion.supported( ) ) throw Exception( "unsupport GND format version" );
     setupInfo.m_formatVersion = formatVersion;

@@ -46,6 +46,7 @@ void main2( int argc, char **argv ) {
     void *rngState = nullptr;
     unsigned long long seed = 1;
     std::set<int> reactionsToExclude;
+    LUPI::StatusMessageReporting smr1;
     GIDI::Construction::PhotoMode photo_mode = GIDI::Construction::PhotoMode::nuclearOnly;
 
     std::cerr << "    " << __FILE__;
@@ -98,7 +99,7 @@ void main2( int argc, char **argv ) {
     }
 
     MCGIDI::DomainHash domainHash( 4000, 1e-8, 10 );
-    MCGIDI::Protare *MCProtare = MCGIDI::protareFromGIDIProtare( *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude );
+    MCGIDI::Protare *MCProtare = MCGIDI::protareFromGIDIProtare( smr1, *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude );
 
     MCGIDI::Vector<MCGIDI::Protare *> protares( 1 );
     protares[0] = MCProtare;

@@ -56,6 +56,7 @@ void main2( int argc, char **argv ) {
     parseTestOptions.parse( );
 
     GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, parseTestOptions.photonMode( ) );
+    construction.setLazyParsing( false );               // This code will fail in the threading loop below unless this is false.
     GIDI::Protare *protare = parseTestOptions.protare( pops, "../../../GIDI/Test/pops.xml", "../../../GIDI/Test/Data/MG_MC/all_maps.map", 
         construction, PoPI::IDs::neutron, "O16" );
 
@@ -90,6 +91,7 @@ void read_MCGIDI_protare( PoPI::Database const &a_pops, GIDI::Protare *a_protare
                 MCGIDI::Transporting::MC &a_settings, int productBinary, std::string &a_outputLines ) {
 
     std::set<int> reactionsToExclude;
+    LUPI::StatusMessageReporting smr1;
     std::map<std::string, std::string> particlesAndGIDs;
 
     particlesAndGIDs[PoPI::IDs::neutron] = "LLNL_gid_4";
@@ -119,7 +121,7 @@ void read_MCGIDI_protare( PoPI::Database const &a_pops, GIDI::Protare *a_protare
 
     MCGIDI::DomainHash domainHash( 4000, 1e-8, 10 );
     MCGIDI::Protare *MCProtare;
-    MCProtare = MCGIDI::protareFromGIDIProtare( *a_protare, a_pops, a_settings, particles, domainHash, a_temperatures, reactionsToExclude );
+    MCProtare = MCGIDI::protareFromGIDIProtare( smr1, *a_protare, a_pops, a_settings, particles, domainHash, a_temperatures, reactionsToExclude );
 
     MCProtare->setUserParticleIndex( a_pops[PoPI::IDs::neutron], 0 );
     MCProtare->setUserParticleIndex( a_pops["H2"], 10 );

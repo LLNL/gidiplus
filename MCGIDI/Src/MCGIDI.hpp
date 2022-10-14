@@ -22,6 +22,7 @@ class Protare;
 class ProtareSingle;
 class Reaction;
 class OutputChannel;
+class ACE_URR_probabilityTables;
 
 }           // End of namespace MCGIDI.
 
@@ -51,6 +52,8 @@ enum class ProtareType { single, composite, TNSL };
 
 namespace Transporting {
 
+enum class URR_mode { none, pdfs, ACE_URR_protabilityTables };
+
 namespace LookupMode {
 
     enum class Data1d { continuousEnergy, multiGroup };
@@ -72,25 +75,31 @@ namespace Reaction {
 class MC : public GIDI::Transporting::Settings {
 
     private:
-        PoPI::Database const &m_pops;
-        int m_neutronIndex;
-        int m_photonIndex;
-        GIDI::Styles::Suite const *m_styles;
-        std::string m_label;
-        double m_energyDomainMax;
-        bool m_ignoreENDF_MT5;
-        bool m_sampleNonTransportingParticles;                                             /**< If true, all products are sampled, otherwise only transporting particles are sampled. */
-        LookupMode::Data1d m_crossSectionLookupMode;
-        LookupMode::Data1d m_other1dDataLookupMode;
-        LookupMode::Distribution m_distributionLookupMode;
-        Sampling::Upscatter::Model m_upscatterModel;
-        std::string m_upscatterModelALabel;
-        bool m_want_URR_probabilityTables;
-        bool m_wantTerrellPromptNeutronDistribution;
-        std::vector<double> m_fixedGridPoints;
+        PoPI::Database const &m_pops;                               /**< The PoPs database to get particle information from.*/
+        int m_neutronIndex;                                         /**< The PoPs index for the neutron. */
+        int m_photonIndex;                                          /**< The PoPs index for the photon. */
+        int m_electronIndex;                                        /**< The PoPs index for the electron. */
+        GIDI::Styles::Suite const *m_styles;                        /**< FIXME. */
+        std::string m_label;                                        /**< FIXME. */
+        double m_energyDomainMax;                                   /**< All reactions with a threshold greater than or equal to this value are ignored. */
+        bool m_ignoreENDF_MT5;                                      /**< If true, the ENDF MT 5 reaction is ignored. */
+        bool m_sampleNonTransportingParticles;                      /**< If true, all products are sampled, otherwise only transporting particles are sampled. */
+        bool m_useSlowerContinuousEnergyConversion;                   /**< If true, the old slower conversion of GIDI::ProtareSingle to MCGIDI::HeatedCrossSectionContinuousEnergy is used. */
+        LookupMode::Data1d m_crossSectionLookupMode;                /**< Determines how cross sections are evaluated. */
+        LookupMode::Data1d m_other1dDataLookupMode;                 /**< Determines how 1d data other than cross sections are evaluated. */
+        LookupMode::Distribution m_distributionLookupMode;          /**< Determines how distributions are evaluated and sampled. Currently, only pdf_cdf is allowed. */
+        Sampling::Upscatter::Model m_upscatterModel;                /**< FIXME. */
+        std::string m_upscatterModelALabel;                         /**< FIXME. */
+        URR_mode m_URR_mode;                                        /**< Selects if URR data are to be used, and it so, which type. */
+        bool m_wantTerrellPromptNeutronDistribution;                /**< If true, prompt fission neutron distributions are sampled from the Terrell mode. */
+        bool m_wantRawTNSL_distributionSampling;                    /**< If true, the TNSL neutron distributions for coherent and incoherent elastic scattering are sampled from the double differential data. Otherwise, they are sampled from the distribution data. */
+        std::vector<double> m_fixedGridPoints;                      /**< FIXME. */
 
     public:
-        MCGIDI_HOST MC( PoPI::Database const &a_pops, std::string const &a_projectileID, GIDI::Styles::Suite const *a_styles, std::string const &a_label, GIDI::Transporting::DelayedNeutrons a_delayedNeutrons, double energyDomainMax );
+        MCGIDI_HOST MC( PoPI::Database const &a_pops, std::string const &a_projectileID, GIDI::Styles::Suite const *a_styles, std::string const &a_label, 
+                GIDI::Transporting::DelayedNeutrons a_delayedNeutrons, double energyDomainMax );
+        MCGIDI_HOST MC( PoPI::Database const &a_pops, GIDI::Protare const &a_protare, std::string const &a_label,
+                GIDI::Transporting::DelayedNeutrons a_delayedNeutrons, double energyDomainMax );
 
         MCGIDI_HOST GIDI::Styles::Suite const *styles( ) const { return( m_styles ); }               /**< Returns the value of the **m_styles**. */
         MCGIDI_HOST void styles( GIDI::Styles::Suite const *a_styles ) { m_styles = a_styles; }      /**< This is needed for ProtareTNSL, but should be avoided otherwise. FIXME, need to have a better way. */
@@ -102,34 +111,79 @@ class MC : public GIDI::Transporting::Settings {
         MCGIDI_HOST double energyDomainMax( ) const { return( m_energyDomainMax ); }                /**< Returns the value of the **m_energyDomainMax**. */
 
         MCGIDI_HOST bool ignoreENDF_MT5( ) const { return( m_ignoreENDF_MT5 ); }                    /**< Returns the value of the **m_ignoreENDF_MT5**. */
-        MCGIDI_HOST void setIgnoreENDF_MT5( bool a_ignoreENDF_MT5 ) { m_ignoreENDF_MT5 = a_ignoreENDF_MT5; }
+        MCGIDI_HOST void set_ignoreENDF_MT5( bool a_ignoreENDF_MT5 ) { m_ignoreENDF_MT5 = a_ignoreENDF_MT5; }
+        MCGIDI_HOST void setIgnoreENDF_MT5( bool a_ignoreENDF_MT5 ) { set_ignoreENDF_MT5( a_ignoreENDF_MT5 ); }
+                            /**< This function is deprecated. Use **set_ignoreENDF_MT5** instead. */
 
         MCGIDI_HOST bool sampleNonTransportingParticles( ) const { return( m_sampleNonTransportingParticles); }
-        MCGIDI_HOST void sampleNonTransportingParticles( bool a_sampleNonTransportingParticles ) { m_sampleNonTransportingParticles = a_sampleNonTransportingParticles; }
+        MCGIDI_HOST void sampleNonTransportingParticles( bool a_sampleNonTransportingParticles ) {
+                LUPI::deprecatedFunction( "MCGIDI::Transporting::MC::sampleNonTransportingParticles", "MCGIDI::Transporting::MC::setSampleNonTransportingParticles", "" );
+                setSampleNonTransportingParticles( a_sampleNonTransportingParticles ); }
+        MCGIDI_HOST void setSampleNonTransportingParticles( bool a_sampleNonTransportingParticles ) { m_sampleNonTransportingParticles = a_sampleNonTransportingParticles; }
 
-        MCGIDI_HOST LookupMode::Data1d crossSectionLookupMode( ) const { return( m_crossSectionLookupMode ); }    /**< Returns the value of the **m_crossSectionLookupMode**. */
-        MCGIDI_HOST void crossSectionLookupMode( LookupMode::Data1d a_crossSectionLookupMode );
-        MCGIDI_HOST LookupMode::Data1d other1dDataLookupMode( ) const { return( m_other1dDataLookupMode ); }      /**< Returns the value of the **m_other1dDataLookupMode**. */
-        MCGIDI_HOST void other1dDataLookupMode( LookupMode::Data1d a_other1dDataLookupMode );
+        MCGIDI_HOST bool useSlowerContinuousEnergyConversion( ) const { return( m_useSlowerContinuousEnergyConversion ); }
+        MCGIDI_HOST void setUseSlowerContinuousEnergyConversion( bool a_useSlowerContinuousEnergyConversion ) {
+                m_useSlowerContinuousEnergyConversion = a_useSlowerContinuousEnergyConversion; }
+
+        MCGIDI_HOST LookupMode::Data1d crossSectionLookupMode( ) const { return( m_crossSectionLookupMode ); }      /**< Returns the value of the **m_crossSectionLookupMode**. */
+        MCGIDI_HOST void setCrossSectionLookupMode( LookupMode::Data1d a_crossSectionLookupMode );
+        MCGIDI_HOST void crossSectionLookupMode( LookupMode::Data1d a_crossSectionLookupMode ) {
+                LUPI::deprecatedFunction( "MCGIDI::Transporting::MC::crossSectionLookupMode", "MCGIDI::Transporting::MC::setCrossSectionLookupMode", "" );
+                setCrossSectionLookupMode( a_crossSectionLookupMode ); }                                            /**< See method **setCrossSectionLookupMode**. This method is deprecated. */
+
+        MCGIDI_HOST LookupMode::Data1d other1dDataLookupMode( ) const { return( m_other1dDataLookupMode ); }        /**< Returns the value of the **m_other1dDataLookupMode**. */
+        MCGIDI_HOST void setOther1dDataLookupMode( LookupMode::Data1d a_other1dDataLookupMode );
+        MCGIDI_HOST void other1dDataLookupMode( LookupMode::Data1d a_other1dDataLookupMode ) {
+                LUPI::deprecatedFunction( "MCGIDI::Transporting::MC::other1dDataLookupMode", "MCGIDI::Transporting::MC::setOther1dDataLookupMode", "" );
+                setOther1dDataLookupMode( a_other1dDataLookupMode ); }                                              /**< See method **setOther1dDataLookupMode**. This method is deprecated. */
+
         MCGIDI_HOST LookupMode::Distribution distributionLookupMode( ) const { return( m_distributionLookupMode ); }  /**< Returns the value of the **m_distributionLookupMode**. */
-        MCGIDI_HOST void distributionLookupMode( LookupMode::Distribution a_distributionLookupMode );
+        MCGIDI_HOST void setDistributionLookupMode( LookupMode::Distribution a_distributionLookupMode );
+        MCGIDI_HOST void distributionLookupMode( LookupMode::Distribution a_distributionLookupMode ) { 
+                LUPI::deprecatedFunction( "MCGIDI::Transporting::MC::distributionLookupMode", "MCGIDI::Transporting::MC::setDistributionLookupMode", "" );
+                setDistributionLookupMode( a_distributionLookupMode ); }                                            /**< See method **setDistributionLookupMode**. This method is deprecated. */
 
-        MCGIDI_HOST Sampling::Upscatter::Model upscatterModel( ) const { return( m_upscatterModel ); }             /**< Returns the value of the **m_upscatterModel**. */
-        MCGIDI_HOST void setUpscatterModelA( std::string const &a_upscatterModelALabel );
+        MCGIDI_HOST Sampling::Upscatter::Model upscatterModel( ) const { return( m_upscatterModel ); }              /**< Returns the value of the **m_upscatterModel**. */
+        MCGIDI_HOST void set_upscatterModelA( std::string const &a_upscatterModelALabel );
+        MCGIDI_HOST void setUpscatterModelA( std::string const &a_upscatterModelALabel ) { set_upscatterModelA( a_upscatterModelALabel ); }
+                                                                                                                    /**< See method **set_upscatterModelA**. */
         MCGIDI_HOST std::string upscatterModelALabel( ) const { return( m_upscatterModelALabel ); }                 /**< Returns the value of the **m_upscatterModelALabel**. */
+        MCGIDI_HOST void setUpscatterModelB( ) { m_upscatterModel = Sampling::Upscatter::Model::B; }                /**< Set member *m_upscatterModel* to Sampling::Upscatter::Model::B. */
 
-        MCGIDI_HOST bool want_URR_probabilityTables( ) const { return( m_want_URR_probabilityTables ); }
-        MCGIDI_HOST void want_URR_probabilityTables( bool a_want_URR_probabilityTables ) { m_want_URR_probabilityTables = a_want_URR_probabilityTables; }
+        MCGIDI_HOST bool want_URR_probabilityTables( ) const {
+                LUPI::deprecatedFunction( "MCGIDI::Transporting::MC::want_URR_probabilityTables", "MCGIDI::Transporting::MC::_URR_mode", "" );
+                return( m_URR_mode != URR_mode::none ); }            /**< Returns *false* if *m_URR_mode* is **URR_mode::none** and *true* otherwise. This method is deprecated. Please use **_URR_mode** instead. */
+        MCGIDI_HOST void want_URR_probabilityTables( bool a_want_URR_probabilityTables ) {
+                LUPI::deprecatedFunction( "MCGIDI::Transporting::MC::want_URR_probabilityTables", "MCGIDI::Transporting::MC::setURR_mode", "" );
+                m_URR_mode = URR_mode::none;
+                if( a_want_URR_probabilityTables ) m_URR_mode = URR_mode::pdfs;
+        }           /**< If *a_want_URR_probabilityTables* is *true* sets *m_URR_mode* to **URR_mode::pdfs**, otherwise set it to **URR_mode::none**. This method is deprecated. Please use **setURR_mode** instead. */
+
+        MCGIDI_HOST URR_mode _URR_mode( ) const { return( m_URR_mode ); }                                           /**< Returns the value of the **m_URR_mode** member. */
+        MCGIDI_HOST void setURR_mode( URR_mode a_URR_mode ) { m_URR_mode = a_URR_mode; }                            /**< This methods sets member *m_URR_mode* to *a_URR_mode*. */
 
         MCGIDI_HOST bool wantTerrellPromptNeutronDistribution( ) const { return( m_wantTerrellPromptNeutronDistribution ); }
-        MCGIDI_HOST void wantTerrellPromptNeutronDistribution( bool a_wantTerrellPromptNeutronDistribution ) { m_wantTerrellPromptNeutronDistribution = a_wantTerrellPromptNeutronDistribution; }
+                                    /**< Returns the value of the **m_wantTerrellPromptNeutronDistribution** member. */
+        MCGIDI_HOST void setWantTerrellPromptNeutronDistribution( bool a_wantTerrellPromptNeutronDistribution ) {
+                m_wantTerrellPromptNeutronDistribution = a_wantTerrellPromptNeutronDistribution;
+        }       /**< Set the *m_wantTerrellPromptNeutronDistribution* member to *a_wantTerrellPromptNeutronDistribution*. */
+        MCGIDI_HOST void wantTerrellPromptNeutronDistribution( bool a_wantTerrellPromptNeutronDistribution ) {
+                LUPI::deprecatedFunction( "MCGIDI::Transporting::MC::wantTerrellPromptNeutronDistribution", "MCGIDI::Transporting::MC::setWantTerrellPromptNeutronDistribution", "" );
+                setWantTerrellPromptNeutronDistribution( a_wantTerrellPromptNeutronDistribution );
+        }       /**< See method *setWantTerrellPromptNeutronDistribution*. This method is deprecated. */
+
+        MCGIDI_HOST bool wantRawTNSL_distributionSampling( ) const { return( m_wantRawTNSL_distributionSampling ); }
+        MCGIDI_HOST bool wantRawTNSL_distributionSampling( ) { return( m_wantRawTNSL_distributionSampling ); }
+        MCGIDI_HOST void set_wantRawTNSL_distributionSampling( bool a_wantRawTNSL_distributionSampling ) { 
+                m_wantRawTNSL_distributionSampling = a_wantRawTNSL_distributionSampling; }
 
         MCGIDI_HOST std::vector<double> fixedGridPoints( ) const { return( m_fixedGridPoints ); }
         MCGIDI_HOST void fixedGridPoints( std::vector<double> a_fixedGridPoints ) { m_fixedGridPoints = a_fixedGridPoints; }
 
         MCGIDI_HOST PoPI::Database const &pops( ) const { return( m_pops ); }                       /**< Returns a reference to **m_styles**. */
-        MCGIDI_HOST int neutronIndex( ) const { return( m_neutronIndex ); }
-        MCGIDI_HOST int photonIndex( ) const { return( m_photonIndex ); }
+        MCGIDI_HOST int neutronIndex( ) const { return( m_neutronIndex ); }                         /**< Returns the value of **m_neutronIndex**. */
+        MCGIDI_HOST int photonIndex( ) const { return( m_photonIndex ); }                           /**< Returns the value of **m_photonIndex**. */
+        MCGIDI_HOST int electronIndex( ) const { return( m_electronIndex ); }                       /**< Returns the value of **m_electronIndex**. */
 
         MCGIDI_HOST void process( GIDI::Protare const &a_protare );
 };
@@ -140,14 +194,29 @@ enum class TwoBodyOrder { notApplicable, firstParticle, secondParticle };
 
 /*
 ============================================================
+============= ACE_URR_protabilityTablesFromGIDI ============
+============================================================
+*/
+
+class ACE_URR_protabilityTablesFromGIDI {
+
+    public:
+        MCGIDI_HOST ACE_URR_protabilityTablesFromGIDI( );
+        MCGIDI_HOST ~ACE_URR_protabilityTablesFromGIDI( );
+
+        std::map<std::string, ACE_URR_probabilityTables *> m_ACE_URR_probabilityTables;     // The string is the reaction's label.
+};
+
+/*
+============================================================
 ========================= SetupInfo ========================
 ============================================================
 */
 class SetupInfo {
 
     public:
-        Protare &m_protare;
-        GIDI::FormatVersion m_formatVersion;
+        ProtareSingle &m_protare;
+        LUPI::FormatVersion m_formatVersion;
         double m_Q;
         double m_product1Mass;
         double m_product2Mass;
@@ -155,14 +224,19 @@ class SetupInfo {
         double m_domainMax;
         TwoBodyOrder m_twoBodyOrder;
         bool m_isPairProduction;
+        bool m_isPhotoAtomicIncoherentScattering;
         std::string m_distributionLabel;                        /**< Set by the ProtareSingle constructor to the distribution label to use for all products. */
         std::map<std::string, int> m_particleIndices;
         GIDI::Reaction const *m_reaction;
         Transporting::Reaction::Type m_reactionType;
         GIDI::OutputChannel const *m_outputChannel;
+        int m_initialStateIndex;                                /**< If not -1, them reaction contains a branching gamma data with this index for the data in m_nuclideGammaBranchStateInfos member of its **ProtareSingle** instance. */
+        std::map<std::string, int> m_initialStateIndices;       /**< If not -1, them reaction contains a branching gamma data with this index for the data in m_nuclideGammaBranchStateInfos member of its **ProtareSingle** instance. */
         std::map<std::string, int> m_stateNamesToIndices;
+        std::map<std::string, ACE_URR_protabilityTablesFromGIDI *> m_ACE_URR_protabilityTablesFromGIDI;
 
-        MCGIDI_HOST SetupInfo( Protare &a_protare );
+        MCGIDI_HOST SetupInfo( ProtareSingle &a_protare );
+        MCGIDI_HOST ~SetupInfo( );
 };
 
 /*
@@ -290,6 +364,7 @@ class DomainHash {
         MCGIDI_HOST_DEVICE Vector<int> map( Vector<double> &a_domainValues ) const ;
 
         MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
+
         MCGIDI_HOST void print( bool a_printValues ) const ;
 };
 
@@ -303,11 +378,12 @@ class MultiGroupHash {
     private:
         Vector<double> m_boundaries;                                    /**< The list of multi-group boundaries. */
 
-        void initialize( GIDI::Protare const &a_protare, GIDI::Styles::TemperatureInfo const &a_temperatureInfo, std::string a_particleID );
+        MCGIDI_HOST void initialize( GIDI::Protare const &a_protare, GIDI::Styles::TemperatureInfo const &a_temperatureInfo, std::string a_particleID );
 
     public:
-        MultiGroupHash( std::vector<double> a_boundaries );
-        MultiGroupHash( GIDI::Protare const &a_protare, GIDI::Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_particleID = "" );
+        MCGIDI_HOST MultiGroupHash( std::vector<double> a_boundaries );
+        MCGIDI_HOST MultiGroupHash( GIDI::Protare const &a_protare, GIDI::Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_particleID = "" );
+        MCGIDI_HOST MultiGroupHash( GIDI::Protare const &a_protare, GIDI::Transporting::Particles const &a_particles );
 
         MCGIDI_HOST_DEVICE Vector<double> const &boundaries( ) const { return( m_boundaries ); }   /**< Returns a reference to **m_styles**. */
         MCGIDI_HOST_DEVICE int index( double a_domain ) const {
@@ -364,28 +440,89 @@ class URR_protareInfos {
 
 /*
 ============================================================
+================= ACE_URR_probabilityTable =================
+============================================================
+*/
+
+class ACE_URR_probabilityTable {
+
+    public:
+        double m_energy;                                                /**< The projectile energy where the data are specified. */
+        Vector<double> m_propabilities;                                 /**< The probability for each cross section. */
+        Vector<double> m_crossSection;                                  /**< The cross section for each probability. */
+
+        MCGIDI_HOST_DEVICE ACE_URR_probabilityTable( );
+        MCGIDI_HOST ACE_URR_probabilityTable( double a_energy, std::vector<double> const &a_propabilities, std::vector<double> const &a_crossSection );
+        MCGIDI_HOST_DEVICE ~ACE_URR_probabilityTable( );
+
+        MCGIDI_HOST_DEVICE double energy( ) const { return( m_energy ); }
+        MCGIDI_HOST_DEVICE double sample( double a_rng_Value );
+        MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
+};
+
+/*
+============================================================
+================= ACE_URR_probabilityTables ================
+============================================================
+*/
+
+class ACE_URR_probabilityTables {
+
+    public:
+        Vector<double> m_energies;                                          /**< List of energies where probabilities tables are given. */
+        Vector<ACE_URR_probabilityTable *> m_ACE_URR_probabilityTables;     /**< List of probabilities tables. One for each energy in *m_energies*. */
+
+        MCGIDI_HOST_DEVICE ACE_URR_probabilityTables( );
+        MCGIDI_HOST_DEVICE ACE_URR_probabilityTables( std::size_t a_capacity );
+        MCGIDI_HOST_DEVICE ~ACE_URR_probabilityTables( );
+
+        MCGIDI_HOST_DEVICE MCGIDI_VectorSizeType capacity( ) const { return( m_energies.capacity( ) ); }
+                                                                            /**< Returns the number of energies allocated to store probability tables. */
+        MCGIDI_HOST_DEVICE MCGIDI_VectorSizeType size( ) const { return( m_energies.size( ) ); }
+                                                                            /**< Returns the number of energies that have URR probability tables. */
+        MCGIDI_HOST_DEVICE void reserve( MCGIDI_VectorSizeType a_capacity );
+        MCGIDI_HOST_DEVICE void push_back( ACE_URR_probabilityTable *a_ACE_URR_probabilityTable );
+
+        MCGIDI_HOST_DEVICE double domainMin( ) const { return( m_energies[0] ); }         /**< Returns the minimum energy where URR data are specified. */
+        MCGIDI_HOST_DEVICE double domainMax( ) const { return( m_energies.back( ) ); }    /**< Returns the maximum energy where URR data are specified. */
+        MCGIDI_HOST_DEVICE double sample( double a_energy, double a_rng_Value );
+
+        MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
+};
+
+/*
+============================================================
 ======== HeatedReactionCrossSectionContinuousEnergy ========
 ============================================================
 */
+
 class HeatedReactionCrossSectionContinuousEnergy {
 
     private:
-        int m_offset;
-        double m_threshold;
-        Vector<double> m_crossSection;                          // Reaction cross section
-        Probabilities::ProbabilityBase2d *m_URR_probabilityTables;
+        int m_offset;                                               /**< The offset relative to the cross section grid of the first cross section value in *m_crossSection*. */
+        double m_threshold;                                         /**< The threshold for the reaction. */
+        Vector<double> m_crossSection;                              /**< The reaction's cross section. */
+        Transporting::URR_mode m_URR_mode;                          /**< The URR data (i.e., mode) *this* has. */
+        Probabilities::ProbabilityBase2d *m_URR_probabilityTables;  /**< Pointer to pdf URR probabilities if they were loaded. */
+        ACE_URR_probabilityTables *m_ACE_URR_probabilityTables;     /**< The ACE URR probability tables for the reaction's cross section, if they were loaded. */
 
     public:
         MCGIDI_HOST_DEVICE HeatedReactionCrossSectionContinuousEnergy( );
         MCGIDI_HOST HeatedReactionCrossSectionContinuousEnergy( int a_offset, double a_threshold, Vector<double> &a_crossSection );
-        MCGIDI_HOST HeatedReactionCrossSectionContinuousEnergy( double a_threshold, GIDI::Functions::Ys1d const &a_crossSection, Probabilities::ProbabilityBase2d *a_URR_probabilityTables );
+        MCGIDI_HOST HeatedReactionCrossSectionContinuousEnergy( double a_threshold, GIDI::Functions::Ys1d const &a_crossSection, 
+                        Probabilities::ProbabilityBase2d *a_URR_probabilityTables, ACE_URR_probabilityTables *a_ACE_URR_probabilityTables );
+        MCGIDI_HOST_DEVICE ~HeatedReactionCrossSectionContinuousEnergy( );
 
         MCGIDI_HOST_DEVICE double threshold( ) const { return( m_threshold ); }                            /**< Returns the value of the **m_threshold**. */
         MCGIDI_HOST_DEVICE int offset( ) const { return( m_offset ); }                                     /**< Returns the value of the **m_offset**. */
-        MCGIDI_HOST_DEVICE bool hasURR_probabilityTables( ) const { return( m_URR_probabilityTables != nullptr ); }   /**< Returns true if URR probability tables data present and false otherwise. */
+        MCGIDI_HOST_DEVICE bool hasURR_probabilityTables( ) const {
+            return( ( m_URR_probabilityTables != nullptr ) || ( m_ACE_URR_probabilityTables != nullptr ) );
+        }                                                           /**< Returns true if URR probability tables data present and false otherwise. */
+        MCGIDI_HOST_DEVICE Transporting::URR_mode URR_mode( ) const { return( m_URR_mode ); }           /**< Returns the value of **m_URR_mode**. */
         MCGIDI_HOST_DEVICE double URR_domainMin( ) const ;
         MCGIDI_HOST_DEVICE double URR_domainMax( ) const ;
-        MCGIDI_HOST_DEVICE Probabilities::ProbabilityBase2d *URR_probabilityTables( ) const { return( m_URR_probabilityTables ); }             /**< Returns the value of the **m_URR_probabilityTables**. */
+        MCGIDI_HOST_DEVICE Probabilities::ProbabilityBase2d *URR_probabilityTables( ) const { return( m_URR_probabilityTables ); }      /**< Returns the value of the *m_URR_probabilityTables*. */
+        MCGIDI_HOST_DEVICE ACE_URR_probabilityTables *_ACE_URR_probabilityTables( ) const { return( m_ACE_URR_probabilityTables ); }    /**< Returns the value of the *m_ACE_URR_probabilityTables*. */
         MCGIDI_HOST_DEVICE double crossSection( std::size_t a_index ) const {
             int index = static_cast<int>( a_index ) - m_offset;
             if( index < 0 ) return( 0.0 );
@@ -395,7 +532,8 @@ class HeatedReactionCrossSectionContinuousEnergy {
         }
         MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
 
-        MCGIDI_HOST void print( std::string const &a_indent, std::string const &a_iFormat, std::string const &a_energyFormat, std::string const &a_dFormat );
+        MCGIDI_HOST void print( ProtareSingle const *a_protareSingle, std::string const &a_indent, std::string const &a_iFormat, 
+                std::string const &a_energyFormat, std::string const &a_dFormat ) const ;
 };
 
 /*
@@ -411,7 +549,7 @@ class ContinuousEnergyGain {
         Vector<double> m_gain;
 
     public:
-        ContinuousEnergyGain( );
+        MCGIDI_HOST_DEVICE ContinuousEnergyGain( );
         ContinuousEnergyGain( int a_particleIndex, std::size_t a_size );
 
         ContinuousEnergyGain &operator=( ContinuousEnergyGain const &a_continuousEnergyGain );
@@ -424,7 +562,8 @@ class ContinuousEnergyGain {
         MCGIDI_HOST_DEVICE double gain( int a_energy_index, double a_energy_fraction ) const ;
 
         MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
-        MCGIDI_HOST void print( std::string const &a_indent, std::string const &a_iFormat, std::string const &a_energyFormat, std::string const &a_dFormat );
+        MCGIDI_HOST void print( ProtareSingle const *a_protareSingle, std::string const &a_indent, std::string const &a_iFormat, 
+                std::string const &a_energyFormat, std::string const &a_dFormat ) const ;
 };
 
 /*
@@ -443,8 +582,11 @@ class HeatedCrossSectionContinuousEnergy {
         Vector<double> m_depositionMomentum;                    /**< The total continuous energy, deposition-momentum cross section. */
         Vector<double> m_productionEnergy;                      /**< The total continuous energy, Q-value cross section. */
         Vector<ContinuousEnergyGain> m_gains;                   /**< The total continuous energy, gain cross section for each tracked particle. */
+        Transporting::URR_mode m_URR_mode;                      /**< The URR data (i.e., mode) *this* has. */
         Vector<int> m_reactionsInURR_region;                    /**< A list of reactions with in or below the upper URR regions. Empty unless URR probability tables present and used. */
         Vector<HeatedReactionCrossSectionContinuousEnergy *> m_reactionCrossSections;
+                                                                /**< Reaction cross section data for each reaction. */
+        ACE_URR_probabilityTables *m_ACE_URR_probabilityTables; /**< The ACE URR probability tables for the summed URR cross section, if they were loaded. */
 
     public:
         MCGIDI_HOST_DEVICE HeatedCrossSectionContinuousEnergy( );
@@ -485,7 +627,8 @@ class HeatedCrossSectionContinuousEnergy {
 
         MCGIDI_HOST_DEVICE Vector<double> const &energies( ) const { return( m_energies ); }       /**< Returns a reference to **m_styles**. */
 
-        MCGIDI_HOST void print( std::string const &a_indent, std::string const &a_iFormat, std::string const &a_energyFormat, std::string const &a_dFormat );
+        MCGIDI_HOST void print( ProtareSingle const *a_protareSingle, std::string const &a_indent, std::string const &a_iFormat, 
+                std::string const &a_energyFormat, std::string const &a_dFormat ) const ;
 };
 
 /*
@@ -496,15 +639,15 @@ class HeatedCrossSectionContinuousEnergy {
 class HeatedCrossSectionsContinuousEnergy {
 
     private:
-        Vector<double> m_temperatures;
-        Vector<double> m_thresholds;
-        Vector<HeatedCrossSectionContinuousEnergy *> m_heatedCrossSections;
+        Vector<double> m_temperatures;                                      /**< The list of temperatures that have **HeatedCrossSectionContinuousEnergy** data. */
+        Vector<double> m_thresholds;                                        /**< The threshold for each reaction. */
+        Vector<HeatedCrossSectionContinuousEnergy *> m_heatedCrossSections; /**< One **HeatedCrossSectionContinuousEnergy** instance for each temperature in *m_temperature*. */
 
     public:
         MCGIDI_HOST_DEVICE HeatedCrossSectionsContinuousEnergy( );
         MCGIDI_HOST_DEVICE ~HeatedCrossSectionsContinuousEnergy( );
 
-        MCGIDI_HOST void update( SetupInfo &a_setupInfo, Transporting::MC const &a_settings, GIDI::Transporting::Particles const &a_particles, DomainHash const &a_domainHash, 
+        MCGIDI_HOST void update( LUPI::StatusMessageReporting &a_smr, SetupInfo &a_setupInfo, Transporting::MC const &a_settings, GIDI::Transporting::Particles const &a_particles, DomainHash const &a_domainHash, 
                 GIDI::Styles::TemperatureInfos const &a_temperatureInfos, std::vector<GIDI::Reaction const *> const &a_reactions, 
                 std::vector<GIDI::Reaction const *> const &a_orphanProducts, bool a_fixedGrid, bool a_zeroReactions );
 
@@ -538,7 +681,8 @@ class HeatedCrossSectionsContinuousEnergy {
         MCGIDI_HOST void setUserParticleIndex( int a_particleIndex, int a_userParticleIndex );
         MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
 
-        MCGIDI_HOST void print( std::string const &a_indent, std::string const &a_iFormat, std::string const &a_energyFormat, std::string const &a_dFormat );
+        MCGIDI_HOST void print( ProtareSingle const *a_protareSingle, std::string const &a_indent, std::string const &a_iFormat, 
+                std::string const &a_energyFormat, std::string const &a_dFormat ) const ;
 };
 
 /*
@@ -625,7 +769,7 @@ class HeatedCrossSectionMultiGroup {
 
     public:
         MCGIDI_HOST_DEVICE HeatedCrossSectionMultiGroup( );
-        MCGIDI_HOST HeatedCrossSectionMultiGroup( GIDI::ProtareSingle const &a_protare, SetupInfo &a_setupInfo, 
+        MCGIDI_HOST HeatedCrossSectionMultiGroup( LUPI::StatusMessageReporting &a_smr, GIDI::ProtareSingle const &a_protare, SetupInfo &a_setupInfo, 
                 Transporting::MC const &a_settings, GIDI::Styles::TemperatureInfo const &a_temperatureInfo,
                 GIDI::Transporting::Particles const &a_particles, std::vector<GIDI::Reaction const *> const &a_reactions, std::string const &a_label,
                 bool a_zeroReactions );
@@ -681,7 +825,7 @@ class HeatedCrossSectionsMultiGroup {
         MCGIDI_HOST_DEVICE double maximumEnergy( ) const { return( m_projectileMultiGroupBoundariesCollapsed.back( ) ); }
         MCGIDI_HOST_DEVICE Vector<double> const &temperatures( ) const { return( m_temperatures ); }   /**< Returns the value of the **m_temperatures**. */
 
-        MCGIDI_HOST void update( GIDI::ProtareSingle const &a_protare, SetupInfo &a_setupInfo, Transporting::MC const &a_settings, GIDI::Transporting::Particles const &a_particles, 
+        MCGIDI_HOST void update( LUPI::StatusMessageReporting &a_smr, GIDI::ProtareSingle const &a_protare, SetupInfo &a_setupInfo, Transporting::MC const &a_settings, GIDI::Transporting::Particles const &a_particles, 
                 GIDI::Styles::TemperatureInfos const &a_temperatureInfos, std::vector<GIDI::Reaction const *> const &a_reactions, 
                 std::vector<GIDI::Reaction const *> const &a_orphanProducts, bool a_zeroReactions );
 
@@ -709,6 +853,7 @@ class HeatedCrossSectionsMultiGroup {
 
         MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
         MCGIDI_HOST void write( FILE *a_file, int a_temperatureIndex ) const ;
+        MCGIDI_HOST void print( ) const ;
 };
 
 /*
@@ -719,10 +864,10 @@ class HeatedCrossSectionsMultiGroup {
 class NuclideGammaBranchInfo {
 
     private:
-        double m_probability;
-        double m_photonEmissionProbability;
-        double m_gammaEnergy;
-        int m_residualStateIndex;
+        double m_probability;                               /**< The probability that the level decays to state *m_residualStateIndex*. */
+        double m_photonEmissionProbability;                 /**< The conditional probability the the decay emitted a photon. */
+        double m_gammaEnergy;                               /**< The energy of the emitted photon. */
+        int m_residualStateIndex;                           /**< The state the residual is left in after photon decay. */
 
     public:
         MCGIDI_HOST_DEVICE NuclideGammaBranchInfo( );
@@ -745,8 +890,8 @@ class NuclideGammaBranchStateInfo {
 
     private:
         char m_state[16];
-        double m_multiplicity;
-        double m_averageGammaEnergy;
+        double m_multiplicity;                              /**< The average multiplicity of photons emitted including the emission of for sub-levels. */
+        double m_averageGammaEnergy;                        /**< The average energy of photons emitted including the emission of for sub-levels. */
         Vector<int> m_branches;
 
     public:
@@ -754,9 +899,13 @@ class NuclideGammaBranchStateInfo {
         MCGIDI_HOST NuclideGammaBranchStateInfo( PoPI::NuclideGammaBranchStateInfo const &a_nuclideGammaBranchingInfo, 
                 std::vector<NuclideGammaBranchInfo *> &a_nuclideGammaBranchInfos, std::map<std::string, int> &a_stateNamesToIndices );
 
-        MCGIDI_HOST_DEVICE Vector<int> const &branches( ) const { return( m_branches ); }                      /**< Returns the value of the **m_branches**. */
+        MCGIDI_HOST_DEVICE double multiplicity( ) const { return( m_multiplicity ); }                           /**< Returns the value of the **m_multiplicity** member. */
+        MCGIDI_HOST_DEVICE double averageGammaEnergy( ) const { return( m_averageGammaEnergy ); }               /**< Returns the value of the **m_averageGammaEnergy** member. */
+        MCGIDI_HOST_DEVICE Vector<int> const &branches( ) const { return( m_branches ); }                       /**< Returns the value of the **m_branches** member. */
 
         MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
+        MCGIDI_HOST void print( ProtareSingle const *a_protareSingle, std::string const &a_indent, std::string const &a_iFormat,
+                std::string const &a_energyFormat, std::string const &a_dFormat ) const ;
 };
 
 /*
@@ -771,6 +920,7 @@ class Product {
         int m_index;
         int m_userParticleIndex;
         String m_label;
+        bool m_isCompleteParticle;
         double m_mass;
         double m_excitationEnergy;
         TwoBodyOrder m_twoBodyOrder;
@@ -793,6 +943,7 @@ class Product {
         MCGIDI_HOST_DEVICE int userParticleIndex( ) const { return( m_userParticleIndex ); }       /**< Returns the value of the **m_userParticleIndex**. */
         MCGIDI_HOST void setUserParticleIndex( int a_particleIndex, int a_userParticleIndex );
         MCGIDI_HOST_DEVICE String label( ) const { return( m_label ); }                            /**< Returns the value of the **m_label**. */
+        MCGIDI_HOST_DEVICE bool isCompleteParticle( ) const { return( m_isCompleteParticle ); }     /**< Returns the value of the **m_isCompleteParticle**. */
         MCGIDI_HOST_DEVICE double mass( ) const { return( m_mass ); }                              /**< Returns the value of the **m_mass**. */
         MCGIDI_HOST_DEVICE double excitationEnergy( ) const { return( m_excitationEnergy ); }      /**< Returns the value of the **m_excitationEnergy**. */
         MCGIDI_HOST_DEVICE TwoBodyOrder twoBodyOrder( ) const { return( m_twoBodyOrder ); }      /**< Returns the value of the **m_twoBodyOrder**. */
@@ -812,8 +963,8 @@ class Product {
 
         MCGIDI_HOST_DEVICE void sampleProducts( Protare const *a_protare, double a_projectileEnergy, Sampling::Input &a_input, 
                 double (*a_userrng)( void * ), void *a_rngState, Sampling::ProductHandler &a_products ) const ;
-        MCGIDI_HOST_DEVICE void angleBiasing( Reaction const *a_reaction, int a_pid, double a_energy_in, double a_mu_lab, double &a_probability, double &a_energy_out,
-                double (*a_userrng)( void * ), void *a_rngState, double &a_cumulative_weight ) const ;
+        MCGIDI_HOST_DEVICE void angleBiasing( Reaction const *a_reaction, int a_pid, double a_temperature, double a_energy_in, double a_mu_lab, 
+                double &a_probability, double &a_energy_out, double (*a_userrng)( void * ), void *a_rngState, double &a_cumulative_weight ) const ;
         MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
 };
 
@@ -834,7 +985,7 @@ class DelayedNeutron {
         MCGIDI_HOST DelayedNeutron( int a_index, GIDI::DelayedNeutron const *a_delayedNeutron, SetupInfo &a_setupInfo, Transporting::MC const &a_settings, GIDI::Transporting::Particles const &a_particles );
         MCGIDI_HOST_DEVICE ~DelayedNeutron( );
 
-        MCGIDI_HOST_DEVICE int delayedNeutronIndex( ) const { return( m_delayedNeutronIndex ); };
+        MCGIDI_HOST_DEVICE int delayedNeutronIndex( ) const { return( m_delayedNeutronIndex ); }
         MCGIDI_HOST_DEVICE double rate( ) const { return( m_rate ); }
         MCGIDI_HOST_DEVICE Product const &product( ) const { return( m_product ); }
         MCGIDI_HOST void setUserParticleIndex( int a_particleIndex, int a_userParticleIndex );
@@ -886,8 +1037,8 @@ class OutputChannel {
 
         MCGIDI_HOST_DEVICE void sampleProducts( Protare const *a_protare, double a_projectileEnergy, Sampling::Input &a_input, 
                 double (*a_userrng)( void * ), void *a_rngState, Sampling::ProductHandler &a_products ) const ;
-        MCGIDI_HOST_DEVICE void angleBiasing( Reaction const *a_reaction, int a_pid, double a_energy_in, double a_mu_lab, double &a_probability, double &a_energy_out, 
-                double (*a_userrng)( void * ), void *a_rngState, double &a_cumulative_weight ) const ;
+        MCGIDI_HOST_DEVICE void angleBiasing( Reaction const *a_reaction, int a_pid, double a_temperature, double a_energy_in, double a_mu_lab, 
+                double &a_probability, double &a_energy_out, double (*a_userrng)( void * ), void *a_rngState, double &a_cumulative_weight ) const ;
         MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
 };
 
@@ -906,10 +1057,12 @@ class Reaction {
         int m_ENDL_C;                                       /**< The ENDL C value for the reaction. */
         int m_ENDL_S;                                       /**< The ENDL S value for the reaction. */
         int m_neutronIndex;                                 /**< The neutron's PoPs index.*/
+        int m_initialStateIndex;                            /**< If not -1, them reaction contains a branching gamma data with this index for the data in m_nuclideGammaBranchStateInfos member of its **ProtareSingle** instance. */
         bool m_hasFission;                                  /**< *true* if the reaction is a fission reaction and false otherwise. */
         double m_projectileMass;                            /**< The mass of the projectile. */
         double m_targetMass;                                /**< The mass of the target. */
         double m_crossSectionThreshold;                     /**< The threshold for the reaction. */
+        double m_twoBodyThreshold;                          /**< This is the T_1 value needed to do two-body kinematics. */
         bool m_upscatterModelASupported;
         Vector<double> m_upscatterModelACrossSection;       /**< The multi-group cross section to use for upscatter model A. */
         Vector<int> m_productIndices;                       /**< The list of all products *this* reaction can product. */
@@ -940,19 +1093,22 @@ class Reaction {
         MCGIDI_HOST_DEVICE int ENDL_C( ) const { return( m_ENDL_C ); }                     /**< Returns the value of the **m_ENDL_C**. */
         MCGIDI_HOST_DEVICE int ENDL_S( ) const { return( m_ENDL_S ); }                     /**< Returns the value of the **m_ENDL_S**. */
         MCGIDI_HOST_DEVICE int neutronIndex( ) const { return( m_neutronIndex ); }         /**< Returns the value of the **m_neutronIndex**. */
+        MCGIDI_HOST_DEVICE int initialStateIndex( ) const { return( m_initialStateIndex ); }    /**< Returns the value of the **m_initialStateIndex** member. */
         MCGIDI_HOST_DEVICE double finalQ( double a_x1 ) const { return( m_outputChannel.finalQ( a_x1 ) ); }    /**< Returns the Q-value for projectile energy *a_x1*. */
         MCGIDI_HOST_DEVICE bool hasFission( ) const { return( m_hasFission ); }            /**< Returns the value of the **m_hasFission**. */
         MCGIDI_HOST_DEVICE double projectileMass( ) const { return( m_projectileMass ); }  /**< Returns the value of the **m_projectileMass**. */
         MCGIDI_HOST_DEVICE double targetMass( ) const { return( m_targetMass ); }          /**< Returns the value of the **m_targetMass**. */
         MCGIDI_HOST_DEVICE double crossSectionThreshold( ) const { return( m_crossSectionThreshold ); }    /**< Returns the value of the **m_crossSectionThreshold**. */
+        MCGIDI_HOST_DEVICE double twoBodyThreshold( ) const { return( m_twoBodyThreshold ); }              /**< Returns the value of the *m_twoBodyThreshold* member. */
         MCGIDI_HOST_DEVICE double crossSection( URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy ) const ;
         MCGIDI_HOST_DEVICE double crossSection( URR_protareInfos const &a_URR_protareInfos, double a_temperature, double a_energy ) const ;
 
         MCGIDI_HOST Vector<int> const &productIndices( ) const { return( m_productIndices ); }
         MCGIDI_HOST Vector<int> const &userProductIndices( ) const { return( m_userProductIndices ); }
         MCGIDI_HOST int productMultiplicity( int a_index ) const ;
-        MCGIDI_HOST int productMultiplicities( int a_index )                               /**< This method is deprecated. Please use **productMultiplicity** instead. */
-                const { return( productMultiplicity( a_index ) ); }
+        MCGIDI_HOST int productMultiplicities( int a_index ) const {
+                LUPI::deprecatedFunction( "MCGIDI::Reaction::productMultiplicities", "MCGIDI::Reaction::productMultiplicity", "" );
+                return( productMultiplicity( a_index ) ); }                                 /**< This method is deprecated. Please use **productMultiplicity** instead. */
         MCGIDI_HOST_DEVICE double productAverageMultiplicity( int a_index, double a_projectileEnergy ) const ;
         MCGIDI_HOST Vector<int> const &productIndicesTransportable( ) const { return( m_productIndicesTransportable ); }
         MCGIDI_HOST Vector<int> const &userProductIndicesTransportable( ) const { return( m_userProductIndicesTransportable ); }
@@ -972,7 +1128,7 @@ class Reaction {
                 double (*a_userrng)( void * ), void *a_rngState, Sampling::ProductHandler &a_products ) const ;
         MCGIDI_HOST_DEVICE static void sampleNullProducts( Protare const &a_protare, double a_projectileEnergy, Sampling::Input &a_input, 
                 double (*a_userrng)( void * ), void *a_rngState, Sampling::ProductHandler &a_products );
-        MCGIDI_HOST_DEVICE double angleBiasing( int a_pid, double a_energy_in, double a_mu_lab, double &a_energy_out, 
+        MCGIDI_HOST_DEVICE double angleBiasing( int a_pid, double a_temperature, double a_energy_in, double a_mu_lab, double &a_energy_out, 
                 double (*a_userrng)( void * ), void *a_rngState, double *a_cumulative_weight = nullptr ) const ;
         MCGIDI_HOST_DEVICE void serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode );
 };
@@ -1003,6 +1159,8 @@ class Protare {
         int m_userNeutronIndex;                             /**< The neutron particle index defined by the user. */
         int m_photonIndex;                                  /**< The PoPs index of the photon. */
         int m_userPhotonIndex;                              /**< The photon particle index defined by the user. */
+        int m_electronIndex;                                /**< The PoPs index of the electron. */
+        int m_userElectronIndex;                            /**< The electron particle index defined by the user. */
         String m_evaluation;                                /**< The evaluation string for the Protare. */
         GIDI::Frame m_projectileFrame;                      /**< The frame the projectile data are given in. */
 
@@ -1034,6 +1192,8 @@ class Protare {
         MCGIDI_HOST_DEVICE int userNeutronIndex( ) const { return( m_userNeutronIndex ); }                         /**< Returns the value of the **m_userNeutronIndex** member. */
         MCGIDI_HOST_DEVICE int photonIndex( ) const { return( m_photonIndex ); }                                   /**< Returns the value of the **m_photonIndex** member. */
         MCGIDI_HOST_DEVICE int userPhotonIndex( ) const { return( m_userPhotonIndex ); }                           /**< Returns the value of the **m_userPhotonIndex** member. */
+        MCGIDI_HOST_DEVICE int electronIndex( ) const { return( m_electronIndex ); }                               /**< Returns the value of the **m_electronIndex** member. */
+        MCGIDI_HOST_DEVICE int userElectronIndex( ) const { return( m_userElectronIndex ); }                       /**< Returns the value of the **m_userElectronIndex** member. */
         MCGIDI_HOST_DEVICE String evaluation( ) const { return( m_evaluation ); }                                  /**< Returns the value of the **m_evaluation** member. */
         MCGIDI_HOST GIDI::Frame projectileFrame( ) const { return( m_projectileFrame ); }                          /**< Returns the value of the **m_projectileFrame** member. */
 
@@ -1072,11 +1232,16 @@ class Protare {
 
         virtual MCGIDI_HOST_DEVICE double threshold( MCGIDI_VectorSizeType a_index ) const = 0;
 
-        virtual MCGIDI_HOST_DEVICE double crossSection(                              URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, bool a_sampling = false ) const = 0;
-        virtual MCGIDI_HOST_DEVICE void crossSectionVector( double a_temperature, double a_userFactor, int a_numberAllocated, double *a_crossSectionVector ) const = 0;
-        virtual MCGIDI_HOST_DEVICE double reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, bool a_sampling = false ) const = 0;
-        virtual MCGIDI_HOST_DEVICE double reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos,                  double a_temperature, double a_energy ) const = 0;
-        virtual MCGIDI_HOST_DEVICE int sampleReaction(                               URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, double a_crossSection, double (*a_userrng)( void * ), void *a_rngState ) const = 0;
+        virtual MCGIDI_HOST_DEVICE double crossSection(                              URR_protareInfos const &a_URR_protareInfos,
+                int a_hashIndex, double a_temperature, double a_energy, bool a_sampling = false ) const = 0;
+        virtual MCGIDI_HOST_DEVICE void crossSectionVector( double a_temperature, double a_userFactor, int a_numberAllocated,
+                double *a_crossSectionVector ) const = 0;
+        virtual MCGIDI_HOST_DEVICE double reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, int a_hashIndex,
+                double a_temperature, double a_energy, bool a_sampling = false ) const = 0;
+        virtual MCGIDI_HOST_DEVICE double reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos,
+                double a_temperature, double a_energy ) const = 0;
+        virtual MCGIDI_HOST_DEVICE int sampleReaction(                               URR_protareInfos const &a_URR_protareInfos, int a_hashIndex,
+                double a_temperature, double a_energy, double a_crossSection, double (*a_userrng)( void * ), void *a_rngState ) const = 0;
 
         virtual MCGIDI_HOST_DEVICE double depositionEnergy(   int a_hashIndex, double a_temperature, double a_energy ) const = 0;
         virtual MCGIDI_HOST_DEVICE double depositionMomentum( int a_hashIndex, double a_temperature, double a_energy ) const = 0;
@@ -1093,15 +1258,15 @@ class Protare {
 
 /*
 ============================================================
-===================== ProtareSingle =====================
+====================== ProtareSingle =======================
 ============================================================
 */
 class ProtareSingle : public Protare {
 
     private:
+        String m_interaction;                                                       /**< The protare's interaction string. */
         int m_URR_index;                                                            /**< The index of the protare in the URR_protareInfos list. If negative, not in list. */
         bool m_hasURR_probabilityTables;                                            /**< *true* if URR probability tables present and *false* otherwise. */
-        String m_interaction;                                                       /**< The protare's interaction string. */
         double m_URR_domainMin;                                                     /**< If URR probability tables present this is the minimum of the projectile energy domain for the tables. */
         double m_URR_domainMax;                                                     /**< If URR probability tables present this is the maximum of the projectile energy domain for the tables. */
         Vector<double> m_projectileMultiGroupBoundaries;                            /**< The multi-group boundaries for the projectile. Only used if m_crossSectionLookupMode and/or m_other1dDataLookupMode is multiGroup. */
@@ -1123,7 +1288,7 @@ class ProtareSingle : public Protare {
 
     public:
         MCGIDI_HOST_DEVICE ProtareSingle( );
-        MCGIDI_HOST ProtareSingle( GIDI::ProtareSingle const &a_protare, PoPI::Database const &a_pops, Transporting::MC &a_settings, 
+        MCGIDI_HOST ProtareSingle( LUPI::StatusMessageReporting &a_smr, GIDI::ProtareSingle const &a_protare, PoPI::Database const &a_pops, Transporting::MC &a_settings, 
                 GIDI::Transporting::Particles const &a_particles, DomainHash const &a_domainHash, GIDI::Styles::TemperatureInfos const &a_temperatureInfos,
                 std::set<int> const &a_reactionsToExclude, int a_reactionsToExcludeOffset = 0, bool a_allowFixedGrid = true );
         MCGIDI_HOST_DEVICE ~ProtareSingle( );
@@ -1133,6 +1298,9 @@ class ProtareSingle : public Protare {
         MCGIDI_HOST_DEVICE HeatedCrossSectionsContinuousEnergy const &heatedCrossSections( ) const { return( m_heatedCrossSections ); }  /**< Returns a reference to the **m_heatedCrossSections** member. */
         MCGIDI_HOST_DEVICE HeatedCrossSectionsContinuousEnergy &heatedCrossSections( ) { return( m_heatedCrossSections ); }              /**< Returns a reference to the **m_heatedCrossSections** member. */
         MCGIDI_HOST_DEVICE HeatedCrossSectionsMultiGroup const &heatedMultigroupCrossSections( ) const { return( m_heatedMultigroupCrossSections ); } /**< Returns a reference to the **m_heatedMultigroupCrossSections** member. */
+
+        MCGIDI_HOST_DEVICE Vector<NuclideGammaBranchStateInfo *> &nuclideGammaBranchStateInfos( ) { return( m_nuclideGammaBranchStateInfos ); }
+                                                                                    /**< Returns a reference to the **NuclideGammaBranchStateInfo** member. */
 
 // FIXME (1) see FIXME (1) in MC class.
         MCGIDI_HOST_DEVICE Vector<Reaction *> const &reactions( ) const { return( m_reactions ); }                 /**< Returns the value of the **m_reactions** member. */
@@ -1217,7 +1385,7 @@ class ProtareComposite : public Protare {
 
     public:
         MCGIDI_HOST_DEVICE ProtareComposite( );
-        MCGIDI_HOST ProtareComposite( GIDI::ProtareComposite const &a_protare, PoPI::Database const &a_pops, Transporting::MC &a_settings, 
+        MCGIDI_HOST ProtareComposite( LUPI::StatusMessageReporting &a_smr, GIDI::ProtareComposite const &a_protare, PoPI::Database const &a_pops, Transporting::MC &a_settings, 
                 GIDI::Transporting::Particles const &a_particles, DomainHash const &a_domainHash, GIDI::Styles::TemperatureInfos const &a_temperatureInfos,
                 std::set<int> const &a_reactionsToExclude, int a_reactionsToExcludeOffset = 0, bool a_allowFixedGrid = true );
         MCGIDI_HOST_DEVICE ~ProtareComposite( );
@@ -1295,7 +1463,7 @@ class ProtareTNSL : public Protare {
 
     public:
         MCGIDI_HOST_DEVICE ProtareTNSL( );
-        MCGIDI_HOST ProtareTNSL( GIDI::ProtareTNSL const &a_protare, PoPI::Database const &a_pops, Transporting::MC &a_settings, 
+        MCGIDI_HOST ProtareTNSL( LUPI::StatusMessageReporting &a_smr, GIDI::ProtareTNSL const &a_protare, PoPI::Database const &a_pops, Transporting::MC &a_settings, 
                 GIDI::Transporting::Particles const &a_particles, DomainHash const &a_domainHash, GIDI::Styles::TemperatureInfos const &a_temperatureInfos,
                 std::set<int> const &a_reactionsToExclude, int a_reactionsToExcludeOffset = 0, bool a_allowFixedGrid = true );
         MCGIDI_HOST_DEVICE ~ProtareTNSL( );
@@ -1366,7 +1534,7 @@ class ProtareTNSL : public Protare {
 =========================== Others =========================
 ============================================================
 */
-MCGIDI_HOST Protare *protareFromGIDIProtare( GIDI::Protare const &a_protare, PoPI::Database const &a_pops, Transporting::MC &a_settings, GIDI::Transporting::Particles const &a_particles,
+MCGIDI_HOST Protare *protareFromGIDIProtare( LUPI::StatusMessageReporting &a_smr, GIDI::Protare const &a_protare, PoPI::Database const &a_pops, Transporting::MC &a_settings, GIDI::Transporting::Particles const &a_particles,
                 DomainHash const &a_domainHash, GIDI::Styles::TemperatureInfos const &a_temperatureInfos, std::set<int> const &a_reactionsToExclude,
                 int a_reactionsToExcludeOffset = 0, bool a_allowFixedGrid = true );
 MCGIDI_HOST Vector<double> GIDI_VectorDoublesToMCGIDI_VectorDoubles( GIDI::Vector a_vector );
@@ -1377,6 +1545,13 @@ MCGIDI_HOST_DEVICE bool sampleTargetBetaForUpscatterModelA( Protare const *a_pro
                 double (*a_userrng)( void * ), void *a_rngState );
 MCGIDI_HOST_DEVICE void upScatterModelABoostParticle( Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState, Sampling::Product &a_product );
 MCGIDI_HOST_DEVICE void MCGIDI_sampleKleinNishina( double a_k1, double (*a_userrng)( void * ), void *a_rngState, double *a_energyOut, double *a_mu );
+MCGIDI_HOST_DEVICE int distributionTypeToInt( Distributions::Type a_type );
+MCGIDI_HOST_DEVICE Distributions::Type intToDistributionType( int a_type );
+
+MCGIDI_HOST void convertACE_URR_probabilityTablesFromGIDI( GIDI::ProtareSingle const &a_protare, Transporting::MC &a_settings, SetupInfo &a_setupInfo );
+MCGIDI_HOST_DEVICE Transporting::URR_mode serializeURR_mode( Transporting::URR_mode a_URR_mode, DataBuffer &a_buffer, DataBuffer::Mode a_mode );
+MCGIDI_HOST_DEVICE ACE_URR_probabilityTables *serializeACE_URR_probabilityTables( ACE_URR_probabilityTables *a_ACE_URR_probabilityTables,
+                DataBuffer &a_buffer, DataBuffer::Mode a_mode );
 
 }           // End of namespace MCGIDI.
 

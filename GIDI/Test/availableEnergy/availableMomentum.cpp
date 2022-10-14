@@ -39,7 +39,8 @@ int main( int argc, char **argv ) {
 =========================================================
 */  
 void main2( int argc, char **argv ) {
-    
+
+    LUPI::StatusMessageReporting smr1;
     argvOptions argv_options( "availableMomentum", description );
     ParseTestOptions parseTestOptions( argv_options, argc, argv );
 
@@ -57,13 +58,13 @@ void main2( int argc, char **argv ) {
     GIDI::Styles::TemperatureInfos temperatures = protare->temperatures( );
     GIDI::Transporting::MG settings( protare->projectile( ).ID( ), GIDI::Transporting::Mode::multiGroup, GIDI::Transporting::DelayedNeutrons::on );
 
-    GIDI::Vector availableMomentum = protare->multiGroupAvailableMomentum( settings, temperatures[0] );
+    GIDI::Vector availableMomentum = protare->multiGroupAvailableMomentum( smr1, settings, temperatures[0] );
     std::string prefix( "Total available momentum:: " );
     printVector( prefix, availableMomentum );
 
     for( std::size_t index = 0; index < protare->numberOfReactions( ); ++index ) {
         GIDI::Reaction const *reaction = protare->reaction( index );
-        GIDI::Vector availableMomentum = reaction->multiGroupAvailableMomentum( settings, temperatures[0] );
+        GIDI::Vector availableMomentum = reaction->multiGroupAvailableMomentum( smr1, settings, temperatures[0] );
         std::string string( reaction->label( ) );
 
         string = "    " + string + ":: ";

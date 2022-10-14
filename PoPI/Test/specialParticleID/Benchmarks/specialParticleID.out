@@ -1,0 +1,17 @@
+   ID       familiar nuclide  nucleus
+   ----------------------------------
+   d        d        H2       h2      
+   t        t        H3       h3      
+   h        h        He3      he3     
+   a        a        He4      he4     
+   p        p        H1       h1      
+   h1       p        H1       h1      
+   H1       p        H1       h1      
+   h2       d        H2       h2      
+   H2       d        H2       h2      
+   h3       t        H3       h3      
+   H3       t        H3       h3      
+   he3      h        He3      he3     
+   He3      h        He3      he3     
+   he4      a        He4      he4     
+   He4      a        He4      he4     

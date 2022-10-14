@@ -24,8 +24,8 @@ namespace Sums {
 
 Sums::Sums( ) :
         Ancestry( GIDI_sumsChars ),
-        m_crossSectionSums( GIDI_sumsCrossSectionsChars ),
-        m_multiplicitySums( GIDI_sumsMultiplicitiesChars ) {
+        m_crossSectionSums( GIDI_sumsCrossSectionsChars, GIDI_labelChars ),
+        m_multiplicitySums( GIDI_sumsMultiplicitiesChars, GIDI_labelChars ) {
 
 }
 
@@ -50,17 +50,13 @@ Sums::~Sums( ) {
 void Sums::parse( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
 		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs ) {
 
-    if( a_node.child( GIDI_crossSectionSumsChars ).empty( ) ) {
-        m_crossSectionSums.parse( a_construction, a_node.child( GIDI_sumsCrossSectionsChars ), a_setupInfo, a_pops, a_internalPoPs, parseSumsCrossSectionsSuite, nullptr ); }
-    else {
-        m_crossSectionSums.parse( a_construction, a_node.child( GIDI_crossSectionSumsChars ), a_setupInfo, a_pops, a_internalPoPs, parseSumsCrossSectionsSuite, nullptr );
-    }
+    char const *moniker = GIDI_crossSectionSumsChars;
+    if( a_node.child( GIDI_crossSectionSumsChars ).empty( ) ) moniker = GIDI_sumsCrossSectionsChars;
+    m_crossSectionSums.parse( a_construction, a_node.child( moniker ), a_setupInfo, a_pops, a_internalPoPs, parseSumsCrossSectionsSuite, nullptr );
 
-    if( a_node.child( GIDI_multiplicitySumsChars ).empty( ) ) {
-        m_multiplicitySums.parse( a_construction, a_node.child( GIDI_sumsMultiplicitiesChars ), a_setupInfo, a_pops, a_internalPoPs, parseSumsMultiplicitiesSuite, nullptr ); }
-    else {
-        m_multiplicitySums.parse( a_construction, a_node.child( GIDI_multiplicitySumsChars ), a_setupInfo, a_pops, a_internalPoPs, parseSumsMultiplicitiesSuite, nullptr );
-    }
+    moniker = GIDI_multiplicitySumsChars;
+    if( a_node.child( GIDI_multiplicitySumsChars ).empty( ) ) moniker = GIDI_sumsMultiplicitiesChars;
+    m_multiplicitySums.parse( a_construction, a_node.child( moniker ), a_setupInfo, a_pops, a_internalPoPs, parseSumsMultiplicitiesSuite, nullptr );
 
     m_crossSectionSums.setAncestor( this );
     m_multiplicitySums.setAncestor( this );
@@ -134,7 +130,7 @@ void Sums::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) cons
  ***********************************************************************************************************/
 
 Base::Base( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops,
-		PoPI::Database const &a_internalPoPs, FormType a_type ) :
+		        PoPI::Database const &a_internalPoPs, FormType a_type ) :
         Form( a_node, a_setupInfo, a_type ),
         m_ENDF_MT( a_node.attribute_as_int( GIDI_ENDF_MT_Chars ) ),
         m_summands( a_construction, a_node.child( GIDI_sumsSummandsChars ), a_setupInfo ) {
@@ -156,10 +152,10 @@ Base::Base( Construction::Settings const &a_construction, HAPI::Node const &a_no
  ***********************************************************************************************************/
 
 CrossSectionSum::CrossSectionSum( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
-		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs ) :
+		        PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs ) :
         Base( a_construction, a_node, a_setupInfo, a_pops, a_internalPoPs, FormType::crossSectionSum ),
-        m_Q( a_construction, GIDI_QChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseQSuite, nullptr ),
-        m_crossSection( a_construction, GIDI_crossSectionChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseCrossSectionSuite, nullptr ) {
+        m_Q( a_construction, GIDI_QChars, GIDI_labelChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseQSuite, nullptr ),
+        m_crossSection( a_construction, GIDI_crossSectionChars, GIDI_labelChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseCrossSectionSuite, nullptr ) {
 
     m_Q.setAncestor( this );
     m_crossSection.setAncestor( this );
@@ -233,9 +229,9 @@ void CrossSectionSum::toXMLList( WriteInfo &a_writeInfo, std::string const &a_in
  ***********************************************************************************************************/
 
 MultiplicitySum::MultiplicitySum( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
-		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs ) :
+		        PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs ) :
         Base( a_construction, a_node, a_setupInfo, a_pops, a_internalPoPs, FormType::multiplicitySum ),
-        m_multiplicity( a_construction, GIDI_multiplicityChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseMultiplicitySuite, nullptr ) {
+        m_multiplicity( a_construction, GIDI_multiplicityChars, GIDI_labelChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseMultiplicitySuite, nullptr ) {
 
     m_multiplicity.setAncestor( this );
 }

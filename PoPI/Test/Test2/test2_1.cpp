@@ -16,7 +16,7 @@
 */
 int main( int argc, char **argv ) {
 
-    std::cerr << "    " << __FILE__ << std::endl;
+    std::cerr << "    " << LUPI::FileInfo::basenameWithoutExtension( __FILE__ ) << std::endl;
 
     std::string fileName( "../pops.xml" );
     std::string aliasFileName( "../LLNL_alias.xml" );
@@ -24,7 +24,7 @@ int main( int argc, char **argv ) {
     try {
         PoPI::Database database( fileName );
         database.addFile( aliasFileName, false );
-        database.print( );
+        database.print( false );
 
         }
     catch (char const *str) {

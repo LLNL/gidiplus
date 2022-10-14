@@ -50,6 +50,7 @@ void main2( int argc, char **argv ) {
     PoPI::Database pops;
     GIDI::Transporting::Particles particles;
     std::set<int> reactionsToExclude;
+    LUPI::StatusMessageReporting smr1;
 
     argvOptions argv_options( "crossSections", description );
     ParseTestOptions parseTestOptions( argv_options, argc, argv );
@@ -69,10 +70,11 @@ void main2( int argc, char **argv ) {
     std::string label( temperatures[0].heatedCrossSection( ) );
     MCGIDI::Transporting::MC MC( pops, protare->projectile( ).ID( ), &protare->styles( ), label, GIDI::Transporting::DelayedNeutrons::on, 20.0 );
     if( argv_options.find( "--noRutherford" )->present( ) ) MC.setNuclearPlusCoulombInterferenceOnly( true );
+    MC.sampleNonTransportingParticles( true );
 
     MCGIDI::DomainHash domainHash( 4000, 1e-8, 10 );
     MCGIDI::Protare *MCProtare;
-    MCProtare = MCGIDI::protareFromGIDIProtare( *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude );
+    MCProtare = MCGIDI::protareFromGIDIProtare( smr1, *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude );
 
     std::cout << std::endl;
     std::cout << "Is ProtareSingle " << ( MCProtare->protareType( ) == MCGIDI::ProtareType::single ) << std::endl;

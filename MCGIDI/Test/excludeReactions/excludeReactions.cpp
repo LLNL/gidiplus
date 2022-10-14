@@ -41,6 +41,7 @@ int main2( int argc, char **argv ) {
     GIDI::Protare *protare;
     GIDI::Transporting::Particles particles;
     std::set<int> reactionsToExclude;
+    LUPI::StatusMessageReporting smr1;
 
     std::cerr << "    " << __FILE__;
     for( int i1 = 1; i1 < argc; i1++ ) std::cerr << " " << argv[i1];
@@ -90,7 +91,7 @@ int main2( int argc, char **argv ) {
     particles.add( photon );
 
     MCGIDI::DomainHash domainHash( 4000, 1e-8, 10 );
-    MCGIDI::Protare *MCProtare = MCGIDI::protareFromGIDIProtare( *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude );
+    MCGIDI::Protare *MCProtare = MCGIDI::protareFromGIDIProtare( smr1, *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude );
 
     std::cout << std::endl;
     std::cout << "    MCGIDI::Protare number of reaction = " << MCProtare->numberOfReactions( ) << std::endl;

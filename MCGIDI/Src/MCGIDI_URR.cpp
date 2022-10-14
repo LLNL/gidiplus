@@ -109,4 +109,332 @@ MCGIDI_HOST_DEVICE void URR_protareInfos::serialize( DataBuffer &a_buffer, DataB
     }
 }
 
+/*! \class ACE_URR_probabilityTable
+ * Class to store ACE URR probability table at one projectile energy for one type of reaction (e.g., total, elastic).
+ */
+
+/* *********************************************************************************************************//**
+ * Simple constructor needed for broadcasting.
+ ***********************************************************************************************************/
+
+MCGIDI_HOST_DEVICE ACE_URR_probabilityTable::ACE_URR_probabilityTable( ) :
+        m_energy( 0.0 ) {
+
+}
+
+/* *********************************************************************************************************//**
+ * @param a_energy              [in]    The projectile energy where the data are specified.
+ * @param a_propabilities       [in]    The probability for each cross section.
+ * @param a_crossSection        [in]    The cross section for each probability.
+ ***********************************************************************************************************/
+
+MCGIDI_HOST ACE_URR_probabilityTable::ACE_URR_probabilityTable( double a_energy, std::vector<double> const &a_propabilities, 
+                std::vector<double> const &a_crossSection ) :
+        m_energy( a_energy ),
+        m_propabilities( a_propabilities ),
+        m_crossSection( a_crossSection ) {
+
+    double sum = 0.0;
+    for( int index = 0; index < m_propabilities.size( ); ++index ) {
+        sum += m_propabilities[index];
+        m_propabilities[index] = sum;
+    }
+    m_propabilities[m_propabilities.size( )-1] = 1.0;
+}
+
+/* *********************************************************************************************************//**
+ * Simple constructor needed for broadcasting.
+ ***********************************************************************************************************/
+
+MCGIDI_HOST_DEVICE ACE_URR_probabilityTable::~ACE_URR_probabilityTable( ) {
+
+}
+
+/* *********************************************************************************************************//**
+ * Returns the cross section corresponding to the probability *a_rng_Value*.
+ *
+ * @param a_rng_Value           [in]    A random number in the range [0,1).
+ *
+ * @return                              The cross section associated with probability a_rng_Value;
+ ***********************************************************************************************************/
+
+MCGIDI_HOST_DEVICE double ACE_URR_probabilityTable::sample( double a_rng_Value ) {
+
+    MCGIDI_VectorSizeType index = binarySearchVector( a_rng_Value, m_propabilities, true );
+    if( m_propabilities[index] < a_rng_Value ) ++index;
+    return( m_crossSection[index] );
+}
+
+/* *********************************************************************************************************//**
+ * This method serializes *this* for broadcasting as needed for MPI and GPUs. The method can count the number of required
+ * bytes, pack *this* or unpack *this* depending on *a_mode*.
+ *
+ * @param a_buffer              [in]    The buffer to read or write data to depending on *a_mode*.
+ * @param a_mode                [in]    Specifies the action of this method.
+ ***********************************************************************************************************/
+
+MCGIDI_HOST_DEVICE void ACE_URR_probabilityTable::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+
+    DATA_MEMBER_FLOAT( m_energy, a_buffer, a_mode  );
+    DATA_MEMBER_VECTOR_DOUBLE( m_propabilities, a_buffer, a_mode  );
+    DATA_MEMBER_VECTOR_DOUBLE( m_crossSection, a_buffer, a_mode  );
+}
+
+/*! \class ACE_URR_probabilityTables
+ * Class to store ACE URR probability tables at a list of projectile energies for one type of reaction (e.g., total, elastic).
+ */
+
+/* *********************************************************************************************************//**
+ * Simple constructor needed for broadcasting.
+ ***********************************************************************************************************/
+
+MCGIDI_HOST_DEVICE ACE_URR_probabilityTables::ACE_URR_probabilityTables( ) {
+
+}
+
+/* *********************************************************************************************************//**
+ * @param a_capacity            [in]    The number of energy slots to reverse.
+ ***********************************************************************************************************/
+
+MCGIDI_HOST_DEVICE ACE_URR_probabilityTables::ACE_URR_probabilityTables( std::size_t a_capacity ) {
+
+    m_energies.reserve( a_capacity );
+    m_ACE_URR_probabilityTables.reserve( a_capacity );
+}
+
+/* *********************************************************************************************************//**
+ ***********************************************************************************************************/
+
+MCGIDI_HOST_DEVICE ACE_URR_probabilityTables::~ACE_URR_probabilityTables( ) {
+
+    for( auto iter = m_ACE_URR_probabilityTables.begin( ); iter != m_ACE_URR_probabilityTables.end( ); ++iter ) delete (*iter);
+}
+
+/* *********************************************************************************************************//**
+ * Calls reserve for m_energies and m_ACE_URR_probabilityTables with the value *a_capacity*.
+ *
+ * @param a_capacity                    [in]    The size of the space to reserve.
+ ***********************************************************************************************************/
+
+MCGIDI_HOST_DEVICE void ACE_URR_probabilityTables::reserve( MCGIDI_VectorSizeType a_capacity ) {
+
+    m_energies.reserve( a_capacity );
+    m_ACE_URR_probabilityTables.reserve( a_capacity );
+}
+
+/* *********************************************************************************************************//**
+ * Adds *a_ACE_URR_probabilityTable* to the end of *this*.
+ *
+ * @param a_ACE_URR_probabilityTable    [in]    **ACE_URR_probabilityTable** instance to add.
+ ***********************************************************************************************************/
+
+MCGIDI_HOST_DEVICE void ACE_URR_probabilityTables::push_back( ACE_URR_probabilityTable *a_ACE_URR_probabilityTable ) {
+
+    if( m_energies.size( ) == capacity( ) ) MCGIDI_THROW( "ACE_URR_probabilityTables::addEnergyData: adding too many ACE_URR_probabilityTables." );
+    m_energies.push_back( a_ACE_URR_probabilityTable->energy( ) );
+    m_ACE_URR_probabilityTables.push_back( a_ACE_URR_probabilityTable );
+}
+
+/* *********************************************************************************************************//**
+ * Returns the cross section corresponding to the probability *a_rng_Value*.
+ *
+ * @param a_energy              [in]    The incident projectiles energy.
+ * @param a_rng_Value           [in]    A random number in the range [0,1).
+ *
+ * @return                              The cross section associated with probability a_rng_Value;
+ ***********************************************************************************************************/
+
+MCGIDI_HOST_DEVICE double ACE_URR_probabilityTables::sample( double a_energy, double a_rng_Value ) {
+
+    MCGIDI_VectorSizeType index = binarySearchVector( a_energy, m_energies, true );
+    if( index < m_energies.size( ) - 1 ) {
+        if( 0.5 * ( m_energies[index] + m_energies[index+1] ) < a_energy ) ++index;     // Find closest energy.
+    }
+
+    return( m_ACE_URR_probabilityTables[index]->sample( a_rng_Value ) );
+}
+
+/* *********************************************************************************************************//**
+ * This method serializes *this* for broadcasting as needed for MPI and GPUs. The method can count the number of required
+ * bytes, pack *this* or unpack *this* depending on *a_mode*.
+ *
+ * @param a_buffer              [in]    The buffer to read or write data to depending on *a_mode*.
+ * @param a_mode                [in]    Specifies the action of this method.
+ ***********************************************************************************************************/
+
+MCGIDI_HOST_DEVICE void ACE_URR_probabilityTables::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+
+    DATA_MEMBER_VECTOR_DOUBLE( m_energies, a_buffer, a_mode );
+
+    MCGIDI_VectorSizeType vectorSize = m_energies.size( );
+
+    if( a_mode == DataBuffer::Mode::Unpack ) m_ACE_URR_probabilityTables.resize( vectorSize, &a_buffer.m_placement );
+    if( a_mode == DataBuffer::Mode::Memory ) a_buffer.m_placement += m_ACE_URR_probabilityTables.internalSize( );
+
+    for( MCGIDI_VectorSizeType vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
+        ACE_URR_probabilityTable *ACE_URR_probabilityTable1 = m_ACE_URR_probabilityTables[vectorIndex];
+        if( a_mode == DataBuffer::Mode::Unpack ) {
+            if( a_buffer.m_placement != nullptr ) {
+                ACE_URR_probabilityTable1 = new(a_buffer.m_placement) ACE_URR_probabilityTable;
+                a_buffer.incrementPlacement( sizeof( ACE_URR_probabilityTable ) ); }
+            else {
+                ACE_URR_probabilityTable1 = new ACE_URR_probabilityTable;
+            }
+            m_ACE_URR_probabilityTables[vectorIndex] = ACE_URR_probabilityTable1;
+        }
+        ACE_URR_probabilityTable1->serialize( a_buffer, a_mode );
+    }
+}
+
+/* *********************************************************************************************************//**
+ * This method serializes a **ACE_URR_probabilityTables** instance pointed to by *a_ACE_URR_probabilityTables*.
+ *
+ * @param a_protare             [in]    The GIDI::Protare whose data is to be used to construct *this*.
+ * @param a_settings            [in]    Used to pass user options to the *this* to instruct it which data are desired.
+ * @param a_setupInfo           [in]    Used internally when constructing a Protare to pass information to other constructors.
+ *
+ * @return                              A pointer to the converted **ACE_URR_probabilityTables** instance.
+ ***********************************************************************************************************/
+
+MCGIDI_HOST void convertACE_URR_probabilityTablesFromGIDI( GIDI::ProtareSingle const &a_protare, Transporting::MC &a_settings, SetupInfo &a_setupInfo ) {
+
+    if( ( a_settings.crossSectionLookupMode( ) == Transporting::LookupMode::Data1d::continuousEnergy ) 
+            && ( a_settings._URR_mode( ) == Transporting::URR_mode::ACE_URR_protabilityTables ) ) {
+
+        int64_t numberConverted;
+        char *endCharacter;
+
+        for( auto iter = a_protare.ACE_URR_probabilityTables( ).begin( ); iter != a_protare.ACE_URR_probabilityTables( ).end( ); ++iter ) {
+            bool needToInitialize( true );
+            std::map<int, std::string> columnNames;
+            ACE_URR_protabilityTablesFromGIDI *ACE_URR_protabilityTablesFromGIDI1 = new ACE_URR_protabilityTablesFromGIDI( );
+            GIDI::ACE_URR::ProbabilityTable *form = dynamic_cast<GIDI::ACE_URR::ProbabilityTable *>( *iter );
+            GIDI::ACE_URR::ProbabilityTable::Forms &incidentEnergies = form->forms( );
+
+            for( auto incidentEnergyIter = incidentEnergies.begin( ); incidentEnergyIter != incidentEnergies.end( ); ++incidentEnergyIter ) {
+                GIDI::ACE_URR::IncidentEnergy *incidentEnergy = *incidentEnergyIter;
+                GIDI::Table::Table const &table = incidentEnergy->table( );
+                int numberOfRows = table.rows( );
+                int numberOfColumns = table.columns( );
+
+                int columnIndex = 0;
+                for( auto columnHeaderIter = table.columnHeaders( ).begin( ); columnHeaderIter != table.columnHeaders( ).end( ); ++columnHeaderIter ) {
+                    GIDI::Table::Column const *columnHeader = dynamic_cast<GIDI::Table::Column *>( *columnHeaderIter );
+                    if( needToInitialize and columnIndex > 0 ) {
+                        ACE_URR_protabilityTablesFromGIDI1->m_ACE_URR_probabilityTables[columnHeader->name( )] = 
+                                new ACE_URR_probabilityTables( incidentEnergies.size( ) );
+                        columnNames[columnIndex] = columnHeader->name( );
+                    }
+                    ++columnIndex;
+                }
+                needToInitialize = false;
+
+                GIDI::Table::Data const &data = table.data( );
+
+                std::string const &body = data.body( );
+                char const *text = body.c_str( );
+                double *dValues = nfu_stringToListOfDoubles( NULL, text, data.sep( ).c_str( )[0], &numberConverted, &endCharacter, 0 );
+                if( dValues == nullptr ) throw GIDI::Exception( "convertACE_URR_probabilityTablesFromGIDI: nfu_stringToListOfDoubles failed." );
+
+                std::vector<std::vector<double> > columns( numberOfColumns );
+                for( int columnIndex = 0; columnIndex < numberOfColumns; ++columnIndex ) {
+                    columns[columnIndex].reserve( numberOfRows );
+                    for( int rowIndex = 0; rowIndex < numberOfRows; ++rowIndex ) columns[columnIndex].push_back( dValues[rowIndex*numberOfColumns+columnIndex] );
+                }
+                free( dValues );
+
+                for( int columnIndex = 1; columnIndex < numberOfColumns; ++columnIndex ) {
+                    ACE_URR_protabilityTablesFromGIDI1->m_ACE_URR_probabilityTables[columnNames[columnIndex]]->push_back( 
+                            new ACE_URR_probabilityTable( incidentEnergy->value( ), columns[0], columns[columnIndex] ) );
+                }
+            }
+            a_setupInfo.m_ACE_URR_protabilityTablesFromGIDI[form->label()] = ACE_URR_protabilityTablesFromGIDI1;
+        }
+    }
+}
+
+/* *********************************************************************************************************//**
+ * This method serializes a **Transporting::URR_mode** value.
+ *
+ * @param a_URR_mode            [in]    The inputted Transporting::URR_mode value.
+ * @param a_buffer              [in]    The buffer to read or write data to depending on *a_mode*.
+ * @param a_mode                [in]    Specifies the action of this method.
+ *
+ * @return                              The Transporting::URR_mode value.
+ ***********************************************************************************************************/
+
+MCGIDI_HOST_DEVICE Transporting::URR_mode serializeURR_mode( Transporting::URR_mode a_URR_mode, DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+
+    int type = 0;
+    switch( a_URR_mode ) {
+    case Transporting::URR_mode::none :
+        break;
+    case Transporting::URR_mode::pdfs :
+        type = 1;
+        break;
+    case Transporting::URR_mode::ACE_URR_protabilityTables :
+        type = 2;
+        break;
+    }
+    DATA_MEMBER_INT( type, a_buffer, a_mode );
+
+    if( type == 0 ) return( Transporting::URR_mode::none );
+    if( type == 1 ) return( Transporting::URR_mode::pdfs );
+    return( Transporting::URR_mode::ACE_URR_protabilityTables );
+}
+
+/* *********************************************************************************************************//**
+ * This method serializes a **ACE_URR_probabilityTables** instance pointed to by *a_ACE_URR_probabilityTables*.
+ *
+ * @param a_ACE_URR_probabilityTables   [in]    Specifies the action of this method.
+ * @param a_buffer                      [in]    The buffer to read or write data to depending on *a_mode*.
+ * @param a_mode                        [in]    Specifies the action of this method.
+ *
+ * @return                              A pointer to the serialized **ACE_URR_probabilityTables** instance.
+ ***********************************************************************************************************/
+
+MCGIDI_HOST_DEVICE ACE_URR_probabilityTables *serializeACE_URR_probabilityTables( ACE_URR_probabilityTables *a_ACE_URR_probabilityTables, 
+                DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+
+    int type = 0;
+    if( a_ACE_URR_probabilityTables != nullptr ) type = 1;
+    DATA_MEMBER_INT( type, a_buffer, a_mode );
+    if( type == 0 ) return( nullptr );
+
+    if( a_mode == DataBuffer::Mode::Unpack ) {
+        if( a_buffer.m_placement != nullptr ) {
+            a_ACE_URR_probabilityTables = new(a_buffer.m_placement) ACE_URR_probabilityTables;
+            a_buffer.incrementPlacement( sizeof( ACE_URR_probabilityTables ) ); }
+        else {
+            a_ACE_URR_probabilityTables = new ACE_URR_probabilityTables;
+        }
+    }
+
+    if( a_mode == DataBuffer::Mode::Memory ) a_buffer.incrementPlacement( sizeof( ACE_URR_probabilityTables ) );
+
+    a_ACE_URR_probabilityTables->serialize( a_buffer, a_mode );
+
+    return( a_ACE_URR_probabilityTables );
+}
+
+/*! \class ACE_URR_protabilityTablesFromGIDI
+ * Class to store temporary ACE URR probability table data.
+ */
+
+/* *********************************************************************************************************//**
+ ***********************************************************************************************************/
+
+MCGIDI_HOST ACE_URR_protabilityTablesFromGIDI::ACE_URR_protabilityTablesFromGIDI( ) {
+
+}
+
+/* *********************************************************************************************************//**
+ ***********************************************************************************************************/
+
+MCGIDI_HOST ACE_URR_protabilityTablesFromGIDI::~ACE_URR_protabilityTablesFromGIDI( ) {
+
+    for( auto iter = m_ACE_URR_probabilityTables.begin( ); iter != m_ACE_URR_probabilityTables.end( ); ++iter ) delete (*iter).second;
+
+}
+
 }       // End namespace MCGIDI.

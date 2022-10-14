@@ -11,8 +11,6 @@
 This stuff should be repeatable.
 """
 
-from __future__ import print_function
-
 import random
 
 from numericalFunctions import pointwiseXY_C

@@ -10,21 +10,15 @@ Monte Carlo transport codes.
 **GIDI+** requires the third party library pugixml version 1.8.  If pugixml is not already present in the **GIDI+ Misc**
 directory, download it from https://pugixml.org/2016/11/24/pugixml-1.8-release.html and place it in the 'Misc' folder.
 
-**GIDI+** can also be configured to use HDF5 version 1.8 or greater. This option is useful for speeding up data load times
-in large processed GNDS files, where raw data can be split out and stored in HDF5 format in an 'externalFile'.
-
 # Installation
 
 To clone the **GIDI+** Git repository the following command is recommended:
 ```
-git clone https://github.com/LLNL/gidiplus.git
-  or, if you have an account on github with an SSH key:
-git clone git@github.com:LLNL/gidiplus.git
+git lfs clone --recurse-submodules ssh://git@github.com:LLNL/gidiplus.git
 ```
 
-If desired, obtain test datafiles from the 'Assets' list at https://github.com/LLNL/gidiplus/releases/tag/v3.22.23.
-Those files are not included in the repo to keep the size down. They should be unpacked into gidiplus/GIDI/Test/Data
-before running 'make check'.
+The command `git lfs clone` is needed instead of `git clone` since **GIDI+** has test data that are put onto
+a git lfs (Large File Storage) repository due to their large size.
 
 Currently, **GIDI+** uses the **unix make** command to build and puts needed header and library files into the *include* and
 *lib* directories, respecitively. Important targets in the Makefile are:
@@ -75,8 +69,50 @@ These scripts first define some environment varibles before executing **make**.
 
 # Working with Git submodules
 
-LLNL uses git submodules for internal development of **GIDI+**. While the version on github has submodules merged into a single repository,
-gidiplus_version.h still stores commit hashes for each submodule to identify commits and help with possible debugging.
+**GIDI+** is composed of submodules that are hosted in their own repositories and Git keeps a record of this in the following files:
+
+- .gitmodules which contains the local, relative path to the submodules and the URL to the corresponding 
+        remote repositories; and
+
+- files, containing the commit hash for the version used in **GIDI+**, for each submodule.
+
+Consequently, **GIDI+** points to a specific version of each submodule while code updates in the individual submodules continue independently. 
+The submodules may also be in a state called *detached HEAD* which indicates that **GIDI+** is not associated with a submodule's local branch name. 
+This may be observed via the output from the following command:
+```
+git submodule foreach 'git status'
+```
+
+The output for a given submodule may contain the string *HEAD detached* (indicating a submodule in the *detached HEAD* state) or 
+*Your branch is up to date with 'origin/master'*. If no code updates are to be done in a submodule in the *HEAD detached* state, no further 
+action is required. If a submodule is to be updated, it will need to be associated with a branch that contains the commit to which **GIDI+**
+points. For example, to associate **GIDI** with the master branch use the command:
+```
+cd GIDI; git checkout master
+```
+
+or to associated all submodules with master, use
+```
+git submodule foreach 'git checkout master'
+```
+
+These commands will associate the submodule(s) with the latest commit in that branch and this may not correspond to the submodule commit to which 
+**GIDI+** is pointing. The following command provides the commit hash identifier that **GIDI+** points at for each of the submodules:
+```
+git ls-tree -r HEAD | grep commit
+```
+
+To list the commit identifiers for the currently checked-out submodules, the following command may be used:
+```
+git submodule foreach 'git rev-parse HEAD'
+```
+
+A difference in commit hash identifiers will indicate a difference between the currently checked-out version of the submodule and the version to 
+which **GIDI+** is pointing. The command `git status` in the **GIDI+** folder will also indicate if the file associated with the submodule is in 
+the modified state.
+
+It is obviously important that any code updates to the submodule be `git push` before the corresponding **GIDI+** `git push` command. This prevents 
+future **GIDI+** repository checkouts that point to a non-existent submodule commit hash identifier.
 
 # License
 
@@ -97,7 +133,7 @@ LLNL-CODE-771182	(statusMessageReporting) \
 LLNL-CODE-770377	(PoPI) \
 LLNL-CODE-770134	(numericalFunctions)
 
-**GIDI+** is a product of the Nuclear Data and Theory Group at Lawrence Livermore National Laboratory (LLNL).
+**FUDGE** is a product of the Nuclear Data and Theory Group at Lawrence Livermore National Laboratory (LLNL).
 
 This work was performed under the auspices of the U.S. Department of Energy by Lawrence Livermore National
 Laboratory under Contract DE-AC52-07NA27344.

@@ -34,7 +34,8 @@ MCGIDI_HOST_DEVICE DelayedNeutron::DelayedNeutron( ) :
  * @param a_particles           [in]    List of transporting particles and their information (e.g., multi-group boundaries and fluxes).
  ***********************************************************************************************************/
 
-MCGIDI_HOST DelayedNeutron::DelayedNeutron( int a_index, GIDI::DelayedNeutron const *a_delayedNeutron, SetupInfo &a_setupInfo, Transporting::MC const &a_settings, GIDI::Transporting::Particles const &a_particles ) :
+MCGIDI_HOST DelayedNeutron::DelayedNeutron( int a_index, GIDI::DelayedNeutron const *a_delayedNeutron, SetupInfo &a_setupInfo, 
+                Transporting::MC const &a_settings, GIDI::Transporting::Particles const &a_particles ) :
         m_delayedNeutronIndex( a_index ),
         m_rate( 0.0 ),
         m_product( &a_delayedNeutron->product( ), a_setupInfo, a_settings, a_particles, false ) {

@@ -51,6 +51,7 @@ ProtareTNSL::ProtareTNSL( Construction::Settings const &a_construction, ProtareS
     m_maximumTNSL_MultiGroupIndex[""] = 0;                             // In case temperatureInfo.heatedMultiGroup( ) is an empty string. Is this needed?
     Styles::TemperatureInfos temperatures = m_TNSL->temperatures( );
     Transporting::MG settings( m_TNSL->projectile( ).ID( ), Transporting::Mode::multiGroup, Transporting::DelayedNeutrons::off );
+    LUPI::StatusMessageReporting smr1;
     for( auto iter = temperatures.begin( ); iter != temperatures.end( ); ++iter ) {
         std::string label = iter->heatedMultiGroup( );
 
@@ -58,7 +59,8 @@ ProtareTNSL::ProtareTNSL( Construction::Settings const &a_construction, ProtareS
             std::size_t i1 = 0;
             std::size_t maximumMultiGroupIndex = 0;
 
-            Vector crossSection = m_TNSL->multiGroupCrossSection( settings, *iter );
+            Vector crossSection = m_TNSL->multiGroupCrossSection( smr1, settings, *iter );
+            smr1.clear( );
             for( ; i1 < crossSection.size( ); ++i1 ) {
                 if( crossSection[i1] == 0 ) break;
             }
@@ -66,7 +68,8 @@ ProtareTNSL::ProtareTNSL( Construction::Settings const &a_construction, ProtareS
                                                                     // The check of multiplicity is needed because FUDGE has a inconsistency in what maximum energy 
                                                                     // to use for TNSL calculations. The following lines can be remove when this issue is resolved in FUDGE.
                                                                     // This should not be needed for data produced after 15/Jan/2021 or probably earlier as FUDGE was fixed.
-            Vector multiplicity = m_TNSL->multiGroupMultiplicity( settings, *iter, PoPI::IDs::neutron );
+            Vector multiplicity = m_TNSL->multiGroupMultiplicity( smr1, settings, *iter, PoPI::IDs::neutron );
+            smr1.clear( );
             for( i1 = 0; i1 < multiplicity.size( ); ++i1 ) {
                 if( multiplicity[i1] == 0 ) break;
             }
@@ -155,7 +158,7 @@ void ProtareTNSL::combineMatrices( Transporting::MG const &a_settings, Styles::T
  * @return                          The format version.
  ******************************************************************/
 
-FormatVersion const &ProtareTNSL::formatVersion( std::size_t a_index ) const {
+LUPI::FormatVersion const &ProtareTNSL::formatVersion( std::size_t a_index ) const {
 
     if( a_index == 0 ) return( m_protare->formatVersion( ) );
     if( a_index == 1 ) return( m_TNSL->formatVersion( ) );
@@ -268,6 +271,28 @@ ProtareSingle const *ProtareTNSL::protare( std::size_t a_index ) const {
 }
 
 /* *********************************************************************************************************//**
+ * Returns the number of LazyParsingHelperForms instantiated.
+ *
+ * @return              The number of LazyParsingHelperForms instantiated.
+ ******************************************************************/
+
+int ProtareTNSL::numberOfLazyParsingHelperForms( ) const {
+
+    return( m_protare->numberOfLazyParsingHelperForms( ) + m_TNSL->numberOfLazyParsingHelperForms( ) );
+}
+
+/* *********************************************************************************************************//**
+ * Returns the number of instantiated LazyParsingHelperForms replaced with the appropriate form.
+ * 
+ * @return              The number of LazyParsingHelperForms replaced.
+ ******************************************************************/
+ 
+int ProtareTNSL::numberOfLazyParsingHelperFormsReplaced( ) const {
+
+    return( m_protare->numberOfLazyParsingHelperFormsReplaced( ) + m_TNSL->numberOfLazyParsingHelperFormsReplaced( ) );
+}
+
+/* *********************************************************************************************************//**
  * Returns the threshold factor for the projectile hitting the target.
  *
  * @return              The threshold factor.
@@ -341,6 +366,7 @@ void ProtareTNSL::productIDs( std::set<std::string> &a_ids, Transporting::Partic
  * Determines the maximum Legredre order present in the multi-group transfer matrix for a give product for a give label.
  * Loops over all contained Protares to determine the maximum Legredre order.
  *
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
  * @param a_settings            [in]    Specifies the requested label.
  * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
  * @param a_productID           [in]    The id of the requested product.
@@ -348,10 +374,11 @@ void ProtareTNSL::productIDs( std::set<std::string> &a_ids, Transporting::Partic
  * @return                              The maximum Legredre order. If no transfer matrix data are present for the requested product, -1 is returned.
  ***********************************************************************************************************/
 
-int ProtareTNSL::maximumLegendreOrder( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
+int ProtareTNSL::maximumLegendreOrder( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+                Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
 
-    int maximumLegendreOrder1 = m_protare->maximumLegendreOrder( a_settings, a_temperatureInfo, a_productID );
-    int maximumLegendreOrder2 = m_TNSL->maximumLegendreOrder( a_settings, a_temperatureInfo, a_productID );
+    int maximumLegendreOrder1 = m_protare->maximumLegendreOrder( a_smr, a_settings, a_temperatureInfo, a_productID );
+    int maximumLegendreOrder2 = m_TNSL->maximumLegendreOrder( a_smr, a_settings, a_temperatureInfo, a_productID );
 
     if( maximumLegendreOrder1 > maximumLegendreOrder2 ) return( maximumLegendreOrder1 );
     return( maximumLegendreOrder2 );
@@ -473,7 +500,7 @@ bool ProtareTNSL::hasFission( ) const {
  * @return                              List of multi-group boundaries.
  ***********************************************************************************************************/
 
-std::vector<double> const ProtareTNSL::groupBoundaries( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
+std::vector<double> ProtareTNSL::groupBoundaries( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
 
     return( m_protare->groupBoundaries( a_settings, a_temperatureInfo, a_productID ) );
 }
@@ -481,35 +508,39 @@ std::vector<double> const ProtareTNSL::groupBoundaries( Transporting::MG const &
 /* *********************************************************************************************************//**
  * Returns the inverse speeds for the requested label from the non TNSL protare. The label must be for a heated multi-group style.
  *
- * @param   a_settings          [in]    Specifies the requested label.
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
+ * @param a_settings            [in]    Specifies the requested label.
  * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
  *
  * @return                              List of inverse speeds.
  ***********************************************************************************************************/
 
-Vector ProtareTNSL::multiGroupInverseSpeed( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo ) const {
+Vector ProtareTNSL::multiGroupInverseSpeed( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+                Styles::TemperatureInfo const &a_temperatureInfo ) const {
 
-    return( m_protare->multiGroupInverseSpeed( a_settings, a_temperatureInfo ) );
+    return( m_protare->multiGroupInverseSpeed( a_smr, a_settings, a_temperatureInfo ) );
 }
 
 /* *********************************************************************************************************//**
  * Returns the multi-group, total cross section for the requested label. This is summed over all reactions.
  *
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
  * @param a_settings            [in]    Specifies the requested label.
  * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
  *
  * @return                              The requested multi-group cross section as a GIDI::Vector.
  ***********************************************************************************************************/
 
-Vector ProtareTNSL::multiGroupCrossSection( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo ) const {
+Vector ProtareTNSL::multiGroupCrossSection( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+                Styles::TemperatureInfo const &a_temperatureInfo ) const {
 
-    Vector vector = m_protare->multiGroupCrossSection( a_settings, a_temperatureInfo );
+    Vector vector = m_protare->multiGroupCrossSection( a_smr, a_settings, a_temperatureInfo );
 
     if( !m_elasticReaction->active( ) ) return( vector );
 
-    Vector vectorElastic = m_elasticReaction->multiGroupCrossSection( a_settings, a_temperatureInfo );
+    Vector vectorElastic = m_elasticReaction->multiGroupCrossSection( a_smr, a_settings, a_temperatureInfo );
 
-    combineVectors( a_settings, a_temperatureInfo, vector, vectorElastic, m_TNSL->multiGroupCrossSection( a_settings, a_temperatureInfo ) );
+    combineVectors( a_settings, a_temperatureInfo, vector, vectorElastic, m_TNSL->multiGroupCrossSection( a_smr, a_settings, a_temperatureInfo ) );
     return( vector );
 }
 
@@ -517,6 +548,7 @@ Vector ProtareTNSL::multiGroupCrossSection( Transporting::MG const &a_settings, 
  * Returns the multi-group, total Q for the requested label. This is a cross section weighted multiplicity
  * summed over all reactions
  *
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
  * @param a_settings            [in]    Specifies the requested label.
  * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
  * @param a_final               [in]    If false, only the Q for the primary reactions are return, otherwise, the Q for the final reactions.
@@ -524,21 +556,23 @@ Vector ProtareTNSL::multiGroupCrossSection( Transporting::MG const &a_settings, 
  * @return                              The requested multi-group Q as a GIDI::Vector.
  ***********************************************************************************************************/
 
-Vector ProtareTNSL::multiGroupQ( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, bool a_final ) const {
+Vector ProtareTNSL::multiGroupQ( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+                Styles::TemperatureInfo const &a_temperatureInfo, bool a_final ) const {
 
-    Vector vector = m_protare->multiGroupQ( a_settings, a_temperatureInfo, a_final );
+    Vector vector = m_protare->multiGroupQ( a_smr, a_settings, a_temperatureInfo, a_final );
 
     if( !m_elasticReaction->active( ) ) return( vector );
 
-    Vector vectorElastic = m_elasticReaction->multiGroupQ( a_settings, a_temperatureInfo, a_final );
+    Vector vectorElastic = m_elasticReaction->multiGroupQ( a_smr, a_settings, a_temperatureInfo, a_final );
 
-    combineVectors( a_settings, a_temperatureInfo, vector, vectorElastic, m_TNSL->multiGroupQ( a_settings, a_temperatureInfo, a_final ) );
+    combineVectors( a_settings, a_temperatureInfo, vector, vectorElastic, m_TNSL->multiGroupQ( a_smr, a_settings, a_temperatureInfo, a_final ) );
     return( vector );
 }
 
 /* *********************************************************************************************************//**
  * Returns the multi-group, total multiplicity for the requested label for the requested product. This is a cross section weighted multiplicity.
  *
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
  * @param a_settings            [in]    Specifies the requested label.
  * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
  * @param a_productID           [in]    Id for the requested product.
@@ -546,53 +580,58 @@ Vector ProtareTNSL::multiGroupQ( Transporting::MG const &a_settings, Styles::Tem
  * @return                              The requested multi-group multiplicity as a GIDI::Vector.
  ***********************************************************************************************************/
 
-Vector ProtareTNSL::multiGroupMultiplicity( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
+Vector ProtareTNSL::multiGroupMultiplicity( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+                Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
 
-    Vector vector = m_protare->multiGroupMultiplicity( a_settings, a_temperatureInfo, a_productID );
+    Vector vector = m_protare->multiGroupMultiplicity( a_smr, a_settings, a_temperatureInfo, a_productID );
 
     if( !m_elasticReaction->active( ) ) return( vector );
 
-    Vector vectorElastic = m_elasticReaction->multiGroupMultiplicity( a_settings, a_temperatureInfo, a_productID );
+    Vector vectorElastic = m_elasticReaction->multiGroupMultiplicity( a_smr, a_settings, a_temperatureInfo, a_productID );
 
-    combineVectors( a_settings, a_temperatureInfo, vector, vectorElastic, m_TNSL->multiGroupMultiplicity( a_settings, a_temperatureInfo, a_productID ) );
+    combineVectors( a_settings, a_temperatureInfo, vector, vectorElastic, m_TNSL->multiGroupMultiplicity( a_smr, a_settings, a_temperatureInfo, a_productID ) );
     return( vector );
 }
 
 /* *********************************************************************************************************//**
  * Returns the multi-group, total fission neutron multiplicity for the requested label. This is a cross section weighted multiplicity.
  *
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
  * @param a_settings            [in]    Specifies the requested label.
  * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
  *
  * @return                              The requested multi-group fission neutron multiplicity as a GIDI::Vector.
  ***********************************************************************************************************/
 
-Vector ProtareTNSL::multiGroupFissionNeutronMultiplicity( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo ) const {
+Vector ProtareTNSL::multiGroupFissionNeutronMultiplicity( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+                Styles::TemperatureInfo const &a_temperatureInfo ) const {
 
-    return( m_protare->multiGroupFissionNeutronMultiplicity( a_settings, a_temperatureInfo ) );
+    return( m_protare->multiGroupFissionNeutronMultiplicity( a_smr, a_settings, a_temperatureInfo ) );
 }
 
 /* *********************************************************************************************************//**
  * Returns the multi-group, total product matrix for the requested label for the requested product id for the requested Legendre order.
  * If no data are found, an empty GIDI::Matrix is returned.
  *
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
  * @param a_settings            [in]    Specifies the requested label and if delayed neutrons should be included.
  * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
- * @param  a_particles          [in]    The list of particles to be transported.
+ * @param a_particles           [in]    The list of particles to be transported.
  * @param a_productID           [in]    PoPs id for the requested product.
  * @param a_order               [in]    Requested product matrix, Legendre order.
  *
  * @return                              The requested multi-group product matrix as a GIDI::Matrix.
  ***********************************************************************************************************/
 
-Matrix ProtareTNSL::multiGroupProductMatrix( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, Transporting::Particles const &a_particles, std::string const &a_productID, int a_order ) const {
+Matrix ProtareTNSL::multiGroupProductMatrix( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+                Styles::TemperatureInfo const &a_temperatureInfo, Transporting::Particles const &a_particles, std::string const &a_productID, int a_order ) const {
 
-    Matrix matrix = m_protare->multiGroupProductMatrix( a_settings, a_temperatureInfo, a_particles, a_productID, a_order );
+    Matrix matrix = m_protare->multiGroupProductMatrix( a_smr, a_settings, a_temperatureInfo, a_particles, a_productID, a_order );
 
     if( !m_elasticReaction->active( ) ) return( matrix );
 
-    Matrix matrixElastic = m_elasticReaction->multiGroupProductMatrix( a_settings, a_temperatureInfo, a_particles, a_productID, a_order );
-    Matrix matrixTNSL = m_TNSL->multiGroupProductMatrix( a_settings, a_temperatureInfo, a_particles, a_productID, a_order );
+    Matrix matrixElastic = m_elasticReaction->multiGroupProductMatrix( a_smr, a_settings, a_temperatureInfo, a_particles, a_productID, a_order );
+    Matrix matrixTNSL = m_TNSL->multiGroupProductMatrix( a_smr, a_settings, a_temperatureInfo, a_particles, a_productID, a_order );
 
     combineMatrices( a_settings, a_temperatureInfo, matrix, matrixElastic, matrixTNSL );
     return( matrix );
@@ -601,26 +640,29 @@ Matrix ProtareTNSL::multiGroupProductMatrix( Transporting::MG const &a_settings,
 /* *********************************************************************************************************//**
  * Like ProtareTNSL::multiGroupProductMatrix, but only returns the fission neutron, transfer matrix.
  *
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
  * @param a_settings            [in]    Specifies the requested label and if delayed neutrons should be included.
  * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
- * @param  a_particles          [in]    The list of particles to be transported.
+ * @param a_particles           [in]    The list of particles to be transported.
  * @param a_order               [in]    Requested product matrix, Legendre order.
  *
  * @return                              The requested multi-group neutron fission matrix as a GIDI::Matrix.
  ***********************************************************************************************************/
 
-Matrix ProtareTNSL::multiGroupFissionMatrix( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, Transporting::Particles const &a_particles, int a_order ) const {
+Matrix ProtareTNSL::multiGroupFissionMatrix( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+                Styles::TemperatureInfo const &a_temperatureInfo, Transporting::Particles const &a_particles, int a_order ) const {
 
-    return( m_protare->multiGroupFissionMatrix( a_settings, a_temperatureInfo, a_particles, a_order ) );
+    return( m_protare->multiGroupFissionMatrix( a_smr, a_settings, a_temperatureInfo, a_particles, a_order ) );
 }
 
 /* *********************************************************************************************************//**
  * Returns the multi-group transport correction for the requested label. The transport correction is calculated from the transfer matrix
  * for the projectile id for the Legendre order of *a_order + 1*.
  *
+ * @param a_smr                     [Out]   If errors are not to be thrown, then the error is reported via this instance.
  * @param a_settings                [in]    Specifies the requested label.
  * @param a_temperatureInfo         [in]    Specifies the temperature and labels use to lookup the requested data.
- * @param  a_particles              [in]    The list of particles to be transported.
+ * @param a_particles               [in]    The list of particles to be transported.
  * @param a_order                   [in]    Maximum Legendre order for transport. The returned transport correction is for the next higher Legender order.
  * @param a_transportCorrectionType [in]    Requested transport correction type.
  * @param a_temperature             [in]    The temperature of the flux to use when collapsing. Pass to the GIDI::collapse method.
@@ -628,11 +670,12 @@ Matrix ProtareTNSL::multiGroupFissionMatrix( Transporting::MG const &a_settings,
  * @return                                  The requested multi-group transport correction as a GIDI::Vector.
  ***********************************************************************************************************/
 
-Vector ProtareTNSL::multiGroupTransportCorrection( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, Transporting::Particles const &a_particles, int a_order, TransportCorrectionType a_transportCorrectionType, double a_temperature ) const {
+Vector ProtareTNSL::multiGroupTransportCorrection( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+                Styles::TemperatureInfo const &a_temperatureInfo, Transporting::Particles const &a_particles, int a_order, TransportCorrectionType a_transportCorrectionType, double a_temperature ) const {
 
     if( a_transportCorrectionType == TransportCorrectionType::None ) return( Vector( 0 ) );
 
-    Matrix matrix( multiGroupProductMatrix( a_settings, a_temperatureInfo, a_particles, projectile( ).ID( ), a_order + 1 ) );
+    Matrix matrix( multiGroupProductMatrix( a_smr, a_settings, a_temperatureInfo, a_particles, projectile( ).ID( ), a_order + 1 ) );
     Matrix matrixCollapsed = collapse( matrix, a_settings, a_particles, a_temperature, projectile( ).ID( ) );
     std::size_t size = matrixCollapsed.size( );
     std::vector<double> transportCorrection1( size, 0 );
@@ -651,21 +694,23 @@ Vector ProtareTNSL::multiGroupTransportCorrection( Transporting::MG const &a_set
  * Returns the multi-group, total available energy for the requested label. This is a cross section weighted available energy
  * summed over all reactions.
  *
- * @param  a_settings           [in]    Specifies the requested label.
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
+ * @param a_settings            [in]    Specifies the requested label.
  * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
  *
  * @return                              The requested multi-group available energy as a GIDI::Vector.
  ***********************************************************************************************************/
 
-Vector ProtareTNSL::multiGroupAvailableEnergy( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo ) const {
+Vector ProtareTNSL::multiGroupAvailableEnergy( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+                Styles::TemperatureInfo const &a_temperatureInfo ) const {
 
-    Vector vector = m_protare->multiGroupAvailableEnergy( a_settings, a_temperatureInfo );
+    Vector vector = m_protare->multiGroupAvailableEnergy( a_smr, a_settings, a_temperatureInfo );
 
     if( !m_elasticReaction->active( ) ) return( vector );
 
-    Vector vectorElastic = m_elasticReaction->multiGroupAvailableEnergy( a_settings, a_temperatureInfo );
+    Vector vectorElastic = m_elasticReaction->multiGroupAvailableEnergy( a_smr, a_settings, a_temperatureInfo );
 
-    combineVectors( a_settings, a_temperatureInfo, vector, vectorElastic, m_TNSL->multiGroupAvailableEnergy( a_settings, a_temperatureInfo ) );
+    combineVectors( a_settings, a_temperatureInfo, vector, vectorElastic, m_TNSL->multiGroupAvailableEnergy( a_smr, a_settings, a_temperatureInfo ) );
     return( vector );
 }
 
@@ -673,22 +718,24 @@ Vector ProtareTNSL::multiGroupAvailableEnergy( Transporting::MG const &a_setting
  * Returns the multi-group, total average energy for the requested label for the requested product. This is a cross section weighted average energy
  * summed over all reactions.
  *
- * @param  a_settings           [in]    Specifies the requested label.
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
+ * @param a_settings            [in]    Specifies the requested label.
  * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
- * @param  a_productID          [in]    Particle id for the requested product.
+ * @param a_productID           [in]    Particle id for the requested product.
  *
  * @return                              The requested multi-group average energy as a GIDI::Vector.
  ***********************************************************************************************************/
 
-Vector ProtareTNSL::multiGroupAverageEnergy( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
+Vector ProtareTNSL::multiGroupAverageEnergy( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+                Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
 
-    Vector vector = m_protare->multiGroupAverageEnergy( a_settings, a_temperatureInfo, a_productID );
+    Vector vector = m_protare->multiGroupAverageEnergy( a_smr, a_settings, a_temperatureInfo, a_productID );
 
     if( !m_elasticReaction->active( ) ) return( vector );
 
-    Vector vectorElastic = m_elasticReaction->multiGroupAverageEnergy( a_settings, a_temperatureInfo, a_productID );
+    Vector vectorElastic = m_elasticReaction->multiGroupAverageEnergy( a_smr, a_settings, a_temperatureInfo, a_productID );
 
-    combineVectors( a_settings, a_temperatureInfo, vector, vectorElastic, m_TNSL->multiGroupAverageEnergy( a_settings, a_temperatureInfo, a_productID ) );
+    combineVectors( a_settings, a_temperatureInfo, vector, vectorElastic, m_TNSL->multiGroupAverageEnergy( a_smr, a_settings, a_temperatureInfo, a_productID ) );
     return( vector );
 }
 
@@ -697,22 +744,24 @@ Vector ProtareTNSL::multiGroupAverageEnergy( Transporting::MG const &a_settings,
  * summed over all reactions. The deposition energy is calculated by subtracting the average energy from each transportable particle
  * from the available energy. The list of transportable particles is specified via the list of particle specified in the *a_settings* argument.
  *
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
  * @param a_settings            [in]    Specifies the requested label and the products that are transported.
  * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
- * @param  a_particles          [in]    The list of particles to be transported.
+ * @param a_particles           [in]    The list of particles to be transported.
  *
  * @return                          The requested multi-group deposition energy as a GIDI::Vector.
  ***********************************************************************************************************/
 
-Vector ProtareTNSL::multiGroupDepositionEnergy( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, Transporting::Particles const &a_particles ) const {
+Vector ProtareTNSL::multiGroupDepositionEnergy( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+                Styles::TemperatureInfo const &a_temperatureInfo, Transporting::Particles const &a_particles ) const {
 
-    Vector vector = m_protare->multiGroupDepositionEnergy( a_settings, a_temperatureInfo, a_particles );
+    Vector vector = m_protare->multiGroupDepositionEnergy( a_smr, a_settings, a_temperatureInfo, a_particles );
 
     if( !m_elasticReaction->active( ) ) return( vector );
 
-    Vector vectorElastic = m_elasticReaction->multiGroupDepositionEnergy( a_settings, a_temperatureInfo, a_particles );
+    Vector vectorElastic = m_elasticReaction->multiGroupDepositionEnergy( a_smr, a_settings, a_temperatureInfo, a_particles );
 
-    combineVectors( a_settings, a_temperatureInfo, vector, vectorElastic, m_TNSL->multiGroupDepositionEnergy( a_settings, a_temperatureInfo, a_particles ) );
+    combineVectors( a_settings, a_temperatureInfo, vector, vectorElastic, m_TNSL->multiGroupDepositionEnergy( a_smr, a_settings, a_temperatureInfo, a_particles ) );
     return( vector );
 }
 
@@ -720,21 +769,23 @@ Vector ProtareTNSL::multiGroupDepositionEnergy( Transporting::MG const &a_settin
  * Returns the multi-group, total available momentum for the requested label. This is a cross section weighted available momentum
  * summed over all reactions.
  *
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
  * @param a_settings            [in]    Specifies the requested label.
  * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
  *
  * @return                              The requested multi-group available momentum as a GIDI::Vector.
  ***********************************************************************************************************/
 
-Vector ProtareTNSL::multiGroupAvailableMomentum( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo ) const {
+Vector ProtareTNSL::multiGroupAvailableMomentum( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+                Styles::TemperatureInfo const &a_temperatureInfo ) const {
 
-    Vector vector = m_protare->multiGroupAvailableMomentum( a_settings, a_temperatureInfo );
+    Vector vector = m_protare->multiGroupAvailableMomentum( a_smr, a_settings, a_temperatureInfo );
 
     if( !m_elasticReaction->active( ) ) return( vector );
 
-    Vector vectorElastic = m_elasticReaction->multiGroupAvailableMomentum( a_settings, a_temperatureInfo );
+    Vector vectorElastic = m_elasticReaction->multiGroupAvailableMomentum( a_smr, a_settings, a_temperatureInfo );
 
-    combineVectors( a_settings, a_temperatureInfo, vector, vectorElastic, m_TNSL->multiGroupAvailableMomentum( a_settings, a_temperatureInfo ) );
+    combineVectors( a_settings, a_temperatureInfo, vector, vectorElastic, m_TNSL->multiGroupAvailableMomentum( a_smr, a_settings, a_temperatureInfo ) );
     return( vector );
 }
 
@@ -742,6 +793,7 @@ Vector ProtareTNSL::multiGroupAvailableMomentum( Transporting::MG const &a_setti
  * Returns the multi-group, total average momentum for the requested label for the requested product. This is a cross section weighted average momentum
  * summed over all reactions.
  *
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
  * @param a_settings            [in]    Specifies the requested label.
  * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
  * @param a_productID           [in]    Particle id for the requested product.
@@ -749,15 +801,16 @@ Vector ProtareTNSL::multiGroupAvailableMomentum( Transporting::MG const &a_setti
  * @return                              The requested multi-group average momentum as a GIDI::Vector.
  ***********************************************************************************************************/
 
-Vector ProtareTNSL::multiGroupAverageMomentum( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
+Vector ProtareTNSL::multiGroupAverageMomentum( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+                Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
 
-    Vector vector = m_protare->multiGroupAverageMomentum( a_settings, a_temperatureInfo, a_productID );
+    Vector vector = m_protare->multiGroupAverageMomentum( a_smr, a_settings, a_temperatureInfo, a_productID );
 
     if( !m_elasticReaction->active( ) ) return( vector );
 
-    Vector vectorElastic = m_elasticReaction->multiGroupAverageMomentum( a_settings, a_temperatureInfo, a_productID );
+    Vector vectorElastic = m_elasticReaction->multiGroupAverageMomentum( a_smr, a_settings, a_temperatureInfo, a_productID );
 
-    combineVectors( a_settings, a_temperatureInfo, vector, vectorElastic, m_TNSL->multiGroupAverageMomentum( a_settings, a_temperatureInfo, a_productID ) );
+    combineVectors( a_settings, a_temperatureInfo, vector, vectorElastic, m_TNSL->multiGroupAverageMomentum( a_smr, a_settings, a_temperatureInfo, a_productID ) );
     return( vector );
 }
 
@@ -766,6 +819,7 @@ Vector ProtareTNSL::multiGroupAverageMomentum( Transporting::MG const &a_setting
  * summed over all reactions. The deposition momentum is calculated by subtracting the average momentum from each transportable particle
  * from the available momentum. The list of transportable particles is specified via the list of particle specified in the *a_settings* argument.
  *
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
  * @param a_settings            [in]    Specifies the requested label.
  * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
  * @param a_particles           [in]    The list of particles to be transported.
@@ -773,21 +827,23 @@ Vector ProtareTNSL::multiGroupAverageMomentum( Transporting::MG const &a_setting
  * @return                              The requested multi-group deposition momentum as a GIDI::Vector.
  ***********************************************************************************************************/
 
-Vector ProtareTNSL::multiGroupDepositionMomentum( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, Transporting::Particles const &a_particles ) const {
+Vector ProtareTNSL::multiGroupDepositionMomentum( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+                Styles::TemperatureInfo const &a_temperatureInfo, Transporting::Particles const &a_particles ) const {
 
-    Vector vector = m_protare->multiGroupDepositionMomentum( a_settings, a_temperatureInfo, a_particles );
+    Vector vector = m_protare->multiGroupDepositionMomentum( a_smr, a_settings, a_temperatureInfo, a_particles );
 
     if( !m_elasticReaction->active( ) ) return( vector );
 
-    Vector vectorElastic = m_elasticReaction->multiGroupDepositionMomentum( a_settings, a_temperatureInfo, a_particles );
+    Vector vectorElastic = m_elasticReaction->multiGroupDepositionMomentum( a_smr, a_settings, a_temperatureInfo, a_particles );
 
-    combineVectors( a_settings, a_temperatureInfo, vector, vectorElastic, m_TNSL->multiGroupDepositionMomentum( a_settings, a_temperatureInfo, a_particles ) );
+    combineVectors( a_settings, a_temperatureInfo, vector, vectorElastic, m_TNSL->multiGroupDepositionMomentum( a_smr, a_settings, a_temperatureInfo, a_particles ) );
     return( vector );
 }
 
 /* *********************************************************************************************************//**
  * Returns the multi-group, gain for the requested particle and label. This is a cross section weighted gain summed over all reactions.
  *
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
  * @param a_settings            [in]    Specifies the requested label.
  * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
  * @param a_productID           [in]    The PoPs' id for the particle whose gain is to be calculated.
@@ -795,16 +851,17 @@ Vector ProtareTNSL::multiGroupDepositionMomentum( Transporting::MG const &a_sett
  * @return                              The requested multi-group gain as a **GIDI::Vector**.
  ***********************************************************************************************************/
 
-Vector ProtareTNSL::multiGroupGain( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
+Vector ProtareTNSL::multiGroupGain( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+                Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
 
     std::string const projectile_id = m_protare->projectile( ).ID( );    
-    Vector vector = m_protare->multiGroupGain( a_settings, a_temperatureInfo, a_productID );
+    Vector vector = m_protare->multiGroupGain( a_smr, a_settings, a_temperatureInfo, a_productID );
 
     if( !m_elasticReaction->active( ) ) return( vector );
 
-    Vector vectorElastic = m_elasticReaction->multiGroupGain( a_settings, a_temperatureInfo, a_productID, projectile_id );
+    Vector vectorElastic = m_elasticReaction->multiGroupGain( a_smr, a_settings, a_temperatureInfo, a_productID, projectile_id );
 
-    combineVectors( a_settings, a_temperatureInfo, vector, vectorElastic, m_TNSL->multiGroupGain( a_settings, a_temperatureInfo, a_productID ) );
+    combineVectors( a_settings, a_temperatureInfo, vector, vectorElastic, m_TNSL->multiGroupGain( a_smr, a_settings, a_temperatureInfo, a_productID ) );
 
     return( vector );
 }
@@ -870,8 +927,9 @@ stringAndDoublePairs ProtareTNSL::muCutoffForCoulombPlusNuclearElastic( ) const 
 
 /* *********************************************************************************************************//**
  * Calls the **incompleteParticles** method for each **ProtareSingle** in *this*.
- *  
- * @param       a_incompleteParticles   [out]   The list of particles whose **completeParticle** method returns *false*.
+ *
+ * @param a_settings                [in]    Specifies the requested label.
+ * @param a_incompleteParticles     [out]   The list of particles whose **completeParticle** method returns *false*.
  ***********************************************************************************************************/
  
 void ProtareTNSL::incompleteParticles( Transporting::Settings const &a_settings, std::set<std::string> &a_incompleteParticles ) const {

@@ -16,7 +16,7 @@
 */
 int main( int argc, char **argv ) {
 
-    std::cerr << "    " << __FILE__ << std::endl;
+    std::cerr << "    " << LUPI::FileInfo::basenameWithoutExtension( __FILE__ ) << std::endl;
 
     std::string fileName( "../pops.xml" );
     std::string aliasFileName( "../LLNL_alias.xml" );

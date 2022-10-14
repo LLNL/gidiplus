@@ -141,7 +141,7 @@ Ys1d &Ys1d::operator+=( Ys1d const &a_rhs ) {
 
 double Ys1d::domainMin( ) const {
 
-#ifndef __NVCC__
+#if !defined(__NVCC__) && !defined(__HIP__)
     throw Exception( "Ys1d::domainMin: not implemented" );
 #endif
 
@@ -156,7 +156,7 @@ double Ys1d::domainMin( ) const {
 
 double Ys1d::domainMax( ) const {
 
-#ifndef __NVCC__
+#if !defined(__NVCC__) && !defined(__HIP__)
     throw Exception( "Ys1d::domainMax: not implemented" );
 #endif
 
@@ -172,7 +172,7 @@ double Ys1d::domainMax( ) const {
 
 double Ys1d::evaluate( double a_x1 ) const {
 
-#ifndef __NVCC__
+#if !defined(__NVCC__) && !defined(__HIP__)
     throw Exception( "Ys1d::evaluate: not implemented" );
 #endif
 

@@ -28,7 +28,7 @@ namespace Functions {
 
 Branching1d::Branching1d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
         Function1dForm( a_construction, a_node, a_setupInfo, FormType::branching1d, a_parent ),
-        m_pids( a_node.child( GIDI_pidsChars ), a_setupInfo, nullptr ),
+        m_initialState( a_setupInfo.m_initialState ),
         m_multiplicity( 0.0 ) {
 
 }
@@ -73,29 +73,6 @@ double Branching1d::domainMax( ) const {
 double Branching1d::evaluate( double a_x1 ) const {
 
     return( m_multiplicity );
-}
-
-/*
-=========================================================
- * This class is deprecated and should not be being used.
- *
- * @param a_node            [in]    The **HAPI::Node** to be parsed and used to construct the XYs2d.
- * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
- * @param a_parent          [in]    The parent GIDI::Suite.
- *
- * @return
- */
-Branching1dPids::Branching1dPids( HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
-        Form( a_node, a_setupInfo, FormType::branching1dPids, a_parent ),
-        m_initial( a_node.attribute_as_string( GIDI_initialChars ) ),
-        m_final( a_node.attribute_as_string( GIDI_finalChars ) ) {
-
-}
-/*
-=========================================================
-*/
-Branching1dPids::~Branching1dPids( ) {
-
 }
 
 }               // End namespace Functions.

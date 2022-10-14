@@ -1,0 +1,8 @@
+    alias
+    alias --true -t -y -yes --yeap
+    alias --false --false
+    alias --veryVeryLongCounterNameVeryVeryLong
+    alias -v -v -v -v -v --veryVeryLongCounterNameVeryVeryLong -v -v
+    alias --store S1
+    alias --store S1 --store s1
+    alias --pops p1.xml -p p2.xml --pop p3.xml

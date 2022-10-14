@@ -11,8 +11,6 @@
 Some simple stuff that is not repeatable as pointers are printed.
 """
 
-from __future__ import print_function
-
 from numericalFunctions import pointwiseXY_C
 
 def setShow( f, x, y ) :

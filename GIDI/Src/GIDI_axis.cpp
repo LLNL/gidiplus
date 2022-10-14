@@ -41,9 +41,9 @@ Axis::Axis( int a_index, std::string a_label, std::string a_unit, FormType a_typ
 
 Axis::Axis( HAPI::Node const &a_node, SetupInfo &a_setupInfo, FormType a_type ) :
         Form( a_node, a_setupInfo, a_type ),
-  m_index( a_node.attribute_as_int( GIDI_indexChars ) ),
-  m_unit( a_node.attribute_as_string( GIDI_unitChars ) ),
-  m_href( a_node.attribute_as_string( GIDI_hrefChars ) ) {
+        m_index( a_node.attribute_as_int( GIDI_indexChars ) ),
+        m_unit( a_node.attribute_as_string( GIDI_unitChars ) ),
+        m_href( a_node.attribute_as_string( GIDI_hrefChars ) ) {
 
 }
 

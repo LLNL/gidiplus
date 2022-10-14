@@ -46,7 +46,7 @@ std::string const *Suite::findLabelInLineage( GIDI::Suite const &a_suite, std::s
 
         Base const *form = get<Base>( *label );
         form = form->getDerivedStyle( );
-        label = &form->label( );
+        label = &form->keyValue( );
         if( *label == "" ) break;
         iter = a_suite.find( *label );        
     }
@@ -174,7 +174,37 @@ void Evaluated::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent )
  ***********************************************************************************************************/
 
 CrossSectionReconstructed::CrossSectionReconstructed( HAPI::Node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent ) :
-        Base( a_node, a_setupInfo, a_parent ) {
+        Base( a_node, a_setupInfo, a_parent ),
+        m_temperature( nullptr ) {
+
+    HAPI::Node const temperatureNode = a_node.child( GIDI_temperatureChars );
+    if( !temperatureNode.empty( ) ) {
+        m_temperature = new PhysicalQuantity( temperatureNode, a_setupInfo );
+    }
+}
+
+/* *********************************************************************************************************//**
+ ***********************************************************************************************************/
+
+CrossSectionReconstructed::~CrossSectionReconstructed( ) {
+
+    delete m_temperature;
+}
+
+/* *********************************************************************************************************//**
+ * Ascends the **derivedFrom** styles until a temperature is found.
+ *
+ * @return          Returns the temperature associated with this style.
+ ***********************************************************************************************************/
+
+PhysicalQuantity const &CrossSectionReconstructed::temperature( ) const {
+
+    if( m_temperature != nullptr ) return( *m_temperature );
+
+    Base const *style = getDerivedStyle( );
+
+    if( style == nullptr ) throw Exception( "No style with temperature." );
+    return( style->temperature( ) );
 }
 
 /* *********************************************************************************************************//**
@@ -186,8 +216,40 @@ CrossSectionReconstructed::CrossSectionReconstructed( HAPI::Node const &a_node, 
 
 void CrossSectionReconstructed::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
+    std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
+
     a_writeInfo.addNodeStarter( a_indent, moniker( ), baseXMLAttributes( a_writeInfo ) );
+    if( m_temperature != nullptr ) m_temperature->toXMLList( a_writeInfo, indent2 );
     a_writeInfo.addNodeEnder( moniker( ) );
+}
+
+/*! \class AngularDistributionReconstructed
+ * This is the **angularDistributionReconstructed** style class.
+ */
+
+/* *********************************************************************************************************//**
+ *
+ * @param a_node        [in]    The **HAPI::Node** to be parsed.
+ * @param a_setupInfo   [in]    Information create my the Protare constructor to help in parsing.
+ * @param a_parent      [in]    The parent GIDI::Suite.
+ ***********************************************************************************************************/
+
+AngularDistributionReconstructed::AngularDistributionReconstructed( HAPI::Node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent ) :
+        Base( a_node, a_setupInfo, a_parent ),
+        m_temperature( nullptr ) {
+
+    HAPI::Node const temperatureNode = a_node.child( GIDI_temperatureChars );
+    if( !temperatureNode.empty( ) ) {
+        m_temperature = new PhysicalQuantity( temperatureNode, a_setupInfo );
+    }
+}
+
+/* *********************************************************************************************************//**
+ ***********************************************************************************************************/
+
+AngularDistributionReconstructed::~AngularDistributionReconstructed( ) {
+
+    delete m_temperature;
 }
 
 /* *********************************************************************************************************//**
@@ -196,12 +258,30 @@ void CrossSectionReconstructed::toXMLList( WriteInfo &a_writeInfo, std::string c
  * @return          Returns the temperature associated with this style.
  ***********************************************************************************************************/
 
-PhysicalQuantity const &CrossSectionReconstructed::temperature( ) const {
+PhysicalQuantity const &AngularDistributionReconstructed::temperature( ) const {
+
+    if( m_temperature != nullptr ) return( *m_temperature );
 
     Base const *style = getDerivedStyle( );
 
     if( style == nullptr ) throw Exception( "No style with temperature." );
     return( style->temperature( ) );
+}
+
+/* *********************************************************************************************************//**
+ * Fills the argument *a_writeInfo* with the XML lines that represent *this*. Recursively enters each sub-node.
+ *
+ * @param       a_writeInfo         [in/out]    Instance containing incremental indentation and other information and stores the appended lines.
+ * @param       a_indent            [in]        The amount to indent *this* node.
+ ***********************************************************************************************************/
+
+void AngularDistributionReconstructed::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+
+    std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
+
+    a_writeInfo.addNodeStarter( a_indent, moniker( ), baseXMLAttributes( a_writeInfo ) );
+    if( m_temperature != nullptr ) m_temperature->toXMLList( a_writeInfo, indent2 );
+    a_writeInfo.addNodeEnder( moniker( ) );
 }
 
 /*! \class CoulombPlusNuclearElasticMuCutoff
@@ -308,8 +388,21 @@ void Realization::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent
  ***********************************************************************************************************/
 
 AverageProductData::AverageProductData( HAPI::Node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent ) :
-        Base( a_node, a_setupInfo, a_parent ) {
+        Base( a_node, a_setupInfo, a_parent ),
+        m_temperature( nullptr ) {
 
+    HAPI::Node const temperatureNode = a_node.child( GIDI_temperatureChars );
+    if( !temperatureNode.empty( ) ) {
+        m_temperature = new PhysicalQuantity( temperatureNode, a_setupInfo );
+    }
+}
+
+/* *********************************************************************************************************//**
+ ***********************************************************************************************************/
+
+AverageProductData::~AverageProductData( ) {
+
+    delete m_temperature;
 }
 
 /* *********************************************************************************************************//**
@@ -319,6 +412,8 @@ AverageProductData::AverageProductData( HAPI::Node const &a_node, SetupInfo &a_s
  ***********************************************************************************************************/
 
 PhysicalQuantity const &AverageProductData::temperature( ) const {
+
+    if( m_temperature != nullptr ) return( *m_temperature );
 
     Base const *style = getDerivedStyle( );
 
@@ -334,40 +429,11 @@ PhysicalQuantity const &AverageProductData::temperature( ) const {
  ***********************************************************************************************************/
 
 void AverageProductData::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
-    
-    a_writeInfo.addNodeStarter( a_indent, moniker( ), baseXMLAttributes( a_writeInfo ) );
-    a_writeInfo.addNodeEnder( moniker( ) );
-}
-
-/*! \class TNSL
- * This is the **heated** style class.
- */
-
-/* *********************************************************************************************************//**
- *
- * @param a_node        [in]    The **HAPI::Node** to be parsed.
- * @param a_setupInfo   [in]    Information create my the Protare constructor to help in parsing.
- * @param a_parent      [in]    The parent GIDI::Suite.
- ***********************************************************************************************************/
-
-TNSL::TNSL( HAPI::Node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent ) :
-        Base( a_node, a_setupInfo, a_parent ),
-        m_temperature( a_node.child( GIDI_temperatureChars ), a_setupInfo ) {
-}
-
-/* *********************************************************************************************************//**
- * Fills the argument *a_writeInfo* with the XML lines that represent *this*. Recursively enters each sub-node.
- *
- * @param       a_writeInfo         [in/out]    Instance containing incremental indentation and other information and stores the appended lines.
- * @param       a_indent            [in]        The amount to indent *this* node.
- ***********************************************************************************************************/
-
-void TNSL::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
 
     a_writeInfo.addNodeStarter( a_indent, moniker( ), baseXMLAttributes( a_writeInfo ) );
-    m_temperature.toXMLList( a_writeInfo, indent2 );
+    if( m_temperature != nullptr ) m_temperature->toXMLList( a_writeInfo, indent2 );
     a_writeInfo.addNodeEnder( moniker( ) );
 }
 
@@ -463,10 +529,10 @@ void MonteCarlo_cdf::toXMLList( WriteInfo &a_writeInfo, std::string const &a_ind
  ***********************************************************************************************************/
 
 MultiGroup::MultiGroup( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops,
-		PoPI::Database const &a_internalPoPs, GIDI::Suite *a_parent ) : 
+		        PoPI::Database const &a_internalPoPs, GIDI::Suite *a_parent ) : 
         Base( a_node, a_setupInfo, a_parent ),
         m_maximumLegendreOrder( a_node.attribute_as_int( GIDI_lMaxChars ) ),
-        m_transportables( a_construction, GIDI_transportablesChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseTransportablesSuite, nullptr ) {
+        m_transportables( a_construction, GIDI_transportablesChars, GIDI_labelChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseTransportablesSuite, nullptr ) {
 
     m_transportables.setAncestor( this );
 }
@@ -499,7 +565,7 @@ PhysicalQuantity const &MultiGroup::temperature( ) const {
  * @return                              The multi-group boundaries.
  ***********************************************************************************************************/
 
-std::vector<double> const MultiGroup::groupBoundaries( std::string const &a_productID ) const {
+std::vector<double> MultiGroup::groupBoundaries( std::string const &a_productID ) const {
 
     for( std::size_t index = 0; index < m_transportables.size( ); ++index ) {
         Transportable const &transportable1 = *m_transportables.get<Transportable>( index );
@@ -546,7 +612,7 @@ HeatedMultiGroup::HeatedMultiGroup( Construction::Settings const &a_construction
                 PoPI::Database const &a_pops, GIDI::Suite *a_parent ) : 
         Base( a_node, a_setupInfo, a_parent ),
         m_href( "" ),
-        m_transportables( a_construction, GIDI_transportablesChars, a_node, a_setupInfo, a_pops, a_pops, parseTransportablesSuite, nullptr ),
+        m_transportables( a_construction, GIDI_transportablesChars, GIDI_labelChars, a_node, a_setupInfo, a_pops, a_pops, parseTransportablesSuite, nullptr ),
         m_flux( a_construction, a_node.child( GIDI_fluxNodeChars ), a_setupInfo ),
         m_inverseSpeed( a_construction, a_node.child( GIDI_inverseSpeedChars ).child( GIDI_gridded1dChars ), a_setupInfo, nullptr ),
         m_parameters( a_node.attribute_as_string( GIDI_parametersChars ) ) {
@@ -613,17 +679,30 @@ void HeatedMultiGroup::set_href( std::string const &a_href ) {
 }
 
 /* *********************************************************************************************************//**
- * Returns the multi-group boundaries for the product with index *a_productID* used for processing this **heatedMultiGroup**.
+ * Returns the **Transportable** instance for the particle with id *a_ID* used for processing this **HeatedMultiGroup**.
  *
- * @param a_productID           [in]    Particle id for the requested product.
+ * @param a_ID                  [in]    Particle id for the requested product.
  * @return                              The multi-group boundaries.
  ***********************************************************************************************************/
 
-std::vector<double> const HeatedMultiGroup::groupBoundaries( std::string const &a_productID ) const {
+Transportable const &HeatedMultiGroup::transportable( std::string const &a_ID ) const {
 
-    Transportable const &transportable = *m_transportables.get<Transportable>( a_productID );
+    return( *m_transportables.get<Transportable>( a_ID ) );
+}
 
-    return( transportable.groupBoundaries( ) );
+
+/* *********************************************************************************************************//**
+ * Returns the multi-group boundaries for the particle with id *a_ID* used for processing this **HeatedMultiGroup**.
+ *
+ * @param a_ID                  [in]    Particle id for the requested product.
+ * @return                              The multi-group boundaries.
+ ***********************************************************************************************************/
+
+std::vector<double> HeatedMultiGroup::groupBoundaries( std::string const &a_ID ) const {
+
+    Transportable const &transportable1 = transportable( a_ID );
+
+    return( transportable1.groupBoundaries( ) );
 }
 
 /* *********************************************************************************************************//**

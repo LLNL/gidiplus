@@ -51,6 +51,7 @@ void main2( int argc, char **argv ) {
     long numberOfSamples = 100 * 1000, sampleTemperatures = 0, sampleEnergies = 0;
     char label1[1024];
     void *rngState = nullptr;
+    LUPI::StatusMessageReporting smr1;
 
     std::cout << __FILE__;
     for( int i1 = 1; i1 < argc; i1++ ) std::cout << " " << argv[i1];
@@ -67,7 +68,7 @@ void main2( int argc, char **argv ) {
     MCGIDI::Transporting::MC MC( pops, "n", &protare->styles( ), label, GIDI::Transporting::DelayedNeutrons::on, 20.0 );
 
     MCGIDI::DomainHash domainHash( 4000, 1e-8, 100.0 );
-    MCGIDI::Protare *MCProtare = MCGIDI::protareFromGIDIProtare( *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude );
+    MCGIDI::Protare *MCProtare = MCGIDI::protareFromGIDIProtare( smr1, *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude );
     printTime( "    load MCGIDI: ", time1 );
 
     MCGIDI::Sampling::Input input( true, MCGIDI::Sampling::Upscatter::Model::none );

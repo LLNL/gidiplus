@@ -99,6 +99,7 @@ void main2( int argc, char **argv ) {
     long bins[nBins+1];
     double time = 0.0;
     std::set<int> reactionsToExclude;
+    LUPI::StatusMessageReporting smr1;
 
     std::cerr << "    " << __FILE__;
     for( int i1 = 1; i1 < argc; i1++ ) std::cerr << " " << argv[i1];
@@ -125,7 +126,7 @@ void main2( int argc, char **argv ) {
     particles.add( neutron );
 
     MCGIDI::DomainHash domainHash( 4000, 1e-8, 10 );
-    MCGIDI::Protare *MCProtare = MCGIDI::protareFromGIDIProtare( *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude );
+    MCGIDI::Protare *MCProtare = MCGIDI::protareFromGIDIProtare( smr1, *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude );
 
     MCGIDI::Vector<MCGIDI::Protare *> protares( 1 );
     protares[0] = MCProtare;

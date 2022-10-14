@@ -64,4 +64,18 @@ void PhysicalQuantity::toXMLList( WriteInfo &a_writeInfo, std::string const &a_i
     a_writeInfo.addNodeStarterEnder( a_indent, moniker( ), attributes );
 }
 
+/* *********************************************************************************************************//**
+ * Writes the information of *a_physicalQuantity* to *a_os*.
+ *
+ * @param       a_os                [out]       The stream to write to.
+ * @param       a_physicalQuantity  [in]        The PhysicalQuantity whose information is written.
+ ***********************************************************************************************************/
+
+std::ostream &operator<<( std::ostream &a_os, PhysicalQuantity const &a_physicalQuantity ) {
+
+    a_os << a_physicalQuantity.value( ) << " " << a_physicalQuantity.unit( );
+
+    return( a_os );
+}
+
 }

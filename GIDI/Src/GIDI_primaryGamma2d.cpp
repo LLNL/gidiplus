@@ -29,7 +29,8 @@ PrimaryGamma2d::PrimaryGamma2d( Construction::Settings const &a_construction, HA
         Function2dForm( a_construction, a_node, a_setupInfo, FormType::primaryGamma2d, a_parent ),
         m_domainMin( a_node.attribute( GIDI_domainMinChars ).as_double( ) ),
         m_domainMax( a_node.attribute( GIDI_domainMaxChars ).as_double( ) ),
-        m_value( a_node.attribute( GIDI_valueChars ).as_double( ) ) {
+        m_value( a_node.attribute( GIDI_valueChars ).as_double( ) ),
+        m_finalState( a_node.attribute_as_string( GIDI_finalStateChars ) ) {
 
 }
 
@@ -51,7 +52,7 @@ PrimaryGamma2d::~PrimaryGamma2d( ) {
 double PrimaryGamma2d::evaluate( double a_x2, double a_x1 ) const {
 
 // FIXME - Do we need to check domain?
-#ifndef __NVCC__
+#if !defined(__NVCC__) && !defined(__HIP__)
     throw Exception( "PrimaryGamma2d::evaluate: not implemented." );
 #endif
     return( m_value );

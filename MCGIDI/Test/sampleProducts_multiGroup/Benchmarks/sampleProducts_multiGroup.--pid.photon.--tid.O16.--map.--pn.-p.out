@@ -11,8 +11,8 @@ reaction (  1) = H1 + N15  threshold = 12.1275
 reaction (  2) = sumOfRemainingOutputChannels  threshold = 7.1619
     energy = 7.1619
     energy = 14.3238
-        productIndex    3 KE = 2.97511
+        productIndex       photon KE = 2.97511
     energy = 28.6476
-        productIndex    3 KE = 7.90415
+        productIndex       photon KE = 7.90415
     energy = 57.2952
-        productIndex    3 KE = 3.59987
+        productIndex       photon KE = 3.59987

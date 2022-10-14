@@ -21,8 +21,8 @@ OutputChannel::OutputChannel( bool a_twoBody, bool a_fissions, std::string a_pro
         m_twoBody( a_twoBody ),
         m_fissions( a_fissions ),
         m_process( a_process ),
-        m_Q( GIDI_QChars ),
-        m_products( GIDI_productsChars ),
+        m_Q( GIDI_QChars, GIDI_labelChars ),
+        m_products( GIDI_productsChars, GIDI_labelChars ),
         m_fissionFragmentData( ) {
 
     m_Q.setAncestor( this );
@@ -49,8 +49,8 @@ OutputChannel::OutputChannel( Construction::Settings const &a_construction, HAPI
         m_twoBody( std::string( a_node.attribute_as_string( GIDI_genreChars ) ) == GIDI_twoBodyChars ),
         m_fissions( a_isFission ),
         m_process( std::string( a_node.attribute_as_string( GIDI_processChars ) ) ),
-        m_Q( a_construction, GIDI_QChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseQSuite, a_styles ),
-        m_products( a_construction, GIDI_productsChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseProductSuite, a_styles ),
+        m_Q( a_construction, GIDI_QChars, GIDI_labelChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseQSuite, a_styles ),
+        m_products( a_construction, GIDI_productsChars, GIDI_labelChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseProductSuite, a_styles ),
         m_fissionFragmentData( a_construction, a_node.child( GIDI_fissionFragmentDataChars ), a_setupInfo, a_pops, a_internalPoPs, a_styles ) {
 
     m_Q.setAncestor( this );
@@ -177,27 +177,27 @@ void OutputChannel::productIDs( std::set<std::string> &a_indices, Transporting::
 }
 
 /* *********************************************************************************************************//**
- * Returns the product multiplicity (e.g., 0, 1, 2, ...) or -1 if energy dependent or not an integer for particle with id *a_id*.
+ * Returns the product multiplicity (e.g., 0, 1, 2, ...) or -1 if energy dependent or not an integer for particle with id *a_productID*.
  *
- * @param a_id;                     [in]    The id of the requested particle.
+ * @param a_productID;              [in]    The id of the requested particle.
  *
  * @return                                  The multiplicity for the requested particle.
  ***********************************************************************************************************/
 
-int OutputChannel::productMultiplicity( std::string const &a_id ) const {
+int OutputChannel::productMultiplicity( std::string const &a_productID ) const {
 
     int total_multiplicity = 0;
     std::size_t size = m_products.size( );
 
     for( std::size_t index = 0; index < size; ++index ) {
         Product const &product = *m_products.get<Product>( index );
-        int multiplicity = product.productMultiplicity( a_id );
+        int multiplicity = product.productMultiplicity( a_productID );
 
         if( multiplicity < 0 ) return( -1 );
         total_multiplicity += multiplicity;
     }
 
-    int multiplicity = m_fissionFragmentData.productMultiplicity( a_id );
+    int multiplicity = m_fissionFragmentData.productMultiplicity( a_productID );
     if( multiplicity < 0 ) return( -1 );
 
     return( total_multiplicity + multiplicity );
@@ -206,6 +206,7 @@ int OutputChannel::productMultiplicity( std::string const &a_id ) const {
 /* *********************************************************************************************************//**
  * Determines the maximum Legredre order present in the multi-group transfer matrix for the specified products of this output channel.
  *
+ * @param a_smr             [Out]   If errors are not to be thrown, then the error is reported via this instance.
  * @param a_settings        [in]    Specifies the requested label.
  * @param a_temperatureInfo [in]    Specifies the temperature and labels use to lookup the requested data.
  * @param a_productID       [in]    Particle id of the requested product.
@@ -213,19 +214,20 @@ int OutputChannel::productMultiplicity( std::string const &a_id ) const {
  * @return                          The maximum Legredre order. If no transfer matrix data are present for the requested product, -1 is returned.
  ***********************************************************************************************************/
 
-int OutputChannel::maximumLegendreOrder( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
+int OutputChannel::maximumLegendreOrder( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+                Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
 
     std::size_t size = m_products.size( );
     int _maximumLegendreOrder = -1;
 
     for( std::size_t index = 0; index < size; ++index ) {
         Product const &product = *m_products.get<Product>( index );
-        int r_maximumLegendreOrder = product.maximumLegendreOrder( a_settings, a_temperatureInfo, a_productID );
+        int r_maximumLegendreOrder = product.maximumLegendreOrder( a_smr, a_settings, a_temperatureInfo, a_productID );
 
         if( r_maximumLegendreOrder > _maximumLegendreOrder ) _maximumLegendreOrder = r_maximumLegendreOrder;
     }
 
-    int r_maximumLegendreOrder = m_fissionFragmentData.maximumLegendreOrder( a_settings, a_temperatureInfo, a_productID );
+    int r_maximumLegendreOrder = m_fissionFragmentData.maximumLegendreOrder( a_smr, a_settings, a_temperatureInfo, a_productID );
     if( r_maximumLegendreOrder > _maximumLegendreOrder ) _maximumLegendreOrder = r_maximumLegendreOrder;
 
     return( _maximumLegendreOrder );
@@ -235,6 +237,7 @@ int OutputChannel::maximumLegendreOrder( Transporting::MG const &a_settings, Sty
  * Returns the sum of the multi-group multiplicity for the requested label for the request product of this output channel. 
  * This is a cross section weighted multiplicity.
  *
+ * @param a_smr             [Out]   If errors are not to be thrown, then the error is reported via this instance.
  * @param a_settings        [in]    Specifies the requested label.
  * @param a_temperatureInfo [in]    Specifies the temperature and labels use to lookup the requested data.
  * @param a_productID       [in]    Particle id for the requested product.
@@ -242,17 +245,18 @@ int OutputChannel::maximumLegendreOrder( Transporting::MG const &a_settings, Sty
  * @return                          The requested multi-group multiplicity as a GIDI::Vector.
  ***********************************************************************************************************/
 
-Vector OutputChannel::multiGroupMultiplicity( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
+Vector OutputChannel::multiGroupMultiplicity( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+                Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
 
     Vector vector( 0 );
 
     for( std::size_t index = 0; index < m_products.size( ); ++index ) {
         Product const &product = *m_products.get<Product>( index );
 
-        vector += product.multiGroupMultiplicity( a_settings, a_temperatureInfo, a_productID );
+        vector += product.multiGroupMultiplicity( a_smr, a_settings, a_temperatureInfo, a_productID );
     }
 
-    vector += m_fissionFragmentData.multiGroupMultiplicity( a_settings, a_temperatureInfo, a_productID );
+    vector += m_fissionFragmentData.multiGroupMultiplicity( a_smr, a_settings, a_temperatureInfo, a_productID );
 
     return( vector );
 }
@@ -262,6 +266,7 @@ Vector OutputChannel::multiGroupMultiplicity( Transporting::MG const &a_settings
  * If a_final is false, only the Q for the output channels directly under each reaction is summed. Otherwise, the Q for all output channels
  * summed, including output channels for each products.
  *
+ * @param a_smr             [Out]   If errors are not to be thrown, then the error is reported via this instance.
  * @param a_settings        [in]    Specifies the requested label.
  * @param a_temperatureInfo [in]    Specifies the temperature and labels use to lookup the requested data.
  * @param a_final           [in]    If true, the Q is calculated for all output channels, including those for products.
@@ -269,23 +274,24 @@ Vector OutputChannel::multiGroupMultiplicity( Transporting::MG const &a_settings
  * @return                          The requested multi-group Q as a GIDI::Vector.
  ***********************************************************************************************************/
 
-Vector OutputChannel::multiGroupQ( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, bool a_final ) const {
+Vector OutputChannel::multiGroupQ( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+                Styles::TemperatureInfo const &a_temperatureInfo, bool a_final ) const {
 
     Vector vector( 0 );
 
-    Functions::Gridded1d const *form = dynamic_cast<Functions::Gridded1d const*>( a_settings.form( m_Q, a_temperatureInfo ) );
+    Functions::Gridded1d const *form = dynamic_cast<Functions::Gridded1d const*>( a_settings.form( a_smr, m_Q, a_temperatureInfo, "Q-value" ) );
 
-    vector += form->data( );
+    if( form != nullptr ) vector += form->data( );
 
     if( a_final ) {
         for( std::size_t index = 0; index < m_products.size( ); ++index ) {
             Product const &product1 = *m_products.get<Product>( index );
 
-            vector += product1.multiGroupQ( a_settings, a_temperatureInfo, a_final );
+            vector += product1.multiGroupQ( a_smr, a_settings, a_temperatureInfo, a_final );
         }
     }
 
-    vector += m_fissionFragmentData.multiGroupQ( a_settings, a_temperatureInfo, a_final );
+    vector += m_fissionFragmentData.multiGroupQ( a_smr, a_settings, a_temperatureInfo, a_final );
 
     return( vector );
 }
@@ -294,6 +300,7 @@ Vector OutputChannel::multiGroupQ( Transporting::MG const &a_settings, Styles::T
  * Returns the multi-group, product matrix for the requested label for the requested product index for the requested Legendre order.
  * If no data are found, an empty GIDI::Matrix is returned.
  *
+ * @param a_smr             [Out]   If errors are not to be thrown, then the error is reported via this instance.
  * @param a_settings        [in]    Specifies the requested label and if delayed neutrons should be included.
  * @param a_temperatureInfo [in]    Specifies the temperature and labels use to lookup the requested data.
  * @param a_particles       [in]    The list of particles to be transported.
@@ -303,17 +310,18 @@ Vector OutputChannel::multiGroupQ( Transporting::MG const &a_settings, Styles::T
  * @return                          The requested multi-group product matrix as a GIDI::Matrix.
  ***********************************************************************************************************/
 
-Matrix OutputChannel::multiGroupProductMatrix( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, Transporting::Particles const &a_particles, std::string const &a_productID, int a_order ) const {
+Matrix OutputChannel::multiGroupProductMatrix( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+                Styles::TemperatureInfo const &a_temperatureInfo, Transporting::Particles const &a_particles, std::string const &a_productID, int a_order ) const {
 
     Matrix matrix( 0, 0 );
 
     for( std::size_t index = 0; index < m_products.size( ); ++index ) {
         Product const &product = *m_products.get<Product>( index );
 
-        matrix += product.multiGroupProductMatrix( a_settings, a_temperatureInfo, a_particles, a_productID, a_order );
+        matrix += product.multiGroupProductMatrix( a_smr, a_settings, a_temperatureInfo, a_particles, a_productID, a_order );
     }
 
-    matrix += m_fissionFragmentData.multiGroupProductMatrix( a_settings, a_temperatureInfo, a_particles, a_productID, a_order ); 
+    matrix += m_fissionFragmentData.multiGroupProductMatrix( a_smr, a_settings, a_temperatureInfo, a_particles, a_productID, a_order ); 
 
     return( matrix );
 }
@@ -321,6 +329,7 @@ Matrix OutputChannel::multiGroupProductMatrix( Transporting::MG const &a_setting
 /* *********************************************************************************************************//**
  * Returns the sum of the multi-group, average energy for the requested label for the requested product. This is a cross section weighted average energy.
  *
+ * @param a_smr             [Out]   If errors are not to be thrown, then the error is reported via this instance.
  * @param a_settings        [in]    Specifies the requested label.
  * @param a_temperatureInfo [in]    Specifies the temperature and labels use to lookup the requested data.
  * @param a_productID       [in]    Particle id for the requested product.
@@ -328,17 +337,18 @@ Matrix OutputChannel::multiGroupProductMatrix( Transporting::MG const &a_setting
  * @return                          The requested multi-group average energy as a GIDI::Vector.
  ***********************************************************************************************************/
 
-Vector OutputChannel::multiGroupAverageEnergy( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
+Vector OutputChannel::multiGroupAverageEnergy( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+                Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
 
     Vector vector( 0 );
 
     for( std::size_t index = 0; index < m_products.size( ); ++index ) {
         Product const &product = *m_products.get<Product>( index );
 
-        vector += product.multiGroupAverageEnergy( a_settings, a_temperatureInfo, a_productID );
+        vector += product.multiGroupAverageEnergy( a_smr, a_settings, a_temperatureInfo, a_productID );
     }
 
-    vector += m_fissionFragmentData.multiGroupAverageEnergy( a_settings, a_temperatureInfo, a_productID ); 
+    vector += m_fissionFragmentData.multiGroupAverageEnergy( a_smr, a_settings, a_temperatureInfo, a_productID ); 
 
     return( vector );
 }
@@ -346,6 +356,7 @@ Vector OutputChannel::multiGroupAverageEnergy( Transporting::MG const &a_setting
 /* *********************************************************************************************************//**
  * Returns the sum of the multi-group, average momentum for the requested label for the requested product. This is a cross section weighted average momentum.
  *
+ * @param a_smr             [Out]   If errors are not to be thrown, then the error is reported via this instance.
  * @param a_settings        [in]    Specifies the requested label.
  * @param a_temperatureInfo [in]    Specifies the temperature and labels use to lookup the requested data.
  * @param a_productID       [in]    Particle id for the requested product.
@@ -353,17 +364,18 @@ Vector OutputChannel::multiGroupAverageEnergy( Transporting::MG const &a_setting
  * @return                          The requested multi-group average momentum as a GIDI::Vector.
  ***********************************************************************************************************/
 
-Vector OutputChannel::multiGroupAverageMomentum( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
+Vector OutputChannel::multiGroupAverageMomentum( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+                Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
 
     Vector vector( 0 );
 
     for( std::size_t index = 0; index < m_products.size( ); ++index ) {
         Product const &product = *m_products.get<Product>( index );
 
-        vector += product.multiGroupAverageMomentum( a_settings, a_temperatureInfo, a_productID );
+        vector += product.multiGroupAverageMomentum( a_smr, a_settings, a_temperatureInfo, a_productID );
     }
 
-    vector += m_fissionFragmentData.multiGroupAverageMomentum( a_settings, a_temperatureInfo, a_productID ); 
+    vector += m_fissionFragmentData.multiGroupAverageMomentum( a_smr, a_settings, a_temperatureInfo, a_productID ); 
 
     return( vector );
 }
@@ -372,7 +384,8 @@ Vector OutputChannel::multiGroupAverageMomentum( Transporting::MG const &a_setti
  * Loops over the instances in **m_products** calling their **incompleteParticles** methods and calls the :**incompleteParticles** method
  * for the **m_fissionFragmentData** member.
  *
- * @param       a_incompleteParticles   [out]   The list of particles whose **completeParticle** method returns *false*.
+ * @param a_settings                [in]    Specifies the requested label.
+ * @param a_incompleteParticles     [out]   The list of particles whose **completeParticle** method returns *false*.
  ***********************************************************************************************************/
 
 void OutputChannel::incompleteParticles( Transporting::Settings const &a_settings, std::set<std::string> &a_incompleteParticles ) const {
@@ -389,20 +402,54 @@ void OutputChannel::incompleteParticles( Transporting::Settings const &a_setting
 /* *********************************************************************************************************//**
  * Returns, via arguments, the average energy and momentum, and gain for product with particle id *a_particleID*.
  *
- * @param a_particleID          [in]    The particle id of the product.
- * @param a_energy              [in]    The energy of the projectile.
- * @param a_productEnergy       [in]    The average energy of the product.
- * @param a_productMomentum     [in]    The average momentum of the product.
- * @param a_productGain         [in]    The gain of the product.
+ * @param a_settings                    [in]    Specifies the requested label.
+ * @param a_particleID                  [in]    The particle id of the product.
+ * @param a_energy                      [in]    The energy of the projectile.
+ * @param a_productEnergy               [in]    The average energy of the product.
+ * @param a_productMomentum             [in]    The average momentum of the product.
+ * @param a_productGain                 [in]    The gain of the product.
+ * @param a_ignoreIncompleteParticles   [in]    If *true*, incomplete particles are ignore, otherwise a *throw* is executed.
  ***********************************************************************************************************/
 
-void OutputChannel::continuousEnergyProductData( std::string const &a_particleID, double a_energy, double &a_productEnergy, double &a_productMomentum, double &a_productGain ) const {
+void OutputChannel::continuousEnergyProductData( Transporting::Settings const &a_settings, std::string const &a_particleID, double a_energy, 
+                double &a_productEnergy, double &a_productMomentum, double &a_productGain, bool a_ignoreIncompleteParticles ) const {
 
     for( std::size_t index = 0; index < m_products.size( ); ++index ) {
         Product const &product = *m_products.get<Product>( index );
 
-        product.continuousEnergyProductData( a_particleID, a_energy, a_productEnergy, a_productMomentum, a_productGain );
+        product.continuousEnergyProductData( a_settings, a_particleID, a_energy, a_productEnergy, a_productMomentum, a_productGain, a_ignoreIncompleteParticles );
     }
+
+    m_fissionFragmentData.continuousEnergyProductData( a_settings, a_particleID, a_energy, a_productEnergy, a_productMomentum, a_productGain, 
+            a_ignoreIncompleteParticles );
+}
+
+/* *********************************************************************************************************//**
+ * Modifies the average product energies, momenta and gains for product with particle id *a_particleID*.
+ *
+ * @param a_settings                    [in]    Specifies user options.
+ * @param a_particleID                  [in]    The particle id of the product.
+ * @param a_energies                    [in]    The vector of energies to map the data to.
+ * @param a_offset                      [in]    The index of the first energy whose data are to be added to the vectors.
+ * @param a_productEnergies             [out]   The vector of average energies of the product.
+ * @param a_productMomenta              [out]   The vector of average momenta of the product.
+ * @param a_productGains                [out]   The vector of gain of the product.
+ * @param a_ignoreIncompleteParticles   [in]    If *true*, incomplete particles are ignore, otherwise a *throw* is executed.
+ ***********************************************************************************************************/
+ 
+void OutputChannel::mapContinuousEnergyProductData( Transporting::Settings const &a_settings, std::string const &a_particleID, 
+                std::vector<double> const &a_energies, int a_offset, std::vector<double> &a_productEnergies, std::vector<double> &a_productMomenta, 
+                std::vector<double> &a_productGains, bool a_ignoreIncompleteParticles ) const {
+
+    for( std::size_t index = 0; index < m_products.size( ); ++index ) {
+        Product const &product = *m_products.get<Product>( index );
+
+        product.mapContinuousEnergyProductData( a_settings, a_particleID, a_energies, a_offset, a_productEnergies, a_productMomenta, 
+                a_productGains, a_ignoreIncompleteParticles );
+    }
+
+    m_fissionFragmentData.mapContinuousEnergyProductData( a_settings, a_particleID, a_energies, a_offset, a_productEnergies, a_productMomenta,
+                a_productGains, a_ignoreIncompleteParticles );
 }
 
 /* *********************************************************************************************************//**

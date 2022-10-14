@@ -13,8 +13,6 @@ instances for the same data at random x values. If a relative difference greater
 an error is printed. This should be repeatable.
 """
 
-from __future__ import print_function
-
 import time
 import random
 

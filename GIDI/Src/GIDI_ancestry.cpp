@@ -72,7 +72,7 @@ Ancestry const *Ancestry::root( ) const {
 
 Ancestry *Ancestry::findInAncestry( std::string const &a_href ) {
 
-    std::vector<std::string> segments = PoPI::splitString( a_href, '/' );
+    std::vector<std::string> segments = LUPI::Misc::splitXLinkString( a_href );
 
     return( findInAncestry2( 0, segments ) );
 }
@@ -86,7 +86,7 @@ Ancestry *Ancestry::findInAncestry( std::string const &a_href ) {
 
 Ancestry const *Ancestry::findInAncestry( std::string const &a_href ) const {
 
-    std::vector<std::string> segments = PoPI::splitString( a_href, '/' );
+    std::vector<std::string> segments = LUPI::Misc::splitXLinkString( a_href );
 
     return( findInAncestry2( 0, segments ) );
 }

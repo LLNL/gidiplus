@@ -85,6 +85,7 @@ void crossSectionInfo( GIDI::Protare *protare, GIDI::Styles::TemperatureInfo tem
                         GIDI::Transporting::Groups_from_bdfls const &groups_from_bdfls,
                         GIDI::Transporting::Fluxes_from_bdfls const &fluxes_from_bdfls ) {
 
+    LUPI::StatusMessageReporting smr1;
     int offset = 4;
     int prefixLength = outputChannelStringMaximumLength( protare );
     if( prefixLength < 32 ) prefixLength = 32;
@@ -108,7 +109,7 @@ void crossSectionInfo( GIDI::Protare *protare, GIDI::Styles::TemperatureInfo tem
 
     std::string prefix( "Uncollapsed total cross section:: " );
     prefix.insert( prefix.size( ), offset + prefixLength + 2 - prefix.size( ), ' ' );
-    GIDI::Vector crossSection = protare->multiGroupCrossSection( settings, temperature );
+    GIDI::Vector crossSection = protare->multiGroupCrossSection( smr1, settings, temperature );
     printVector( prefix, crossSection );
 
     GIDI::Vector collapsed = GIDI::collapse( crossSection, settings, particles, 0 );
@@ -120,7 +121,7 @@ void crossSectionInfo( GIDI::Protare *protare, GIDI::Styles::TemperatureInfo tem
     for( std::size_t index = 0; index < protare->numberOfReactions( ); ++index ) {
         GIDI::Reaction *reaction = protare->reaction( index );
 
-        crossSection = reaction->multiGroupCrossSection( settings, temperature );
+        crossSection = reaction->multiGroupCrossSection( smr1, settings, temperature );
         std::string prefix( outputChannelPrefix( offset, prefixLength, reaction ) );
         prefix += ":";
         printVector( prefix, crossSection );

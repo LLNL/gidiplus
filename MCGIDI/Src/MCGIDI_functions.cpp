@@ -304,8 +304,7 @@ MCGIDI_HOST XYs1d::XYs1d( Interpolation a_interpolation, Vector<double> a_Xs, Ve
 ============================================================
 */
 MCGIDI_HOST XYs1d::XYs1d( GIDI::Functions::XYs1d const &a_XYs1d ) :
-        Function1d( a_XYs1d.domainMin( ), a_XYs1d.domainMax( ), GIDI2MCGIDI_interpolation( a_XYs1d.interpolation( ) ),
-            a_XYs1d.outerDomainValue( ) ){
+        Function1d( a_XYs1d.domainMin( ), a_XYs1d.domainMax( ), GIDI2MCGIDI_interpolation( a_XYs1d.interpolation( ) ), a_XYs1d.outerDomainValue( ) ) {
 
     m_type = Function1dType::XYs;
     MCGIDI_VectorSizeType size = a_XYs1d.size( );
@@ -621,14 +620,14 @@ MCGIDI_HOST Branching1d::Branching1d( SetupInfo &a_setupInfo, GIDI::Functions::B
 
     m_type = Function1dType::branching;
 
-    GIDI::Functions::Branching1dPids const &pids = a_form1d.pids( );
-
-    std::map<std::string,int>::iterator iter = a_setupInfo.m_stateNamesToIndices.find( pids.initial( ) );
+    std::map<std::string,int>::iterator iter = a_setupInfo.m_stateNamesToIndices.find( a_form1d.initialState( ) );
     if( iter == a_setupInfo.m_stateNamesToIndices.end( ) ) {
-        std::string message( "Branching1d: initial state not found: pid = " + pids.initial( ) + "." );
+        std::string message( "Branching1d: initial state not found: pid = '" + a_form1d.initialState( ) + "'." );
         throw std::runtime_error( message.c_str( ) );
     }
     m_initialStateIndex = iter->second;
+
+    a_setupInfo.m_initialStateIndex = m_initialStateIndex;
 }
 
 /* *********************************************************************************************************//**
@@ -702,7 +701,7 @@ MCGIDI_HOST_DEVICE TerrellFissionNeutronMultiplicityModel::~TerrellFissionNeutro
  * @return                                  The sampled number of emitted, prompt neutrons for fission.
  ***********************************************************************************************************/
 
-int TerrellFissionNeutronMultiplicityModel::sampleBoundingInteger( double a_energy, double (*a_rng)( void * ), void *a_rngState ) const {
+MCGIDI_HOST_DEVICE int TerrellFissionNeutronMultiplicityModel::sampleBoundingInteger( double a_energy, double (*a_rng)( void * ), void *a_rngState ) const {
 
     double width = M_SQRT2 * m_width;
     double temp1 = m_multiplicity->evaluate( a_energy ) + 0.5;
@@ -729,7 +728,7 @@ int TerrellFissionNeutronMultiplicityModel::sampleBoundingInteger( double a_ener
  * @return                                  The number of emitted, prompt neutrons.
  ***********************************************************************************************************/
 
-double TerrellFissionNeutronMultiplicityModel::evaluate( double a_energy ) const {
+MCGIDI_HOST_DEVICE double TerrellFissionNeutronMultiplicityModel::evaluate( double a_energy ) const {
 
     return( m_multiplicity->evaluate( a_energy ) );
 }
@@ -742,7 +741,7 @@ double TerrellFissionNeutronMultiplicityModel::evaluate( double a_energy ) const
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-void TerrellFissionNeutronMultiplicityModel::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+MCGIDI_HOST_DEVICE void TerrellFissionNeutronMultiplicityModel::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
 
     Function1d::serialize( a_buffer, a_mode );
     DATA_MEMBER_FLOAT( m_width, a_buffer, a_mode );
@@ -1628,7 +1627,8 @@ MCGIDI_HOST_DEVICE void DiscreteGamma2d::serialize( DataBuffer &a_buffer, DataBu
 */
 MCGIDI_HOST_DEVICE PrimaryGamma2d::PrimaryGamma2d( ) :
         m_primaryEnergy( 0.0 ),
-        m_massFactor( 0.0 ) {
+        m_massFactor( 0.0 ),
+        m_finalState( "" ) {
 
     m_type = ProbabilityBase2dType::primaryGamma;
 }
@@ -1638,7 +1638,8 @@ MCGIDI_HOST_DEVICE PrimaryGamma2d::PrimaryGamma2d( ) :
 MCGIDI_HOST PrimaryGamma2d::PrimaryGamma2d( GIDI::Functions::PrimaryGamma2d const &a_primaryGamma2d, SetupInfo *a_setupInfo ) :
         ProbabilityBase2d( a_primaryGamma2d ),
         m_primaryEnergy( a_primaryGamma2d.value( ) ),
-        m_massFactor( a_setupInfo->m_protare.targetMass( ) / ( a_setupInfo->m_protare.projectileMass( ) + a_setupInfo->m_protare.targetMass( ) ) ) {
+        m_massFactor( a_setupInfo->m_protare.targetMass( ) / ( a_setupInfo->m_protare.projectileMass( ) + a_setupInfo->m_protare.targetMass( ) ) ),
+        m_finalState( a_primaryGamma2d.finalState( ).c_str( ) ) {
 
     m_type = ProbabilityBase2dType::primaryGamma;
 };
@@ -1674,6 +1675,7 @@ MCGIDI_HOST_DEVICE void PrimaryGamma2d::serialize( DataBuffer &a_buffer, DataBuf
     ProbabilityBase2d::serialize( a_buffer, a_mode );
     DATA_MEMBER_FLOAT( m_primaryEnergy, a_buffer, a_mode );
     DATA_MEMBER_FLOAT( m_massFactor, a_buffer, a_mode );
+    DATA_MEMBER_STRING( m_finalState, a_buffer, a_mode );
 }
 
 /*
@@ -1707,7 +1709,7 @@ MCGIDI_HOST_DEVICE Recoil2d::~Recoil2d( ) {
 */
 MCGIDI_HOST_DEVICE double Recoil2d::evaluate( double a_x2, double a_x1 ) const {
 
-#ifndef __NVCC__
+#if !defined(__NVCC__) && !defined(__HIP__)
     MCGIDI_THROW( "Recoil2d::evaluate: not implemented." );
 #endif
 
@@ -1718,7 +1720,7 @@ MCGIDI_HOST_DEVICE double Recoil2d::evaluate( double a_x2, double a_x1 ) const {
 */
 MCGIDI_HOST_DEVICE double Recoil2d::sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const {
 
-#ifndef __NVCC__
+#if !defined(__NVCC__) && !defined(__HIP__)
     MCGIDI_THROW( "Recoil2d::sample: not implemented." );
 #endif
 

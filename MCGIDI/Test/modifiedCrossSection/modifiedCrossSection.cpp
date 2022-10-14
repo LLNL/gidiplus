@@ -47,6 +47,7 @@ void main2( int argc, char **argv ) {
     std::set<int> reactionsToExclude;
     double offset, slope, domainMin, domainMax;
     bool inputPresent = false;
+    LUPI::StatusMessageReporting smr1;
 
     parseTestOptions.m_askGNDS_File = true;
 
@@ -105,19 +106,15 @@ void main2( int argc, char **argv ) {
     std::cout << std::endl << "Slope Axes" << std::endl;
     writeInfo.print( );
 
-    GIDI::Functions::XYs1d *f1d = GIDI::Functions::XYs1d::makeConstantXYs1d( offsetAxes, domainMin, domainMax, offset );
-    GIDI::Functions::XYs1d offsetXYs1d = *f1d;
-    delete f1d;
+    GIDI::Functions::XYs1d *offsetXYs1d = GIDI::Functions::XYs1d::makeConstantXYs1d( offsetAxes, domainMin, domainMax, offset );
     writeInfo.clear( );
-    offsetXYs1d.toXMLList( writeInfo, "  " );
+    offsetXYs1d->toXMLList( writeInfo, "  " );
     std::cout << std::endl << "Offset" << std::endl;
     writeInfo.print( );
 
-    f1d = GIDI::Functions::XYs1d::makeConstantXYs1d( slopeAxes, domainMin, domainMax, slope );
-    GIDI::Functions::XYs1d slopeXYs1d = *f1d;
-    delete f1d;
+    GIDI::Functions::XYs1d *slopeXYs1d = GIDI::Functions::XYs1d::makeConstantXYs1d( slopeAxes, domainMin, domainMax, slope );
     writeInfo.clear( );
-    slopeXYs1d.toXMLList( writeInfo, "  " );
+    slopeXYs1d->toXMLList( writeInfo, "  " );
     std::cout << std::endl << "Slope" << std::endl;
     writeInfo.print( );
 
@@ -134,11 +131,13 @@ void main2( int argc, char **argv ) {
 
     MCGIDI::DomainHash domainHash( 4000, 1e-8, 10 );
 
-    MCGIDI::Protare *MCProtare = MCGIDI::protareFromGIDIProtare( *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude );
+    MCGIDI::Protare *MCProtare = MCGIDI::protareFromGIDIProtare( smr1, *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude );
     MCGIDI::ProtareSingle *protareSingle = MCProtare->protare( 0 );
 
     MCGIDI::HeatedCrossSectionsContinuousEnergy &heatedCrossSections = protareSingle->heatedCrossSections( );
-    heatedCrossSections.print( "    ", "%6d", "%18.10e", "%14.6e" );
+    heatedCrossSections.print( protareSingle, "    ", "%6d", "%18.10e", "%14.6e" );
 
+    delete offsetXYs1d;
+    delete slopeXYs1d;
     delete protare;
 }

@@ -29,6 +29,13 @@ Slope
       <axis index="1" label="Cross section" unit="b/MeV"/></axes>
     <values>0 1 20 1</values></XYs1d>
 
+Temperatures present:
+  2.586000e-08
+  1.000000e-06
+  1.000000e-04
+Reaction thresholds:
+  0.000000e+00
+  0.000000e+00
 
     # Temperature =   2.586000e-08
     # Number of hash indices = 4002
@@ -4036,6 +4043,9 @@ Slope
          554
 
     # Number of energies = 576
+#      projectile              total              deposition           deposition          production
+#        energy             cross section           energy              momentum             energy
+#=====================================================================================================
         1.0000000000e-11   1.190000e+03   3.715111e+01   8.267453e-02   3.715111e+01
         1.0384990930e-11   1.167739e+03   3.645598e+01   7.991440e-02   3.645598e+01
         1.0769981861e-11   1.146684e+03   3.579846e+01   7.728172e-02   3.579846e+01
@@ -4613,7 +4623,7 @@ Slope
         1.9500000000e+01   4.954909e-01   4.909111e+00   4.816827e+01   6.104266e-05
         2.0000000000e+01   4.827837e-01   4.905824e+00   4.753234e+01   6.056273e-05
 
-    # Particle index = 6
+    # Particle index = 10
     # Use particle index = -1
     # Number of gains = 576
      -1.669990e+01
@@ -5193,8 +5203,12 @@ Slope
      -2.743946e-05
      -2.722372e-05
 
-    # Number of reaction = 2
+# URR mode is none
+    # Index of reactions in URR region:
+
+    # Number of reactions = 2
     # Reaction number 0
+    # Reaction label: n + H1
     # Offset = 0
     # Threshold = 0
     # Number of cross section points = 576
@@ -5775,6 +5789,7 @@ Slope
       4.954635e-01
       4.827565e-01
     # Reaction number 1
+    # Reaction label: H2 + photon
     # Offset = 0
     # Threshold = 0
     # Number of cross section points = 576
@@ -10361,6 +10376,9 @@ Slope
          601
 
     # Number of energies = 623
+#      projectile              total              deposition           deposition          production
+#        energy             cross section           energy              momentum             energy
+#=====================================================================================================
         1.0000000000e-11   7.311857e+03   3.715093e+01   5.020961e-01   3.715093e+01
         1.0384990930e-11   7.175046e+03   3.645580e+01   4.851366e-01   3.645580e+01
         1.0769981861e-11   7.045638e+03   3.579828e+01   4.689584e-01   3.579828e+01
@@ -10985,7 +11003,7 @@ Slope
         1.9500000000e+01   4.954934e-01   4.909135e+00   4.816851e+01   6.104460e-05
         2.0000000000e+01   4.828376e-01   4.906371e+00   4.753765e+01   6.056479e-05
 
-    # Particle index = 6
+    # Particle index = 10
     # Use particle index = -1
     # Number of gains = 623
      -1.669982e+01
@@ -11612,8 +11630,12 @@ Slope
      -2.744033e-05
      -2.722465e-05
 
-    # Number of reaction = 2
+# URR mode is none
+    # Index of reactions in URR region:
+
+    # Number of reactions = 2
     # Reaction number 0
+    # Reaction label: n + H1
     # Offset = 0
     # Threshold = 0
     # Number of cross section points = 623
@@ -12241,6 +12263,7 @@ Slope
       4.954659e-01
       4.828104e-01
     # Reaction number 1
+    # Reaction label: H2 + photon
     # Offset = 0
     # Threshold = 0
     # Number of cross section points = 623
@@ -16874,6 +16897,9 @@ Slope
          701
 
     # Number of energies = 724
+#      projectile              total              deposition           deposition          production
+#        energy             cross section           energy              momentum             energy
+#=====================================================================================================
         1.0000000000e-11   7.287300e+04   3.710996e+01   4.993829e+00   3.710996e+01
         1.0384990930e-11   7.150947e+04   3.641560e+01   4.824807e+00   3.641560e+01
         1.0769981861e-11   7.021973e+04   3.575881e+01   4.663568e+00   3.575881e+01
@@ -17599,7 +17625,7 @@ Slope
         1.9875000000e+01   4.859621e-01   4.907267e+00   4.769444e+01   6.070657e-05
         2.0000000000e+01   4.834135e-01   4.912222e+00   4.759434e+01   6.058696e-05
 
-    # Particle index = 6
+    # Particle index = 10
     # Use particle index = -1
     # Number of gains = 724
      -1.668140e+01
@@ -18327,8 +18353,12 @@ Slope
      -2.728838e-05
      -2.723461e-05
 
-    # Number of reaction = 2
+# URR mode is none
+    # Index of reactions in URR region:
+
+    # Number of reactions = 2
     # Reaction number 0
+    # Reaction label: n + H1
     # Offset = 0
     # Threshold = 0
     # Number of cross section points = 724
@@ -19057,6 +19087,7 @@ Slope
       4.859349e-01
       4.833862e-01
     # Reaction number 1
+    # Reaction label: H2 + photon
     # Offset = 0
     # Threshold = 0
     # Number of cross section points = 724

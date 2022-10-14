@@ -7,9 +7,9 @@ SHELL = /bin/ksh
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
-.PHONY: default headers docs clean realclean
+.PHONY: default libs docs check clean realclean
 
-DIRS = GIDI MCGIDI PoPI HAPI numericalFunctions pugixml
+DIRS = pugixml numericalFunctions LUPI HAPI RISI PoPI GIDI MCGIDI
 
 default: libs
 

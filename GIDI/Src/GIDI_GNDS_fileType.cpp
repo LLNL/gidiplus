@@ -71,7 +71,7 @@ GNDS_FileTypeInfo::GNDS_FileTypeInfo( ) :
  ***********************************************************************************************************/
 
 GNDS_FileTypeInfo::GNDS_FileTypeInfo( GNDS_FileType a_GNDS_fileType, std::string a_projectileID, std::string a_targetID, std::string a_evaluation,
-                        std::string a_interaction ) :
+                std::string a_interaction ) :
         m_GNDS_fileType( a_GNDS_fileType ),
         m_projectileID( a_projectileID ),
         m_targetID( a_targetID ),

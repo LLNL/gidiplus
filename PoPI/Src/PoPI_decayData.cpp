@@ -18,7 +18,9 @@ namespace PoPI {
 #define PoPI_productsChars "products"
 #define PoPI_photonEmissionProbabilitiesChars "photonEmissionProbabilities"
 
+#define PoPI_typeChars "type"
 #define PoPI_modeChars "mode"
+#define PoPI_completeChars "complete"
 #define PoPI_probabilityChars "probability"
 
 /*
@@ -48,9 +50,14 @@ void DecayData::calculateNuclideGammaBranchStateInfo( PoPI::Database const &a_po
         decayMode.calculateNuclideGammaBranchStateInfo( a_pops, a_nuclideGammaBranchStateInfo );
     }
 }
-/*
-=========================================================
-*/
+
+/* *********************************************************************************************************//**
+ * Adds the contents of *this* to *a_XMLList* where each item in *a_XMLList* is one line (without linefeeds) to output as an XML representation of *this*.
+ *
+ * @param a_XMLList                     [in]    The list to add an XML output representation of *this* to.
+ * @param a_indent1                     [in]    The amount of indentation to added to each line added to *a_XMLList*.
+ ***********************************************************************************************************/
+
 void DecayData::toXMLList( std::vector<std::string> &a_XMLList, std::string const &a_indent1 ) const {
 
     std::string::size_type size = m_decayModes.size( );
@@ -114,9 +121,14 @@ void DecayMode::calculateNuclideGammaBranchStateInfo( PoPI::Database const &a_po
         a_nuclideGammaBranchStateInfo.add( nuclideGammaBranchInfo );
     }
 }
-/*
-============================================================
-*/
+
+/* *********************************************************************************************************//**
+ * Adds the contents of *this* to *a_XMLList* where each item in *a_XMLList* is one line (without linefeeds) to output as an XML representation of *this*.
+ *
+ * @param a_XMLList                     [in]    The list to add an XML output representation of *this* to.
+ * @param a_indent1                     [in]    The amount of indentation to added to each line added to *a_XMLList*.
+ ***********************************************************************************************************/
+
 void DecayMode::toXMLList( std::vector<std::string> &a_XMLList, std::string const &a_indent1 ) const {
 
     std::string header = a_indent1 + "<decayMode label=\"" + m_label + "\" mode=\"" + m_mode + "\">";
@@ -134,28 +146,40 @@ void DecayMode::toXMLList( std::vector<std::string> &a_XMLList, std::string cons
 ========================== Decay ===========================
 ============================================================
 */
+
 Decay::Decay( HAPI::Node const &a_node, DecayMode const *a_decayMode ) :
         m_index( a_node.attribute( PoPI_indexChars ).as_int( ) ),
+        m_mode( a_node.attribute( PoPI_modeChars ).value( ) ),
+        m_complete( a_node.attribute( PoPI_completeChars ).value( ) == "true" ),
         m_products( PoPI_productsChars ) {
+
+    if( a_node.attribute( PoPI_typeChars ).value( ) != "" ) m_mode = a_node.attribute( PoPI_typeChars ).value( );
 
     m_products.appendFromParentNode2( a_node.child( PoPI_productsChars ), this );
 }
-/*
-============================================================
-*/
+
+/* *********************************************************************************************************//**
+ ***********************************************************************************************************/
+
 Decay::~Decay( ) {
 
 }
-/*
-============================================================
-*/
+
+/* *********************************************************************************************************//**
+ * Adds the contents of *this* to *a_XMLList* where each item in *a_XMLList* is one line (without linefeeds) to output as an XML representation of *this*.
+ *
+ * @param a_XMLList                     [in]    The list to add an XML output representation of *this* to.
+ * @param a_indent1                     [in]    The amount of indentation to added to each line added to *a_XMLList*.
+ ***********************************************************************************************************/
+
 void Decay::toXMLList( std::vector<std::string> &a_XMLList, std::string const &a_indent1 ) const {
 
-    char str[64];
-    sprintf( str, "%d", m_index );
-    std::string indexString( str );
+    std::string indexString( std::to_string( m_index ) );
 
-    std::string header = a_indent1 + "<decay index=\"" + indexString + "\">";
+    std::string header = a_indent1 + "<decay index=\"" + indexString + "\"";
+    if( m_mode != "" ) header += " mode=\"" + m_mode + "\"";
+    if( m_complete ) header += " mode=\"true\"";
+    header += ">";
     a_XMLList.push_back( header );
 
     std::string indent2 = a_indent1 + "  ";
@@ -175,15 +199,21 @@ Product::Product( HAPI::Node const &a_node, Decay *a_DB ) :
         m_label( a_node.attribute( PoPI_labelChars ).value( ) ) {
 
 }
+
 /*
 ============================================================
 */
 Product::~Product( ) {
 
 }
-/*
-============================================================
-*/
+
+/* *********************************************************************************************************//**
+ * Adds the contents of *this* to *a_XMLList* where each item in *a_XMLList* is one line (without linefeeds) to output as an XML representation of *this*.
+ *
+ * @param a_XMLList                     [in]    The list to add an XML output representation of *this* to.
+ * @param a_indent1                     [in]    The amount of indentation to added to each line added to *a_XMLList*.
+ ***********************************************************************************************************/
+
 void Product::toXMLList( std::vector<std::string> &a_XMLList, std::string const &a_indent1 ) const {
 
     std::string header = a_indent1 + "<product label=\"" + m_label + "\" pid=\"" + m_pid + "\"/>";

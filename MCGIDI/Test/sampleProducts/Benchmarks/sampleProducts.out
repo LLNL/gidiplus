@@ -155,105 +155,77 @@ reaction (  0) = n + O16  threshold = 0
 reaction (  1) = n + (O16_e1 -> O16)  threshold = 6.43088
     energy = 6.43088
         productIndex    6    0 KE = 0.0226898
-        productIndex  211   -1 unspecified distribution
     energy = 12.8618
         productIndex    6    0 KE = 6.49729
-        productIndex  211   -1 unspecified distribution
         productIndex    3   11 KE = 6.12989
     energy = 25.7235
         productIndex    6    0 KE = 19.114
-        productIndex  211   -1 unspecified distribution
         productIndex    3   11 KE = 6.12989
     energy = 51.4471
         productIndex    6    0 KE = 38.6032
-        productIndex  211   -1 unspecified distribution
 reaction (  2) = n + (O16_e2 -> O16)  threshold = 6.51646
     energy = 6.51646
         productIndex    6    0 KE = 0.0229925
-        productIndex  211   -1 unspecified distribution
         productIndex    3   11 KE = 0.51
         productIndex    3   11 KE = 0.51
     energy = 13.0329
         productIndex    6    0 KE = 5.46667
-        productIndex  211   -1 unspecified distribution
         productIndex    3   11 KE = 6.12989
     energy = 26.0658
         productIndex    6    0 KE = 19.8427
-        productIndex  211   -1 unspecified distribution
     energy = 52.1317
         productIndex    6    0 KE = 43.9494
-        productIndex  211   -1 unspecified distribution
 reaction (  3) = n + (O16_e3 -> O16)  threshold = 7.3533
     energy = 7.3533
         productIndex    6    0 KE = 0.0259541
-        productIndex  211   -1 unspecified distribution
     energy = 14.7066
         productIndex    6    0 KE = 7.39105
-        productIndex  211   -1 unspecified distribution
         productIndex    3   11 KE = 6.12989
     energy = 29.4132
         productIndex    6    0 KE = 20.9032
-        productIndex  211   -1 unspecified distribution
     energy = 58.8264
         productIndex    6    0 KE = 48.4155
-        productIndex  211   -1 unspecified distribution
 reaction (  4) = n + (O16_e4 -> O16)  threshold = 7.5656
     energy = 7.5656
         productIndex    6    0 KE = 0.0267058
-        productIndex  211   -1 unspecified distribution
         productIndex    3   11 KE = 6.12989
     energy = 15.1312
         productIndex    6    0 KE = 7.52987
-        productIndex  211   -1 unspecified distribution
     energy = 30.2624
         productIndex    6    0 KE = 22.9425
-        productIndex  211   -1 unspecified distribution
     energy = 60.5248
         productIndex    6    0 KE = 49.4094
-        productIndex  211   -1 unspecified distribution
 reaction (  5) = n + (O16_e5 -> O16)  threshold = 9.43138
     energy = 9.43138
         productIndex    6    0 KE = 0.0333172
-        productIndex  211   -1 unspecified distribution
         productIndex    3   11 KE = 6.12989
     energy = 18.8628
         productIndex    6    0 KE = 9.54408
-        productIndex  211   -1 unspecified distribution
         productIndex    3   11 KE = 6.12989
         productIndex    3   11 KE = 2.74201
     energy = 37.7255
         productIndex    6    0 KE = 22.4819
-        productIndex  211   -1 unspecified distribution
     energy = 75.451
         productIndex    6    0 KE = 66.1734
-        productIndex  211   -1 unspecified distribution
 reaction (  6) = n + (O16_e6 -> O16)  threshold = 11.648
     energy = 11.648
         productIndex    6    0 KE = 0.0411848
-        productIndex  211   -1 unspecified distribution
     energy = 23.2959
         productIndex    6    0 KE = 11.8079
-        productIndex  211   -1 unspecified distribution
     energy = 46.5919
         productIndex    6    0 KE = 26.9007
-        productIndex  211   -1 unspecified distribution
     energy = 93.1838
         productIndex    6    0 KE = 77.5592
-        productIndex  211   -1 unspecified distribution
 reaction (  7) = n + (O16_e7 -> O16)  threshold = 11.7787
     energy = 11.7787
         productIndex    6    0 KE = 0.0416493
-        productIndex  211   -1 unspecified distribution
         productIndex    3   11 KE = 6.12989
     energy = 23.5574
         productIndex    6    0 KE = 10.8399
-        productIndex  211   -1 unspecified distribution
     energy = 47.1149
         productIndex    6    0 KE = 29.4102
-        productIndex  211   -1 unspecified distribution
     energy = 94.2298
         productIndex    6    0 KE = 73.1444
-        productIndex  211   -1 unspecified distribution
 reaction (  8) = n + (O16 -> O16 + photon) [continuum]  threshold = 10.1895
     energy = 10.1895
         productIndex    6    0 KE = 0.04569
@@ -320,46 +292,34 @@ reaction ( 11) = H1 + N16  threshold = 10.2445
 reaction ( 12) = H1 + (N16_e1 -> N16)  threshold = 10.3722
     energy = 10.3722
         productIndex   18   -1 KE = 0.0366242
-        productIndex  180   -1 unspecified distribution
     energy = 20.7444
         productIndex   18   -1 KE = 8.66098
-        productIndex  180   -1 unspecified distribution
         productIndex    3   11 KE = 0.297
         productIndex    3   11 KE = 0.1201
     energy = 41.4888
         productIndex   18   -1 KE = 31.4736
-        productIndex  180   -1 unspecified distribution
     energy = 82.9775
         productIndex   18   -1 KE = 56.1856
-        productIndex  180   -1 unspecified distribution
 reaction ( 13) = H1 + (N16_e2 -> N16)  threshold = 10.5602
     energy = 10.5602
         productIndex   18   -1 KE = 0.037291
-        productIndex  180   -1 unspecified distribution
         productIndex    3   11 KE = 0.1201
     energy = 21.1205
         productIndex   18   -1 KE = 7.91119
-        productIndex  180   -1 unspecified distribution
     energy = 42.241
         productIndex   18   -1 KE = 27.6749
-        productIndex  180   -1 unspecified distribution
     energy = 84.4819
         productIndex   18   -1 KE = 68.9306
-        productIndex  180   -1 unspecified distribution
 reaction ( 14) = H1 + (N16_e3 -> N16)  threshold = 10.6671
     energy = 10.6671
         productIndex   18   -1 KE = 0.03767
-        productIndex  180   -1 unspecified distribution
         productIndex    3   11 KE = 0.297
     energy = 21.3342
         productIndex   18   -1 KE = 10.5214
-        productIndex  180   -1 unspecified distribution
     energy = 42.6683
         productIndex   18   -1 KE = 29.3557
-        productIndex  180   -1 unspecified distribution
     energy = 85.3366
         productIndex   18   -1 KE = 70.6474
-        productIndex  180   -1 unspecified distribution
 reaction ( 15) = H2 + N15  threshold = 10.5275
     energy = 10.5275
         productIndex   20   10 KE = 0.0742931
@@ -376,86 +336,62 @@ reaction ( 15) = H2 + N15  threshold = 10.5275
 reaction ( 16) = H2 + (N15_e1 -> N15)  threshold = 16.13
     energy = 16.13
         productIndex   20   10 KE = 0.114091
-        productIndex  178   -1 unspecified distribution
     energy = 32.26
         productIndex   20   10 KE = 15.6514
-        productIndex  178   -1 unspecified distribution
     energy = 64.52
         productIndex   20   10 KE = 43.347
-        productIndex  178   -1 unspecified distribution
 reaction ( 17) = H2 + (N15_e2 -> N15)  threshold = 16.161
     energy = 16.161
         productIndex   20   10 KE = 0.114311
-        productIndex  178   -1 unspecified distribution
     energy = 32.322
         productIndex   20   10 KE = 14.6578
-        productIndex  178   -1 unspecified distribution
     energy = 64.644
         productIndex   20   10 KE = 44.4778
-        productIndex  178   -1 unspecified distribution
 reaction ( 18) = H2 + (N15_e3 -> N15)  threshold = 17.2502
     energy = 17.2502
         productIndex   20   10 KE = 0.12207
-        productIndex  178   -1 unspecified distribution
     energy = 34.5004
         productIndex   20   10 KE = 13.9471
-        productIndex  178   -1 unspecified distribution
     energy = 69.0008
         productIndex   20   10 KE = 35.947
-        productIndex  178   -1 unspecified distribution
 reaction ( 19) = H2 + (N15_e4 -> N15)  threshold = 18.1338
     energy = 18.1338
         productIndex   20   10 KE = 0.128369
-        productIndex  178   -1 unspecified distribution
     energy = 36.2676
         productIndex   20   10 KE = 14.942
-        productIndex  178   -1 unspecified distribution
     energy = 72.5352
         productIndex   20   10 KE = 44.3798
-        productIndex  178   -1 unspecified distribution
 reaction ( 20) = H2 + (N15_e5 -> N15)  threshold = 18.289
     energy = 18.289
         productIndex   20   10 KE = 0.129476
-        productIndex  178   -1 unspecified distribution
         productIndex    3   11 KE = 5.2988
     energy = 36.578
         productIndex   20   10 KE = 18.0953
-        productIndex  178   -1 unspecified distribution
     energy = 73.1561
         productIndex   20   10 KE = 38.5039
-        productIndex  178   -1 unspecified distribution
 reaction ( 21) = H2 + (N15_e6 -> N15)  threshold = 18.5718
     energy = 18.5718
         productIndex   20   10 KE = 0.131493
-        productIndex  178   -1 unspecified distribution
     energy = 37.1436
         productIndex   20   10 KE = 15.7184
-        productIndex  178   -1 unspecified distribution
     energy = 74.2872
         productIndex   20   10 KE = 49.864
-        productIndex  178   -1 unspecified distribution
 reaction ( 22) = H2 + (N15_e7 -> N15)  threshold = 19.3645
     energy = 19.3645
         productIndex   20   10 KE = 0.137149
-        productIndex  178   -1 unspecified distribution
         productIndex    3   11 KE = 5.2988
     energy = 38.729
         productIndex   20   10 KE = 17.2763
-        productIndex  178   -1 unspecified distribution
     energy = 77.4581
         productIndex   20   10 KE = 49.4433
-        productIndex  178   -1 unspecified distribution
 reaction ( 23) = H2 + (N15_e8 -> N15)  threshold = 19.6394
     energy = 19.6394
         productIndex   20   10 KE = 0.139112
-        productIndex  178   -1 unspecified distribution
         productIndex    3   11 KE = 5.2988
     energy = 39.2789
         productIndex   20   10 KE = 15.0157
-        productIndex  178   -1 unspecified distribution
     energy = 78.5577
         productIndex   20   10 KE = 49.7577
-        productIndex  178   -1 unspecified distribution
 reaction ( 24) = H3 + N14  threshold = 15.3921
     energy = 15.3921
         productIndex   22   -1 KE = 0.162982
@@ -469,24 +405,18 @@ reaction ( 24) = H3 + N14  threshold = 15.3921
 reaction ( 25) = H3 + (N14_e1 -> N14)  threshold = 17.8507
     energy = 17.8507
         productIndex   22   -1 KE = 0.189205
-        productIndex  176   -1 unspecified distribution
     energy = 35.7014
         productIndex   22   -1 KE = 13.131
-        productIndex  176   -1 unspecified distribution
     energy = 71.4029
         productIndex   22   -1 KE = 43.2107
-        productIndex  176   -1 unspecified distribution
 reaction ( 26) = H3 + (N14_e2 -> N14)  threshold = 19.5891
     energy = 19.5891
         productIndex   22   -1 KE = 0.207778
-        productIndex  176   -1 unspecified distribution
         productIndex    3   11 KE = 2.3128
     energy = 39.1783
         productIndex   22   -1 KE = 14.4977
-        productIndex  176   -1 unspecified distribution
     energy = 78.3566
         productIndex   22   -1 KE = 50.1009
-        productIndex  176   -1 unspecified distribution
 reaction ( 27) = He4 + C13  threshold = 2.35532
     energy = 2.35532
         productIndex   37   -1 KE = 0.0329215
@@ -509,291 +439,228 @@ reaction ( 27) = He4 + C13  threshold = 2.35532
 reaction ( 28) = He4 + (C13_e1 -> C13)  threshold = 5.63954
     energy = 5.63954
         productIndex   37   -1 KE = 0.078933
-        productIndex  145   -1 unspecified distribution
     energy = 11.2791
         productIndex   37   -1 KE = 3.56115
-        productIndex  145   -1 unspecified distribution
     energy = 22.5582
         productIndex   37   -1 KE = 9.00486
-        productIndex  145   -1 unspecified distribution
         productIndex    3   11 KE = 3.6845
     energy = 45.1163
         productIndex   37   -1 KE = 33.0793
-        productIndex  145   -1 unspecified distribution
     energy = 90.2327
         productIndex   37   -1 KE = 77.2957
-        productIndex  145   -1 unspecified distribution
 reaction ( 29) = He4 + (C13_e2 -> C13)  threshold = 6.27217
     energy = 6.27217
         productIndex   37   -1 KE = 0.0878102
-        productIndex  145   -1 unspecified distribution
     energy = 12.5443
         productIndex   37   -1 KE = 5.60912
-        productIndex  145   -1 unspecified distribution
         productIndex    3   11 KE = 3.6845
     energy = 25.0887
         productIndex   37   -1 KE = 15.9661
-        productIndex  145   -1 unspecified distribution
         productIndex    3   11 KE = 3.6845
         productIndex    3   11 KE = 3.0894
     energy = 50.1774
         productIndex   37   -1 KE = 41.3526
-        productIndex  145   -1 unspecified distribution
 reaction ( 30) = He4 + (C13_e3 -> C13)  threshold = 6.45215
     energy = 6.45215
         productIndex   37   -1 KE = 0.0903365
-        productIndex  145   -1 unspecified distribution
     energy = 12.9043
         productIndex   37   -1 KE = 4.56092
-        productIndex  145   -1 unspecified distribution
         productIndex    3   11 KE = 0.1693
     energy = 25.8086
         productIndex   37   -1 KE = 11.0851
-        productIndex  145   -1 unspecified distribution
     energy = 51.6172
         productIndex   37   -1 KE = 36.1343
-        productIndex  145   -1 unspecified distribution
 reaction ( 31) = O17 + photon  threshold = 0
     energy = 1e-13
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 2e-13
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 0.8708
     energy = 4e-13
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 8e-13
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 1.6e-12
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 3.2722
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 3.2e-12
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 6.4e-12
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 1.28e-11
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 2.56e-11
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 5.12e-11
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 1.024e-10
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 2.048e-10
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 4.096e-10
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 8.192e-10
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 1.6384e-09
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 3.2768e-09
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 6.5536e-09
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 1.31072e-08
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 2.62144e-08
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 5.24288e-08
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 3.2722
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 1.04858e-07
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 2.09715e-07
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 4.1943e-07
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 8.38861e-07
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 1.67772e-06
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 3.35544e-06
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 6.71089e-06
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 1.34218e-05
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 2.68435e-05
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 3.2722
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 5.36871e-05
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 0.8708
     energy = 0.000107374
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 0.000214748
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 0.000429497
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 0.000858993
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 0.8708
     energy = 0.00171799
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 3.2722
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 0.00343597
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 0.00687195
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 0.8708
     energy = 0.0137439
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 0.0274878
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 0.0549756
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 0.109951
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 3.2722
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 0.8708
     energy = 0.219902
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 0.439805
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 0.879609
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 1.75922
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 3.51844
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 7.03687
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 0.8708
     energy = 14.0737
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 28.1475
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708
     energy = 56.295
-        productIndex  213   -1 unspecified distribution
         productIndex    3   11 KE = 2.1842
         productIndex    3   11 KE = 1.088
         productIndex    3   11 KE = 0.8708

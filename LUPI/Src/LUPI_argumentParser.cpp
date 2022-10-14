@@ -519,6 +519,10 @@ void ArgumentParser::parse( int a_argc, char **a_argv ) {
                     + std::to_string( (*argumentIterator)->numberEntered( ) ) + " entered." );
         }
     }
+
+    std::cerr << "    " << LUPI::FileInfo::basenameWithoutExtension( m_codeName );
+    for( int i1 = 1; i1 < a_argc; i1++ ) std::cerr << " " << a_argv[i1];
+    std::cerr << std::endl;
 }
 
 /* *********************************************************************************************************//**

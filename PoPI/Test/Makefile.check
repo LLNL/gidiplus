@@ -7,7 +7,7 @@ Executables = $(CppSource:.cpp=)
 
 local_CXXFLAGS += $(LIB_PATHS)
 
-LIBS = -lPoPI -lHAPI -lnumericalfunctions -lstatusMessageReporting -lpugixml -lm $(HDF5_LIBS)
+LIBS = -lPoPI -lHAPI -lLUPI -lnumericalfunctions -lstatusMessageReporting -lpugixml -lm $(HDF5_LIBS)
 
 default: $(Executables)
 

@@ -14,6 +14,34 @@ namespace GIDI {
 
 namespace DoubleDifferentialCrossSection {
 
+/* *********************************************************************************************************//**
+ * Returns the name of the DebyeWallerIntegral child in *a_node*, independent of the GNDS format.
+ *
+ * @param a_node            [in]    The **HAPI::Node** whose child are checked.
+ ***********************************************************************************************************/
+
+static char const *getDebyeWallerIntegralName( HAPI::Node const &a_node ) {
+
+    HAPI::Node const &node = a_node.child( GIDI_DebyeWallerIntegralChars );
+    if( node.empty( ) ) return( GIDI_DebyeWallerChars );
+
+    return( GIDI_DebyeWallerIntegralChars );
+}
+
+/* *********************************************************************************************************//**
+ * Returns the boundAtomCrossSection child in *a_node*, independent of the GNDS format.
+ *
+ * @param a_node            [in]    The **HAPI::Node** whose child are checked.
+ ***********************************************************************************************************/
+
+static char const *getBoundAtomCrossSectionName( HAPI::Node const &a_node ) {
+
+    HAPI::Node const &node = a_node.child( GIDI_boundAtomCrossSectionChars );
+    if( node.empty( ) ) return( GIDI_characteristicCrossSectionChars );
+
+    return( GIDI_boundAtomCrossSectionChars );
+}
+
 /*! \class Base
  * Base class inherited by DoubleDifferentialCrossSection forms.
  */
@@ -80,8 +108,14 @@ CoherentPhotoAtomicScattering::~CoherentPhotoAtomicScattering( ) {
 IncoherentPhotoAtomicScattering::IncoherentPhotoAtomicScattering( Construction::Settings const &a_construction, HAPI::Node const &a_node,
 		SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Suite *a_parent ) :
         Base( a_node, a_setupInfo, FormType::incoherentPhotonScattering, a_parent ),
-        m_scatteringFunction( data1dParse( a_construction, a_node.first_child( ), a_setupInfo, nullptr ) ) {
+        m_scatteringFactor( nullptr ) {
 
+    HAPI::Node const scatteringFactorChild = a_node.child( GIDI_scatteringFactorChars );
+    if( scatteringFactorChild.empty( ) ) {
+        m_scatteringFactor = data1dParse( a_construction, a_node.first_child( ), a_setupInfo, nullptr ); }
+    else {
+        m_scatteringFactor = data1dParse( a_construction, scatteringFactorChild.first_child( ), a_setupInfo, nullptr );
+    }
 }
 
 /* *********************************************************************************************************//**
@@ -89,13 +123,14 @@ IncoherentPhotoAtomicScattering::IncoherentPhotoAtomicScattering( Construction::
 
 IncoherentPhotoAtomicScattering::~IncoherentPhotoAtomicScattering( ) {
 
-    delete m_scatteringFunction;
+    delete m_scatteringFactor;
 }
 
 namespace n_ThermalNeutronScatteringLaw {
 
 /*! \class S_table
- * This is the **S_table** class.
+ * This class represents a **GNDS** cumulative scattering factor **S_table** instance which is a function of temperaure 
+ * \f$T\f$ and energy \f$E\f$ as \f$S(T,E)\f$.
  */
 
 /* *********************************************************************************************************//**
@@ -106,10 +141,9 @@ namespace n_ThermalNeutronScatteringLaw {
 
 S_table::S_table( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo ) :
         Form( a_node, a_setupInfo, FormType::generic, nullptr ),
-        m_function2d( nullptr ) { // data2dParse( a_construction, a_node.first_child( ), a_setupInfo, nullptr ) ) 
+        m_function2d( data2dParse( a_construction, a_node.first_child( ), a_setupInfo, nullptr ) ) {
 
-// FIXME BRB
-//    m_function2d->setAncestor( this );
+    m_function2d->setAncestor( this );
 }
 
 /* *********************************************************************************************************//**
@@ -131,7 +165,7 @@ S_table::~S_table( ) {
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops            [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs    [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
- *                                  This is the <**PoPs**> node under the <**reactionSuite**> node.
+ *                                  This is the **PoPs** node under the **reactionSuite** node.
  * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
@@ -150,8 +184,8 @@ CoherentElastic::~CoherentElastic( ) {
 
 }
 
-/*! \class DebyeWaller
- * This is the **DebyeWaller** class.
+/*! \class DebyeWallerIntegral
+ * This class represents a **GNDS** Debye-Waller integral **DebyeWallerIntegral** which is a function of temperaure \f$T\f$ as \f$W'(T)\f$.
  */
 
 /* *********************************************************************************************************//**
@@ -160,7 +194,7 @@ CoherentElastic::~CoherentElastic( ) {
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  ***********************************************************************************************************/
 
-DebyeWaller::DebyeWaller( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo ) :
+DebyeWallerIntegral::DebyeWallerIntegral( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo ) :
         Form( a_node, a_setupInfo, FormType::generic, nullptr ),
         m_function1d( data1dParse( a_construction, a_node.first_child( ), a_setupInfo, nullptr ) ) {
 
@@ -170,7 +204,7 @@ DebyeWaller::DebyeWaller( Construction::Settings const &a_construction, HAPI::No
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-DebyeWaller::~DebyeWaller( ) {
+DebyeWallerIntegral::~DebyeWallerIntegral( ) {
 
     delete m_function1d;
 }
@@ -191,12 +225,12 @@ DebyeWaller::~DebyeWaller( ) {
 
 IncoherentElastic::IncoherentElastic( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
 		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Suite *a_parent ) :
-        Base( a_node, a_setupInfo, FormType::coherentElastic, a_parent ),
-        m_characteristicCrossSection( a_node.child( GIDI_characteristicCrossSectionChars ), a_setupInfo ),
-        m_DebyeWaller( a_construction, a_node.child( GIDI_DebyeWallerChars ), a_setupInfo ) {
+        Base( a_node, a_setupInfo, FormType::incoherentElastic, a_parent ),
+        m_boundAtomCrossSection( a_node.child( getBoundAtomCrossSectionName( a_node ) ), a_setupInfo ),
+        m_DebyeWallerIntegral( a_construction, a_node.child( getDebyeWallerIntegralName( a_node ) ), a_setupInfo ) {
 
-    m_characteristicCrossSection.setAncestor( this );        
-    m_DebyeWaller.setAncestor( this );
+    m_boundAtomCrossSection.setAncestor( this );        
+    m_DebyeWallerIntegral.setAncestor( this );
 }
 
 /* *********************************************************************************************************//**
@@ -231,7 +265,7 @@ Options::~Options( ) {
 }
 
 /*! \class T_effective
- * This is the **T_effective** class.
+ * This class represents a **GNDS** **T_effective** which is a function of temperaure \f$T_{\rm eff}(T)\f$.
  */
 
 /* *********************************************************************************************************//**
@@ -289,7 +323,7 @@ ScatteringAtom::~ScatteringAtom( ) {
 }
 
 /*! \class S_alpha_beta
- * This is the **S_alpha_beta** class.
+ * This class represents a **GNDS** **S_alpha_beta** which is \f$S(T,\alpha,\beta)\f$.
  */
 
 /* *********************************************************************************************************//**
@@ -332,7 +366,7 @@ IncoherentInelastic::IncoherentInelastic( Construction::Settings const &a_constr
 		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Suite *a_parent ) :
         Base( a_node, a_setupInfo, FormType::incoherentInelastic, a_parent ),
         m_options( a_construction, a_node.child( GIDI_optionsChars ), a_setupInfo ),
-        m_scatteringAtoms( a_construction, GIDI_scatteringAtomsChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseScatteringAtom, nullptr ),
+        m_scatteringAtoms( a_construction, GIDI_scatteringAtomsChars, GIDI_labelChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseScatteringAtom, nullptr ),
         m_S_alpha_beta( a_construction, a_node.child( GIDI_S_alpha_betaChars ), a_setupInfo ) {
 
     m_options.setAncestor( this );

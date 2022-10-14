@@ -18,6 +18,7 @@ namespace HAPI {
  * @return
  */
 PugiXMLNode::PugiXMLNode() :
+        Node_internal( NodeInteralType::pugiXML ),
         m_node( pugi::xml_node() ) {
 
 }
@@ -28,6 +29,7 @@ PugiXMLNode::PugiXMLNode() :
  * @return
  */
 PugiXMLNode::PugiXMLNode( pugi::xml_node a_node ) :
+        Node_internal( NodeInteralType::pugiXML ),
         m_node( a_node ) {
 
 }
@@ -37,6 +39,7 @@ PugiXMLNode::PugiXMLNode( pugi::xml_node a_node ) :
 ============================================================
  */
 PugiXMLNode::PugiXMLNode(const PugiXMLNode &other) :
+        Node_internal( other ),
         m_node( other.m_node ) {
 
 }

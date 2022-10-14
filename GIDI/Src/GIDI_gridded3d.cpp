@@ -30,10 +30,6 @@ Gridded3d::Gridded3d( Construction::Settings const &a_construction, HAPI::Node c
         Function3dForm( a_construction, a_node, a_setupInfo, FormType::gridded3d ),
         m_data( a_node.child( GIDI_arrayChars ), a_setupInfo, a_construction.useSystem_strtod( ) ) {
 
-    m_domain3Unit = axes( )[3]->unit( );
-    m_domain2Unit = axes( )[2]->unit( );
-    m_domain1Unit = axes( )[1]->unit( );
-    m_rangeUnit = axes( )[0]->unit( );
 }
 
 /* *********************************************************************************************************//**

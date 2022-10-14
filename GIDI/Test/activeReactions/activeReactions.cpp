@@ -42,6 +42,7 @@ int main( int argc, char **argv ) {
 void main2( int argc, char **argv ) {
 
     argvOption *option;
+    LUPI::StatusMessageReporting smr1;
 
     argvOptions argv_options( "activeReactions", description );
     ParseTestOptions parseTestOptions( argv_options, argc, argv );
@@ -124,18 +125,18 @@ void main2( int argc, char **argv ) {
 
     GIDI::Transporting::MG settings( protare->projectile( ).ID( ), GIDI::Transporting::Mode::multiGroup, GIDI::Transporting::DelayedNeutrons::on );
 
-    GIDI::Vector vector = protare->multiGroupCrossSection( settings, temperatures[0] );
+    GIDI::Vector vector = protare->multiGroupCrossSection( smr1, settings, temperatures[0] );
     printVector( "Total cross section :: ", vector );
 
-    vector = protare->multiGroupQ( settings, temperatures[0], false );
+    vector = protare->multiGroupQ( smr1, settings, temperatures[0], false );
     printVector( "Q (initial) :: ", vector );
-    vector = protare->multiGroupQ( settings, temperatures[0], true );
+    vector = protare->multiGroupQ( smr1, settings, temperatures[0], true );
     printVector( "Q (final)   :: ", vector );
 
-    vector = protare->multiGroupAvailableEnergy( settings, temperatures[0] );
+    vector = protare->multiGroupAvailableEnergy( smr1, settings, temperatures[0] );
     printVector( "Available energy   :: ", vector );
 
-    vector = protare->multiGroupAvailableMomentum( settings, temperatures[0] );
+    vector = protare->multiGroupAvailableMomentum( smr1, settings, temperatures[0] );
     printVector( "Available momentum :: ", vector );
 
     std::set<std::string> ids;
@@ -152,20 +153,20 @@ void main2( int argc, char **argv ) {
 
         std::cout << std::endl;
 
-        vector = protare->multiGroupAverageEnergy( settings, temperatures[0], *iter );
+        vector = protare->multiGroupAverageEnergy( smr1, settings, temperatures[0], *iter );
         header = *iter + " average energy :: ";
         printVector( header, vector );
 
-        vector = protare->multiGroupAverageMomentum( settings, temperatures[0], *iter );
+        vector = protare->multiGroupAverageMomentum( smr1, settings, temperatures[0], *iter );
         header = *iter + " average momentum :: ";
         printVector( header, vector );
 
-        vector = protare->multiGroupMultiplicity( settings, temperatures[0], *iter );
+        vector = protare->multiGroupMultiplicity( smr1, settings, temperatures[0], *iter );
         header = *iter + " multiplicity :: ";
         printVector( header, vector );
 
-        for( int order = 0; order < protare->maximumLegendreOrder( settings, temperatures[0], *iter ); ++order ) {
-            GIDI::Matrix matrix = protare->multiGroupProductMatrix( settings, temperatures[0], particles, *iter, order );
+        for( int order = 0; order < protare->maximumLegendreOrder( smr1, settings, temperatures[0], *iter ); ++order ) {
+            GIDI::Matrix matrix = protare->multiGroupProductMatrix( smr1, settings, temperatures[0], particles, *iter, order );
 
             if( matrix.size( ) == 0 ) {
                 matrix = settings.multiGroupZeroMatrix( particles, *iter );

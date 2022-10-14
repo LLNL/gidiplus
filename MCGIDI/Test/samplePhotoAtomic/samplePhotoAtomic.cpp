@@ -44,6 +44,7 @@ int main2( int argc, char **argv ) {
     void *rngState = nullptr;
     unsigned long long seed = 1;
     std::set<int> reactionsToExclude;
+    LUPI::StatusMessageReporting smr1;
 
     std::cerr << "    " << __FILE__;
     for( int i1 = 1; i1 < argc; i1++ ) std::cerr << " " << argv[i1];
@@ -85,7 +86,7 @@ int main2( int argc, char **argv ) {
 
     MCGIDI::DomainHash domainHash( 4000, 1e-8, 10 );
     MCGIDI::Protare *MCProtare;
-    MCProtare = MCGIDI::protareFromGIDIProtare( *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude );
+    MCProtare = MCGIDI::protareFromGIDIProtare( smr1, *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude );
 
     MCGIDI::Sampling::Input input( true, MCGIDI::Sampling::Upscatter::Model::none );
 
@@ -106,7 +107,8 @@ int main2( int argc, char **argv ) {
 
             for( std::size_t i2 = 0; i2 < products.size( ); ++i2 ) {
                 MCGIDI::Sampling::Product const &product = products[i2];
-                std::cout << "        productIndex " << std::setw( 4 ) << product.m_productIndex;
+                PoPI::Particle const &particle = pops.particle( product.m_productIndex );
+                std::cout << "        productIndex " << std::setw( 12 ) << particle.ID( );
                 if( product.m_sampledType == MCGIDI::Sampling::SampledType::unspecified ) {
                     std::cout << " unspecified distribution" << std::endl; }
                 else {

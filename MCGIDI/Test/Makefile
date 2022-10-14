@@ -9,10 +9,14 @@ SHELL = /bin/ksh
 
 .PHONY: default compile check clean realclean doDirs
 
-DIRS = Utilities domainHash crossSection sampleReactions sampleProducts \
+DIRS_nonGPUS = Utilities domainHash crossSection sampleReactions sampleProducts \
 		crossSection_multiGroup sampleReactions_multiGroup sampleProducts_multiGroup deposition_multiGroup \
 		deposition_continuousEnergy productIndices samplePhotoAtomic sampleTerrellPromptNeutronDistribution \
-		excludeReactions TNSL memoryCheck print_multiGroup modifiedCrossSection gpuTest
+		excludeReactions TNSL memoryCheck print_multiGroup modifiedCrossSection
+
+DIRS_GPUS = gpuTest
+
+DIRS = $(DIRS_nonGPUS) $(DIRS_GPUS)
 
 default:
 	cd Utilities; $(MAKE)
@@ -23,7 +27,14 @@ compile:
 check:
 	echo ""
 	echo "  -- Checking MCGIDI --"
-	$(MAKE) doDirs TARGET=check
+	$(MAKE) doDirs TARGET=check DIRS="$(DIRS_nonGPUS)"
+
+check_GPU:
+	echo ""
+	echo "  -- Checking MCGIDI GPU --"
+	$(MAKE) doDirs TARGET=check DIRS="$(DIRS_GPUS)"
+
+check_all: check check_GPU
 
 clean:
 	$(MAKE) doDirs TARGET=clean

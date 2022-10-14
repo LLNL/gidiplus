@@ -2,5 +2,8 @@
 
 file=$1
 shift
-./modifiedCrossSection $* > Outputs/$file
-../Utilities/diff.com modifiedCrossSection/$file Benchmarks/$file Outputs/$file
+./modifiedCrossSection $* > Outputs/${file}.out
+../Utilities/diff.com modifiedCrossSection/${file}.out Benchmarks/${file}.out Outputs/${file}.out
+
+./modifiedCrossSection_nullptr $* > Outputs/${file}_nullptr.out
+python3 diff_nullptr.py modifiedCrossSection/${file}_nullptr.out Outputs/${file}.out Outputs/${file}_nullptr.out

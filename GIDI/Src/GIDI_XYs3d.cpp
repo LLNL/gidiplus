@@ -132,16 +132,13 @@ double XYs3d::evaluate( double a_x3, double a_x2, double a_x1 ) const {
 
 void XYs3d::append( Function2dForm *a_function2d ) {
 
-    double outerDomainValue = a_function2d->outerDomainValue( );
-
     if( m_function2ds.size( ) > 0 ) {
-        if( outerDomainValue <= m_Xs.back( ) ) throw Exception( "XYs3d::append: outerDomainValue not greater than current maximum outer domain's value." );
+        if( a_function2d->outerDomainValue( ) <= m_Xs.back( ) ) throw Exception( "XYs3d::append: outerDomainValue not greater than current maximum outer domain's value." );
     }
 
+    m_Xs.push_back( a_function2d->outerDomainValue( ) );
     m_function2ds.push_back( a_function2d );
     a_function2d->setAncestor( this );
-
-    m_Xs.push_back( outerDomainValue );
 }
 
 /* *********************************************************************************************************//**

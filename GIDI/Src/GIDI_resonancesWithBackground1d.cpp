@@ -179,7 +179,7 @@ void ResonanceBackground1d::toXMLList_func( WriteInfo &a_writeInfo, std::string 
  ***********************************************************************************************************/
 
 ResonanceBackgroundRegion1d::ResonanceBackgroundRegion1d( Construction::Settings const &a_construction, HAPI::Node const &a_node,
-		SetupInfo &a_setupInfo, Suite *a_parent ) :
+		        SetupInfo &a_setupInfo, Suite *a_parent ) :
         Function1dForm( a_construction, a_node, a_setupInfo, FormType::resonanceBackgroundRegion1d, a_parent ),
         m_function1d( data1dParse( a_construction, a_node.first_child( ), a_setupInfo, nullptr ) ) {
 

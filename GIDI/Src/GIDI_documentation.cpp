@@ -15,6 +15,10 @@ namespace Documentation_1_10 {
 
 #define GIDI_nameChars "name"
 
+/*! \class Documentation
+ * This class supports storing **GNDS** 1.9 and 1.10 documentation.
+ */
+
 /*! \class Suite
  * This is the GIDI::Suite class but with a different parse function.
  */

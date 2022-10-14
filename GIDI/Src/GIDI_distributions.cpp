@@ -63,7 +63,7 @@ void Distribution::toXMLNodeStarter( WriteInfo &a_writeInfo, std::string const &
 }
 
 /*! \class MultiGroup3d
- * Class for the GNDS <**multiGroup3d**> node.
+ * Class for the GNDS **multiGroup3d** node.
  */
 
 /* *********************************************************************************************************//**
@@ -75,8 +75,8 @@ void Distribution::toXMLNodeStarter( WriteInfo &a_writeInfo, std::string const &
  ***********************************************************************************************************/
 
 MultiGroup3d::MultiGroup3d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
-    Distribution( a_node, a_setupInfo, FormType::multiGroup3d, a_parent ),
-    m_gridded3d( a_construction, a_node.child( GIDI_gridded3dChars ), a_setupInfo ) {
+        Distribution( a_node, a_setupInfo, FormType::multiGroup3d, a_parent ),
+        m_gridded3d( a_construction, a_node.child( GIDI_gridded3dChars ), a_setupInfo ) {
 
 }
 
@@ -97,7 +97,7 @@ void MultiGroup3d::toXMLList( WriteInfo &a_writeInfo, std::string const &a_inden
 }
 
 /*! \class AngularTwoBody
- * Class for the GNDS <**angularTwoBody**> node.
+ * Class for the GNDS **angularTwoBody** node.
  */
 
 /* *********************************************************************************************************//**
@@ -153,7 +153,7 @@ void AngularTwoBody::toXMLList( WriteInfo &a_writeInfo, std::string const &a_ind
 }
 
 /*! \class KalbachMann
- * Class for the GNDS <**KalbachMann**> node.
+ * Class for the GNDS **KalbachMann** node.
  */
 
 /* *********************************************************************************************************//**
@@ -203,7 +203,7 @@ void KalbachMann::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent
 }
 
 /*! \class EnergyAngular
- * Class for the GNDS <**energyAngular**> node.
+ * Class for the GNDS **energyAngular** node.
  */
 
 /* *********************************************************************************************************//**
@@ -245,7 +245,7 @@ void EnergyAngular::toXMLList( WriteInfo &a_writeInfo, std::string const &a_inde
 }
 
 /*! \class EnergyAngularMC
- * Class for the GNDS <**energyAngularMC**> node.
+ * Class for the GNDS **energyAngularMC** node.
  */
 
 /* *********************************************************************************************************//**
@@ -298,7 +298,7 @@ void EnergyAngularMC::toXMLList( WriteInfo &a_writeInfo, std::string const &a_in
 }
 
 /*! \class AngularEnergy
- * Class for the GNDS <**angularEnergy**> node.
+ * Class for the GNDS **angularEnergy** node.
  */
 
 /* *********************************************************************************************************//**
@@ -340,7 +340,7 @@ void AngularEnergy::toXMLList( WriteInfo &a_writeInfo, std::string const &a_inde
 }
 
 /*! \class AngularEnergyMC
- * Class for the GNDS <**angularEnergyMC**> node.
+ * Class for the GNDS **angularEnergyMC** node.
  */
 
 /* *********************************************************************************************************//**
@@ -390,7 +390,7 @@ void AngularEnergyMC::toXMLList( WriteInfo &a_writeInfo, std::string const &a_in
 }
 
 /*! \class Uncorrelated
- * Class for the GNDS <**uncorrelated**> node.
+ * Class for the GNDS **uncorrelated** node.
  */
 
 /* *********************************************************************************************************//**
@@ -443,7 +443,7 @@ void Uncorrelated::toXMLList( WriteInfo &a_writeInfo, std::string const &a_inden
 }
 
 /*! \class LLNLAngularEnergy
- * Class for the GNDS <**LLNLAngularEnergy**> node.
+ * Class for the GNDS **LLNLAngularEnergy** node.
  */
 
 /* *********************************************************************************************************//**
@@ -493,7 +493,7 @@ void LLNLAngularEnergy::toXMLList( WriteInfo &a_writeInfo, std::string const &a_
 }
 
 /*! \class CoherentPhotoAtomicScattering
- * Class for the GNDS <**coherentPhotoAtomicScattering**> node.
+ * Class for the GNDS **coherentPhotoAtomicScattering** node.
  */
 
 /* *********************************************************************************************************//**
@@ -512,7 +512,7 @@ CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering( Construction::Sett
 }
 
 /*! \class IncoherentPhotoAtomicScattering
- * Class for the GNDS <**incoherentPhotoAtomicScattering**> node.
+ * Class for the GNDS **incoherentPhotoAtomicScattering** node.
  */
 
 /* *********************************************************************************************************//**
@@ -531,7 +531,7 @@ IncoherentPhotoAtomicScattering::IncoherentPhotoAtomicScattering( Construction::
 }
 
 /*! \class ThermalNeutronScatteringLaw
- * Class for the GNDS <**incoherentPhotoAtomicScattering**> node.
+ * Class for the GNDS **thermalNeutronScatteringLaw** node.
  */
 
 /* *********************************************************************************************************//**
@@ -550,7 +550,7 @@ ThermalNeutronScatteringLaw::ThermalNeutronScatteringLaw( Construction::Settings
 }
 
 /*! \class Branching3d
- * Class for the GNDS <**branching3d**> node.
+ * Class for the GNDS **branching3d** node.
  */
 
 /* *********************************************************************************************************//**
@@ -567,7 +567,7 @@ Branching3d::Branching3d( Construction::Settings const &a_construction, HAPI::No
 }
 
 /*! \class Reference3d
- * Class for the GNDS <**reference**> distribution node.
+ * Class for the GNDS **reference** distribution node.
  */
 
 /* *********************************************************************************************************//**
@@ -600,8 +600,75 @@ void Reference3d::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent
     a_writeInfo.addNodeStarterEnder( a_indent, moniker( ), attributes );
 }
 
+/*! \class CoulombPlusNuclearElastic
+ * Class for the GNDS **CoulombPlusNuclearElastic** distribution node.
+ */
+
+/* *********************************************************************************************************//**
+ *
+ * @param a_construction        [in]    Used to pass user options to the constructor.
+ * @param a_node                [in]    The **HAPI::Node** to be parsed and used to construct the CoulombPlusNuclearElastic.
+ * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
+ * @param a_parent              [in]    The **m_distribution** member of GIDI::Product this distribution form belongs to.
+ ***********************************************************************************************************/
+
+CoulombPlusNuclearElastic::CoulombPlusNuclearElastic( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+        Distribution( a_node, a_setupInfo, FormType::CoulombPlusNuclearElastic3d, a_parent ),
+        m_href( a_node.attribute_as_string( GIDI_hrefChars ) ) {
+
+}
+
+/* *********************************************************************************************************//**
+ * Fills the argument *a_writeInfo* with the XML lines that represent *this*. Recursively enters each sub-node.
+ *
+ * @param       a_writeInfo         [in/out]    Instance containing incremental indentation and other information and stores the appended lines.
+ * @param       a_indent            [in]        The amount to indent *this* node.
+ ***********************************************************************************************************/
+
+void CoulombPlusNuclearElastic::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+
+    std::string attributes;
+
+    attributes += a_writeInfo.addAttribute( GIDI_labelChars, label( ) );
+    attributes += a_writeInfo.addAttribute( GIDI_hrefChars, href( ) );
+    a_writeInfo.addNodeStarterEnder( a_indent, moniker( ), attributes );
+}
+
+/*! \class LLNLLegendre
+ * Class for the LLNL/GNDS **LLNLLegendre** distribution node.
+ */
+
+/* *********************************************************************************************************//**
+ * This class is woefully inadequate but some form is needed by the method Product::isCompleteParticle.
+ *
+ * @param a_construction        [in]    Used to pass user options to the constructor.
+ * @param a_node                [in]    The **HAPI::Node** to be parsed and used to construct the LLNLLegendre.
+ * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
+ * @param a_parent              [in]    The **m_distribution** member of GIDI::Product this distribution form belongs to.
+ ***********************************************************************************************************/
+
+LLNLLegendre::LLNLLegendre( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+        Distribution( a_node, a_setupInfo, FormType::LLNLLegendre, a_parent ) {
+
+}
+
+/* *********************************************************************************************************//**
+ * Fills the argument *a_writeInfo* with the XML lines that represent *this*.
+ *
+ * @param       a_writeInfo         [in/out]    Instance containing incremental indentation and other information and stores the appended lines.
+ * @param       a_indent            [in]        The amount to indent *this* node.
+ ***********************************************************************************************************/
+
+void LLNLLegendre::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+
+    std::string attributes;
+
+    attributes += a_writeInfo.addAttribute( GIDI_labelChars, label( ) );
+    a_writeInfo.addNodeStarterEnder( a_indent, moniker( ), attributes );
+}
+
 /*! \class Unspecified
- * Class for the GNDS <**unspecified**> node.
+ * Class for the GNDS **unspecified** node.
  */
 
 /* *********************************************************************************************************//**

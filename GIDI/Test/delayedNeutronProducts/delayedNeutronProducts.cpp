@@ -40,6 +40,7 @@ int main( int argc, char **argv ) {
 */
 void main2( int argc, char **argv ) {
 
+    LUPI::StatusMessageReporting smr1;
     argvOptions argv_options( __FILE__, description );
     ParseTestOptions parseTestOptions( argv_options, argc, argv );
 
@@ -68,11 +69,11 @@ void main2( int argc, char **argv ) {
         std::cout << "    " << delayedNeutronProduct.delayedNeutronIndex( ) << ": rate = " << delayedNeutronProduct.rate( ).value( ) 
                 << " " << delayedNeutronProduct.rate( ).unit( ) << std::endl;
 
-        GIDI::Vector multiplicity = product->multiGroupMultiplicity( settings, temperatures[0], PoPI::IDs::neutron );
+        GIDI::Vector multiplicity = product->multiGroupMultiplicity( smr1, settings, temperatures[0], PoPI::IDs::neutron );
         printVector( "        Multiplicity:: ", multiplicity );
 
-        int maxOrder = product->maximumLegendreOrder( settings, temperatures[0], PoPI::IDs::neutron );
-        GIDI::Matrix matrix = product->multiGroupProductMatrix( settings, temperatures[0], particles, PoPI::IDs::neutron, 0 );
+        int maxOrder = product->maximumLegendreOrder( smr1, settings, temperatures[0], PoPI::IDs::neutron );
+        GIDI::Matrix matrix = product->multiGroupProductMatrix( smr1, settings, temperatures[0], particles, PoPI::IDs::neutron, 0 );
         printMatrix( "    Product Matrix", maxOrder, matrix, "        " );
     }
 

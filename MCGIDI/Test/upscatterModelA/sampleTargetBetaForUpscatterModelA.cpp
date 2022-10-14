@@ -31,6 +31,7 @@ int main( int argc, char **argv ) {
     long numberOfSamples = 10 * 1000 * 1000;
     long bins[nBins+1];
     std::set<int> reactionsToExclude;
+    LUPI::StatusMessageReporting smr1;
 
     for( int i1 = 0; i1 <= nBins; ++i1 ) bins[i1] = 0;
 
@@ -65,7 +66,7 @@ int main( int argc, char **argv ) {
     MCGIDI::Protare *MCProtare;
 
     try {
-        MCProtare = MCGIDI::protareFromGIDIProtare( *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude ); }
+        MCProtare = MCGIDI::protareFromGIDIProtare( smr1, *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude ); }
     catch (char const *str) {
         std::cout << str << std::endl;
         exit( EXIT_FAILURE );

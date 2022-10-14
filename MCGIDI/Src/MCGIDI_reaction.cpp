@@ -27,10 +27,12 @@ MCGIDI_HOST_DEVICE Reaction::Reaction( ) :
         m_ENDL_C( 0 ),
         m_ENDL_S( 0 ),
         m_neutronIndex( 0 ),
+        m_initialStateIndex( -1 ),
         m_hasFission( false ),
         m_projectileMass( 0.0 ),
         m_targetMass( 0.0 ),
         m_crossSectionThreshold( 0.0 ),
+        m_twoBodyThreshold( 0.0 ),
         m_upscatterModelASupported( false ),
         m_outputChannel( ),
         m_associatedOrphanProductIndex( -1 ),
@@ -47,7 +49,7 @@ MCGIDI_HOST_DEVICE Reaction::Reaction( ) :
  ***********************************************************************************************************/
 
 MCGIDI_HOST Reaction::Reaction( GIDI::Reaction const &a_reaction, SetupInfo &a_setupInfo, Transporting::MC const &a_settings, GIDI::Transporting::Particles const &a_particles,
-            GIDI::Styles::TemperatureInfos const &a_temperatureInfos ) :
+                GIDI::Styles::TemperatureInfos const &a_temperatureInfos ) :
         m_protareSingle( nullptr ),
         m_reactionIndex( -1 ),
         m_label( a_reaction.label( ).c_str( ) ),
@@ -55,11 +57,14 @@ MCGIDI_HOST Reaction::Reaction( GIDI::Reaction const &a_reaction, SetupInfo &a_s
         m_ENDL_C( a_reaction.ENDL_C( ) ),
         m_ENDL_S( a_reaction.ENDL_S( ) ),
         m_neutronIndex( a_settings.neutronIndex( ) ),
+        m_initialStateIndex( -1 ),
         m_hasFission( a_reaction.hasFission( ) ),
         m_projectileMass( a_setupInfo.m_protare.projectileMass( ) ),
         m_targetMass( a_setupInfo.m_protare.targetMass( ) ),
         m_crossSectionThreshold( a_reaction.crossSectionThreshold( ) ),
+        m_twoBodyThreshold( a_reaction.twoBodyThreshold( ) ),
         m_upscatterModelASupported( ( a_setupInfo.m_protare.projectileIndex( ) != a_setupInfo.m_protare.photonIndex( ) ) &&
+                                    ( a_setupInfo.m_protare.projectileIndex( ) != a_setupInfo.m_protare.electronIndex( ) ) &&
                                     ( a_setupInfo.m_reactionType == Transporting::Reaction::Type::Reactions ) ),
         m_outputChannel( a_reaction.outputChannel( ), a_setupInfo, a_settings, a_particles ),
         m_associatedOrphanProductIndex( -1 ),
@@ -262,6 +267,7 @@ MCGIDI_HOST_DEVICE void Reaction::sampleNullProducts( Protare const &a_protare, 
  * *a_pid* at angle *a_mu_lab* as seen in the lab frame. If a particle is emitted, *a_energy_out* is its sampled outgoing energy. 
  *
  * @param a_pid                     [in]    The index of the particle to emit.
+ * @param a_temperature             [in]    Specifies the temperature of the material.
  * @param a_energy_in               [in]    The energy of the incident particle.
  * @param a_mu_lab                  [in]    The desired mu in the lab frame for the emitted particle.
  * @param a_energy_out              [in]    The energy of the emitted outgoing particle.
@@ -272,19 +278,19 @@ MCGIDI_HOST_DEVICE void Reaction::sampleNullProducts( Protare const &a_protare, 
  * @return                                  The weith that the particle is emitted into mu *a_mu_lab*.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE double Reaction::angleBiasing( int a_pid, double a_energy_in, double a_mu_lab, double &a_energy_out, 
+MCGIDI_HOST_DEVICE double Reaction::angleBiasing( int a_pid, double a_temperature, double a_energy_in, double a_mu_lab, double &a_energy_out, 
                 double (*a_userrng)( void * ), void *a_rngState, double *a_cumulative_weight ) const {
 
     double cumulative_weight1 = 0.0;
     if( a_cumulative_weight == nullptr ) a_cumulative_weight = &cumulative_weight1;
     double weight1 = 0.0;
 
-    m_outputChannel.angleBiasing( this, a_pid, a_energy_in, a_mu_lab, weight1, a_energy_out, a_userrng, a_rngState, *a_cumulative_weight );
+    m_outputChannel.angleBiasing( this, a_pid, a_temperature, a_energy_in, a_mu_lab, weight1, a_energy_out, a_userrng, a_rngState, *a_cumulative_weight );
 
     if( m_associatedOrphanProduct != nullptr ) {
         double cumulative_weight2 = 0.0;
         double energy_out2;
-        double weight2 = m_associatedOrphanProduct->angleBiasing( a_pid, a_energy_in, a_mu_lab, energy_out2, a_userrng, a_rngState, &cumulative_weight2 );
+        double weight2 = m_associatedOrphanProduct->angleBiasing( a_pid, a_temperature, a_energy_in, a_mu_lab, energy_out2, a_userrng, a_rngState, &cumulative_weight2 );
 
         *a_cumulative_weight += cumulative_weight2;
         if( cumulative_weight2 > a_userrng( a_rngState ) * *a_cumulative_weight ) {
@@ -312,10 +318,12 @@ MCGIDI_HOST_DEVICE void Reaction::serialize( DataBuffer &a_buffer, DataBuffer::M
     DATA_MEMBER_INT( m_ENDL_C, a_buffer, a_mode );
     DATA_MEMBER_INT( m_ENDL_S, a_buffer, a_mode );
     DATA_MEMBER_INT( m_neutronIndex, a_buffer, a_mode );
+    DATA_MEMBER_INT( m_initialStateIndex, a_buffer, a_mode );
     DATA_MEMBER_CAST( m_hasFission, a_buffer, a_mode, bool );
     DATA_MEMBER_FLOAT( m_projectileMass, a_buffer, a_mode );
     DATA_MEMBER_FLOAT( m_targetMass, a_buffer, a_mode );
     DATA_MEMBER_FLOAT( m_crossSectionThreshold, a_buffer, a_mode );
+    DATA_MEMBER_FLOAT( m_twoBodyThreshold, a_buffer, a_mode );
     DATA_MEMBER_CAST( m_upscatterModelASupported, a_buffer, a_mode, bool );
     DATA_MEMBER_VECTOR_DOUBLE( m_upscatterModelACrossSection, a_buffer, a_mode );
     DATA_MEMBER_VECTOR_INT( m_productIndices, a_buffer, a_mode );

@@ -18,7 +18,7 @@ std::string check3Ints( int i1, int i2, int i3 );
 */
 int main( int argc, char **argv ) {
 
-    std::cerr << "    " << __FILE__ << std::endl;
+    std::cerr << "    " << LUPI::FileInfo::basenameWithoutExtension( __FILE__ ) << std::endl;
 
     std::string fileName( "../pops.xml" );
 

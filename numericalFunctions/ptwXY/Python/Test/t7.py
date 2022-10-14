@@ -11,8 +11,6 @@
 This is a test of the method copy. Creates a pointwiseXY_C object and makes a copy. The outputs should be the same.
 """
 
-from __future__ import print_function
-
 import time
 import random
 

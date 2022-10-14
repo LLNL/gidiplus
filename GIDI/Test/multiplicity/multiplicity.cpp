@@ -67,6 +67,7 @@ void main2( int argc, char **argv ) {
 */
 void printMultiplicity( GIDI::Protare *protare, std::string const &productID, GIDI::Transporting::DelayedNeutrons delayedNeutrons ) {
 
+    LUPI::StatusMessageReporting smr1;
     GIDI::Styles::TemperatureInfos temperatures = protare->temperatures( );
     for( GIDI::Styles::TemperatureInfos::iterator iter = temperatures.begin( ); iter != temperatures.end( ); ++iter ) {
         GIDI::PhysicalQuantity const &temperature = iter->temperature( );
@@ -83,7 +84,7 @@ void printMultiplicity( GIDI::Protare *protare, std::string const &productID, GI
 
     std::string prefix( "Total multiplicity:: " );
     try {
-        GIDI::Vector multiplicity = protare->multiGroupMultiplicity( settings, temperatures[0], productID );
+        GIDI::Vector multiplicity = protare->multiGroupMultiplicity( smr1, settings, temperatures[0], productID );
         printVector( prefix, multiplicity ); }
     catch (char const *str) {
         std::cout << str << std::endl;
@@ -93,13 +94,13 @@ void printMultiplicity( GIDI::Protare *protare, std::string const &productID, GI
     for( std::size_t index = 0; index < protare->numberOfReactions( ); ++index ) {
         GIDI::Reaction const *reaction = protare->reaction( index );
 
-        GIDI::Vector multiplicity = reaction->multiGroupMultiplicity( settings, temperatures[0], productID );
+        GIDI::Vector multiplicity = reaction->multiGroupMultiplicity( smr1, settings, temperatures[0], productID );
         prefix = reaction->label( );
         prefix = "    " + prefix + ":: ";
         printVector( prefix, multiplicity );
     }
 
-    GIDI::Vector fissionNeutronMultiplicity = protare->multiGroupFissionNeutronMultiplicity( settings, temperatures[0] );
+    GIDI::Vector fissionNeutronMultiplicity = protare->multiGroupFissionNeutronMultiplicity( smr1, settings, temperatures[0] );
     prefix = "Fission neutron multiplicity:: ";
     printVector( prefix, fissionNeutronMultiplicity );
 }

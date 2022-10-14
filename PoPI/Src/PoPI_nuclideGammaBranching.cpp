@@ -11,21 +11,32 @@
 
 namespace PoPI {
 
-/*
-============================================================
-================== NuclideGammaBranchInfo ==================
-============================================================
-*/
-NuclideGammaBranchInfo::NuclideGammaBranchInfo( double a_probability, double a_photonEmissionProbability, double a_gammaEnergy, std::string const &a_residualState ) :
+/*! \class NuclideGammaBranchInfo
+ * Class storing information about the gamma (i.e., photon) decay of an excited nuclide state to a lower state.
+ */
+
+/* *********************************************************************************************************//**
+ * @param a_probability                 [in]    The probability that the level decays to state *a_residualState*.
+ * @param a_photonEmissionProbability   [in]    The conditional probability the the decay emitted a photon.
+ * @param a_gammaEnergy                 [in]    The energy of the emitted photon.
+ * @param a_residualState               [in]    The state the residual is left in after photon decay.
+ ***********************************************************************************************************/
+
+NuclideGammaBranchInfo::NuclideGammaBranchInfo( double a_probability, double a_photonEmissionProbability, double a_gammaEnergy, 
+                std::string const &a_residualState ) :
         m_probability( a_probability ),
         m_photonEmissionProbability( a_photonEmissionProbability ),
         m_gammaEnergy( a_gammaEnergy ),
         m_residualState( a_residualState ) {
 
 }
-/*
-=========================================================
-*/
+
+/* *********************************************************************************************************//**
+ * Copy constructor.
+
+ * @param a_nuclideGammaBranchInfo      [in]    The *NuclideGammaBranchInfo* instance to copy.
+ ***********************************************************************************************************/
+
 NuclideGammaBranchInfo::NuclideGammaBranchInfo( NuclideGammaBranchInfo const &a_nuclideGammaBranchInfo ) :
         m_probability( a_nuclideGammaBranchInfo.probability( ) ),
         m_photonEmissionProbability( a_nuclideGammaBranchInfo.photonEmissionProbability( ) ),
@@ -90,9 +101,10 @@ void NuclideGammaBranchStateInfo::calculateDerivedData( NuclideGammaBranchStateI
 NuclideGammaBranchStateInfos::NuclideGammaBranchStateInfos( ) {
 
 }
-/*
-=========================================================
-*/
+
+/* *********************************************************************************************************//**
+ ***********************************************************************************************************/
+
 NuclideGammaBranchStateInfos::~NuclideGammaBranchStateInfos( ) {
 
     for( std::size_t i1 = 0; i1 < m_nuclideGammaBranchStateInfos.size( ); ++i1 ) delete m_nuclideGammaBranchStateInfos[i1];

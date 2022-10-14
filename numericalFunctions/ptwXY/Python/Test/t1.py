@@ -11,8 +11,6 @@
 Some simple stuff that should repeat.
 """
 
-from __future__ import print_function
-
 from numericalFunctions import pointwiseXY_C
 
 f = pointwiseXY_C.pointwiseXY_C( initialSize = 40, overflowSize = 10 )

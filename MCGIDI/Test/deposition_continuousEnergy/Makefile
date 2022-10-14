@@ -17,3 +17,6 @@ check: deposition_continuousEnergy
 	python deposition_continuousEnergy.py H1
 	python deposition_continuousEnergy.py O16
 	python deposition_continuousEnergy.py Th227
+	python deposition_continuousEnergy.py Th227 -d
+	python deposition_continuousEnergy.py Th227  --useSlowerContinuousEnergyConversion
+	python deposition_continuousEnergy.py Th227 -d --useSlowerContinuousEnergyConversion

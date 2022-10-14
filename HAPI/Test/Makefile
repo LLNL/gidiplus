@@ -9,7 +9,7 @@ SHELL = /bin/ksh
 
 .PHONY: default compile check clean realclean doDirs
 
-DIRS = purePugi parseXML parseHDF
+DIRS = purePugi parseXML #parseHDF
 
 default:
 

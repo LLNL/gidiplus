@@ -21,10 +21,10 @@ Reaction::Reaction( int a_ENDF_MT, std::string a_fissionGenre ) :
         m_active( true ),
         m_ENDF_MT( a_ENDF_MT ),
         m_fissionGenre( a_fissionGenre ),
-        m_doubleDifferentialCrossSection( GIDI_doubleDifferentialCrossSectionChars ),
-        m_crossSection( GIDI_crossSectionChars ),
-        m_availableEnergy( GIDI_availableEnergyChars ),
-        m_availableMomentum( GIDI_availableMomentumChars ),
+        m_doubleDifferentialCrossSection( GIDI_doubleDifferentialCrossSectionChars, GIDI_labelChars ),
+        m_crossSection( GIDI_crossSectionChars, GIDI_labelChars ),
+        m_availableEnergy( GIDI_availableEnergyChars, GIDI_labelChars ),
+        m_availableMomentum( GIDI_availableMomentumChars, GIDI_labelChars ),
         m_outputChannel( ) {
 
     setMoniker( GIDI_reactionChars );
@@ -53,27 +53,41 @@ Reaction::Reaction( Construction::Settings const &a_construction, HAPI::Node con
         m_fissionGenre( a_node.attribute_as_string( GIDI_fissionGenreChars ) ),
         m_QThreshold( 0.0 ),
         m_crossSectionThreshold( 0.0 ),
-        m_doubleDifferentialCrossSection( a_construction, GIDI_doubleDifferentialCrossSectionChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseDoubleDifferentialCrossSectionSuite, a_styles ),
-        m_crossSection( a_construction, GIDI_crossSectionChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseCrossSectionSuite, a_styles ),
-        m_availableEnergy( a_construction, GIDI_availableEnergyChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseAvailableSuite, a_styles ),
-        m_availableMomentum( a_construction, GIDI_availableMomentumChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseAvailableSuite, a_styles ),
+        m_doubleDifferentialCrossSection( a_construction, GIDI_doubleDifferentialCrossSectionChars, GIDI_labelChars, a_node, a_setupInfo, a_pops, 
+                a_internalPoPs, parseDoubleDifferentialCrossSectionSuite, a_styles ),
+        m_crossSection( a_construction, GIDI_crossSectionChars, GIDI_labelChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseCrossSectionSuite, a_styles ),
+        m_availableEnergy( a_construction, GIDI_availableEnergyChars, GIDI_labelChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseAvailableSuite, a_styles ),
+        m_availableMomentum( a_construction, GIDI_availableMomentumChars, GIDI_labelChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseAvailableSuite, a_styles ),
         m_outputChannel( nullptr ) {
 
     m_isPairProduction = label( ).find( "pair production" ) != std::string::npos;
+    m_isPhotoAtomicIncoherentScattering = false;
+    if( m_doubleDifferentialCrossSection.size( ) > 0 )
+        m_isPhotoAtomicIncoherentScattering = m_doubleDifferentialCrossSection.get<Form>( 0 )->type( ) == FormType::incoherentPhotonScattering;
 
     m_doubleDifferentialCrossSection.setAncestor( this );
     m_crossSection.setAncestor( this );
     m_availableEnergy.setAncestor( this );
     m_availableMomentum.setAncestor( this );
 
-    ENDL_CFromENDF_MT( m_ENDF_MT, &m_ENDL_C, &m_ENDL_S );
-
+    a_setupInfo.m_outputChannelLevel = 0;
     m_outputChannel = new OutputChannel( a_construction, a_node.child( GIDI_outputChannelChars ), a_setupInfo, a_pops, a_internalPoPs, a_styles, hasFission( ) );
     m_outputChannel->setAncestor( this );
 
+    ENDL_CFromENDF_MT( m_ENDF_MT, &m_ENDL_C, &m_ENDL_S );
+    if( a_setupInfo.m_isENDL_C_9 ) m_ENDL_C = 9;
+    if( m_ENDL_C == 20 ) {
+        Product *product = m_outputChannel->products( ).get<Product>( 0 );
+        if( product->particle( ).ID( ) == "H1" ) m_ENDL_C = 21;
+    }
+    else if( m_ENDL_C == 22 ) {
+        Product *product = m_outputChannel->products( ).get<Product>( 0 );
+        if( product->particle( ).ID( ) == "H2" ) m_ENDL_C = 35;
+    }
+
     if( ( a_construction.parseMode( ) != Construction::ParseMode::outline ) && ( a_construction.parseMode( ) != Construction::ParseMode::readOnly ) ) {
         double _Q = 0.0;
-        Form const &QForm = **(m_outputChannel->Q( ).begin( ));
+        Form const &QForm = *(m_outputChannel->Q( ).get<Form>( 0 ));
         switch( QForm.type( ) ) {
         case FormType::constant1d : {
             Functions::Constant1d const &constant1d = static_cast<Functions::Constant1d const &>( QForm );
@@ -83,9 +97,13 @@ Reaction::Reaction( Construction::Settings const &a_construction, HAPI::Node con
             Functions::XYs1d const &xys1d = static_cast<Functions::XYs1d const &>( QForm );
             _Q = xys1d.evaluate( 0.0 );
             break; }
+        case FormType::gridded1d : {        // Should be a special reaction (e.g., summed multi-group data) and can be ignored.
+            _Q = 0.0;
+            break; }
         default :
             throw Exception( "Reaction::Reaction: unsupported Q form " + QForm.label( ) );
         }
+        m_twoBodyThreshold = -_Q * a_protare.thresholdFactor( );
         _Q *= -1;
         if( _Q <= 0.0 ) _Q = 0.0;
         m_QThreshold = a_protare.thresholdFactor( ) * _Q;
@@ -96,12 +114,16 @@ Reaction::Reaction( Construction::Settings const &a_construction, HAPI::Node con
                 Styles::GriddedCrossSection const &griddedCrossSection = static_cast<Styles::GriddedCrossSection const &>( **monikers[0] );
                 Grid grid = griddedCrossSection.grid( );
 
-                Functions::Ys1d const &ys1d = static_cast<Functions::Ys1d const &>( *m_crossSection.get<Functions::Ys1d>( griddedCrossSection.label( ) ) );
-                m_crossSectionThreshold = grid[ys1d.start( )]; }
-            else {      // Should also check 'evaluate' style before using m_QThreshold as a default.
+                if( m_crossSection.has( griddedCrossSection.label( ) ) ) {
+                    Functions::Ys1d const &ys1d = static_cast<Functions::Ys1d const &>( *m_crossSection.get<Functions::Ys1d>( griddedCrossSection.label( ) ) );
+                    m_crossSectionThreshold = grid[ys1d.start( )];
+                }
+            }
+            if( m_crossSectionThreshold == 0.0 ) {      // Should also check 'evaluate' style before using m_QThreshold as a default.
                 m_crossSectionThreshold = m_QThreshold;
             }
         }
+        if( m_twoBodyThreshold > 0.0 ) m_twoBodyThreshold = m_crossSectionThreshold;
     }
 }
 
@@ -131,6 +153,7 @@ void Reaction::productIDs( std::set<std::string> &a_ids, Transporting::Particles
  * Determines the maximum Legredre order present in the multi-group transfer matrix for a give product for a give label. Inspects all
  * products produced by this reaction.
  *
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
  * @param a_settings            [in]    Specifies the requested label.
  * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
  * @param a_productID           [in]    Particle id of the requested product.
@@ -138,29 +161,33 @@ void Reaction::productIDs( std::set<std::string> &a_ids, Transporting::Particles
  * @return                              The maximum Legredre order. If no transfer matrix data are present for the requested product, -1 is returned.
  ***********************************************************************************************************/
 
-int Reaction::maximumLegendreOrder( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
+int Reaction::maximumLegendreOrder( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+                Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
 
     if( m_isPairProduction && ( a_productID == PoPI::IDs::photon ) ) return( 0 );
-    return( m_outputChannel->maximumLegendreOrder( a_settings, a_temperatureInfo, a_productID ) );
+    return( m_outputChannel->maximumLegendreOrder( a_smr, a_settings, a_temperatureInfo, a_productID ) );
 }
 
 /* *********************************************************************************************************//**
  * Returns the multi-group, total multiplicity for the requested label for the requested product. This is a cross section weighted multiplicity.
  *
- * @param a_settings        [in]    Specifies the requested label.
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
+ * @param a_settings            [in]    Specifies the requested label.
  * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
- * @param a_productID       [in]    Particle id for the requested product.
- * @return                          The requested multi-group multiplicity as a GIDI::Vector.
+ * @param a_productID           [in]    Particle id for the requested product.
+ *
+ * @return                              The requested multi-group multiplicity as a GIDI::Vector.
  ***********************************************************************************************************/
 
-Vector Reaction::multiGroupMultiplicity( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
+Vector Reaction::multiGroupMultiplicity( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+                    Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
 
     Vector vector( 0 );
 
     if( m_isPairProduction ) {
-        if( a_productID == PoPI::IDs::photon ) vector += multiGroupCrossSection( a_settings, a_temperatureInfo ) * 2; }
+        if( a_productID == PoPI::IDs::photon ) vector += multiGroupCrossSection( a_smr, a_settings, a_temperatureInfo ) * 2; }
     else {
-        vector += m_outputChannel->multiGroupMultiplicity( a_settings, a_temperatureInfo, a_productID );
+        vector += m_outputChannel->multiGroupMultiplicity( a_smr, a_settings, a_temperatureInfo, a_productID );
     }
 
     return( vector );
@@ -189,7 +216,7 @@ bool Reaction::hasFission( ) const {
  * @param a_outputChannel   [in]    The output channel to make *this* reaction output channel.
  ***********************************************************************************************************/
 
-void Reaction::outputChannel( OutputChannel *a_outputChannel ) {
+void Reaction::setOutputChannel( OutputChannel *a_outputChannel ) {
 
     m_outputChannel = a_outputChannel;
     m_outputChannel->setAncestor( this );
@@ -214,6 +241,7 @@ void Reaction::modifiedMultiGroupElasticForTNSL( std::map<std::string,std::size_
  * Used by Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or nullptr if none exists.
  *
  * @param a_item    [in]    The name of the class member whose pointer is to be return.
+ *
  * @return                  The pointer to the class member or nullptr if class does not have a member named a_item.
  ***********************************************************************************************************/
 
@@ -232,6 +260,7 @@ Ancestry *Reaction::findInAncestry3( std::string const &a_item ) {
  * Used by Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or nullptr if none exists.
  *
  * @param a_item    [in]    The name of the class member whose pointer is to be return.
+ *
  * @return                  The pointer to the class member or nullptr if class does not have a member named a_item.
  ***********************************************************************************************************/
 
@@ -249,38 +278,47 @@ Ancestry const *Reaction::findInAncestry3( std::string const &a_item ) const {
 /* *********************************************************************************************************//**
  * Returns the multi-group, cross section for the requested label the reaction.
  *
- * @param a_settings    [in]    Specifies the requested label.
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
+ * @param a_settings            [in]    Specifies the requested label.
  * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
- * @return                      The requested multi-group cross section as a GIDI::Vector.
+ *
+ * @return                              The requested multi-group cross section as a GIDI::Vector.
  ***********************************************************************************************************/
 
-Vector Reaction::multiGroupCrossSection( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo ) const {
+Vector Reaction::multiGroupCrossSection( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+                Styles::TemperatureInfo const &a_temperatureInfo ) const {
 
-    Functions::Gridded1d const *form = dynamic_cast<Functions::Gridded1d const*>( a_settings.form( m_crossSection, a_temperatureInfo ) );
+    Vector vector( 0 );
 
-    return( form->data( ) );
+    Functions::Gridded1d const *form = dynamic_cast<Functions::Gridded1d const*>( a_settings.form( a_smr, m_crossSection, a_temperatureInfo, "cross section" ) );
+    if( form != nullptr ) vector = form->data( );
+
+    return( vector );
 }
 
 /* *********************************************************************************************************//**
  * Returns the multi-group, product matrix for the requested label for the requested product index for the requested Legendre order.
  * If no data are found, an empty GIDI::Matrix is returned.
  *
- * @param a_settings        [in]    Specifies the requested label and if delayed neutrons should be included.
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
+ * @param a_settings            [in]    Specifies the requested label and if delayed neutrons should be included.
  * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
- * @param a_particles       [in]    The list of particles to be transported.
- * @param a_productID       [in]    Particle id for the requested product.
- * @param a_order           [in]    Requested product matrix, Legendre order.
- * @return                          The requested multi-group product matrix as a GIDI::Matrix.
+ * @param a_particles           [in]    The list of particles to be transported.
+ * @param a_productID           [in]    Particle id for the requested product.
+ * @param a_order               [in]    Requested product matrix, Legendre order.
+ *
+ * @return                              The requested multi-group product matrix as a GIDI::Matrix.
  ***********************************************************************************************************/
 
-Matrix Reaction::multiGroupProductMatrix( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, Transporting::Particles const &a_particles, std::string const &a_productID, int a_order ) const {
+Matrix Reaction::multiGroupProductMatrix( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+                Styles::TemperatureInfo const &a_temperatureInfo, Transporting::Particles const &a_particles, std::string const &a_productID, int a_order ) const {
 
     Matrix matrix( 0, 0 );
 
     if( m_isPairProduction ) {
         if( a_productID == PoPI::IDs::photon ) {
             if( a_order == 0 ) {
-                Vector productionCrossSection = multiGroupCrossSection( a_settings, a_temperatureInfo ) * 2;
+                Vector productionCrossSection = multiGroupCrossSection( a_smr, a_settings, a_temperatureInfo ) * 2;
                 std::map<std::string, GIDI::Transporting::Particle> const &particles = a_particles.particles( );
                 std::map<std::string, GIDI::Transporting::Particle>::const_iterator particle = particles.find( PoPI::IDs::photon );
                 GIDI::Transporting::MultiGroup const &multiGroup = particle->second.multiGroup( );
@@ -294,7 +332,7 @@ Matrix Reaction::multiGroupProductMatrix( Transporting::MG const &a_settings, St
             }
         } }
     else {
-        matrix += m_outputChannel->multiGroupProductMatrix( a_settings, a_temperatureInfo, a_particles, a_productID, a_order );
+        matrix += m_outputChannel->multiGroupProductMatrix( a_smr, a_settings, a_temperatureInfo, a_particles, a_productID, a_order );
     }
 
     return( matrix );
@@ -303,54 +341,66 @@ Matrix Reaction::multiGroupProductMatrix( Transporting::MG const &a_settings, St
 /* *********************************************************************************************************//**
  * Like Reaction::multiGroupProductMatrix, but only returns the fission neutron, transfer matrix.
  *
- * @param a_settings    [in]    Specifies the requested label and if delayed neutrons should be included.
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
+ * @param a_settings            [in]    Specifies the requested label and if delayed neutrons should be included.
  * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
- * @param a_particles   [in]    The list of particles to be transported.
- * @param a_order       [in]    Requested product matrix, Legendre order.
- * @return                      The requested multi-group neutron fission matrix as a GIDI::Matrix.
+ * @param a_particles           [in]    The list of particles to be transported.
+ * @param a_order               [in]    Requested product matrix, Legendre order.
+ *
+ * @return                              The requested multi-group neutron fission matrix as a GIDI::Matrix.
  ***********************************************************************************************************/
 
-Matrix Reaction::multiGroupFissionMatrix( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, Transporting::Particles const &a_particles, int a_order ) const {
+Matrix Reaction::multiGroupFissionMatrix( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+                Styles::TemperatureInfo const &a_temperatureInfo, Transporting::Particles const &a_particles, int a_order ) const {
 
     Matrix matrix( 0, 0 );
 
-    if( hasFission( ) ) matrix += multiGroupProductMatrix( a_settings, a_temperatureInfo, a_particles, PoPI::IDs::neutron, a_order );
+    if( hasFission( ) ) matrix += multiGroupProductMatrix( a_smr, a_settings, a_temperatureInfo, a_particles, PoPI::IDs::neutron, a_order );
     return( matrix );
 }
 
 /* *********************************************************************************************************//**
  * Returns the multi-group, total available energy for the requested label. This is a cross section weighted available energy.
  *
- * @param a_settings    [in]    Specifies the requested label.
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
+ * @param a_settings            [in]    Specifies the requested label.
  * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
- * @return                      The requested multi-group available energy as a GIDI::Vector.
+ *
+ * @return                              The requested multi-group available energy as a GIDI::Vector.
  ***********************************************************************************************************/
 
-Vector Reaction::multiGroupAvailableEnergy( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo ) const {
+Vector Reaction::multiGroupAvailableEnergy( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+                Styles::TemperatureInfo const &a_temperatureInfo ) const {
 
-    Functions::Gridded1d const *form = dynamic_cast<Functions::Gridded1d const*>( a_settings.form( m_availableEnergy, a_temperatureInfo ) );
+    Vector vector( 0 );
 
-    return( form->data( ) );
+    Functions::Gridded1d const *form = dynamic_cast<Functions::Gridded1d const*>( a_settings.form( a_smr, m_availableEnergy, a_temperatureInfo, "available energy" ) );
+    if( form != nullptr ) vector = form->data( );
+
+    return( vector );
 }
 
 /* *********************************************************************************************************//**
  * Returns the multi-group, total average energy for the requested label for the requested product. This is a cross section weighted average energy
  * summed over all products for this reaction.
  *
- * @param a_settings        [in]    Specifies the requested label.
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
+ * @param a_settings            [in]    Specifies the requested label.
  * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
- * @param a_productID       [in]    Particle id for the requested product.
- * @return                          The requested multi-group average energy as a GIDI::Vector.
+ * @param a_productID           [in]    Particle id for the requested product.
+ *
+ * @return                              The requested multi-group average energy as a GIDI::Vector.
  ***********************************************************************************************************/
 
-Vector Reaction::multiGroupAverageEnergy( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
+Vector Reaction::multiGroupAverageEnergy( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+                Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
 
     Vector vector( 0 );
 
     if( m_isPairProduction ) {
-        if( a_productID == PoPI::IDs::photon ) vector += multiGroupCrossSection( a_settings, a_temperatureInfo ) * 2.0 * PoPI_electronMass_MeV_c2; }
+        if( a_productID == PoPI::IDs::photon ) vector += multiGroupCrossSection( a_smr, a_settings, a_temperatureInfo ) * 2.0 * PoPI_electronMass_MeV_c2; }
     else {
-        vector += m_outputChannel->multiGroupAverageEnergy( a_settings, a_temperatureInfo, a_productID );
+        vector += m_outputChannel->multiGroupAverageEnergy( a_smr, a_settings, a_temperatureInfo, a_productID );
     }
 
     return( vector );
@@ -362,19 +412,22 @@ Vector Reaction::multiGroupAverageEnergy( Transporting::MG const &a_settings, St
  * from the available energy. The list of transportable particles is specified via the list of particle specified in the *a_settings* argument.
  * This method does not include any photon deposition energy for *this* reaction that is in the **GNDS** orphanProducts node.
  *
- * @param a_settings    [in]    Specifies the requested label and the products that are transported.
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
+ * @param a_settings            [in]    Specifies the requested label and the products that are transported.
  * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
- * @param a_particles   [in]    The list of particles to be transported.
- * @return                      The requested multi-group deposition energy as a GIDI::Vector.
+ * @param a_particles           [in]    The list of particles to be transported.
+ *
+ * @return                              The requested multi-group deposition energy as a GIDI::Vector.
  ***********************************************************************************************************/
 
-Vector Reaction::multiGroupDepositionEnergy( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, Transporting::Particles const &a_particles ) const {
+Vector Reaction::multiGroupDepositionEnergy( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+                Styles::TemperatureInfo const &a_temperatureInfo, Transporting::Particles const &a_particles ) const {
 
     std::map<std::string, Transporting::Particle> const &products = a_particles.particles( );
-    Vector vector = multiGroupAvailableEnergy( a_settings, a_temperatureInfo );
+    Vector vector = multiGroupAvailableEnergy( a_smr, a_settings, a_temperatureInfo );
 
     for( std::map<std::string, Transporting::Particle>::const_iterator iter = products.begin( ); iter != products.end( ); ++iter ) {
-        vector -= multiGroupAverageEnergy( a_settings, a_temperatureInfo, iter->first );
+        vector -= multiGroupAverageEnergy( a_smr, a_settings, a_temperatureInfo, iter->first );
     }
 
     return( vector );
@@ -383,31 +436,40 @@ Vector Reaction::multiGroupDepositionEnergy( Transporting::MG const &a_settings,
 /* *********************************************************************************************************//**
  * Returns the multi-group, total available momentum for the requested label. This is a cross section weighted available momentum.
  *
- * @param a_settings    [in]    Specifies the requested label.
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
+ * @param a_settings            [in]    Specifies the requested label.
  * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
- * @return                      The requested multi-group available momentum as a GIDI::Vector.
+ *
+ * @return                              The requested multi-group available momentum as a GIDI::Vector.
  ***********************************************************************************************************/
 
-Vector Reaction::multiGroupAvailableMomentum( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo ) const {
+Vector Reaction::multiGroupAvailableMomentum( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+                Styles::TemperatureInfo const &a_temperatureInfo ) const {
 
-    Functions::Gridded1d const *form = dynamic_cast<Functions::Gridded1d const*>( a_settings.form( m_availableMomentum, a_temperatureInfo ) );
+    Vector vector( 0 );
 
-    return( form->data( ) );
+    Functions::Gridded1d const *form = dynamic_cast<Functions::Gridded1d const*>( a_settings.form( a_smr, m_availableMomentum, a_temperatureInfo, "available momentum" ) );
+    if( form != nullptr ) vector = form->data( );
+
+    return( vector );
 }
 /* *********************************************************************************************************//**
  * Returns the multi-group, total average momentum for the requested label for the requested product. This is a cross section weighted average momentum.
  *
- * @param a_settings        [in]    Specifies the requested label.
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
+ * @param a_settings            [in]    Specifies the requested label.
  * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
- * @param a_productID       [in]    Particle id for the requested product.
- * @return                          The requested multi-group average momentum as a GIDI::Vector.
+ * @param a_productID           [in]    Particle id for the requested product.
+ *
+ * @return                              The requested multi-group average momentum as a GIDI::Vector.
  ***********************************************************************************************************/
 
-Vector Reaction::multiGroupAverageMomentum( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
+Vector Reaction::multiGroupAverageMomentum( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+                Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
 
     Vector vector( 0 );
 
-    if( !m_isPairProduction ) vector += m_outputChannel->multiGroupAverageMomentum( a_settings, a_temperatureInfo, a_productID );
+    if( !m_isPairProduction ) vector += m_outputChannel->multiGroupAverageMomentum( a_smr, a_settings, a_temperatureInfo, a_productID );
 
     return( vector );
 }
@@ -418,19 +480,22 @@ Vector Reaction::multiGroupAverageMomentum( Transporting::MG const &a_settings, 
  * from the available momentum. The list of transportable particles is specified via the list of particle specified in the *a_settings* argument.
  * This method does not include any photon deposition momentum for *this* reaction that is in the **GNDS** orphanProducts node.
  *
- * @param a_settings    [in]    Specifies the requested label.
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
+ * @param a_settings            [in]    Specifies the requested label.
  * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
- * @param a_particles   [in]    The list of particles to be transported.
- * @return                      The requested multi-group deposition momentum as a GIDI::Vector.
+ * @param a_particles           [in]    The list of particles to be transported.
+ *
+ * @return                              The requested multi-group deposition momentum as a GIDI::Vector.
  ***********************************************************************************************************/
 
-Vector Reaction::multiGroupDepositionMomentum( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, Transporting::Particles const &a_particles ) const {
+Vector Reaction::multiGroupDepositionMomentum( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+                Styles::TemperatureInfo const &a_temperatureInfo, Transporting::Particles const &a_particles ) const {
 
     std::map<std::string, Transporting::Particle> const &products = a_particles.particles( );
-    Vector vector = multiGroupAvailableMomentum( a_settings, a_temperatureInfo );
+    Vector vector = multiGroupAvailableMomentum( a_smr, a_settings, a_temperatureInfo );
 
     for( std::map<std::string, Transporting::Particle>::const_iterator iter = products.begin( ); iter != products.end( ); ++iter ) {
-        vector -= multiGroupAverageMomentum( a_settings, a_temperatureInfo, iter->first );
+        vector -= multiGroupAverageMomentum( a_smr, a_settings, a_temperatureInfo, iter->first );
     }
 
     return( vector );
@@ -441,19 +506,21 @@ Vector Reaction::multiGroupDepositionMomentum( Transporting::MG const &a_setting
  * If *a_productID* and *a_projectileID* are the same, then the multi-group cross section is subtracted for the returned value to indicate
  * that the *a_projectileID* as been absorted.
  *
- * @param a_settings        [in]    Specifies the requested label.
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
+ * @param a_settings            [in]    Specifies the requested label.
  * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
- * @param a_productID       [in]    The particle PoPs' id for the whose gain is to be calculated.
- * @param a_projectileID    [in]    The particle PoPs' id for the projectile.
+ * @param a_productID           [in]    The particle PoPs' id for the whose gain is to be calculated.
+ * @param a_projectileID        [in]    The particle PoPs' id for the projectile.
  *
- * @return                      The requested multi-group gain as a **GIDI::Vector**.
+ * @return                              The requested multi-group gain as a **GIDI::Vector**.
  ***********************************************************************************************************/
 
-Vector Reaction::multiGroupGain( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID, std::string const &a_projectileID  ) const {
+Vector Reaction::multiGroupGain( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+                Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID, std::string const &a_projectileID  ) const {
 
-    Vector vector( multiGroupMultiplicity( a_settings, a_temperatureInfo, a_productID ) );
+    Vector vector( multiGroupMultiplicity( a_smr, a_settings, a_temperatureInfo, a_productID ) );
 
-    if( a_productID == a_projectileID ) vector -= multiGroupCrossSection( a_settings, a_temperatureInfo );
+    if( PoPI::compareSpecialParticleIDs( a_productID, a_projectileID ) ) vector -= multiGroupCrossSection( a_smr, a_settings, a_temperatureInfo );
 
     return( vector );
 }
@@ -472,7 +539,8 @@ void Reaction::delayedNeutronProducts( DelayedNeutronProducts &a_delayedNeutronP
 /* *********************************************************************************************************//**
  * If *this* has an output channel, this output channel's **incompleteParticles* is called.
  *
- * @param       a_incompleteParticles   [out]   The list of particles whose **completeParticle** method returns *false*.
+ * @param a_settings                    [in]    Specifies the requested label.
+ * @param a_incompleteParticles         [out]   The list of particles whose **completeParticle** method returns *false*.
  ***********************************************************************************************************/
 
 void Reaction::incompleteParticles( Transporting::Settings const &a_settings, std::set<std::string> &a_incompleteParticles ) const {
@@ -483,14 +551,17 @@ void Reaction::incompleteParticles( Transporting::Settings const &a_settings, st
 /* *********************************************************************************************************//**
  * Returns, via arguments, the average energy and momentum, and gain for product with particle id *a_particleID*.
  *
- * @param a_particleID          [in]    The particle id of the product.
- * @param a_energy              [in]    The energy of the projectile.
- * @param a_productEnergy       [in]    The average energy of the product.
- * @param a_productMomentum     [in]    The average momentum of the product.
- * @param a_productGain         [in]    The gain of the product.
+ * @param a_settings                    [in]    Specifies the requested label.
+ * @param a_particleID                  [in]    The particle id of the product.
+ * @param a_energy                      [in]    The energy of the projectile.
+ * @param a_productEnergy               [in]    The average energy of the product.
+ * @param a_productMomentum             [in]    The average momentum of the product.
+ * @param a_productGain                 [in]    The gain of the product.
+ * @param a_ignoreIncompleteParticles   [in]    If *true*, incomplete particles are ignore, otherwise a *throw* is executed.
  ***********************************************************************************************************/
 
-void Reaction::continuousEnergyProductData( std::string const &a_particleID, double a_energy, double &a_productEnergy, double &a_productMomentum, double &a_productGain ) const {
+void Reaction::continuousEnergyProductData( Transporting::Settings const &a_settings, std::string const &a_particleID, double a_energy, double &a_productEnergy, double &a_productMomentum, 
+                double &a_productGain, bool a_ignoreIncompleteParticles ) const {
 
     a_productEnergy = 0.0;
     a_productMomentum = 0.0;
@@ -498,52 +569,92 @@ void Reaction::continuousEnergyProductData( std::string const &a_particleID, dou
 
 //    if( ENDF_MT( ) == 516 ) return;             // FIXME, may be something wrong with the way FUDGE converts ENDF to GNDS.
 
-    if( m_outputChannel != nullptr ) m_outputChannel->continuousEnergyProductData( a_particleID, a_energy, a_productEnergy, a_productMomentum, a_productGain );
+    if( m_outputChannel != nullptr )
+        m_outputChannel->continuousEnergyProductData( a_settings, a_particleID, a_energy, a_productEnergy, a_productMomentum, a_productGain, 
+                a_ignoreIncompleteParticles );
 }
 
 /* *********************************************************************************************************//**
- * This method calculates
+ * Modifies the average product energies, momenta and gains for product with particle id *a_particleID*.
  *
- *          result = a_offset + a_slope * source
- *
- * where *source* is the data in the **crossSection** node specified by the label *a_source* and the result
- * is added to the **crossSection** node with label *a_result*. The data specified by *a_source* must be a
- * **heated** style (i.e., the label returned by **Styles::TemperatureInfo::heatedCrossSection( )**. The style
- * for *a_result* must be a **modifiedHeated** style.
- *
- * The domains of *a_offset* and *a_slope* must at least span the domain of the source.
- * 
- * @param       a_source        [in]    The label for a **GNDS** **heated** style in the **crossSection** node whose data will be used as the source.
- * @param       a_result        [in]    The label for a **GNDS** **heated** style to add to the **crossSection** node.
- * @param       a_offset        [in]    An XYs1d function for the offset.
- * @param       a_slope         [in]    An XYs1d function for the slope.
+ * @param a_settings                    [in]    Specifies user options.
+ * @param a_particleID                  [in]    The particle id of the product.
+ * @param a_energies                    [in]    The vector of energies to map the data to.
+ * @param a_offset                      [in]    The index of the first energy whose data are to be added to the vectors.
+ * @param a_productEnergies             [out]   The vector of average energies of the product.
+ * @param a_productMomenta              [out]   The vector of average momenta of the product.
+ * @param a_productGains                [out]   The vector of gain of the product.
+ * @param a_ignoreIncompleteParticles   [in]    If *true*, incomplete particles are ignore, otherwise a *throw* is executed.
  ***********************************************************************************************************/
 
-void Reaction::modifiedCrossSection( Functions::XYs1d const &a_offset, Functions::XYs1d const &a_slope ) {
+void Reaction::mapContinuousEnergyProductData( Transporting::Settings const &a_settings, std::string const &a_particleID, 
+                std::vector<double> const &a_energies, int a_offset, std::vector<double> &a_productEnergies, std::vector<double> &a_productMomenta, 
+                std::vector<double> &a_productGains, bool a_ignoreIncompleteParticles ) const {
+
+//    if( ENDF_MT( ) == 516 ) return;             // FIXME, may be something wrong with the way FUDGE converts ENDF to GNDS.
+
+    if( m_outputChannel != nullptr )
+        m_outputChannel->mapContinuousEnergyProductData( a_settings, a_particleID, a_energies, a_offset, a_productEnergies, 
+                a_productMomenta, a_productGains, a_ignoreIncompleteParticles );
+}
+
+/* *********************************************************************************************************//**
+ * This method modifies the cross section for *this* reaction as
+ *
+ *          crossSection = a_offset + a_slope * crossSection
+ *
+ * Either or both of *a_offset* and *a_slope* can be an empty Functions::XYs1d instance or a nullptr.
+ * If both *a_offset* and *a_slope* are non-empty Functions::XYs1d instances, the domains of both must be the same.
+ * 
+ * @param       a_offset        [in]    A pointer to a XYs1d function for the offset.
+ * @param       a_slope         [in]    A pointer to a XYs1d function for the slope.
+ ***********************************************************************************************************/
+
+void Reaction::modifiedCrossSection( Functions::XYs1d const *a_offset, Functions::XYs1d const *a_slope ) {
 
     ProtareSingle &protare( dynamic_cast<ProtareSingle &>( *root( ) ) );
     Styles::Suite const &styles = protare.styles( );
     Suite &crossSectionSuite = crossSection( );
+    Functions::XYs1d const *offset1 = a_offset, *slope1 = a_slope;
 
-    if( a_offset.size( ) == 0 ) throw Exception( "GIDI::Reaction::modifiedCrossSection: offset has ho points." );
-    if( a_slope.size( )  == 0 ) throw Exception( "GIDI::Reaction::modifiedCrossSection: slope has no points." );
+    if( a_offset == nullptr ) offset1 = new Functions::XYs1d( );            // Handle nullptr cases.
+    if( a_slope == nullptr ) slope1 = new Functions::XYs1d( );
 
-    double domainMin = a_offset.domainMin( ), domainMax = a_offset.domainMax( );
+    if( offset1->size( ) == 0 ) {                                           // Handle empty functions.
+        if( slope1->size( ) == 0 ) {
+            if( a_offset == nullptr ) delete offset1;
+            if( a_slope == nullptr ) delete slope1;
+            return;
+        }
+        Functions::XYs1d const *offset2 = Functions::XYs1d::makeConstantXYs1d( offset1->axes( ), slope1->domainMin( ), slope1->domainMax( ), 0.0 );
+        if( a_offset == nullptr ) delete offset1;
+        offset1 = offset2; }
+    else if( slope1->size( )  == 0 ) {
+        Functions::XYs1d const *slope2 = Functions::XYs1d::makeConstantXYs1d( slope1->axes( ), offset1->domainMin( ), offset1->domainMax( ), 1.0 );
+        if( a_slope == nullptr ) delete slope1;
+        slope1 = slope2;
+    }
 
-    if( domainMin != a_slope.domainMin( ) ) throw Exception( "GIDI::Reaction::modifiedCrossSection: offset and slope domainMins differ." );
-    if( domainMax != a_slope.domainMax( ) ) throw Exception( "GIDI::Reaction::modifiedCrossSection: offset and slope domainMaxs differ." );
+    double domainMin = offset1->domainMin( ), domainMax = offset1->domainMax( );
+
+    if( domainMin != slope1->domainMin( ) ) throw Exception( "GIDI::Reaction::modifiedCrossSection: offset and slope domainMins differ." );
+    if( domainMax != slope1->domainMax( ) ) throw Exception( "GIDI::Reaction::modifiedCrossSection: offset and slope domainMaxs differ." );
 
     Styles::TemperatureInfos temperatureInfos = protare.temperatures( );
 
     Functions::XYs1d *xys1d = crossSectionSuite.get<Functions::XYs1d>( temperatureInfos[0].heatedCrossSection( ) );
-    if( ( xys1d->domainMin( ) >= domainMax ) || ( xys1d->domainMax( ) <= domainMin ) ) return;
+    if( ( xys1d->domainMin( ) >= domainMax ) || ( xys1d->domainMax( ) <= domainMin ) ) {
+        if( a_offset == nullptr ) delete offset1;
+        if( a_slope == nullptr ) delete slope1;
+        return;
+    }
 
     double crossSectionDomainMax = xys1d->domainMax( );
     if( xys1d->domainMin( ) > domainMin ) domainMin = xys1d->domainMin( );
     if( crossSectionDomainMax < domainMax ) domainMax = crossSectionDomainMax;
 
-    Functions::XYs1d offset = a_offset.domainSlice( domainMin, domainMax, true );
-    Functions::XYs1d slope  = a_slope.domainSlice( domainMin, domainMax, true );
+    Functions::XYs1d offset = offset1->domainSlice( domainMin, domainMax, true );
+    Functions::XYs1d slope  = slope1->domainSlice( domainMin, domainMax, true );
 
     for( auto temperatureInfo = temperatureInfos.begin( ); temperatureInfo != temperatureInfos.end( ); ++temperatureInfo ) {
         Functions::XYs1d *xys1d = crossSectionSuite.get<Functions::XYs1d>( temperatureInfo->heatedCrossSection( ) );
@@ -611,6 +722,7 @@ void Reaction::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) 
  * @param ENDF_MT   [in]    The ENDF MT value.
  * @param ENDL_C    [out]   The ENDL C value for the ENDF MT value.
  * @param ENDL_S    [out]   The ENDL S value for the ENDF MT value.
+ *
  * @return                  Returns 0 if the ENDF MT value is valid and 1 otherwise.
  ***********************************************************************************************************/
 

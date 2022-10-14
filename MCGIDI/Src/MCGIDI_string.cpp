@@ -372,7 +372,7 @@ MCGIDI_HOST_DEVICE int MCGIDI_strncmp( const char * s1, const char * s2, size_t 
     return c1 - c2;
   }
 
-  size_t MCGIDI_strlen (const char *str) {
+  MCGIDI_HOST_DEVICE size_t MCGIDI_strlen (const char *str) {
     size_t len = 0;
     while (*str != '\0') {
         str++;

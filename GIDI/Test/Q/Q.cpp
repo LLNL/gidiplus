@@ -65,6 +65,7 @@ void main2( int argc, char **argv ) {
 void printQ( GIDI::Protare *protare, bool final ) {
 
     char Str[256];
+    LUPI::StatusMessageReporting smr1;
 
     std::cout << "final = " << final << std::endl;
     GIDI::Styles::TemperatureInfos temperatures = protare->temperatures( );
@@ -75,7 +76,7 @@ void printQ( GIDI::Protare *protare, bool final ) {
     }
 
     GIDI::Transporting::MG settings( protare->projectile( ).ID( ), GIDI::Transporting::Mode::multiGroup, GIDI::Transporting::DelayedNeutrons::off );
-    GIDI::Vector Q = protare->multiGroupQ( settings, temperatures[0], final );
+    GIDI::Vector Q = protare->multiGroupQ( smr1, settings, temperatures[0], final );
     sprintf( Str, "%-40s:: ", "Total Q" );
     std::string prefix( Str );
     printVector( prefix, Q );
@@ -83,7 +84,7 @@ void printQ( GIDI::Protare *protare, bool final ) {
     for( std::size_t index = 0; index < protare->numberOfReactions( ); ++index ) {
         GIDI::Reaction const *reaction = protare->reaction( index );
 
-        GIDI::Vector Q = reaction->multiGroupQ( settings, temperatures[0], final );
+        GIDI::Vector Q = reaction->multiGroupQ( smr1, settings, temperatures[0], final );
         sprintf( Str, "%-40s:: ", reaction->label( ).c_str( ) );
         std::string string( Str );
         printVector( string, Q );

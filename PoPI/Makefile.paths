@@ -1,7 +1,0 @@
-PUGIXML_PATH     ?= $(GIDI_PLUS_PATH)/pugixml
-PUGIXML_INCLUDE  ?= $(PUGIXML_PATH)/include
-PUGIXML_LIB      ?= $(PUGIXML_PATH)/lib
-
-POPI_PATH        ?= $(GIDI_PLUS_PATH)/PoPI
-POPI_INCLUDE     ?= $(POPI_PATH)/include
-POPI_LIB         ?= $(POPI_PATH)/lib

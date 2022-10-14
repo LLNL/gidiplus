@@ -23,9 +23,10 @@ namespace Transporting {
  ***********************************************************************************************************/
 
 Settings::Settings( std::string const &a_projectileID, DelayedNeutrons a_delayedNeutrons ) :
-    m_projectileID( a_projectileID ),
-    m_delayedNeutrons( a_delayedNeutrons ),
-    m_nuclearPlusCoulombInterferenceOnly( false ) {
+        m_projectileID( a_projectileID ),
+        m_delayedNeutrons( a_delayedNeutrons ),
+        m_nuclearPlusCoulombInterferenceOnly( false ),
+        m_throwOnError( true ) {
 
 }
 
@@ -98,6 +99,13 @@ void Settings::print( ) const {
     else {
         std::cout << "off" << std::endl;
     }
+
+    std::cout << "  throw on error ";
+    if( m_throwOnError ) {
+        std::cout << "on" << std::endl; }
+    else {
+        std::cout << "off" << std::endl;
+    }
 }
 #endif
 
@@ -113,7 +121,8 @@ void Settings::print( ) const {
 
 MG::MG( std::string const &a_projectileID, Mode a_mode, DelayedNeutrons a_delayedNeutrons ) :
         Settings( a_projectileID, a_delayedNeutrons ),
-        m_mode( a_mode ) {
+        m_mode( a_mode ),
+        m_useMultiGroupSummedData( true ) {
 
 }
 
@@ -121,12 +130,14 @@ MG::MG( std::string const &a_projectileID, Mode a_mode, DelayedNeutrons a_delaye
  * Searches the suite *a_suite* for the form style specified by *mode( )* and matching one in *a_temperatureInfo*.
  * This only works for multi-group data (i.e., multiGroup or multiGroupWithSnElasticUpScatter type data).
  *
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
  * @param a_suite               [in]    The suite to search for the requested form.
  * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
- * @param a_throwOnError        [in]    If *true*, a *throw* is executed if no matching form is found; otherwise, *nullptr* is returned.
+ * @param a_dataType            [in]    The type of data being required. Only used if data not found.
  ***********************************************************************************************************/
 
-Form const *MG::form( GIDI::Suite const &a_suite, Styles::TemperatureInfo const &a_temperatureInfo, bool a_throwOnError ) const {
+Form const *MG::form( LUPI::StatusMessageReporting &a_smr, GIDI::Suite const &a_suite, Styles::TemperatureInfo const &a_temperatureInfo,
+                    std::string a_dataType ) const {
 
     std::string label;
 
@@ -136,15 +147,21 @@ Form const *MG::form( GIDI::Suite const &a_suite, Styles::TemperatureInfo const 
         label = a_temperatureInfo.SnElasticUpScatter( );
     }
 
-    Suite::const_iterator iter = a_suite.find( label );
+    Suite::const_iterator iter = a_suite.find( label, true );
     if( iter == a_suite.end( ) ) {
-        if( m_mode == Mode::multiGroupWithSnElasticUpScatter ) iter = a_suite.find( a_temperatureInfo.heatedMultiGroup( ) );
+        if( m_mode == Mode::multiGroupWithSnElasticUpScatter ) iter = a_suite.find( a_temperatureInfo.heatedMultiGroup( ), true );
     }
 
     if( iter == a_suite.end( ) ) {
-        if( a_throwOnError ) throw Exception( "ERROR from GIDI::MG::form: label '" + label + "' not found in suite '" + a_suite.toXLink( ) );
+        if( throwOnError( ) ) {
+            throw Exception( "ERROR from GIDI::MG::form: label '" + label + "' not found in suite '" + a_suite.toXLink( ) ); }
+        else {
+            std::string warning( "data for " + a_dataType + " not found with label '" + label + "' in suite " + a_suite.toXLink( ) );
+            smr_setReportError2p( a_smr.smr( ), 0, 0, warning.c_str( ) );
+        }
         return( nullptr );
     }
+
     return( *iter );
 }
 

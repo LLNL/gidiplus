@@ -59,6 +59,7 @@ void main2( int argc, char **argv ) {
     GIDI::Styles::TemperatureInfos temperatures = protare->temperatures( );
     std::string label( temperatures[0].heatedCrossSection( ) );
     MCGIDI::Transporting::MC settings( pops, protare->projectile( ).ID( ), &protare->styles( ), label, GIDI::Transporting::DelayedNeutrons::on, 20.0 );
+    settings.setThrowOnError( false );
 
     GIDI::Transporting::Particles particles;
 
@@ -70,7 +71,8 @@ void main2( int argc, char **argv ) {
 
     MCGIDI::DomainHash domainHash( 4000, 1e-8, 10 );
     std::set<int> reactionsToExclude;
-    MCGIDI::Protare *MCProtare = MCGIDI::protareFromGIDIProtare( *protare, pops, settings, particles, domainHash, temperatures, reactionsToExclude );
+    LUPI::StatusMessageReporting smr1;
+    MCGIDI::Protare *MCProtare = MCGIDI::protareFromGIDIProtare( smr1, *protare, pops, settings, particles, domainHash, temperatures, reactionsToExclude );
 
     for( double energy = 2e-11; energy < 21.0; energy *= 1e3 ) {
         std::cout << std::endl << "      energy = " << doubleToString( "%14.6e", energy ) << std::endl;

@@ -51,6 +51,7 @@ void main2( int argc, char **argv ) {
     GIDI::Transporting::Particles particles;
     std::set<int> reactionsToExclude;
     double TNSL_maximumTemperature = 0.0;
+    LUPI::StatusMessageReporting smr1;
 
     argvOptions argv_options( "TNSL", description );
     ParseTestOptions parseTestOptions( argv_options, argc, argv );
@@ -77,7 +78,7 @@ void main2( int argc, char **argv ) {
     MCGIDI::Transporting::MC MC( pops, protare->projectile( ).ID( ), &protare->styles( ), label, GIDI::Transporting::DelayedNeutrons::on, 20.0 );
 
     MCGIDI::DomainHash domainHash( 4000, 1e-8, 10 );
-    MCGIDI::Protare *MCProtare = MCGIDI::protareFromGIDIProtare( *protare, pops, MC, particles, domainHash, temperatureInfos, reactionsToExclude );
+    MCGIDI::Protare *MCProtare = MCGIDI::protareFromGIDIProtare( smr1, *protare, pops, MC, particles, domainHash, temperatureInfos, reactionsToExclude );
 
     std::cout << std::endl;
     std::cout << "Is ProtareSingle " << ( MCProtare->protareType( ) == MCGIDI::ProtareType::single ) << std::endl;

@@ -58,13 +58,14 @@ FissionEnergyRelease::~FissionEnergyRelease( ) {
 /* *********************************************************************************************************//**
  * Returns the multi-group Q-value.
  *
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
  * @param a_settings            [in]    Specifies the requested label.
  * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
  *
  * @return                              Multi-group Q-value.
  ***********************************************************************************************************/
 
-Vector FissionEnergyRelease::multiGroupQ( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo ) const {
+Vector FissionEnergyRelease::multiGroupQ( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo ) const {
 
     Vector vector( 0 );
 

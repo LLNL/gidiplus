@@ -71,8 +71,6 @@ Form *parseStylesSuite( Construction::Settings const &a_construction, GIDI::Suit
         form = new Styles::CrossSectionReconstructed( a_node, a_setupInfo, a_parent ); }
     else if( a_name == GIDI_CoulombPlusNuclearElasticMuCutoffStyleChars ) {
         form = new Styles::CoulombPlusNuclearElasticMuCutoff( a_node, a_setupInfo, a_parent ); }
-    else if( a_name == GIDI_thermalNeutronScatteringLawChars ) {
-        form = new Styles::TNSL( a_node, a_setupInfo, a_parent ); }
     else if( a_name == GIDI_realizationChars ) {
         form = new Styles::Realization( a_node, a_setupInfo, a_parent ); }
     else if( a_name == GIDI_averageProductDataStyleChars ) {
@@ -380,7 +378,7 @@ Form *parseCrossSectionSuite( Construction::Settings const &a_construction, Suit
         return( new Functions::ResonancesWithBackground1d( a_construction, a_node, a_setupInfo, a_parent ) ); }
     else if( a_name == GIDI_TNSL1dChars ) {
         form = new Functions::ThermalNeutronScatteringLaw1d( a_construction, a_node, a_setupInfo, a_parent ); }
-    else if( a_name == GIDI_URR_probabilityTables1ddChars ) {
+    else if( a_name == GIDI_URR_probabilityTables1dChars ) {
         form = new Functions::URR_probabilityTables1d( a_construction, a_node, a_setupInfo, a_parent ); }
     else if( a_name == GIDI_CoulombPlusNuclearElasticChars ) {
         }
@@ -587,7 +585,7 @@ Form *parseDistributionSuite( Construction::Settings const &a_construction, Suit
         if( a_construction.parseMode( ) == Construction::ParseMode::multiGroupOnly ) return( nullptr );
     }
 
-//  Distributions not parsed are CoulombPlusNuclearElasticMoniker and GIDI_LLNLLegendreChars.
+//  Distributions not parsed are GIDI_LLNLLegendreChars.
     Form *form = nullptr;
 
     if( a_name == GIDI_multiGroup3dChars ) {
@@ -621,9 +619,9 @@ Form *parseDistributionSuite( Construction::Settings const &a_construction, Suit
     else if( a_name == GIDI_unspecifiedChars ) {
         form = new Distributions::Unspecified( a_construction, a_node, a_setupInfo, a_parent ); }
     else if( a_name == GIDI_CoulombPlusNuclearElasticChars ) {
-        }
+        form = new Distributions::CoulombPlusNuclearElastic( a_construction, a_node, a_setupInfo, a_parent ); }
     else if( a_name == GIDI_LLNLLegendreChars ) {
-        }
+        form = new Distributions::LLNLLegendre( a_construction, a_node, a_setupInfo, a_parent ); }
     else {
         std::cout << "parseDistributionSuite: Ignoring unsupported distribution " << a_node.name( ) << std::endl;
     }
@@ -672,12 +670,63 @@ Form *parseAverageEnergySuite( Construction::Settings const &a_construction, Sui
  ***********************************************************************************************************/
 
 Form *parseAverageMomentumSuite( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
-		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
+		        PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
 
     if( a_construction.parseMode( ) == Construction::ParseMode::outline ) return( nullptr );
     if( ( a_construction.parseMode( ) == Construction::ParseMode::multiGroupOnly ) && ( a_name != GIDI_gridded1dChars ) ) return( nullptr );
 
     return( data1dParse( a_construction, a_node, a_setupInfo, a_parent ) );
+}
+
+/* *********************************************************************************************************//**
+ * This function parses a **probabilityTable** child node of a **probabilityTables** node.
+ *
+ * @param a_construction            [in]    Used to pass user options for parsing.
+ * @param a_parent                  [in]    The parent GIDI::Suite that the returned Form will be added to.
+ * @param a_node                    [in]    The **HAPI::Node** to be parsed.
+ * @param a_setupInfo               [in]    Information create my the Protare constructor to help in parsing.
+ * @param a_pops                    [in]    A PoPs Database instance used to get particle indices and possibly other particle information.
+ * @param a_internalPoPs            [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
+ *                                          This is the <**PoPs**> node under the <**reactionSuite**> node.
+ * @param a_name                    [in]    The moniker for the node to be parsed.
+ * @param a_styles                  [in]    A pointer to the <**styles**> node.
+ *
+ * @return                                  The parsed and constructed GIDI::Function1d instance.
+ ***********************************************************************************************************/
+
+Form *parseACE_URR_probabilityTables( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+                PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
+
+    if( a_name != GIDI_ACE_URR_probabilityTableChars ) throw Exception( std::string( "Invalid " ) + GIDI_ACE_URR_probabilityTablesChars " child node of moniker " + a_name );
+
+    return( new ACE_URR::ProbabilityTable( a_construction, a_node, a_setupInfo, a_parent ) );
+}
+
+/* *********************************************************************************************************//**
+ * This function parses a **column** child node of a **columnHeaders** node.
+ *
+ * @param a_construction            [in]    Used to pass user options for parsing.
+ * @param a_parent                  [in]    The parent GIDI::Suite that the returned Form will be added to.
+ * @param a_node                    [in]    The **HAPI::Node** to be parsed.
+ * @param a_setupInfo               [in]    Information create my the Protare constructor to help in parsing.
+ * @param a_pops                    [in]    A PoPs Database instance used to get particle indices and possibly other particle information.
+ * @param a_internalPoPs            [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
+ *                                          This is the <**PoPs**> node under the <**reactionSuite**> node.
+ * @param a_name                    [in]    The moniker for the node to be parsed.
+ * @param a_styles                  [in]    A pointer to the <**styles**> node.
+ *
+ * @return                                  The parsed and constructed GIDI::Function1d instance.
+ ***********************************************************************************************************/
+
+Form *parseColumnHeaders( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+                PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
+
+    if( a_name != GIDI_columnChars ) throw Exception( std::string( "Invalid " ) + GIDI_columnHeadersChars + " child node of moniker " + a_name );
+
+    Table::Column *column = new Table::Column( a_construction, a_node, a_setupInfo, a_parent );
+    column->setKeyName( GIDI_indexChars );
+
+    return column;
 }
 
 /* *********************************************************************************************************//**
@@ -804,6 +853,8 @@ Functions::Function2dForm *data2dParse( Construction::Settings const &a_construc
         form = new Functions::NBodyPhaseSpace2d( a_construction, a_node, a_setupInfo, a_parent ); }
     else if( name == GIDI_regions2dChars ) {
         form = new Functions::Regions2d( a_construction, a_node, a_setupInfo, a_parent ); }
+    else if( name == GIDI_gridded2dChars ) {
+        form = new Functions::Gridded2d( a_construction, a_node, a_setupInfo, a_parent ); }
     else {
         std::cout << "data2dParse: Ignoring unsupported 2d function = '" << name << "'" << std::endl;
     }
@@ -816,7 +867,7 @@ Functions::Function2dForm *data2dParse( Construction::Settings const &a_construc
  *
  * @param a_construction    [in]    Used to pass user options to the constructor.
  * @param a_node            [in]    The **HAPI::Node** to be parsed.
- * @param a_parent          [in]    The parent GIDI::Suite that the returned Form will be added to.
+ * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  * @param a_function2ds     [in]    The object to fill with the list of parsed 2d functions.
  ***********************************************************************************************************/
 

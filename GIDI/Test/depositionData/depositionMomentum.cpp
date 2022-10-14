@@ -41,6 +41,7 @@ int main( int argc, char **argv ) {
 */
 void main2( int argc, char **argv ) {
 
+    LUPI::StatusMessageReporting smr1;
     argvOptions argv_options( "availableEnergy", description );
     ParseTestOptions parseTestOptions( argv_options, argc, argv );
 
@@ -80,7 +81,7 @@ void main2( int argc, char **argv ) {
         particles.add( particle );
     }
 
-    GIDI::Vector depositionMomentum = protare->multiGroupDepositionMomentum( settings, temperatures[0], particles );
+    GIDI::Vector depositionMomentum = protare->multiGroupDepositionMomentum( smr1, settings, temperatures[0], particles );
     std::string prefix( "Deposition momentum::" );
     printVector( prefix, depositionMomentum );
 

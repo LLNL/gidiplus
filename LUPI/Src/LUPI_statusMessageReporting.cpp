@@ -50,6 +50,38 @@ StatusMessageReporting::~StatusMessageReporting( ) {
 
 std::string StatusMessageReporting::constructMessage( std::string a_prefix, int a_reports, bool a_clear ) {
 
+    std::string sep( "" );
+    std::string message( a_prefix );
+    statusMessageReport const *report;
+
+    if( a_prefix == "" ) sep = "\n";
+
+    for( report = smr_firstReport( &m_smr ); report != NULL; report = smr_nextReport( report ), --a_reports ) {
+        if( a_reports == 0 ) break;
+
+        char *reportMessage = smr_copyMessage( report );
+        if( reportMessage != nullptr ) {
+            message += sep;
+            message += reportMessage;
+            free( reportMessage );
+            sep = "\n";
+        }
+    }
+    if( a_clear ) clear( );
+
+    return( message );
+}
+
+/* *********************************************************************************************************//**
+ * Returns the first *a_reports* reports from *m_smr* with *a_prefix* appended to the beginning of the returned string.
+ *
+ * @param a_prefix          [in]    A string added to the beginning of the message.
+ * @param a_report          [in]    The maximum number of reports to include in the message.
+ * @param a_clear           [in]    If *true*, calls the **clear()** method after the message is constructed.
+ ***********************************************************************************************************/
+
+std::string StatusMessageReporting::constructFullMessage( std::string a_prefix, int a_reports, bool a_clear ) {
+
     std::string message( a_prefix );
     statusMessageReport const *report;
 

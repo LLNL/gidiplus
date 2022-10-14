@@ -32,7 +32,7 @@ DelayedNeutron::DelayedNeutron( Construction::Settings const &a_construction, HA
                 PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Suite *a_parent, Styles::Suite const *a_styles ) :
         Form( a_node, a_setupInfo, FormType::delayedNeutron, a_parent ),
         m_delayedNeutronIndex( 0 ),
-        m_rate( a_construction, GIDI_rateChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parsePhysicalQuantitySuite, a_styles ),
+        m_rate( a_construction, GIDI_rateChars, GIDI_labelChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parsePhysicalQuantitySuite, a_styles ),
         m_product( a_construction, a_node.child( GIDI_productChars ), a_setupInfo, a_pops, a_internalPoPs, nullptr, a_styles ) {
 
     m_rate.setAncestor( this );
@@ -91,21 +91,22 @@ void DelayedNeutron::productIDs( std::set<std::string> &a_indices, Transporting:
 }
 
 /* *********************************************************************************************************//**
- * Returns the product multiplicity (e.g., 0, 1, 2, ...) or -1 if energy dependent or not an integer for particle with id *a_id*.
+ * Returns the product multiplicity (e.g., 0, 1, 2, ...) or -1 if energy dependent or not an integer for particle with id *a_productID*.
  *
- * @param a_id;                     [in]    The id of the requested particle.
+ * @param a_productID;              [in]    The id of the requested particle.
  *
  * @return                                  The multiplicity for the requested particle.
  ***********************************************************************************************************/
 
-int DelayedNeutron::productMultiplicity( std::string const &a_id ) const {
+int DelayedNeutron::productMultiplicity( std::string const &a_productID ) const {
 
-    return( m_product.productMultiplicity( a_id ) );
+    return( m_product.productMultiplicity( a_productID ) );
 }
 
 /* *********************************************************************************************************//**
  * Determines the maximum Legredre order present in the multi-group transfer matrix for the specified products of this output channel.
  *
+ * @param a_smr             [Out]   If errors are not to be thrown, then the error is reported via this instance.
  * @param a_settings        [in]    Specifies the requested label.
  * @param a_temperatureInfo [in]    Specifies the temperature and labels use to lookup the requested data.
  * @param a_productID       [in]    Particle id of the requested product.
@@ -113,15 +114,17 @@ int DelayedNeutron::productMultiplicity( std::string const &a_id ) const {
  * @return                          The maximum Legredre order. If no transfer matrix data are present for the requested product, -1 is returned.
  ***********************************************************************************************************/
 
-int DelayedNeutron::maximumLegendreOrder( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
+int DelayedNeutron::maximumLegendreOrder( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+                Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
 
-    return( m_product.maximumLegendreOrder( a_settings, a_temperatureInfo, a_productID ) );
+    return( m_product.maximumLegendreOrder( a_smr, a_settings, a_temperatureInfo, a_productID ) );
 }
 
 /* *********************************************************************************************************//**
  * Returns the sum of the multi-group multiplicity for the requested label for the request product of this output channel. 
  * This is a cross section weighted multiplicity.
  *
+ * @param a_smr             [Out]   If errors are not to be thrown, then the error is reported via this instance.
  * @param a_settings        [in]    Specifies the requested label.
  * @param a_temperatureInfo [in]    Specifies the temperature and labels use to lookup the requested data.
  * @param a_productID       [in]    Particle id for the requested product.
@@ -129,15 +132,17 @@ int DelayedNeutron::maximumLegendreOrder( Transporting::MG const &a_settings, St
  * @return                          The requested multi-group multiplicity as a GIDI::Vector.
  ***********************************************************************************************************/
 
-Vector DelayedNeutron::multiGroupMultiplicity( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
+Vector DelayedNeutron::multiGroupMultiplicity( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+                Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
 
-    return( m_product.multiGroupMultiplicity( a_settings, a_temperatureInfo, a_productID ) );
+    return( m_product.multiGroupMultiplicity( a_smr, a_settings, a_temperatureInfo, a_productID ) );
 }
 
 /* *********************************************************************************************************//**
  * Returns the multi-group, product matrix for the requested label for the requested product index for the requested Legendre order.
  * If no data are found, an empty GIDI::Matrix is returned.
  *
+ * @param a_smr             [Out]   If errors are not to be thrown, then the error is reported via this instance.
  * @param a_settings        [in]    Specifies the requested label and if delayed neutrons should be included.
  * @param a_temperatureInfo [in]    Specifies the temperature and labels use to lookup the requested data.
  * @param a_particles       [in]    The list of particles to be transported.
@@ -147,14 +152,16 @@ Vector DelayedNeutron::multiGroupMultiplicity( Transporting::MG const &a_setting
  * @return                          The requested multi-group product matrix as a GIDI::Matrix.
  ***********************************************************************************************************/
 
-Matrix DelayedNeutron::multiGroupProductMatrix( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, Transporting::Particles const &a_particles, std::string const &a_productID, int a_order ) const {
+Matrix DelayedNeutron::multiGroupProductMatrix( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+                Styles::TemperatureInfo const &a_temperatureInfo, Transporting::Particles const &a_particles, std::string const &a_productID, int a_order ) const {
 
-    return( m_product.multiGroupProductMatrix( a_settings, a_temperatureInfo, a_particles, a_productID, a_order ) );
+    return( m_product.multiGroupProductMatrix( a_smr, a_settings, a_temperatureInfo, a_particles, a_productID, a_order ) );
 }
 
 /* *********************************************************************************************************//**
  * Returns the sum of the multi-group, average energy for the requested label for the requested product. This is a cross section weighted average energy.
  *
+ * @param a_smr             [Out]   If errors are not to be thrown, then the error is reported via this instance.
  * @param a_settings        [in]    Specifies the requested label.
  * @param a_temperatureInfo [in]    Specifies the temperature and labels use to lookup the requested data.
  * @param a_productID       [in]    Particle id for the requested product.
@@ -162,14 +169,16 @@ Matrix DelayedNeutron::multiGroupProductMatrix( Transporting::MG const &a_settin
  * @return                          The requested multi-group average energy as a GIDI::Vector.
  ***********************************************************************************************************/
 
-Vector DelayedNeutron::multiGroupAverageEnergy( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
+Vector DelayedNeutron::multiGroupAverageEnergy( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+                Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
 
-    return( m_product.multiGroupAverageEnergy( a_settings, a_temperatureInfo, a_productID ) );
+    return( m_product.multiGroupAverageEnergy( a_smr, a_settings, a_temperatureInfo, a_productID ) );
 }
 
 /* *********************************************************************************************************//**
  * Returns the sum of the multi-group, average momentum for the requested label for the requested product. This is a cross section weighted average momentum.
  *
+ * @param a_smr             [Out]   If errors are not to be thrown, then the error is reported via this instance.
  * @param a_settings        [in]    Specifies the requested label.
  * @param a_temperatureInfo [in]    Specifies the temperature and labels use to lookup the requested data.
  * @param a_productID       [in]    Particle id for the requested product.
@@ -177,20 +186,62 @@ Vector DelayedNeutron::multiGroupAverageEnergy( Transporting::MG const &a_settin
  * @return                          The requested multi-group average momentum as a GIDI::Vector.
  ***********************************************************************************************************/
 
-Vector DelayedNeutron::multiGroupAverageMomentum( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
+Vector DelayedNeutron::multiGroupAverageMomentum( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+                Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
 
-    return( m_product.multiGroupAverageMomentum( a_settings, a_temperatureInfo, a_productID ) );
+    return( m_product.multiGroupAverageMomentum( a_smr, a_settings, a_temperatureInfo, a_productID ) );
 }
 
 /* *********************************************************************************************************//**
  * Added the product to *a_incompleteParticles* if the product's completeParticle returns *false*.
  *
- * @param       a_incompleteParticles   [out]   The list of particles whose **completeParticle** method returns *false*.
+ * @param a_settings                [in]    Specifies the requested label.
+ * @param a_incompleteParticles     [out]   The list of particles whose **completeParticle** method returns *false*.
  ***********************************************************************************************************/
 
 void DelayedNeutron::incompleteParticles( Transporting::Settings const &a_settings, std::set<std::string> &a_incompleteParticles ) const {
 
     m_product.incompleteParticles( a_settings, a_incompleteParticles );
+}
+
+/* *********************************************************************************************************//**
+ * Returns, via arguments, the average energy and momentum, and gain for product with particle id *a_particleID*.
+ *
+ * @param a_settings                    [in]    Specifies the requested label.
+ * @param a_particleID                  [in]    The particle id of the product.
+ * @param a_energy                      [in]    The energy of the projectile.
+ * @param a_productEnergy               [in]    The average energy of the product.
+ * @param a_productMomentum             [in]    The average momentum of the product.
+ * @param a_productGain                 [in]    The gain of the product.
+ * @param a_ignoreIncompleteParticles   [in]    If *true*, incomplete particles are ignore, otherwise a *throw* is executed.
+ ***********************************************************************************************************/
+
+void DelayedNeutron::continuousEnergyProductData( Transporting::Settings const &a_settings, std::string const &a_particleID, double a_energy,
+                double &a_productEnergy, double &a_productMomentum, double &a_productGain, bool a_ignoreIncompleteParticles ) const {
+
+    m_product.continuousEnergyProductData( a_settings, a_particleID, a_energy, a_productEnergy, a_productMomentum, a_productGain, 
+            a_ignoreIncompleteParticles );
+}
+
+/* *********************************************************************************************************//**
+ * Modifies the average product energies, momenta and gains for product with particle id *a_particleID*.
+ *
+ * @param a_settings                    [in]    Specifies user options.
+ * @param a_particleID                  [in]    The particle id of the product.
+ * @param a_energies                    [in]    The vector of energies to map the data to.
+ * @param a_offset                      [in]    The index of the first energy whose data are to be added to the vectors.
+ * @param a_productEnergies             [out]   The vector of average energies of the product.
+ * @param a_productMomenta              [out]   The vector of average momenta of the product.
+ * @param a_productGains                [out]   The vector of gain of the product.
+ * @param a_ignoreIncompleteParticles   [in]    If *true*, incomplete particles are ignore, otherwise a *throw* is executed.
+ ***********************************************************************************************************/
+
+void DelayedNeutron::mapContinuousEnergyProductData( Transporting::Settings const &a_settings, std::string const &a_particleID,
+                std::vector<double> const &a_energies, int a_offset, std::vector<double> &a_productEnergies, std::vector<double> &a_productMomenta,
+                std::vector<double> &a_productGains, bool a_ignoreIncompleteParticles ) const {
+    
+    m_product.mapContinuousEnergyProductData( a_settings, a_particleID, a_energies, a_offset, a_productEnergies, a_productMomenta,
+            a_productGains, a_ignoreIncompleteParticles );
 }
 
 /* *********************************************************************************************************//**

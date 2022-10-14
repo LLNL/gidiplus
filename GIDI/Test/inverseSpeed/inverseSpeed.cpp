@@ -40,6 +40,7 @@ int main( int argc, char **argv ) {
 */
 void subMain( int argc, char **argv ) {
 
+    LUPI::StatusMessageReporting smr1;
     argvOptions argv_options( "inverseSpeed", description );
     ParseTestOptions parseTestOptions( argv_options, argc, argv );
 
@@ -80,7 +81,7 @@ void subMain( int argc, char **argv ) {
 
     particles.process( *protare, label );
 
-    GIDI::Vector inverseSpeed = protare->multiGroupInverseSpeed( settings, temperatures[0] );
+    GIDI::Vector inverseSpeed = protare->multiGroupInverseSpeed( smr1, settings, temperatures[0] );
     std::string prefix( "inverse speed: " );
     printVector( prefix, inverseSpeed );
     GIDI::Vector inverseSpeedCollapse = GIDI::collapse( inverseSpeed, settings, particles, 0. );

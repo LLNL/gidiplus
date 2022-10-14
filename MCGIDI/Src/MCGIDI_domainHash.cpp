@@ -159,7 +159,7 @@ MCGIDI_HOST void DomainHash::print( bool a_printValues ) const {
  * @param a_boundaries          [in]    The list of multi-group boundaries.
  ***********************************************************************************************************/
 
-MultiGroupHash::MultiGroupHash( std::vector<double> a_boundaries ) :
+MCGIDI_HOST MultiGroupHash::MultiGroupHash( std::vector<double> a_boundaries ) :
         m_boundaries( a_boundaries ) {
 
 }
@@ -173,9 +173,23 @@ MultiGroupHash::MultiGroupHash( std::vector<double> a_boundaries ) :
  * @param a_particleID          [in]    The PoPs' id of the particle whose multi-group boundaries are desired.
  ***********************************************************************************************************/
 
-MultiGroupHash::MultiGroupHash( GIDI::Protare const &a_protare, GIDI::Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_particleID ) {
+MCGIDI_HOST MultiGroupHash::MultiGroupHash( GIDI::Protare const &a_protare, GIDI::Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_particleID ) {
 
     initialize( a_protare, a_temperatureInfo, a_particleID );
+}
+
+/* *********************************************************************************************************//**
+ * This constructor gets the list of multi-group boundaries from the GIDI::Particle of *a_particles* that is the projectile.
+ *
+ * @param a_protare             [in]    The GIDI::Protare containing the GIDI::Styles::MultiGroup style.
+ * @param a_particles           [in]    The list of transportable particles.
+ ***********************************************************************************************************/
+
+MCGIDI_HOST MultiGroupHash::MultiGroupHash( GIDI::Protare const &a_protare, GIDI::Transporting::Particles const &a_particles ) {
+
+    GIDI::Transporting::Particle const &particle = *a_particles.particle( a_protare.projectile( ).pid( ) );
+
+    m_boundaries = particle.multiGroup( ).boundaries( );
 }
 
 /* *********************************************************************************************************//**
@@ -186,7 +200,7 @@ MultiGroupHash::MultiGroupHash( GIDI::Protare const &a_protare, GIDI::Styles::Te
  * @param a_particleID          [in]    The PoPs' id of the particle whose multi-group boundaries are desired.
  ***********************************************************************************************************/
 
-void MultiGroupHash::initialize( GIDI::Protare const &a_protare, GIDI::Styles::TemperatureInfo const &a_temperatureInfo, std::string a_particleID ) {
+MCGIDI_HOST void MultiGroupHash::initialize( GIDI::Protare const &a_protare, GIDI::Styles::TemperatureInfo const &a_temperatureInfo, std::string a_particleID ) {
 
     if( a_particleID == "" ) a_particleID = a_protare.projectile( ).ID( );
 

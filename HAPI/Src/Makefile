@@ -14,6 +14,7 @@ include $(GIDI_PLUS_PATH)/Makefile.paths
 .PHONY: default clean realclean
 
 allCppSources = $(sort $(wildcard *.cpp))
+allCppObjs = $(allCppSources:.cpp=.o)
 ifdef HDF5_PATH
     CppSources = $(allCppSources)
 else
@@ -48,6 +49,6 @@ HAPI_PugiXMLNode.cpp : HAPI_Text.cpp HAPI_Data.cpp HAPI_Node.cpp HAPI.hpp
 HAPI_HDFNode.cpp : HAPI_Text.cpp HAPI_Data.cpp HAPI_Node.cpp HAPI.hpp
 
 clean:
-	rm -f $(CppObjs) $(Archive) $(Shared)
+	rm -f $(allCppObjs) $(Archive) $(Shared)
 
 realclean: clean

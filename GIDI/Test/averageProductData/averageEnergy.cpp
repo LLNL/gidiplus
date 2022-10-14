@@ -42,6 +42,7 @@ int main( int argc, char **argv ) {
 */
 void main2( int argc, char **argv ) {
 
+    LUPI::StatusMessageReporting smr1;
     argvOptions argv_options( "averageEnergy", description );
     ParseTestOptions parseTestOptions( argv_options, argc, argv );
 
@@ -68,7 +69,7 @@ void main2( int argc, char **argv ) {
     GIDI::Vector _averageEnergy;
     for( std::size_t index = 0; index < protare->numberOfOrphanProducts( ); ++index ) {
         GIDI::Reaction const *reaction = protare->orphanProduct( index );
-        _averageEnergy += reaction->multiGroupAverageEnergy( settings, temperatures[0], PoPI::IDs::photon );
+        _averageEnergy += reaction->multiGroupAverageEnergy( smr1, settings, temperatures[0], PoPI::IDs::photon );
     }
 
     std::string orphanProductString( "Orphan product gamma average product energy ::" );
@@ -81,6 +82,7 @@ void main2( int argc, char **argv ) {
 */
 void averageEnergy( GIDI::Protare *a_protare, PoPI::Database &a_pops, GIDI::Transporting::MG &a_settings, GIDI::Styles::TemperatureInfos a_temperatures, char const *a_productID ) {
 
+    LUPI::StatusMessageReporting smr1;
     std::string prefix( "Total average product energy" );
     std::string::size_type width = prefix.size( );
 
@@ -91,7 +93,7 @@ void averageEnergy( GIDI::Protare *a_protare, PoPI::Database &a_pops, GIDI::Tran
     }
 
     std::cout << std::endl << "Average product energy for product '" << a_productID << "':" << std::endl;
-    GIDI::Vector _averageEnergy = a_protare->multiGroupAverageEnergy( a_settings, a_temperatures[0], a_productID );
+    GIDI::Vector _averageEnergy = a_protare->multiGroupAverageEnergy( smr1, a_settings, a_temperatures[0], a_productID );
 
     prefix.insert( prefix.size( ), 4 + width - prefix.size( ), ' ' );
     prefix.insert( 0, 2, ' ' );
@@ -100,7 +102,7 @@ void averageEnergy( GIDI::Protare *a_protare, PoPI::Database &a_pops, GIDI::Tran
 
     for( std::size_t index = 0; index < a_protare->numberOfReactions( ); ++index ) {
         GIDI::Reaction const *reaction = a_protare->reaction( index );
-        GIDI::Vector _averageEnergy = reaction->multiGroupAverageEnergy( a_settings, a_temperatures[0], a_productID );
+        GIDI::Vector _averageEnergy = reaction->multiGroupAverageEnergy( smr1, a_settings, a_temperatures[0], a_productID );
         std::string string( reaction->label( ) );
 
         string.insert( string.size( ), width - string.size( ), ' ' );

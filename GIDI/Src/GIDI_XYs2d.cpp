@@ -130,6 +130,11 @@ double XYs2d::evaluate( double a_x2, double a_x1 ) const {
 
 void XYs2d::append( Function1dForm *a_function1d ) {
 
+    if( m_function1ds.size( ) > 0 ) {
+        if( a_function1d->outerDomainValue( ) <= m_Xs.back( ) ) Exception( "XYs2d::append: next outerDomainValue <= current outerDomainValue." );
+    }
+
+    m_Xs.push_back( a_function1d->outerDomainValue( ) );
     m_function1ds.push_back( a_function1d );
     a_function1d->setAncestor( this );
 }

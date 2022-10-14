@@ -99,12 +99,13 @@ void main2( int argc, char **argv ) {
 void printVector( GIDI::Protare *protare, GIDI::Transporting::MG &settings, GIDI::Styles::TemperatureInfo temperature, GIDI::Transporting::Particles &particles, char const *prefix,
         GIDI::TransportCorrectionType transportCorrectionType, GIDI::Transporting::DelayedNeutrons delayedNeutrons ) {
 
+    LUPI::StatusMessageReporting smr1;
     char Str[64];
 
-    for( int order = 0; order < protare->maximumLegendreOrder( settings, temperature, protare->projectile( ).ID( ) ); ++order ) {
+    for( int order = 0; order < protare->maximumLegendreOrder( smr1, settings, temperature, protare->projectile( ).ID( ) ); ++order ) {
         try {
             settings.setDelayedNeutrons( delayedNeutrons );
-            GIDI::Vector transportCorrection = protare->multiGroupTransportCorrection( settings, temperature, particles, order, transportCorrectionType, 0.0 );
+            GIDI::Vector transportCorrection = protare->multiGroupTransportCorrection( smr1, settings, temperature, particles, order, transportCorrectionType, 0.0 );
             std::string message( prefix );
 
             sprintf( Str, ": delayedNeutrons (%s)", ( delayedNeutrons == GIDI::Transporting::DelayedNeutrons::on ? "true"  : "false" ) );

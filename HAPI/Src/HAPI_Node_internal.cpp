@@ -11,6 +11,14 @@
 
 namespace HAPI {
 
+Node_internal::Node_internal( NodeInteralType a_type ) :
+        m_type( a_type ) {
+}
+
+Node_internal::Node_internal( Node_internal const &a_node ) :
+        m_type( a_node.type( ) ) {
+}
+
 /*
 ============================================================
 ======================= destructor =========================

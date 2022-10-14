@@ -30,6 +30,29 @@ Node::Node( Node_internal *a_node ) :
         m_node(a_node) {
 
 }
+
+/* *********************************************************************************************************//**
+ * Copy constructor.
+ *
+ * @param a_node        [In]   The node to copy.
+ ***********************************************************************************************************/
+
+Node::Node( Node const &a_node ) :
+        m_node( nullptr ) {
+
+#ifdef HAPI_USE_PUGIXML
+    if( a_node.m_node->type( ) == NodeInteralType::pugiXML ) {
+        m_node = new PugiXMLNode( static_cast<PugiXMLNode const &>( *a_node.m_node ) );
+    }
+#endif
+#ifdef HAPI_USE_HDF5
+    if( a_node.m_node->type( ) == NodeInteralType::HDF5 ) {
+        m_node = new HDFNode( static_cast<HDFNode const &>( *a_node.m_node ) );
+    }
+#endif
+    if( m_node == nullptr ) throw LUPI::Exception( "Unsupported m_node type." );
+}
+
 /*
 =========================================================
 */

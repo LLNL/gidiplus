@@ -11,9 +11,14 @@
 
 namespace PoPI {
 
-/*
-=========================================================
-*/
+/*! \class PQ_suite
+ * Suite for storing the values in an physical quantity.
+ */
+
+/* *********************************************************************************************************//**
+ * @param a_node                        [in]    The **HAPI::Node** node to be parsed.
+ ***********************************************************************************************************/
+
 PQ_suite::PQ_suite( HAPI::Node const &a_node ) :
         m_label( a_node.name( ) ) {
 
@@ -37,18 +42,24 @@ PQ_suite::PQ_suite( HAPI::Node const &a_node ) :
         push_back( quantity );
     }
 }
-/*
-=========================================================
-*/
+
+/* *********************************************************************************************************//**
+ ***********************************************************************************************************/
+
 PQ_suite::~PQ_suite( ) {
 
     std::string::size_type i1, __size = size( );
 
     for( i1 = 0; i1 < __size; ++i1 ) delete (*this)[i1];
 }
-/*
-=========================================================
-*/
+
+/* *********************************************************************************************************//**
+ * Adds the contents of *this* to *a_XMLList* where each item in *a_XMLList* is one line (without linefeeds) to output as an XML representation of *this*.
+ *
+ * @param a_XMLList                     [in]    The list to add an XML output representation of *this* to.
+ * @param a_indent1                     [in]    The amount of indentation to added to each line added to *a_XMLList*.
+ ***********************************************************************************************************/
+
 void PQ_suite::toXMLList( std::vector<std::string> &a_XMLList, std::string const &a_indent1 ) const {
 
     std::string indent2 = a_indent1 + "  ";

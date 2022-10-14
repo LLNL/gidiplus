@@ -17,7 +17,7 @@ void printInfo( PoPI::Database &database, char const *ID );
 */
 int main( int argc, char **argv ) {
 
-    std::cerr << "    " << __FILE__ << std::endl;
+    std::cerr << "    " << LUPI::FileInfo::basenameWithoutExtension( __FILE__ ) << std::endl;
 
     std::string fileName( "../pops.xml" );
     std::string aliasFileName( "../LLNL_alias.xml" );
@@ -41,7 +41,7 @@ int main( int argc, char **argv ) {
 */
 void printInfo( PoPI::Database &database, char const *ID ) {
 
-    PoPI::IDBase particle = database.get<PoPI::IDBase>( ID );
+    PoPI::IDBase const &particle = database.get<PoPI::IDBase>( ID );
     int final = database.final( particle.index( ) );
     int final2 = database.final( particle.index( ), true );
 

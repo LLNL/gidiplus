@@ -50,6 +50,7 @@ MCGIDI_HOST_DEVICE ProtareTNSL::ProtareTNSL( ) :
 }
 
 /* *********************************************************************************************************//**
+ * @param a_smr                         [Out]   If errors are not to be thrown, then the error is reported via this instance.
  * @param a_protare                     [in]    The GIDI::Protare whose data is to be used to construct *this*.
  * @param a_pops                        [in]    A PoPs Database instance used to get particle indices and possibly other particle information.
  * @param a_settings                    [in]    Used to pass user options to the *this* to instruct it which data are desired.
@@ -61,19 +62,20 @@ MCGIDI_HOST_DEVICE ProtareTNSL::ProtareTNSL( ) :
  * @param a_allowFixedGrid              [in]    For internal (i.e., MCGIDI) use only. Users must use the default value.
  ***********************************************************************************************************/
 
-MCGIDI_HOST ProtareTNSL::ProtareTNSL( GIDI::ProtareTNSL const &a_protare, PoPI::Database const &a_pops, Transporting::MC &a_settings, 
+MCGIDI_HOST ProtareTNSL::ProtareTNSL( LUPI::StatusMessageReporting &a_smr, GIDI::ProtareTNSL const &a_protare, PoPI::Database const &a_pops, Transporting::MC &a_settings, 
                 GIDI::Transporting::Particles const &a_particles, DomainHash const &a_domainHash, GIDI::Styles::TemperatureInfos const &a_temperatureInfos,
                 std::set<int> const &a_reactionsToExclude, int a_reactionsToExcludeOffset, bool a_allowFixedGrid ) :
         Protare( ProtareType::TNSL, a_protare, a_pops, a_settings ),
-        m_protareWithElastic( static_cast<ProtareSingle *>( protareFromGIDIProtare( *a_protare.protare( ), a_pops, a_settings, a_particles, a_domainHash, a_temperatureInfos, a_reactionsToExclude, a_reactionsToExcludeOffset, false ) ) ),
-        m_TNSL( static_cast<ProtareSingle *>( protareFromGIDIProtare( *a_protare.TNSL( ), a_pops, a_settings, a_particles, a_domainHash, 
+        m_protareWithElastic( static_cast<ProtareSingle *>( protareFromGIDIProtare( a_smr, *a_protare.protare( ), a_pops, a_settings, a_particles, 
+            a_domainHash, a_temperatureInfos, a_reactionsToExclude, a_reactionsToExcludeOffset, false ) ) ),
+        m_TNSL( static_cast<ProtareSingle *>( protareFromGIDIProtare( a_smr, *a_protare.TNSL( ), a_pops, a_settings, a_particles, a_domainHash, 
             TNSL_temperatureInfos( *a_protare.TNSL( ), a_settings ), a_reactionsToExclude, a_reactionsToExcludeOffset + static_cast<int>( m_protareWithElastic->numberOfReactions( ) ), false ) ) ),
         m_protareWithoutElastic( nullptr )  {
 
     std::set<int> reactionsToExclude( a_reactionsToExclude );
 
     reactionsToExclude.insert( 0 );
-    m_protareWithoutElastic = static_cast<ProtareSingle *>( protareFromGIDIProtare( *a_protare.protare( ), a_pops, a_settings, a_particles, a_domainHash, a_temperatureInfos, reactionsToExclude ) );
+    m_protareWithoutElastic = static_cast<ProtareSingle *>( protareFromGIDIProtare( a_smr, *a_protare.protare( ), a_pops, a_settings, a_particles, a_domainHash, a_temperatureInfos, reactionsToExclude ) );
 
     m_numberOfTNSLReactions = m_TNSL->numberOfReactions( );
     m_TNSL_maximumEnergy = m_TNSL->maximumEnergy( );
@@ -106,6 +108,7 @@ MCGIDI_HOST_DEVICE ProtareTNSL::~ProtareTNSL( ) {
  
 MCGIDI_HOST void ProtareTNSL::setUserParticleIndex( int a_particleIndex, int a_userParticleIndex ) {
 
+    Protare::setUserParticleIndex( a_particleIndex, a_userParticleIndex );
     m_protareWithElastic->setUserParticleIndex( a_particleIndex, a_userParticleIndex );
     m_TNSL->setUserParticleIndex( a_particleIndex, a_userParticleIndex );
     m_protareWithoutElastic->setUserParticleIndex( a_particleIndex, a_userParticleIndex );

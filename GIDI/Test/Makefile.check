@@ -10,7 +10,7 @@ ifndef COMPILE_UTILITIES
     local_CXXFLAGS += $(LIB_PATHS) -L$(GIDI_PATH)/Test/Utilities
 endif
 
-LIBS = -lGIDI_testUtilities -lGIDI -lPoPI -lHAPI -lLUPI -lnumericalfunctions -lstatusMessageReporting -lpugixml -lexpat -lm $(HDF5_LIBS)
+LIBS = -lGIDI_testUtilities -lGIDI -lPoPI -lHAPI -lRISI -lLUPI -lnumericalfunctions -lstatusMessageReporting -lpugixml -lexpat -lm $(HDF5_LIBS)
 
 default: $(Executables)
 
@@ -18,7 +18,7 @@ $(Executables): %: %.cpp
 	$(CXX) $(local_CXXFLAGS) $< -o $@ $(LIBS)
 
 clean:
-	rm -rf $(Executables) $(Archive) *.o Outputs file1 file2
+	rm -rf $(Executables) $(Archive) *.o Outputs file1 file2 *.ce *.mg
 
 realclean: clean
 	rm -rf *.dSYM

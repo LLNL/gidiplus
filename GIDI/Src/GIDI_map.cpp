@@ -42,8 +42,8 @@ namespace Map {
 
 /* *********************************************************************************************************//**
  * User data passed to the Map::directory method. It stores the desired projectile, target, library and evalaute infomation
- * a the list of found matches. An empty string for the projectile's id matches all projectiles. 
- * A empty string for the target's id matches all projectiles. An empty evaluation string matches all evaluations.
+ * as a list of found matches. An empty string for the projectile's id matches all projectiles. 
+ * A empty string for the target's id matches all targets. An empty evaluation string matches all evaluations.
  ***********************************************************************************************************/
 
 class MapWalkDirectoryCallbackData {
@@ -87,7 +87,8 @@ bool MapWalkDirectoryCallback( ProtareBase const *a_protareEntry, std::string co
 
     MapWalkDirectoryCallbackData *mapWalkDirectoryCallbackData = static_cast<MapWalkDirectoryCallbackData *>( a_data );
 
-    if( ( mapWalkDirectoryCallbackData->m_projectileID == "" ) || ( mapWalkDirectoryCallbackData->m_projectileID == a_protareEntry->projectileID( ) ) ) {
+    if( ( mapWalkDirectoryCallbackData->m_projectileID == "" ) || 
+            PoPI::compareSpecialParticleIDs( mapWalkDirectoryCallbackData->m_projectileID, a_protareEntry->projectileID( ) ) ) {
         if( ( mapWalkDirectoryCallbackData->m_targetID == "" ) || ( mapWalkDirectoryCallbackData->m_targetID == a_protareEntry->targetID( ) ) ) {
             if( ( mapWalkDirectoryCallbackData->m_library == "" ) || ( mapWalkDirectoryCallbackData->m_library == a_library ) ) {
                 if( ( mapWalkDirectoryCallbackData->m_evaluation == "" ) || ( mapWalkDirectoryCallbackData->m_evaluation == a_protareEntry->evaluation( ) ) ) {
@@ -184,13 +185,31 @@ Import::~Import( ) {
  * @param a_library             [in]    The library to match.
  * @param a_evaluation          [in]    The evaluation to match.
  *
- * @return                              The path to the matched protare.
+ * @return                              The const pointer **ProtareBase** for the matched protare.
  ***********************************************************************************************************/
 
 ProtareBase const *Import::findProtareEntry( std::string const &a_projectileID, std::string const &a_targetID,
                 std::string const &a_library, std::string const &a_evaluation ) const {
 
     return( m_map->findProtareEntry( a_projectileID, a_targetID, a_library, a_evaluation ) );
+}
+
+/* *********************************************************************************************************//**
+ * Returns the list of all Protare entries that match *a_projectileID*, *a_targetID*, *a_library* and *a_evaluation*.
+ * The arguments *a_projectileID*, *a_targetID*, *a_library* and *a_evaluation* can be an C++ regex string. An empty
+ * string for any of the arguments will match all.
+ *
+ * @param a_protareEntries      [out]   The list of **ProtareBase** found.
+ * @param a_projectileID        [in]    The projectile's id to match.
+ * @param a_targetID            [in]    The target's id to match.
+ * @param a_library             [in]    The library to match.
+ * @param a_evaluation          [in]    The evaluation to match.
+ ***********************************************************************************************************/
+
+void Import::findProtareEntries( std::vector<ProtareBase const *> &a_protareEntries, std::regex const &a_projectileID, 
+                std::regex const &a_targetID, std::regex const &a_library, std::regex const &a_evaluation ) const {
+
+    return( m_map->findProtareEntries( a_protareEntries, a_projectileID, a_targetID, a_library, a_evaluation ) );
 }
 
 /* *********************************************************************************************************//**
@@ -288,17 +307,42 @@ std::string const &ProtareBase::resolvedLibrary( ) const {
  * @param a_targetID            [in]    The target's id to match.
  * @param a_library             [in]    The library to match.
  * @param a_evaluation          [in]    The evaluation to match.
- * @return                              true if match and false otherwise.
+ *
+ * @return                              The *this* pointer if *this* matches otherwise a **nullptr**.
  ***********************************************************************************************************/
 
 ProtareBase const *ProtareBase::findProtareEntry( std::string const &a_projectileID, std::string const &a_targetID,
                 std::string const &a_library, std::string const &a_evaluation ) const {
 
-    if( a_projectileID != projectileID( ) ) return( nullptr );
+    if( !PoPI::compareSpecialParticleIDs( a_projectileID, projectileID( ) ) ) return( nullptr );
     if( a_targetID != targetID( ) ) return( nullptr );
     if( ( a_library != "" ) && ( parent( )->library( ) != a_library ) ) return( nullptr );
     if( ( a_evaluation == "" ) || ( a_evaluation == evaluation( ) ) ) return( this );
     return( nullptr );
+}
+
+/* *********************************************************************************************************//**
+ * Returns the list of all Protare entries that match *a_projectileID*, *a_targetID*, *a_library* and *a_evaluation*. 
+ * The arguments *a_projectileID*, *a_targetID*, *a_library* and *a_evaluation* can be an C++ regex string. An empty
+ * string for any of the arguments will match all.
+ *
+ * @param a_protareEntries      [out]   The list of **ProtareBase** found.
+ * @param a_projectileID        [in]    The projectile's id to match.
+ * @param a_targetID            [in]    The target's id to match.
+ * @param a_library             [in]    The library to match.
+ * @param a_evaluation          [in]    The evaluation to match.
+ ***********************************************************************************************************/
+
+void ProtareBase::findProtareEntries( std::vector<ProtareBase const *> &a_protareEntries, std::regex const &a_projectileID,
+                std::regex const &a_targetID, std::regex const &a_library, std::regex const &a_evaluation ) const {
+
+    if( regex_match( m_projectileID, a_projectileID ) ) {
+        if( regex_match( m_targetID, a_targetID ) ) {
+            if( regex_match( parent( )->library( ), a_library ) ) {
+                if( regex_match( m_evaluation, a_evaluation ) ) a_protareEntries.push_back( this );
+            }
+        }
+    }
 }
 
 /* *********************************************************************************************************//**
@@ -313,7 +357,7 @@ ProtareBase const *ProtareBase::findProtareEntry( std::string const &a_projectil
 
 bool ProtareBase::isMatch( std::string const &a_projectileID, std::string const &a_targetID, std::string const &a_evaluation ) const {
 
-    if( a_projectileID != m_projectileID ) return( false );
+    if( !PoPI::compareSpecialParticleIDs( a_projectileID, m_projectileID ) ) return( false );
     if( a_targetID != m_targetID ) return( false );
     if( a_evaluation == "" ) return( true );
     return( a_evaluation == m_evaluation );
@@ -375,7 +419,6 @@ GIDI::Protare *Protare::protare( Construction::Settings const &a_construction, P
     return( new ProtareSingle( a_construction, path( ), fileType, a_pops, a_particleSubstitution, libraries1, interaction( ), true ) );
 }
 
-
 /* *********************************************************************************************************//**
  * Fills the argument *a_writeInfo* with the XML lines that represent *this*. Recursively enters each sub-node.
  *
@@ -394,6 +437,7 @@ void Protare::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) c
     attributes += a_writeInfo.addAttribute( GIDI_interactionChars, interaction( ) );
     a_writeInfo.addNodeStarterEnder( a_indent, moniker( ), attributes );
 }
+
 /* *********************************************************************************************************//**
  *
  * @param a_node        [in]    The **HAPI::Node** to be parsed to contruct a TNSL entry instance.
@@ -407,7 +451,7 @@ TNSL::TNSL( HAPI::Node const &a_node, PoPI::Database const &a_pops, std::string 
         m_standardTarget( a_node.attribute_as_string( GIDI_standardTargetChars ) ),
         m_standardEvaluation( a_node.attribute_as_string( GIDI_standardEvaluationChars ) ) {
 
-    setInteraction( GIDI_TNSLChars );
+    setInteraction( "" );
 
     HAPI::Node const &protare = a_node.child( GIDI_protareChars );              // Format 0.1 support. This format is deprecated.
     if( !protare.empty() ) {
@@ -445,7 +489,7 @@ GIDI::Protare *TNSL::protare( Construction::Settings const &a_construction, PoPI
     else
       FT = GIDI::FileType::XML;
 
-    ProtareSingle *protare1 = new ProtareSingle( a_construction, path( ), FT, a_pops, particleSubstitution, libraries1, GIDI_TNSLChars, false );
+    ProtareSingle *protare1 = new ProtareSingle( a_construction, path( ), FT, a_pops, particleSubstitution, libraries1, GIDI_MapInteractionTNSLChars, false );
 
     while( true ) {
         Map const *parent = map->parent( );
@@ -454,6 +498,7 @@ GIDI::Protare *TNSL::protare( Construction::Settings const &a_construction, PoPI
         map = parent;
     }
     ProtareSingle *protare2 = static_cast<ProtareSingle *>( map->protare( a_construction, a_pops, PoPI::IDs::neutron, m_standardTarget, "", m_standardEvaluation ) );
+    if( protare2 == nullptr ) protare2 = static_cast<ProtareSingle *>( map->protare( a_construction, a_pops, PoPI::IDs::neutron, m_standardTarget ) );
 
     ProtareTNSL *protareTNSL = new ProtareTNSL( a_construction, protare2, protare1 );
 
@@ -542,6 +587,7 @@ void Map::initialize( HAPI::Node const &a_node, std::string const &a_fileName, P
     m_parent = a_parent;
     m_fileName = a_fileName;
     m_realFileName = realPath( a_fileName );
+    m_projectilesLoaded = false;
 
     std::string basePath = GIDI_basePath( m_realFileName );
 
@@ -604,7 +650,7 @@ void Map::libraries( std::vector<std::string> &a_libraries ) const {
  * @param a_library             [in]    The library to match.
  * @param a_evaluation          [in]    The evaluation to match.
  *
- * @return                              The path to the matched protare.
+ * @return                              The const pointer **ProtareBase** for the matched protare.
  ***********************************************************************************************************/
 
 ProtareBase const *Map::findProtareEntry( std::string const &a_projectileID, std::string const &a_targetID, std::string const &a_library,
@@ -617,6 +663,26 @@ ProtareBase const *Map::findProtareEntry( std::string const &a_projectileID, std
         if( protareEntry != nullptr ) break;
     }
     return( protareEntry );
+}
+
+/* *********************************************************************************************************//**
+ * Returns the list of all Protare entries that match *a_projectileID*, *a_targetID*, *a_library* and *a_evaluation*.
+ * The arguments *a_projectileID*, *a_targetID*, *a_library* and *a_evaluation* can be an C++ regex string. An empty
+ * string for any of the arguments will match all.
+ * 
+ * @param a_protareEntries      [out]   The list of **ProtareBase** found.
+ * @param a_projectileID        [in]    The projectile's id to match.
+ * @param a_targetID            [in]    The target's id to match.
+ * @param a_library             [in]    The library to match.
+ * @param a_evaluation          [in]    The evaluation to match.
+ ***********************************************************************************************************/
+
+void Map::findProtareEntries( std::vector<ProtareBase const *> &a_protareEntries, std::regex const &a_projectileID,
+                std::regex const &a_targetID, std::regex const &a_library, std::regex const &a_evaluation ) const {
+
+    for( std::vector<BaseEntry *>::const_iterator iter = m_entries.begin( ); iter != m_entries.end( ); ++iter ) {
+        (*iter)->findProtareEntries( a_protareEntries, a_projectileID, a_targetID, a_library, a_evaluation );
+    }
 }
 
 /* *********************************************************************************************************//**
@@ -716,11 +782,10 @@ GIDI::Protare *Map::protare( Construction::Settings const &a_construction, PoPI:
         }
     }
 
-
     if( a_projectileID == PoPI::IDs::photon ) {
         PoPI::Base const *popsBase = &a_pops.get<PoPI::Base>( targetID );
         if( a_construction.photoMode( ) != Construction::PhotoMode::nuclearOnly ) {
-            atomicTargetID = targetID;                                          // Kludge for 99120 and similar targers.
+            atomicTargetID = targetID;                                          // Kludge for 99120 and similar targets.
 
             if( popsBase->Class( ) == PoPI::Particle_class::nuclide ) {
                 PoPI::Nuclide const *nuclide = static_cast<PoPI::Nuclide const *>( popsBase );
@@ -854,6 +919,116 @@ void Map::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const
     a_writeInfo.addNodeEnder( moniker( ) );
 }
 
+/* *********************************************************************************************************//**
+ * Returns the name of the RIS file for *this* map file. All RIS files must have a standard name which is the name of
+ * the map file with its extension replaced with ".ris".
+ *
+ * @return                                      The **std::string** representing the RIS file.
+ ***********************************************************************************************************/
+
+std::string Map::RIS_fileName( ) {
+
+    std::size_t found = m_fileName.rfind( '.' );
+    std::string RIS_fileName( m_fileName.substr( 0, found ) );
+
+    return( RIS_fileName + ".ris" );
+}
+
+/* *********************************************************************************************************//**
+ * Returns **true** if the RIS file for *this* map file exists and **false** otherwise.
+ *
+ * @return                                      A boolean indicating if the RIS file exists or not.
+ ***********************************************************************************************************/
+
+bool Map::RIS_fileExist( ) {
+
+    return( LUPI::FileInfo::exists( RIS_fileName( ) ) );
+}
+
+/* *********************************************************************************************************//**
+ * Load the data from the RIS file if it exists. If it does not exists, no error is reported and the returned
+ * **RISI::Projectiles** will be empty.
+ *
+ * @param       a_energyUnit        [in/out]    The unit desired for threshold energies.
+ *
+ * @return                                      A const reference to the **RISI::Projectiles** data.
+ ***********************************************************************************************************/
+
+RISI::Projectiles const &Map::RIS_load( std::string const &a_energyUnit ) {
+
+    if( !m_projectilesLoaded ) {
+        if( RIS_fileExist( ) ) GIDI::RISI::readRIS( RIS_fileName( ), a_energyUnit, m_projectiles );
+    }
+    m_projectilesLoaded = true;
+
+    return( m_projectiles );
+}
+
+/* *********************************************************************************************************//**
+ * If *this* has target *a_target* for projectile *a_projectile*, then *a_target* is returned. If it does not have target *a_target*, 
+ * for projectile *a_projectile*, then a reasonable substitute is returned if one can be found in *this*. If no reasonable substitute 
+ * is found, an empty string is returned.
+ * 
+ *
+ * @param a_pops                [in]    A PoPI::Database instance used to get information about *a_target*..
+ * @param a_projectile          [in]    The PoPs id of the projectile.
+ * @param a_target              [in]    The PoPs id of the target.
+ *
+ * @return                              The PoPs id of the replacement target.
+ ***********************************************************************************************************/
+
+std::string Map::replacementTarget( PoPI::Database const &a_pops, std::string const &a_projectile, std::string const &a_target ) {
+
+    if( findProtareEntry( a_projectile, a_target ) != nullptr ) return( a_target );
+
+    if( a_pops.exists( a_target ) ) {
+        std::string particleID = a_pops.final( a_target );
+        if( a_pops.isParticle( particleID ) ) {
+            PoPI::Particle const &particle = a_pops.particle( particleID );
+            if( particle.hasNucleus( ) ) {
+                PoPI::Nuclide const *nuclide = static_cast<PoPI::Nuclide const *>( &particle );
+                if( particle.isNucleus( ) ) {
+                    PoPI::Nucleus const *nucleus = static_cast<PoPI::Nucleus const *>( &particle );
+                    nuclide = nucleus->nuclide( );
+                }
+                PoPI::Isotope const *isotope = nuclide->isotope( );
+                std::string targetRegexString( isotope->chemicalElement( )->symbol( ) + "[0-9]+" );
+
+                std::vector<ProtareBase const *> protareEntries;
+                findProtareEntries( protareEntries, std::regex( a_projectile ), std::regex( targetRegexString ) );
+                if( protareEntries.size( ) > 0 ) {
+                    int offset = 0;
+                    std::map<int, std::string> choices;
+                    for( auto entryIter = protareEntries.begin( ); entryIter != protareEntries.end( ); ++entryIter ) {
+                        PoPI::Nuclide const &nuclide2 = a_pops.get<PoPI::Nuclide const>( (*entryIter)->targetID( ) );
+                        int diffA = nuclide->A( ) - nuclide2.A( );
+                        offset += diffA;
+                        choices[diffA] = nuclide2.ID( );
+                    }
+                    offset = offset < 0 ? -1 : 1;
+                    int diff = 2 * offset;
+                    int step = 2;
+                    for( int doTwo = 0; doTwo < 2; ++doTwo ) {
+                        for( std::size_t index = 0; index < choices.size( ); ++index ) {
+                            auto iter = choices.find( diff );
+                            if( iter != choices.end( ) ) return( (*iter).second );
+
+                            diff *= -1;
+                            iter = choices.find( diff );
+                            if( iter != choices.end( ) ) return( (*iter).second );
+
+                            diff = -diff + step * offset;
+                        }
+                        step = 1;
+                    }
+                }
+            }
+        }
+    }
+
+    return( "" );
+}
+
 }       // End of namespace Map.
 
 }       // End of namespace GIDI.
@@ -863,6 +1038,7 @@ void Map::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const
  * directory) part. Returns "." is no '/' is present.
  *
  * @param a_path            The path whose directory is to be returned.
+ *
  * @return                  The directory of file **a_path**
  ***********************************************************************************************************/
 

@@ -5,7 +5,7 @@
 
 local_CXXFLAGS += $(LIB_PATHS)
 
-LIBS = -lPoPI -lpugixml -lLUPI -lHAPI -lnumericalfunctions -lstatusMessageReporting
+LIBS = -lPoPI -lpugixml -lLUPI -lHAPI -lnumericalfunctions -lstatusMessageReporting $(HDF5_LIBS)
 
 EXES = $(CppSources:.cpp=)
 

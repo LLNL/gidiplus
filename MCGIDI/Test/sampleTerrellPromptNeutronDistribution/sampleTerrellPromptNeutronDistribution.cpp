@@ -55,6 +55,7 @@ void main2( int argc, char **argv ) {
     double energyDomainMax = 20.0;
     std::size_t numberOfSamples = 100 * 1000;
     std::set<int> reactionsToExclude;
+    LUPI::StatusMessageReporting smr1;
     int neutronIndex = pops[PoPI::IDs::neutron];
 
     std::cerr << "    " << __FILE__;
@@ -99,7 +100,7 @@ void main2( int argc, char **argv ) {
 
     MCGIDI::DomainHash domainHash( 4000, 1e-8, 10 );
     MCGIDI::Protare *MCProtare;
-    MCProtare = MCGIDI::protareFromGIDIProtare( *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude );
+    MCProtare = MCGIDI::protareFromGIDIProtare( smr1, *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude );
 
     MCGIDI::Sampling::Input input( true, MCGIDI::Sampling::Upscatter::Model::none );
 

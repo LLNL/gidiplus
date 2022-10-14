@@ -53,6 +53,7 @@ void main2( int argc, char **argv ) {
     double energyDomainMax = 20.0;
     std::size_t numberOfFissionSamples = 100 * 1000;
     std::set<int> reactionsToExclude;
+    LUPI::StatusMessageReporting smr1;
     GIDI::Construction::PhotoMode photo_mode = GIDI::Construction::PhotoMode::nuclearOnly;
 
     std::cerr << "    " << __FILE__;
@@ -70,6 +71,8 @@ void main2( int argc, char **argv ) {
     argv_options.add( argvOption2( "--all", false, "If present, all particles are sampled; otherwise only transporting particles are sampled." ) );
     argv_options.add( argvOption2( "-n", false, "If present, add neutron as transporting particle." ) );
     argv_options.add( argvOption2( "-p", false, "If present, add photon as transporting particle." ) );
+    argv_options.add( argvOption2( "--nonRawTNSL", false, "If present, TNSL double differential data (and not distribution data) are used to sample elastic neutrons." ) );
+    argv_options.add( argvOption2( "--electron", false, "If present and the protare is photo-atomic, electrons are transported." ) );
 
     argv_options.parseArgv( argc, argv );
 
@@ -86,6 +89,8 @@ void main2( int argc, char **argv ) {
         if( argv_options.find( "--pn" )->present( ) ) photo_mode = GIDI::Construction::PhotoMode::nuclearAndAtomic;
     }
 
+    bool transportElectrons = argv_options.find( "--electron" )->present( );
+
     GIDI::Map::Map map( mapFilename, pops );
 
     MCGIDI_test_rngSetup( seed );
@@ -101,30 +106,43 @@ void main2( int argc, char **argv ) {
     std::string label( temperatures[0].griddedCrossSection( ) );
     MCGIDI::Transporting::MC MC( pops, projectileID, &protare->styles( ), label, delayedNeutrons, energyDomainMax );
     MC.sampleNonTransportingParticles( argv_options.find( "--all" )->present( ) );
+    MC.set_wantRawTNSL_distributionSampling( !argv_options.find( "--nonRawTNSL" )->present( ) );
 
     GIDI::Transporting::Groups_from_bdfls groups_from_bdfls( "../../../GIDI/Test/bdfls" );
     GIDI::Transporting::Fluxes_from_bdfls fluxes_from_bdfls( "../../../GIDI/Test/bdfls", 0 );
 
     if( ( projectileID == PoPI::IDs::neutron ) || argv_options.find( "-n" )->present( ) ) {
-        GIDI::Transporting::Particle neutron( PoPI::IDs::neutron, groups_from_bdfls.getViaGID( 4 ) );
-        neutron.appendFlux( fluxes_from_bdfls.getViaFID( 1 ) );
+        GIDI::Transporting::Particle neutron( PoPI::IDs::neutron );
         particles.add( neutron );
     }
 
     if( ( projectileID == PoPI::IDs::photon ) || argv_options.find( "-p" )->present( ) ) {
-        GIDI::Transporting::Particle photon( PoPI::IDs::photon, groups_from_bdfls.getViaGID( 70 ) );
-        photon.appendFlux( fluxes_from_bdfls.getViaFID( 1 ) );
+        GIDI::Transporting::Particle photon( PoPI::IDs::photon );
         particles.add( photon );
     }
 
+    if( transportElectrons && !particles.hasParticle( PoPI::IDs::electron ) ) {
+        for( std::size_t protareIndex = 0; protareIndex < protare->numberOfProtares( ); ++protareIndex ) {
+            GIDI::ProtareSingle *protareSingle = protare->protare( protareIndex );
+
+            if( protareSingle->isPhotoAtomic( ) ) {
+                GIDI::Transporting::Particle electron( PoPI::IDs::electron );
+                particles.add( electron );
+                break;
+            }
+        }
+    }
+
     MCGIDI::DomainHash domainHash( 4000, 1e-8, 10 );
-    MCGIDI::Protare *MCProtare = MCGIDI::protareFromGIDIProtare( *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude );
+    MCGIDI::Protare *MCProtare = MCGIDI::protareFromGIDIProtare( smr1, *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude );
 
     MCProtare->setUserParticleIndex( pops[PoPI::IDs::neutron], 0 );
     MCProtare->setUserParticleIndex( pops["H2"], 10 );
     MCProtare->setUserParticleIndex( pops[PoPI::IDs::photon], 11 );
+    MCProtare->setUserParticleIndex( pops[PoPI::IDs::electron], 12 );
 
     MCGIDI::Sampling::Input input( true, MCGIDI::Sampling::Upscatter::Model::none );
+    input.m_temperature = 2.58e-5;                                                     // In keV/k;
 
     std::size_t numberOfReactions = MCProtare->numberOfReactions( );
 

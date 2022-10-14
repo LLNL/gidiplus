@@ -16,14 +16,14 @@
 */
 int main( int argc, char **argv ) {
 
-    std::cerr << "    " << __FILE__ << std::endl;
+    std::cerr << "    " << LUPI::FileInfo::basenameWithoutExtension( __FILE__ ) << std::endl;
 
     std::string fileName( "../pops.xml" );
 
     try {
         PoPI::Database database( fileName );
         database.saveAs( "Outputs/pops3.xml.out" );
-        database.print( ); }
+        database.print( false ); }
     catch (char const *str) {
         std::cout << str << std::endl;
     }

@@ -73,6 +73,7 @@ void main2( int argc, char **argv ) {
 */
 void gain( GIDI::Protare *a_protare, PoPI::Database &a_pops, GIDI::Transporting::MG &a_settings, GIDI::Styles::TemperatureInfos temperatures, char const *a_productID ) {
 
+    LUPI::StatusMessageReporting smr1;
     std::string prefix( "Total particle gain" );
     std::string::size_type width = prefix.size( );
 
@@ -84,7 +85,7 @@ void gain( GIDI::Protare *a_protare, PoPI::Database &a_pops, GIDI::Transporting:
 
     std::cout << std::endl << "Gain for particle '" << a_productID << "':" << std::endl;
 
-    GIDI::Vector multi_group_gain = a_protare->multiGroupGain( a_settings, temperatures[0], a_productID );
+    GIDI::Vector multi_group_gain = a_protare->multiGroupGain( smr1, a_settings, temperatures[0], a_productID );
 
     prefix.insert( prefix.size( ), 4 + width - prefix.size( ), ' ' );
     prefix.insert( 0, 2, ' ' );
@@ -93,7 +94,7 @@ void gain( GIDI::Protare *a_protare, PoPI::Database &a_pops, GIDI::Transporting:
 
     for( std::size_t index = 0; index < a_protare->numberOfReactions( ); ++index ) {
         GIDI::Reaction const *reaction = a_protare->reaction( index );
-        GIDI::Vector multi_group_gain = reaction->multiGroupGain( a_settings, temperatures[0], a_productID, a_protare->projectile( ).ID( ) );
+        GIDI::Vector multi_group_gain = reaction->multiGroupGain( smr1, a_settings, temperatures[0], a_productID, a_protare->projectile( ).ID( ) );
 
         std::string string( reaction->label( ) );
         string.insert( string.size( ), width - string.size( ), ' ' );

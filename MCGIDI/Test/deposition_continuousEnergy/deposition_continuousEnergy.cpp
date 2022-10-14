@@ -48,6 +48,7 @@ void main2( int argc, char **argv ) {
     GIDI::Construction::PhotoMode photo_mode = GIDI::Construction::PhotoMode::nuclearOnly;
     int neutronIndex = pops[PoPI::IDs::neutron];
     int photonIndex = pops[PoPI::IDs::photon];
+    LUPI::StatusMessageReporting smr1;
 
     std::cerr << "    " << __FILE__;
     for( int i1 = 1; i1 < argc; i1++ ) std::cerr << " " << argv[i1];
@@ -62,6 +63,8 @@ void main2( int argc, char **argv ) {
     argv_options.add( argvOption2( "--pn", false, "Include photo-nuclear protare if relevant. This is the default unless *-a* present." ) );
     argv_options.add( argvOption2( "-n", false, "If present, add neutron as transporting particle." ) );
     argv_options.add( argvOption2( "-p", false, "If present, add photon as transporting particle." ) );
+    argv_options.add( argvOption2( "-d", false, "If present, fission delayed neutrons are included with product sampling." ) );
+    argv_options.add( argvOption2( "--useSlowerContinuousEnergyConversion", false, "If present, old continuous energy conversion logic is used." ) );
 
     argv_options.parseArgv( argc, argv );
 
@@ -91,11 +94,17 @@ void main2( int argc, char **argv ) {
         particles.add( photon );
     }
 
-    MCGIDI::Transporting::MC MC( pops, projectileID, &protare->styles( ), label, GIDI::Transporting::DelayedNeutrons::on, 20.0 );
+    GIDI::Transporting::DelayedNeutrons delayedNeutrons = GIDI::Transporting::DelayedNeutrons::off;
+    if( argv_options.find( "-d" )->present( ) ) delayedNeutrons = GIDI::Transporting::DelayedNeutrons::on;
+
+    MCGIDI::Transporting::MC MC( pops, projectileID, &protare->styles( ), label, delayedNeutrons, 20.0 );
+
     MC.crossSectionLookupMode( MCGIDI::Transporting::LookupMode::Data1d::continuousEnergy );
+    MC.setUseSlowerContinuousEnergyConversion( argv_options.find( "--useSlowerContinuousEnergyConversion" )->present( ) );
+
     MCGIDI::DomainHash domainHash( 4000, 1e-8, 10 );
     MCGIDI::Protare *MCProtare;
-    MCProtare = MCGIDI::protareFromGIDIProtare( *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude );
+    MCProtare = MCGIDI::protareFromGIDIProtare( smr1, *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude );
 
     MCGIDI::Vector<MCGIDI::Protare *> protares( 1 );
     protares[0] = MCProtare;

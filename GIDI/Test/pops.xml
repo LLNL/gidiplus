@@ -1,6 +1,10 @@
 <?xml version="1.0"?>
 <PoPs name="lPoPs" version="0.0.1" format="0.1">
   <aliases>
+    <particle id="d" pid="h2"/>
+    <particle id="t" pid="h3"/>
+    <particle id="h" pid="he3"/>
+    <particle id="a" pid="he4"/>
     <metaStable id="Na24_m1" pid="Na24_e1" metaStableIndex="1"/>
     <metaStable id="Al26_m1" pid="Al26_e1" metaStableIndex="1"/>
     <particle id="gamma" pid="photon"/></aliases>

@@ -21,9 +21,10 @@ namespace HAPI {
  * @return
  */
 HDFNode::HDFNode() :
+        Node_internal( NodeInteralType::HDF5 ),
         m_node_id( 0 ),
         m_parent_id( 0 ),
-        m_index( -1 ) {
+        m_index( 0 ) {
 
 }
 /*
@@ -33,10 +34,11 @@ HDFNode::HDFNode() :
  * @return
  */
 HDFNode::HDFNode( hid_t a_node_id, hid_t a_parent_id, size_t a_index, std::vector<childInfo> a_siblings ) :
-    m_node_id( a_node_id ),
-    m_parent_id( a_parent_id ),
-    m_index( a_index ),
-    m_siblings( a_siblings ) {
+        Node_internal( NodeInteralType::HDF5 ),
+        m_node_id( a_node_id ),
+        m_parent_id( a_parent_id ),
+        m_index( a_index ),
+        m_siblings( a_siblings ) {
 
     H5I_type_t id_type = H5Iget_type( m_node_id );
     if (H5I_GROUP == id_type) {
@@ -59,10 +61,10 @@ HDFNode::HDFNode( hid_t a_node_id, hid_t a_parent_id, size_t a_index, std::vecto
  * @return
  */
 HDFNode::HDFNode( hid_t a_file_id) :
-
-    m_node_id( a_file_id ),
-    m_parent_id( 0 ),
-    m_index( 0 ) {
+        Node_internal( NodeInteralType::HDF5 ),
+        m_node_id( a_file_id ),
+        m_parent_id( 0 ),
+        m_index( 0 ) {
 
   hsize_t start_idx = 0;
   H5Literate(m_node_id, H5_INDEX_NAME, H5_ITER_NATIVE, &start_idx, map_children, &m_children);
@@ -74,6 +76,7 @@ HDFNode::HDFNode( hid_t a_file_id) :
 ============================================================
  */
 HDFNode::HDFNode(const HDFNode &other) :
+        Node_internal( other ),
         m_node_id( other.m_node_id ),
         m_parent_id( other.m_parent_id ),
         m_index( other.m_index ),
@@ -102,9 +105,10 @@ std::string HDFNode::attribute(char const *a_name) {
 
     hid_t attr_id = H5Aopen(m_node_id, a_name, H5P_DEFAULT);
     size_t attr_len = H5Aget_storage_size(attr_id);
+    hid_t atype = H5Aget_type(attr_id);
 
     std::vector<char> buffer(attr_len+1, 0);
-    H5Aread(attr_id, H5T_NATIVE_CHAR, buffer.data());
+    H5Aread(attr_id, atype, buffer.data());
 
     std::string attrValue(buffer.data());
 
@@ -115,9 +119,10 @@ std::string HDFNode::attribute(char const *a_name) {
 int HDFNode::attribute_as_int(const char* a_name){
   hid_t attr_id = H5Aopen(m_node_id, a_name, H5P_DEFAULT);
   size_t attr_len = H5Aget_storage_size(attr_id);
+  hid_t atype = H5Aget_type(attr_id);
 
   std::vector<char> buffer(attr_len+1, 0);
-  H5Aread(attr_id, H5T_NATIVE_CHAR, buffer.data());
+  H5Aread(attr_id, atype, buffer.data());
 
   return atoi(buffer.data());
 
@@ -135,9 +140,10 @@ long HDFNode::attribute_as_long(const char* a_name){
 double HDFNode::attribute_as_double(const char* a_name){
   hid_t attr_id = H5Aopen(m_node_id, a_name, H5P_DEFAULT);
   size_t attr_len = H5Aget_storage_size(attr_id);
+  hid_t atype = H5Aget_type(attr_id);
 
   std::vector<char> buffer(attr_len+1, 0);
-  H5Aread(attr_id, H5T_NATIVE_CHAR, buffer.data());
+  H5Aread(attr_id, atype, buffer.data());
 
   return atof(buffer.data());
 }
@@ -206,7 +212,6 @@ void HDFNode::to_next_sibling() {
     if (nextIndex >= nsibs)
     {
         m_node_id = 0;
-        m_index = -1;
     }
     else
     {
@@ -260,9 +265,10 @@ std::string HDFNode::name() const {
 
     hid_t attr_id = H5Aopen(m_node_id, "_xmltag", H5P_DEFAULT);
     size_t attr_len = H5Aget_storage_size(attr_id);
+    hid_t atype = H5Aget_type(attr_id);
 
     std::vector<char> buffer(attr_len+1, 0);
-    H5Aread(attr_id, H5T_NATIVE_CHAR, buffer.data());
+    H5Aread(attr_id, atype, buffer.data());
 
     return std::string(buffer.data());
 
@@ -301,10 +307,10 @@ Text HDFNode::text() const {
       case H5O_TYPE_DATASET:
       {
           size_t len = H5Dget_storage_size(m_node_id);
-          hid_t file_space_id = H5Dget_space(m_node_id);
+          hid_t dtype = H5Dget_type(m_node_id);
 
           std::vector<char> buffer(len+1,0);
-          H5Dread(m_node_id, H5T_NATIVE_CHAR, H5S_ALL, file_space_id, H5P_DEFAULT, buffer.data());
+          H5Dread(m_node_id, dtype, H5S_ALL, H5S_ALL, H5P_DEFAULT, buffer.data());
 
           return Text(std::string(buffer.data()));
 
@@ -374,10 +380,11 @@ herr_t map_children(hid_t loc_id, char const *name, const H5L_info_t *info, void
   std::string xmlTag;
   {
     hid_t attr_id = H5Aopen(node_id, "_xmltag", H5P_DEFAULT);
+    hid_t atype = H5Aget_type(attr_id);
     size_t attr_len = H5Aget_storage_size(attr_id);
 
     std::vector<char> buffer(attr_len+1, 0);
-    H5Aread(attr_id, H5T_NATIVE_CHAR, buffer.data());
+    H5Aread(attr_id, atype, buffer.data());
 
     xmlTag = std::string(buffer.data());
   }
@@ -403,9 +410,9 @@ herr_t map_children(hid_t loc_id, char const *name, const H5L_info_t *info, void
   }
   (*children)[index] = infos;
 
-  printf("ITER: id=%d, index=%d, name=%s\n", (int)node_id, (int)index, name);
+  //printf("ITER: id=%d, index=%d, name=%s\n", (int)node_id, (int)index, name);
 
-  H5Oclose(node_id);
+  //H5Oclose(node_id);
 
   return 0;
  }

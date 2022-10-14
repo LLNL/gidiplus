@@ -13,8 +13,6 @@ CppSource = $(sort $(wildcard *.cpp))
 include $(GIDI_PLUS_PATH)/Makefile.paths
 include ../Makefile.check
 
-LIBS = -lHAPI -lpugixml -lnumericalfunctions -lstatusMessageReporting
-
 check: parseXML
 	if [ ! -e Outputs ]; then mkdir Outputs; fi
 	./parseXML > Outputs/parseXML.out

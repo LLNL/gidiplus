@@ -16,6 +16,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <stdexcept>
 
 #include <statusMessageReporting.h>
 
@@ -26,6 +27,39 @@ namespace LUPI {
 #else
 #define LUPI_FILE_SEPARATOR   "/"
 #endif
+
+#define GNDS_formatVersion_1_10Chars "1.10"
+#define GNDS_formatVersion_2_0Chars "2.0"
+#define GNDS_formatVersion_2_0_LLNL_4Chars "2.0.LLNL_4"
+
+void deprecatedFunction( std::string const &a_functionName, std::string const &a_replacementName, std::string const &a_asOf );
+
+/*
+============================================================
+====================== FormatVersion =======================
+============================================================
+*/
+class FormatVersion {
+
+    private:
+        std::string m_format;               /**< The GNDS format version. */
+        int m_major;                        /**< The GNDS format major value as an integer. */
+        int m_minor;                        /**< The GNDS format minor value as an integer. */
+        std::string m_patch;                /**< The GNDS format patch string. This will be an empty string except for unofficial formats. */
+
+    public:
+        FormatVersion( );
+        FormatVersion( std::string const &a_formatVersion );
+        FormatVersion( FormatVersion const &a_formatVersion );
+
+        std::string const &format( ) const { return( m_format ); }
+        int major( ) const { return( m_major ); }
+        int minor( ) const { return( m_minor ); }
+        std::string const &patch( ) const { return( m_patch ); }
+
+        bool setFormat( std::string const &a_formatVersion );
+        bool supported( ) const ;
+};
 
 /*
 ============================================================
@@ -46,6 +80,9 @@ class Exception : public std::runtime_error {
 
 class StatusMessageReporting {
 
+    public:
+        enum class Status { ok, info, warning, error };
+
     private:
         statusMessageReporting m_smr;
 
@@ -55,8 +92,12 @@ class StatusMessageReporting {
         
         statusMessageReporting *smr( ) { return( &m_smr ); }
         bool isOk( ) { return( smr_isOk( &m_smr ) ); }
+        bool isInfo( ) { return( smr_isInfo( &m_smr ) ); }
+        bool isWarning( ) { return( smr_isWarning( &m_smr ) ); }
+        bool isError( ) { return( smr_isError( &m_smr ) ); }
         void clear( ) { smr_release( &m_smr ); }
         std::string constructMessage( std::string a_prefix, int a_reports = 1, bool a_clear = false );
+        std::string constructFullMessage( std::string a_prefix, int a_reports = 1, bool a_clear = false );
 };
 
 /*
@@ -249,7 +290,7 @@ class OptionStore : public ArgumentBase {
         }
         ~OptionStore( ) {}
 
-        virtual bool requiresAValue( ) const { return( true ); }
+        bool requiresAValue( ) const { return( true ); }
         int parse( ArgumentParser const &a_argumentParser, int a_index, int a_argc, char **a_argv );
 
         std::string const &value( ) const { return( m_value ); }
@@ -274,11 +315,12 @@ class OptionAppend : public ArgumentBase {
         }
         ~OptionAppend( ) {}
 
-        virtual bool requiresAValue( ) const { return( true ); }
+        bool requiresAValue( ) const { return( true ); }
         int parse( ArgumentParser const &a_argumentParser, int a_index, int a_argc, char **a_argv );
 
         std::vector<std::string> const &values( ) const { return( m_values ); }
         std::string const &value( int a_index ) const { return( m_values[a_index] ); }
+        std::string const &value( std::size_t a_index ) const { return( m_values[a_index] ); }
         void addValue( std::string a_value ) { m_values.push_back( a_value ); }
         void printStatus3( std::string const &a_indent ) const ;
 };
@@ -302,7 +344,7 @@ class Positional : public ArgumentBase {
         ~Positional( ) { }
 
         bool isOptionalArgument( ) const { return( false ); }
-        virtual bool requiresAValue( ) const { return( true ); }
+        bool requiresAValue( ) const { return( true ); }
         int parse( ArgumentParser const &a_argumentParser, int a_index, int a_argc, char **a_argv );
 
         std::vector<std::string> const &values( ) { return( m_values ); }
@@ -401,6 +443,11 @@ class FileStat {
 // Miscellaneous functions
 
 namespace Misc {
+
+std::string stripString( std::string const &a_string, bool a_left = true, bool a_right = true );
+std::vector<std::string> splitString( std::string const &a_string, char a_delimiter, bool a_strip = false );
+std::vector<std::string> splitXLinkString( std::string const &a_string );
+bool stringToInt( std::string const &a_string, int &a_value );
 
 std::string argumentsToString( char const *a_format, ... );
 std::string doubleToString3( char const *a_format, double a_value, bool a_reduceBits = false );

@@ -5,8 +5,6 @@
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
-from __future__ import print_function
-
 import sys
 f = open( sys.argv[1] )
 ls = f.readlines( )

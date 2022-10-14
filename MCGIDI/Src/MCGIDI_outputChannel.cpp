@@ -37,7 +37,8 @@ MCGIDI_HOST_DEVICE OutputChannel::OutputChannel( ) :
  * @param a_particles           [in]    List of transporting particles and their information (e.g., multi-group boundaries and fluxes).
  ***********************************************************************************************************/
 
-MCGIDI_HOST OutputChannel::OutputChannel( GIDI::OutputChannel const *a_outputChannel, SetupInfo &a_setupInfo, Transporting::MC const &a_settings, GIDI::Transporting::Particles const &a_particles ) :
+MCGIDI_HOST OutputChannel::OutputChannel( GIDI::OutputChannel const *a_outputChannel, SetupInfo &a_setupInfo, Transporting::MC const &a_settings, 
+                GIDI::Transporting::Particles const &a_particles ) :
         m_channelType( ChannelType::none ),
         m_isFission( false ),
         m_neutronIndex( a_settings.neutronIndex( ) ),
@@ -66,10 +67,15 @@ MCGIDI_HOST OutputChannel::OutputChannel( GIDI::OutputChannel const *a_outputCha
             }
         }
 
+        bool electronPresent = false;
         std::size_t size = 0;
         std::set<std::size_t> productsToDo;
         for( std::size_t i1 = 0; i1 < a_outputChannel->products( ).size( ); ++i1 ) {
             GIDI::Product const *product = products.get<GIDI::Product>( i1 );
+
+            if( product->particle( ).ID( ) == PoPI::IDs::electron ) electronPresent = true;
+            if( electronPresent && !a_setupInfo.m_isPhotoAtomicIncoherentScattering ) continue;
+            if( !electronPresent && !product->isCompleteParticle( ) && ( product->outputChannel( ) == nullptr ) ) continue;
 
             if( ( product->outputChannel( ) != nullptr ) || a_settings.sampleNonTransportingParticles( ) || a_particles.hasParticle( product->particle( ).ID( ) ) )
                 productsToDo.insert( i1 );
@@ -78,6 +84,14 @@ MCGIDI_HOST OutputChannel::OutputChannel( GIDI::OutputChannel const *a_outputCha
         if( a_setupInfo.m_isPairProduction ) {
             size += 2;
             size = 2;                               // This is a kludge until the ENDL to GNDS translator is fixed.
+        }
+
+        bool addIncoherentPhotoAtomicScatteringElectron = false;
+        if( a_setupInfo.m_isPhotoAtomicIncoherentScattering && a_particles.hasParticle( PoPI::IDs::electron ) ) {   // May need to add electron for legacy GNDS files.
+            if( !electronPresent ) {
+                addIncoherentPhotoAtomicScatteringElectron = true;
+                ++size;
+            }
         }
         m_products.reserve( size );
 
@@ -109,6 +123,15 @@ MCGIDI_HOST OutputChannel::OutputChannel( GIDI::OutputChannel const *a_outputCha
             a_setupInfo.m_twoBodyOrder = TwoBodyOrder::notApplicable;
             if( m_channelType == ChannelType::twoBody ) a_setupInfo.m_twoBodyOrder = ( ( i1 == 0 ? TwoBodyOrder::firstParticle : TwoBodyOrder::secondParticle ) );
             m_products.push_back( new Product( product, a_setupInfo, a_settings, a_particles, m_isFission ) );
+
+            if( addIncoherentPhotoAtomicScatteringElectron && ( product->particle( ).ID( ) == PoPI::IDs::photon ) ) {
+                addIncoherentPhotoAtomicScatteringElectron = false;
+
+                Product *product = new Product( a_settings.pops( ), PoPI::IDs::electron, PoPI::IDs::electron );
+                product->setMultiplicity( new Functions::Constant1d( a_setupInfo.m_domainMin, a_setupInfo.m_domainMax, 1.0, 0.0 ) );
+                product->distribution( new Distributions::IncoherentPhotoAtomicScatteringElectron( a_setupInfo ) );
+                m_products.push_back( product );
+            }
         }
 
         if( ( a_settings.delayedNeutrons( ) == GIDI::Transporting::DelayedNeutrons::on ) && a_particles.hasParticle( PoPI::IDs::neutron ) ) {
@@ -210,7 +233,7 @@ MCGIDI_HOST void OutputChannel::setUserParticleIndex( int a_particleIndex, int a
  * Returns the energy dependent multiplicity for outgoing particle with pops id *a_id*. The returned value may not
  * be an integer. Energy dependent multiplicity mainly occurs for photons and fission neutrons.
  *
- * @param a_id                      [in]    The PoPs id of the requested particle.
+ * @param a_index                   [in]    The index of the requested particle.
  * @param a_projectileEnergy        [in]    The energy of the projectile.
  *
  * @return                                  The multiplicity value for the requested particle.
@@ -278,6 +301,7 @@ MCGIDI_HOST_DEVICE void OutputChannel::sampleProducts( Protare const *a_protare,
  *
  * @param a_reaction                [in]    The reaction containing the particle which this distribution describes.
  * @param a_pid                     [in]    The index of the particle to emit.
+ * @param a_temperature             [in]    Specifies the temperature of the material.
  * @param a_energy_in               [in]    The energy of the incident particle.
  * @param a_mu_lab                  [in]    The desired mu in the lab frame for the emitted particle.
  * @param a_weight                  [in]    The probability of emitting outgoing particle into lab angle *a_mu_lab*.
@@ -287,18 +311,18 @@ MCGIDI_HOST_DEVICE void OutputChannel::sampleProducts( Protare const *a_protare,
  * @param a_cumulative_weight       [in]    The sum of the multiplicity for other outgoing particles with index *a_pid*.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE void OutputChannel::angleBiasing( Reaction const *a_reaction, int a_pid, double a_energy_in, double a_mu_lab, double &a_weight, double &a_energy_out,
-                double (*a_userrng)( void * ), void *a_rngState, double &a_cumulative_weight ) const {
+MCGIDI_HOST_DEVICE void OutputChannel::angleBiasing( Reaction const *a_reaction, int a_pid, double a_temperature, double a_energy_in, double a_mu_lab, 
+                double &a_weight, double &a_energy_out, double (*a_userrng)( void * ), void *a_rngState, double &a_cumulative_weight ) const {
 
     for( Vector<Product *>::const_iterator iter = m_products.begin( ); iter != m_products.end( ); ++iter )
-        (*iter)->angleBiasing( a_reaction, a_pid, a_energy_in, a_mu_lab, a_weight, a_energy_out, a_userrng, a_rngState, a_cumulative_weight );
+        (*iter)->angleBiasing( a_reaction, a_pid, a_temperature, a_energy_in, a_mu_lab, a_weight, a_energy_out, a_userrng, a_rngState, a_cumulative_weight );
 
     if( ( m_totalDelayedNeutronMultiplicity != nullptr ) && ( a_pid == neutronIndex( ) ) ) {
         for( std::size_t i1 = 0; i1 < (std::size_t) m_delayedNeutrons.size( ); ++i1 ) {
             DelayedNeutron const *delayedNeutron1( delayedNeutron( i1 ) );
             Product const &product = delayedNeutron1->product( );
 
-            product.angleBiasing( a_reaction, a_pid, a_energy_in, a_mu_lab, a_weight, a_energy_out, a_userrng, a_rngState, a_cumulative_weight );
+            product.angleBiasing( a_reaction, a_pid, a_temperature, a_energy_in, a_mu_lab, a_weight, a_energy_out, a_userrng, a_rngState, a_cumulative_weight );
         }
     }
 }
