@@ -12,9 +12,11 @@ directory, download it from https://pugixml.org/2016/11/24/pugixml-1.8-release.h
 
 # Installation
 
-To clone the **GIDI+** Git repository the following command is recommended:
+To clone the **GIDI+** Git repository one of the following commands is recommended:
 ```
-git clone ssh://git@github.com:LLNL/gidiplus.git
+git clone https://github.com/LLNL/gidiplus.git
+# or using SSH (requires creating a github account and registering an ssh key):
+git clone git@github.com:LLNL/gidiplus.git
 ```
 
 Currently, **GIDI+** uses the **unix make** command to build and puts needed header and library files into the *include* and
