@@ -1,0 +1,464 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<isotopicAbundancesByChemicalElement evaluation="CIAAW" format="2.0">
+  <documentation>
+    <body><![CDATA[
+Data from Commission on Isotopic Abundances and Atomic Weights (CIAAW) 2021. 
+These data are from the web-site https://www.ciaaw.org/isotopic-abundances.htm.]]></body></documentation>
+  <chemicalElements>
+    <chemicalElement symbol="H">
+      <isotopes>
+        <isotope id="H1" atomFraction="0.999855" uncertainty="1.35e-4"/>
+        <isotope id="H2" atomFraction="1.45e-4" uncertainty="1.35e-4"/></isotopes></chemicalElement>
+    <chemicalElement symbol="He">
+      <isotopes>
+        <isotope id="He3" atomFraction="2e-6" uncertainty="2e-6"/>
+        <isotope id="He4" atomFraction="0.999998" uncertainty="2e-6"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Li">
+      <isotopes>
+        <isotope id="Li6" atomFraction="0.0485" uncertainty="0.0295"/>
+        <isotope id="Li7" atomFraction="0.9515" uncertainty="0.0295"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Be">
+      <isotopes>
+        <isotope id="Be9" atomFraction="1" uncertainty="0"/></isotopes></chemicalElement>
+    <chemicalElement symbol="B">
+      <isotopes>
+        <isotope id="B10" atomFraction="0.1965" uncertainty="7.5e-3"/>
+        <isotope id="B11" atomFraction="0.8035" uncertainty="7.5e-3"/></isotopes></chemicalElement>
+    <chemicalElement symbol="C">
+      <isotopes>
+        <isotope id="C12" atomFraction="0.9894" uncertainty="1e-3"/>
+        <isotope id="C13" atomFraction="0.0106" uncertainty="1e-3"/></isotopes></chemicalElement>
+    <chemicalElement symbol="N">
+      <isotopes>
+        <isotope id="N14" atomFraction="0.996205" uncertainty="4.25e-4"/>
+        <isotope id="N15" atomFraction="3.795e-3" uncertainty="4.25e-4"/></isotopes></chemicalElement>
+    <chemicalElement symbol="O">
+      <isotopes>
+        <isotope id="O16" atomFraction="0.99757" uncertainty="1.9e-4"/>
+        <isotope id="O17" atomFraction="3.835e-4" uncertainty="1.65e-5"/>
+        <isotope id="O18" atomFraction="2.045e-3" uncertainty="1.75e-4"/></isotopes></chemicalElement>
+    <chemicalElement symbol="F">
+      <isotopes>
+        <isotope id="F19" atomFraction="1" uncertainty="0"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Ne">
+      <isotopes>
+        <isotope id="Ne20" atomFraction="0.9048" uncertainty="3e-4"/>
+        <isotope id="Ne21" atomFraction="2.7e-3" uncertainty="1e-4"/>
+        <isotope id="Ne22" atomFraction="0.0925" uncertainty="3e-4"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Na">
+      <isotopes>
+        <isotope id="Na23" atomFraction="1" uncertainty="0"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Mg">
+      <isotopes>
+        <isotope id="Mg24" atomFraction="0.78965" uncertainty="8.5e-4"/>
+        <isotope id="Mg25" atomFraction="0.10011" uncertainty="2.3e-4"/>
+        <isotope id="Mg26" atomFraction="0.11025" uncertainty="6.5e-4"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Al">
+      <isotopes>
+        <isotope id="Al27" atomFraction="1" uncertainty="0"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Si">
+      <isotopes>
+        <isotope id="Si28" atomFraction="0.922545" uncertainty="6.35e-4"/>
+        <isotope id="Si29" atomFraction="0.04672" uncertainty="2.7e-4"/>
+        <isotope id="Si30" atomFraction="0.030735" uncertainty="3.65e-4"/></isotopes></chemicalElement>
+    <chemicalElement symbol="P">
+      <isotopes>
+        <isotope id="P31" atomFraction="1" uncertainty="0"/></isotopes></chemicalElement>
+    <chemicalElement symbol="S">
+      <isotopes>
+        <isotope id="S32" atomFraction="0.9485" uncertainty="4.4e-3"/>
+        <isotope id="S33" atomFraction="7.63e-3" uncertainty="3.4e-4"/>
+        <isotope id="S34" atomFraction="0.04365" uncertainty="4.05e-3"/>
+        <isotope id="S36" atomFraction="1.58e-4" uncertainty="2.9e-5"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Cl">
+      <isotopes>
+        <isotope id="Cl35" atomFraction="0.758" uncertainty="3e-3"/>
+        <isotope id="Cl37" atomFraction="0.242" uncertainty="3e-3"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Ar">
+      <isotopes>
+        <isotope id="Ar36" atomFraction="0.01035" uncertainty="0.01035"/>
+        <isotope id="Ar38" atomFraction="0.0215" uncertainty="0.0215"/>
+        <isotope id="Ar40" atomFraction="0.968" uncertainty="0.032"/></isotopes></chemicalElement>
+    <chemicalElement symbol="K">
+      <isotopes>
+        <isotope id="K39" atomFraction="0.932581" uncertainty="4.4e-5"/>
+        <isotope id="K40" atomFraction="1.17e-4" uncertainty="1e-6"/>
+        <isotope id="K41" atomFraction="0.067302" uncertainty="4.4e-5"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Ca">
+      <isotopes>
+        <isotope id="Ca40" atomFraction="0.96941" uncertainty="1.56e-3"/>
+        <isotope id="Ca42" atomFraction="6.47e-3" uncertainty="2.3e-4"/>
+        <isotope id="Ca43" atomFraction="1.35e-3" uncertainty="1e-4"/>
+        <isotope id="Ca44" atomFraction="0.02086" uncertainty="1.1e-3"/>
+        <isotope id="Ca46" atomFraction="4e-5" uncertainty="3e-5"/>
+        <isotope id="Ca48" atomFraction="1.87e-3" uncertainty="2.1e-4"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Sc">
+      <isotopes>
+        <isotope id="Sc45" atomFraction="1" uncertainty="0"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Ti">
+      <isotopes>
+        <isotope id="Ti46" atomFraction="0.0825" uncertainty="3e-4"/>
+        <isotope id="Ti47" atomFraction="0.0744" uncertainty="2e-4"/>
+        <isotope id="Ti48" atomFraction="0.7372" uncertainty="3e-4"/>
+        <isotope id="Ti49" atomFraction="0.0541" uncertainty="2e-4"/>
+        <isotope id="Ti50" atomFraction="0.0518" uncertainty="2e-4"/></isotopes></chemicalElement>
+    <chemicalElement symbol="V">
+      <isotopes>
+        <isotope id="V50" atomFraction="2.5e-3" uncertainty="1e-4"/>
+        <isotope id="V51" atomFraction="0.9975" uncertainty="1e-4"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Cr">
+      <isotopes>
+        <isotope id="Cr50" atomFraction="0.04345" uncertainty="1.3e-4"/>
+        <isotope id="Cr52" atomFraction="0.83789" uncertainty="1.8e-4"/>
+        <isotope id="Cr53" atomFraction="0.09501" uncertainty="1.7e-4"/>
+        <isotope id="Cr54" atomFraction="0.02365" uncertainty="7e-5"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Mn">
+      <isotopes>
+        <isotope id="Mn55" atomFraction="1" uncertainty="0"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Fe">
+      <isotopes>
+        <isotope id="Fe54" atomFraction="0.05845" uncertainty="1.05e-3"/>
+        <isotope id="Fe56" atomFraction="0.91754" uncertainty="1.06e-3"/>
+        <isotope id="Fe57" atomFraction="0.02119" uncertainty="2.9e-4"/>
+        <isotope id="Fe58" atomFraction="2.82e-3" uncertainty="1.2e-4"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Co">
+      <isotopes>
+        <isotope id="Co59" atomFraction="1" uncertainty="0"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Ni">
+      <isotopes>
+        <isotope id="Ni58" atomFraction="0.680769" uncertainty="1.9e-4"/>
+        <isotope id="Ni60" atomFraction="0.262231" uncertainty="1.5e-4"/>
+        <isotope id="Ni61" atomFraction="0.011399" uncertainty="1.3e-5"/>
+        <isotope id="Ni62" atomFraction="0.036345" uncertainty="4e-5"/>
+        <isotope id="Ni64" atomFraction="9.256e-3" uncertainty="1.9e-5"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Cu">
+      <isotopes>
+        <isotope id="Cu63" atomFraction="0.6915" uncertainty="1.5e-3"/>
+        <isotope id="Cu65" atomFraction="0.3085" uncertainty="1.5e-3"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Zn">
+      <isotopes>
+        <isotope id="Zn64" atomFraction="0.4917" uncertainty="7.5e-3"/>
+        <isotope id="Zn66" atomFraction="0.2773" uncertainty="9.8e-3"/>
+        <isotope id="Zn67" atomFraction="0.0404" uncertainty="1.6e-3"/>
+        <isotope id="Zn68" atomFraction="0.1845" uncertainty="6.3e-3"/>
+        <isotope id="Zn70" atomFraction="6.1e-3" uncertainty="1e-3"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Ga">
+      <isotopes>
+        <isotope id="Ga69" atomFraction="0.60108" uncertainty="5e-4"/>
+        <isotope id="Ga71" atomFraction="0.39892" uncertainty="5e-4"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Ge">
+      <isotopes>
+        <isotope id="Ge70" atomFraction="0.2052" uncertainty="1.9e-3"/>
+        <isotope id="Ge72" atomFraction="0.2745" uncertainty="1.5e-3"/>
+        <isotope id="Ge73" atomFraction="0.0776" uncertainty="8e-4"/>
+        <isotope id="Ge74" atomFraction="0.3652" uncertainty="1.2e-3"/>
+        <isotope id="Ge76" atomFraction="0.0775" uncertainty="1.2e-3"/></isotopes></chemicalElement>
+    <chemicalElement symbol="As">
+      <isotopes>
+        <isotope id="As75" atomFraction="1" uncertainty="0"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Se">
+      <isotopes>
+        <isotope id="Se74" atomFraction="8.6e-3" uncertainty="3e-4"/>
+        <isotope id="Se76" atomFraction="0.0923" uncertainty="7e-4"/>
+        <isotope id="Se77" atomFraction="0.076" uncertainty="7e-4"/>
+        <isotope id="Se78" atomFraction="0.2369" uncertainty="2.2e-3"/>
+        <isotope id="Se80" atomFraction="0.498" uncertainty="3.6e-3"/>
+        <isotope id="Se82" atomFraction="0.0882" uncertainty="1.5e-3"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Br">
+      <isotopes>
+        <isotope id="Br79" atomFraction="0.5065" uncertainty="1.5e-3"/>
+        <isotope id="Br81" atomFraction="0.4935" uncertainty="1.5e-3"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Kr">
+      <isotopes>
+        <isotope id="Kr78" atomFraction="3.55e-3" uncertainty="3e-5"/>
+        <isotope id="Kr80" atomFraction="0.02286" uncertainty="1e-4"/>
+        <isotope id="Kr82" atomFraction="0.11593" uncertainty="3.1e-4"/>
+        <isotope id="Kr83" atomFraction="0.115" uncertainty="1.9e-4"/>
+        <isotope id="Kr84" atomFraction="0.56987" uncertainty="1.5e-4"/>
+        <isotope id="Kr86" atomFraction="0.17279" uncertainty="4.1e-4"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Rb">
+      <isotopes>
+        <isotope id="Rb85" atomFraction="0.7217" uncertainty="2e-4"/>
+        <isotope id="Rb87" atomFraction="0.2783" uncertainty="2e-4"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Sr">
+      <isotopes>
+        <isotope id="Sr84" atomFraction="5.6e-3" uncertainty="2e-4"/>
+        <isotope id="Sr86" atomFraction="0.0986" uncertainty="2e-3"/>
+        <isotope id="Sr87" atomFraction="7e-2" uncertainty="2e-3"/>
+        <isotope id="Sr88" atomFraction="0.8258" uncertainty="3.5e-3"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Y">
+      <isotopes>
+        <isotope id="Y89" atomFraction="1" uncertainty="0"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Zr">
+      <isotopes>
+        <isotope id="Zr90" atomFraction="0.5145" uncertainty="4e-4"/>
+        <isotope id="Zr91" atomFraction="0.1122" uncertainty="5e-4"/>
+        <isotope id="Zr92" atomFraction="0.1715" uncertainty="3e-4"/>
+        <isotope id="Zr94" atomFraction="0.1738" uncertainty="4e-4"/>
+        <isotope id="Zr96" atomFraction="0.028" uncertainty="2e-4"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Nb">
+      <isotopes>
+        <isotope id="Nb93" atomFraction="1" uncertainty="0"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Mo">
+      <isotopes>
+        <isotope id="Mo92" atomFraction="0.14649" uncertainty="1.06e-3"/>
+        <isotope id="Mo94" atomFraction="0.09187" uncertainty="3.3e-4"/>
+        <isotope id="Mo95" atomFraction="0.15873" uncertainty="3e-4"/>
+        <isotope id="Mo96" atomFraction="0.16673" uncertainty="8e-5"/>
+        <isotope id="Mo97" atomFraction="0.09582" uncertainty="1.5e-4"/>
+        <isotope id="Mo98" atomFraction="0.24292" uncertainty="8e-4"/>
+        <isotope id="Mo100" atomFraction="0.09744" uncertainty="6.5e-4"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Ru">
+      <isotopes>
+        <isotope id="Ru96" atomFraction="0.0554" uncertainty="1.4e-3"/>
+        <isotope id="Ru98" atomFraction="0.0187" uncertainty="3e-4"/>
+        <isotope id="Ru99" atomFraction="0.1276" uncertainty="1.4e-3"/>
+        <isotope id="Ru100" atomFraction="0.126" uncertainty="7e-4"/>
+        <isotope id="Ru101" atomFraction="0.1706" uncertainty="2e-4"/>
+        <isotope id="Ru102" atomFraction="0.3155" uncertainty="1.4e-3"/>
+        <isotope id="Ru104" atomFraction="0.1862" uncertainty="2.7e-3"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Rh">
+      <isotopes>
+        <isotope id="Rh103" atomFraction="1" uncertainty="0"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Pd">
+      <isotopes>
+        <isotope id="Pd102" atomFraction="0.0102" uncertainty="1e-4"/>
+        <isotope id="Pd104" atomFraction="0.1114" uncertainty="8e-4"/>
+        <isotope id="Pd105" atomFraction="0.2233" uncertainty="8e-4"/>
+        <isotope id="Pd106" atomFraction="0.2733" uncertainty="3e-4"/>
+        <isotope id="Pd108" atomFraction="0.2646" uncertainty="9e-4"/>
+        <isotope id="Pd110" atomFraction="0.1172" uncertainty="9e-4"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Ag">
+      <isotopes>
+        <isotope id="Ag107" atomFraction="0.51839" uncertainty="8e-5"/>
+        <isotope id="Ag109" atomFraction="0.48161" uncertainty="8e-5"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Cd">
+      <isotopes>
+        <isotope id="Cd106" atomFraction="0.01245" uncertainty="2.2e-4"/>
+        <isotope id="Cd108" atomFraction="8.88e-3" uncertainty="1.1e-4"/>
+        <isotope id="Cd110" atomFraction="0.1247" uncertainty="6.1e-4"/>
+        <isotope id="Cd111" atomFraction="0.12795" uncertainty="1.2e-4"/>
+        <isotope id="Cd112" atomFraction="0.24109" uncertainty="7e-5"/>
+        <isotope id="Cd113" atomFraction="0.12227" uncertainty="7e-5"/>
+        <isotope id="Cd114" atomFraction="0.28754" uncertainty="8.1e-4"/>
+        <isotope id="Cd116" atomFraction="0.07512" uncertainty="5.4e-4"/></isotopes></chemicalElement>
+    <chemicalElement symbol="In">
+      <isotopes>
+        <isotope id="In113" atomFraction="0.04281" uncertainty="5.2e-4"/>
+        <isotope id="In115" atomFraction="0.95719" uncertainty="5.2e-4"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Sn">
+      <isotopes>
+        <isotope id="Sn112" atomFraction="9.7e-3" uncertainty="1e-4"/>
+        <isotope id="Sn114" atomFraction="6.6e-3" uncertainty="1e-4"/>
+        <isotope id="Sn115" atomFraction="3.4e-3" uncertainty="1e-4"/>
+        <isotope id="Sn116" atomFraction="0.1454" uncertainty="9e-4"/>
+        <isotope id="Sn117" atomFraction="0.0768" uncertainty="7e-4"/>
+        <isotope id="Sn118" atomFraction="0.2422" uncertainty="9e-4"/>
+        <isotope id="Sn119" atomFraction="0.0859" uncertainty="4e-4"/>
+        <isotope id="Sn120" atomFraction="0.3258" uncertainty="9e-4"/>
+        <isotope id="Sn122" atomFraction="0.0463" uncertainty="3e-4"/>
+        <isotope id="Sn124" atomFraction="0.0579" uncertainty="5e-4"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Sb">
+      <isotopes>
+        <isotope id="Sb121" atomFraction="0.5721" uncertainty="5e-4"/>
+        <isotope id="Sb123" atomFraction="0.4279" uncertainty="5e-4"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Te">
+      <isotopes>
+        <isotope id="Te120" atomFraction="9e-4" uncertainty="1e-4"/>
+        <isotope id="Te122" atomFraction="0.0255" uncertainty="1.2e-3"/>
+        <isotope id="Te123" atomFraction="8.9e-3" uncertainty="3e-4"/>
+        <isotope id="Te124" atomFraction="0.0474" uncertainty="1.4e-3"/>
+        <isotope id="Te125" atomFraction="0.0707" uncertainty="1.5e-3"/>
+        <isotope id="Te126" atomFraction="0.1884" uncertainty="2.5e-3"/>
+        <isotope id="Te128" atomFraction="0.3174" uncertainty="8e-4"/>
+        <isotope id="Te130" atomFraction="0.3408" uncertainty="6.2e-3"/></isotopes></chemicalElement>
+    <chemicalElement symbol="I">
+      <isotopes>
+        <isotope id="I127" atomFraction="1" uncertainty="0"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Xe">
+      <isotopes>
+        <isotope id="Xe124" atomFraction="9.5e-4" uncertainty="5e-5"/>
+        <isotope id="Xe126" atomFraction="8.9e-4" uncertainty="3e-5"/>
+        <isotope id="Xe128" atomFraction="0.0191" uncertainty="1.3e-4"/>
+        <isotope id="Xe129" atomFraction="0.26401" uncertainty="1.38e-3"/>
+        <isotope id="Xe130" atomFraction="0.04071" uncertainty="2.2e-4"/>
+        <isotope id="Xe131" atomFraction="0.21232" uncertainty="5.1e-4"/>
+        <isotope id="Xe132" atomFraction="0.26909" uncertainty="5.5e-4"/>
+        <isotope id="Xe134" atomFraction="0.10436" uncertainty="3.5e-4"/>
+        <isotope id="Xe136" atomFraction="0.08857" uncertainty="7.2e-4"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Cs">
+      <isotopes>
+        <isotope id="Cs133" atomFraction="1" uncertainty="0"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Ba">
+      <isotopes>
+        <isotope id="Ba130" atomFraction="1.1e-3" uncertainty="1e-4"/>
+        <isotope id="Ba132" atomFraction="1e-3" uncertainty="1e-4"/>
+        <isotope id="Ba134" atomFraction="0.0242" uncertainty="1.5e-3"/>
+        <isotope id="Ba135" atomFraction="0.0659" uncertainty="1e-3"/>
+        <isotope id="Ba136" atomFraction="0.0785" uncertainty="2.4e-3"/>
+        <isotope id="Ba137" atomFraction="0.1123" uncertainty="2.3e-3"/>
+        <isotope id="Ba138" atomFraction="0.717" uncertainty="2.9e-3"/></isotopes></chemicalElement>
+    <chemicalElement symbol="La">
+      <isotopes>
+        <isotope id="La138" atomFraction="8.881e-4" uncertainty="7.1e-6"/>
+        <isotope id="La139" atomFraction="0.9991119" uncertainty="7.1e-6"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Ce">
+      <isotopes>
+        <isotope id="Ce136" atomFraction="1.85e-3" uncertainty="2e-5"/>
+        <isotope id="Ce138" atomFraction="2.51e-3" uncertainty="2e-5"/>
+        <isotope id="Ce140" atomFraction="0.8845" uncertainty="5.1e-4"/>
+        <isotope id="Ce142" atomFraction="0.11114" uncertainty="5.1e-4"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Pr">
+      <isotopes>
+        <isotope id="Pr141" atomFraction="1" uncertainty="0"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Nd">
+      <isotopes>
+        <isotope id="Nd142" atomFraction="0.27152" uncertainty="4e-4"/>
+        <isotope id="Nd143" atomFraction="0.12174" uncertainty="2.6e-4"/>
+        <isotope id="Nd144" atomFraction="0.23798" uncertainty="1.9e-4"/>
+        <isotope id="Nd145" atomFraction="0.08293" uncertainty="1.2e-4"/>
+        <isotope id="Nd146" atomFraction="0.17189" uncertainty="3.2e-4"/>
+        <isotope id="Nd148" atomFraction="0.05756" uncertainty="2.1e-4"/>
+        <isotope id="Nd150" atomFraction="0.05638" uncertainty="2.8e-4"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Sm">
+      <isotopes>
+        <isotope id="Sm144" atomFraction="0.0308" uncertainty="4e-4"/>
+        <isotope id="Sm147" atomFraction="0.15" uncertainty="1.4e-3"/>
+        <isotope id="Sm148" atomFraction="0.1125" uncertainty="9e-4"/>
+        <isotope id="Sm149" atomFraction="0.1382" uncertainty="1e-3"/>
+        <isotope id="Sm150" atomFraction="0.0737" uncertainty="9e-4"/>
+        <isotope id="Sm152" atomFraction="0.2674" uncertainty="9e-4"/>
+        <isotope id="Sm154" atomFraction="0.2274" uncertainty="1.4e-3"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Eu">
+      <isotopes>
+        <isotope id="Eu151" atomFraction="0.4781" uncertainty="6e-4"/>
+        <isotope id="Eu153" atomFraction="0.5219" uncertainty="6e-4"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Gd">
+      <isotopes>
+        <isotope id="Gd152" atomFraction="2e-3" uncertainty="3e-4"/>
+        <isotope id="Gd154" atomFraction="0.0218" uncertainty="2e-4"/>
+        <isotope id="Gd155" atomFraction="0.148" uncertainty="9e-4"/>
+        <isotope id="Gd156" atomFraction="0.2047" uncertainty="3e-4"/>
+        <isotope id="Gd157" atomFraction="0.1565" uncertainty="4e-4"/>
+        <isotope id="Gd158" atomFraction="0.2484" uncertainty="8e-4"/>
+        <isotope id="Gd160" atomFraction="0.2186" uncertainty="3e-4"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Tb">
+      <isotopes>
+        <isotope id="Tb159" atomFraction="1" uncertainty="0"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Dy">
+      <isotopes>
+        <isotope id="Dy156" atomFraction="5.6e-4" uncertainty="3e-5"/>
+        <isotope id="Dy158" atomFraction="9.5e-4" uncertainty="3e-5"/>
+        <isotope id="Dy160" atomFraction="0.02329" uncertainty="1.8e-4"/>
+        <isotope id="Dy161" atomFraction="0.18889" uncertainty="4.2e-4"/>
+        <isotope id="Dy162" atomFraction="0.25475" uncertainty="3.6e-4"/>
+        <isotope id="Dy163" atomFraction="0.24896" uncertainty="4.2e-4"/>
+        <isotope id="Dy164" atomFraction="0.2826" uncertainty="5.4e-4"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Ho">
+      <isotopes>
+        <isotope id="Ho165" atomFraction="1" uncertainty="0"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Er">
+      <isotopes>
+        <isotope id="Er162" atomFraction="1.39e-3" uncertainty="5e-5"/>
+        <isotope id="Er164" atomFraction="0.01601" uncertainty="3e-5"/>
+        <isotope id="Er166" atomFraction="0.33503" uncertainty="3.6e-4"/>
+        <isotope id="Er167" atomFraction="0.22869" uncertainty="9e-5"/>
+        <isotope id="Er168" atomFraction="0.26978" uncertainty="1.8e-4"/>
+        <isotope id="Er170" atomFraction="0.1491" uncertainty="3.6e-4"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Tm">
+      <isotopes>
+        <isotope id="Tm169" atomFraction="1" uncertainty="0"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Yb">
+      <isotopes>
+        <isotope id="Yb168" atomFraction="1.26e-3" uncertainty="1e-5"/>
+        <isotope id="Yb170" atomFraction="0.03023" uncertainty="2e-5"/>
+        <isotope id="Yb171" atomFraction="0.14216" uncertainty="7e-5"/>
+        <isotope id="Yb172" atomFraction="0.21754" uncertainty="1e-4"/>
+        <isotope id="Yb173" atomFraction="0.16098" uncertainty="9e-5"/>
+        <isotope id="Yb174" atomFraction="0.31896" uncertainty="2.6e-4"/>
+        <isotope id="Yb176" atomFraction="0.12887" uncertainty="3e-4"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Lu">
+      <isotopes>
+        <isotope id="Lu175" atomFraction="0.97401" uncertainty="1.3e-4"/>
+        <isotope id="Lu176" atomFraction="0.02599" uncertainty="1.3e-4"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Hf">
+      <isotopes>
+        <isotope id="Hf174" atomFraction="1.61e-3" uncertainty="2e-5"/>
+        <isotope id="Hf176" atomFraction="0.0524" uncertainty="1.4e-3"/>
+        <isotope id="Hf177" atomFraction="0.1858" uncertainty="9e-4"/>
+        <isotope id="Hf178" atomFraction="0.2728" uncertainty="6e-4"/>
+        <isotope id="Hf179" atomFraction="0.1363" uncertainty="3e-4"/>
+        <isotope id="Hf180" atomFraction="0.3512" uncertainty="1.6e-3"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Ta">
+      <isotopes>
+        <isotope id="Ta180" atomFraction="1.176e-4" uncertainty="2.3e-6"/>
+        <isotope id="Ta181" atomFraction="0.9998824" uncertainty="2.3e-6"/></isotopes></chemicalElement>
+    <chemicalElement symbol="W">
+      <isotopes>
+        <isotope id="W180" atomFraction="1.2e-3" uncertainty="1e-4"/>
+        <isotope id="W182" atomFraction="0.265" uncertainty="1.6e-3"/>
+        <isotope id="W183" atomFraction="0.1431" uncertainty="4e-4"/>
+        <isotope id="W184" atomFraction="0.3064" uncertainty="2e-4"/>
+        <isotope id="W186" atomFraction="0.2843" uncertainty="1.9e-3"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Re">
+      <isotopes>
+        <isotope id="Re185" atomFraction="0.374" uncertainty="5e-4"/>
+        <isotope id="Re187" atomFraction="0.626" uncertainty="5e-4"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Os">
+      <isotopes>
+        <isotope id="Os184" atomFraction="2e-4" uncertainty="2e-4"/>
+        <isotope id="Os186" atomFraction="0.0159" uncertainty="6.4e-3"/>
+        <isotope id="Os187" atomFraction="0.0196" uncertainty="1.7e-3"/>
+        <isotope id="Os188" atomFraction="0.1324" uncertainty="2.7e-3"/>
+        <isotope id="Os189" atomFraction="0.1615" uncertainty="2.3e-3"/>
+        <isotope id="Os190" atomFraction="0.2626" uncertainty="2e-3"/>
+        <isotope id="Os192" atomFraction="0.4078" uncertainty="3.2e-3"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Ir">
+      <isotopes>
+        <isotope id="Ir191" atomFraction="0.3723" uncertainty="9e-4"/>
+        <isotope id="Ir193" atomFraction="0.6277" uncertainty="9e-4"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Pt">
+      <isotopes>
+        <isotope id="Pt190" atomFraction="1.2e-4" uncertainty="2e-5"/>
+        <isotope id="Pt192" atomFraction="7.82e-3" uncertainty="2.4e-4"/>
+        <isotope id="Pt194" atomFraction="0.32864" uncertainty="4.1e-3"/>
+        <isotope id="Pt195" atomFraction="0.33775" uncertainty="2.4e-3"/>
+        <isotope id="Pt196" atomFraction="0.25211" uncertainty="3.4e-3"/>
+        <isotope id="Pt198" atomFraction="0.07356" uncertainty="1.3e-3"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Au">
+      <isotopes>
+        <isotope id="Au197" atomFraction="1" uncertainty="0"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Hg">
+      <isotopes>
+        <isotope id="Hg196" atomFraction="1.5e-3" uncertainty="1e-4"/>
+        <isotope id="Hg198" atomFraction="0.1004" uncertainty="3e-4"/>
+        <isotope id="Hg199" atomFraction="0.1694" uncertainty="1.2e-3"/>
+        <isotope id="Hg200" atomFraction="0.2314" uncertainty="9e-4"/>
+        <isotope id="Hg201" atomFraction="0.1317" uncertainty="9e-4"/>
+        <isotope id="Hg202" atomFraction="0.2974" uncertainty="1.3e-3"/>
+        <isotope id="Hg204" atomFraction="0.0682" uncertainty="4e-4"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Tl">
+      <isotopes>
+        <isotope id="Tl203" atomFraction="0.29515" uncertainty="7.5e-4"/>
+        <isotope id="Tl205" atomFraction="0.70485" uncertainty="7.5e-4"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Pb">
+      <isotopes>
+        <isotope id="Pb204" atomFraction="7.9e-3" uncertainty="7.9e-3"/>
+        <isotope id="Pb206" atomFraction="0.44315" uncertainty="0.4241"/>
+        <isotope id="Pb207" atomFraction="0.1193" uncertainty="0.1158"/>
+        <isotope id="Pb208" atomFraction="0.50565" uncertainty="0.4718"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Bi">
+      <isotopes>
+        <isotope id="Bi209" atomFraction="1" uncertainty="0"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Th">
+      <isotopes>
+        <isotope id="Th230" atomFraction="2e-4" uncertainty="2e-4"/>
+        <isotope id="Th232" atomFraction="0.9998" uncertainty="2e-4"/></isotopes></chemicalElement>
+    <chemicalElement symbol="Pa">
+      <isotopes>
+        <isotope id="Pa231" atomFraction="1" uncertainty="0"/></isotopes></chemicalElement>
+    <chemicalElement symbol="U">
+      <isotopes>
+        <isotope id="U234" atomFraction="5.4e-5" uncertainty="5e-6"/>
+        <isotope id="U235" atomFraction="7.204e-3" uncertainty="6e-6"/>
+        <isotope id="U238" atomFraction="0.992742" uncertainty="1e-5"/></isotopes></chemicalElement></chemicalElements></isotopicAbundancesByChemicalElement>

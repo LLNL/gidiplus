@@ -28,7 +28,7 @@ namespace Transporting {
  * @param a_energyDomainMax             [in]    The maximum projectile energy for which data should be loaded.
  ***********************************************************************************************************/
 
-MCGIDI_HOST MC::MC( PoPI::Database const &a_pops, std::string const &a_projectileID, GIDI::Styles::Suite const *a_styles, std::string const &a_label, 
+LUPI_HOST MC::MC( PoPI::Database const &a_pops, std::string const &a_projectileID, GIDI::Styles::Suite const *a_styles, std::string const &a_label, 
                 GIDI::Transporting::DelayedNeutrons a_delayedNeutrons, double a_energyDomainMax ) :
         GIDI::Transporting::Settings( a_projectileID, a_delayedNeutrons ),
         m_pops( a_pops ),
@@ -62,7 +62,7 @@ MCGIDI_HOST MC::MC( PoPI::Database const &a_pops, std::string const &a_projectil
  * @param a_energyDomainMax             [in]    The maximum projectile energy for which data should be loaded.
  ***********************************************************************************************************/
 
-MCGIDI_HOST MC::MC( PoPI::Database const &a_pops, GIDI::Protare const &a_protare, std::string const &a_label, 
+LUPI_HOST MC::MC( PoPI::Database const &a_pops, GIDI::Protare const &a_protare, std::string const &a_label, 
                 GIDI::Transporting::DelayedNeutrons a_delayedNeutrons, double a_energyDomainMax ) :
         GIDI::Transporting::Settings( a_protare.projectile( ).ID( ), a_delayedNeutrons ),
         m_pops( a_pops ),
@@ -92,7 +92,7 @@ MCGIDI_HOST MC::MC( PoPI::Database const &a_pops, GIDI::Protare const &a_protare
  * @param a_crossSectionLookupMode      [in]    The *LookupMode::Data1d* data mode.
  ***********************************************************************************************************/
 
-MCGIDI_HOST void MC::setCrossSectionLookupMode( LookupMode::Data1d a_crossSectionLookupMode ) {
+LUPI_HOST void MC::setCrossSectionLookupMode( LookupMode::Data1d a_crossSectionLookupMode ) {
 
     if( ( a_crossSectionLookupMode != LookupMode::Data1d::continuousEnergy ) && 
         ( a_crossSectionLookupMode != LookupMode::Data1d::multiGroup ) ) {
@@ -107,7 +107,7 @@ MCGIDI_HOST void MC::setCrossSectionLookupMode( LookupMode::Data1d a_crossSectio
  * @param a_other1dDataLookupMode       [in]    The *LookupMode::Data1d* data mode.
  ***********************************************************************************************************/
 
-MCGIDI_HOST void MC::setOther1dDataLookupMode( LookupMode::Data1d a_other1dDataLookupMode ) {
+LUPI_HOST void MC::setOther1dDataLookupMode( LookupMode::Data1d a_other1dDataLookupMode ) {
 
     if( a_other1dDataLookupMode != LookupMode::Data1d::continuousEnergy ) throw( "Invalided other mode request." );
     m_other1dDataLookupMode = a_other1dDataLookupMode;
@@ -119,7 +119,7 @@ MCGIDI_HOST void MC::setOther1dDataLookupMode( LookupMode::Data1d a_other1dDataL
  * @param a_distributionLookupMode      [in]    The *LookupMode::Data1d* data mode.
  ***********************************************************************************************************/
 
-MCGIDI_HOST void MC::setDistributionLookupMode( LookupMode::Distribution a_distributionLookupMode ) {
+LUPI_HOST void MC::setDistributionLookupMode( LookupMode::Distribution a_distributionLookupMode ) {
 
     if( a_distributionLookupMode != LookupMode::Distribution::pdf_cdf ) throw( "Invalided distribution mode request." );
     m_distributionLookupMode = a_distributionLookupMode;
@@ -132,7 +132,7 @@ MCGIDI_HOST void MC::setDistributionLookupMode( LookupMode::Distribution a_distr
  * @param a_upscatterModelALabel        [in]    The *LookupMode::Data1d* data mode.
  ***********************************************************************************************************/
 
-MCGIDI_HOST void MC::set_upscatterModelA( std::string const &a_upscatterModelALabel ) {
+LUPI_HOST void MC::set_upscatterModelA( std::string const &a_upscatterModelALabel ) {
 
     m_upscatterModel = Sampling::Upscatter::Model::A;
     m_upscatterModelALabel = a_upscatterModelALabel;

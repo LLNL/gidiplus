@@ -51,7 +51,7 @@ void main2( int argc, char **argv ) {
     GIDI::Construction::PhotoMode photo_mode = parseTestOptions.photonMode( GIDI::Construction::PhotoMode::nuclearAndAtomic );
     GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, photo_mode );
     PoPI::Database pops;
-    GIDI::Protare *protare = parseTestOptions.protare( pops, "../pops.xml", "../all.map", construction, PoPI::IDs::neutron, "O16" );
+    GIDI::Protare *protare = parseTestOptions.protare( pops, "../../../TestData/PoPs/pops.xml", "../all.map", construction, PoPI::IDs::neutron, "O16" );
 
     std::cout << stripDirectoryBase( protare->fileName( ), "/GIDI/Test/" ) << std::endl;
 
@@ -131,10 +131,10 @@ void printIDs( char const *prefix, std::set<std::string> &IDs, PoPI::Database &p
     }
 
     std::vector<std::string> IDs2;
-    for( std::set<std::string>::const_iterator iter = IDs.begin( ); iter != IDs.end( ); ++iter ) IDs2.push_back( *iter );
+    for( std::set<std::string>::const_iterator iter2 = IDs.begin( ); iter2 != IDs.end( ); ++iter2 ) IDs2.push_back( *iter2 );
     std::vector<std::string> IDs3( GIDI::sortedListOfStrings( IDs2 ) );
 
-    for( std::vector<std::string>::const_iterator iter = IDs3.begin( ); iter != IDs3.end( ); ++iter ) std::cout << " " << *iter;
+    for( std::vector<std::string>::const_iterator iter2 = IDs3.begin( ); iter2 != IDs3.end( ); ++iter2 ) std::cout << " " << *iter2;
     std::cout << std::endl;
 
 }

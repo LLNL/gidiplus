@@ -27,6 +27,7 @@ static int nth = 1;
 static int countDown = 1;
 static bool printTiming = false;
 static bool useSlowerContinuousEnergyConversion = false;
+static long numberOfTemperatures = -1;
 
 static char const *description = "Reads in all protares in the specified map file. Besides options, there must be one map file followed by \n"
     "one or more pops files. If an error occurs when reading a protare, the C++ 'throw' message is printed. Also,\n"
@@ -34,8 +35,10 @@ static char const *description = "Reads in all protares in the specified map fil
     "be printed. The standard LLNL transportable particles are n, p, d, t, h, a and g";
 
 void subMain( int argc, char **argv );
-void walk( std::string const &a_indent, GIDI::Transporting::Particles &particles, std::string const &mapFilename, PoPI::Database const &pops, int depth );
-void readProtare( std::string const &a_indent, GIDI::Transporting::Particles &particles, std::string const &protareFilename, PoPI::Database const &pops, std::vector<std::string> &a_libraries, bool a_targetRequiredInGlobalPoPs );
+void walk( std::string const &a_indent, GIDI::Transporting::Particles const &a_particles, std::string const &mapFilename, 
+                PoPI::Database const &pops, int depth );
+void readProtare( std::string const &a_indent, GIDI::Transporting::Particles const &a_particles, std::string const &protareFilename, 
+                PoPI::Database const &pops, std::vector<std::string> const &a_libraries, bool a_targetRequiredInGlobalPoPs );
 /*
 =========================================================
 */
@@ -72,6 +75,7 @@ void subMain( int argc, char **argv ) {
     argv_options.add( argvOption2( "--maxDepth", true, "The maximum nesting depth that the map file will be descended. Default is no maximum depth." ) );
     argv_options.add( argvOption2( "--lazyParsing", false, "If true, does lazy parsing for all read protares." ) );
     argv_options.add( argvOption2( "--useSlowerContinuousEnergyConversion", false, "If present, old continuous energy conversion logic is used." ) );
+    argv_options.add( argvOption2( "--numberOfTemperatures", true, "The number of temperatures whose data are accessed by MCGIDI." ) );
 
     argv_options.parseArgv( argc, argv );
 
@@ -99,6 +103,8 @@ void subMain( int argc, char **argv ) {
         particles.add( particle );
     }
 
+    numberOfTemperatures = argv_options.find( "--numberOfTemperatures" )->asLong( argv, -1 );
+
     GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, GIDI::Construction::PhotoMode::nuclearAndAtomic );
     construction.setUseSystem_strtod( useSystem_strtod );
     construction.setLazyParsing( argv_options.find( "--lazyParsing" )->m_counter > 0 );
@@ -116,7 +122,8 @@ void subMain( int argc, char **argv ) {
 /*
 =========================================================
 */
-void walk( std::string const &a_indent, GIDI::Transporting::Particles &particles, std::string const &mapFilename, PoPI::Database const &pops, int depth ) {
+void walk( std::string const &a_indent, GIDI::Transporting::Particles const &a_particles, std::string const &mapFilename, 
+                PoPI::Database const &pops, int depth ) {
 
     if( depth > maxDepth ) return;
 
@@ -131,12 +138,12 @@ void walk( std::string const &a_indent, GIDI::Transporting::Particles &particles
         std::string path = entry->path( GIDI::Map::BaseEntry::PathForm::cumulative );
 
         if( entry->name( ) == GIDI_importChars ) {
-            walk( indent2, particles, path, pops, depth + 1 ); }
+            walk( indent2, a_particles, path, pops, depth + 1 ); }
         else if( ( entry->name( ) == GIDI_protareChars ) || ( entry->name( ) == GIDI_TNSLChars ) ) {
             std::vector<std::string> libraries;
 
             entry->libraries( libraries );
-            readProtare( indent2, particles, path, pops, libraries, entry->name( ) == GIDI_protareChars ); }
+            readProtare( indent2, a_particles, path, pops, libraries, entry->name( ) == GIDI_protareChars ); }
         else {
             std::cout << "ERROR: unknown map entry name: " << entry->name( ) << std::endl;
         }
@@ -145,7 +152,8 @@ void walk( std::string const &a_indent, GIDI::Transporting::Particles &particles
 /*
 =========================================================
 */
-void readProtare( std::string const &a_indent, GIDI::Transporting::Particles &particles, std::string const &protareFilename, PoPI::Database const &pops, std::vector<std::string> &a_libraries, bool a_targetRequiredInGlobalPoPs ) {
+void readProtare( std::string const &a_indent, GIDI::Transporting::Particles const &a_particles, std::string const &protareFilename, 
+                PoPI::Database const &pops, std::vector<std::string> const &a_libraries, bool a_targetRequiredInGlobalPoPs ) {
 
     --countDown;
     if( countDown != 0 ) return;
@@ -168,7 +176,11 @@ void readProtare( std::string const &a_indent, GIDI::Transporting::Particles &pa
                 GIDI_MapInteractionNuclearChars, a_targetRequiredInGlobalPoPs );
         throwFunction = "post GIDI::ProtareSingle";                     // Unlikely for a throw to occur before "MCGIDI::ProtareSingle".
         GIDI::Styles::TemperatureInfos temperatures = protare->temperatures( );
-
+        long numberOfTemperatures2 = numberOfTemperatures;
+        long numberOfTemperatures3 = static_cast<long>( temperatures.size( ) );
+        if( numberOfTemperatures2 < 0 ) numberOfTemperatures2 = numberOfTemperatures3;
+        if( numberOfTemperatures2 > numberOfTemperatures3 ) numberOfTemperatures2 = numberOfTemperatures3;
+        temperatures.resize( numberOfTemperatures2 );
 
         std::string label( temperatures[0].griddedCrossSection( ) );
         if( doMultiGroup ) label = temperatures[0].heatedMultiGroup( );
@@ -178,7 +190,7 @@ void readProtare( std::string const &a_indent, GIDI::Transporting::Particles &pa
         std::set<std::string> incompleteParticles;
         protare->incompleteParticles( baseSetting, incompleteParticles );
         std::vector<std::string> transportableIncompleteParticles;
-        for( auto particle = particles.particles( ).begin( ); particle != particles.particles( ).end( ); ++particle ) {
+        for( auto particle = a_particles.particles( ).begin( ); particle != a_particles.particles( ).end( ); ++particle ) {
             if( incompleteParticles.count( particle->first ) == 0 ) {
                 particles2.add( particle->second ); }
             else {
@@ -198,7 +210,8 @@ void readProtare( std::string const &a_indent, GIDI::Transporting::Particles &pa
 
         if( transportableIncompleteParticles.size( ) > 0 ) {
             std::cout << a_indent << "  -- Incomplete transportable particles:";
-            for( auto iter = transportableIncompleteParticles.begin( ); iter != transportableIncompleteParticles.end( ); ++iter ) std::cout << " " << *iter;
+            for( auto iter = transportableIncompleteParticles.begin( ); iter != transportableIncompleteParticles.end( ); ++iter )
+                    std::cout << " " << *iter;
             std::cout << std::endl;
         } }
     catch (char const *str) {
@@ -211,7 +224,7 @@ void readProtare( std::string const &a_indent, GIDI::Transporting::Particles &pa
 
     if( throwMessage != "" ) {
         ++errCount;
-        std::cout << "ERROR: throw from " << throwFunction << " with message '" << throwMessage << "'" << std::endl;
+        std::cout << std::endl << "ERROR: throw from " << throwFunction << " with message '" << throwMessage << "'" << std::endl;
     }
 
     delete MCProtare;

@@ -89,7 +89,7 @@ Vector FissionEnergyRelease::multiGroupQ( LUPI::StatusMessageReporting &a_smr, T
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void FissionEnergyRelease::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void FissionEnergyRelease::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
 
@@ -117,7 +117,7 @@ void FissionEnergyRelease::toXMLList( WriteInfo &a_writeInfo, std::string const 
  * @param       a_function          [in]        The component of the energy released in fission.
  ***********************************************************************************************************/
 
-void FissionEnergyRelease::energyReleaseToXMLList( WriteInfo &a_writeInfo, std::string const &a_moniker, std::string const &a_indent, Function1dForm *a_function ) const {
+void FissionEnergyRelease::energyReleaseToXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_moniker, std::string const &a_indent, Function1dForm *a_function ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
 

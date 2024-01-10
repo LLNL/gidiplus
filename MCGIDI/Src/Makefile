@@ -38,11 +38,9 @@ $(Archive): $(CppObjs)
 	$(AR) -cr $@ $(CppObjs)
 
 $(CppSources): MCGIDI.hpp
-MCGIDI.hpp: MCGIDI_sampling.hpp MCGIDI_dataBuffer.hpp MCGIDI_vector.hpp MCGIDI_string.hpp MCGIDI_declareMacro.hpp MCGIDI_functions.hpp MCGIDI_distributions.hpp
+MCGIDI.hpp: MCGIDI_sampling.hpp MCGIDI_vector.hpp MCGIDI_string.hpp MCGIDI_functions.hpp MCGIDI_distributions.hpp
 MCGIDI_string.cpp: MCGIDI_string.hpp
-MCGIDI_dataBuffer.hpp MCGIDI_distributions.hpp MCGIDI_sampling.hpp MCGIDI_string.hpp MCGIDI_vector.hpp: MCGIDI_declareMacro.hpp
 MCGIDI_sampling.hpp: MCGIDI_vector.hpp
-MCGIDI_functions.hpp: MCGIDI_dataBuffer.hpp
 
 clean:
 	rm -f $(CppObjs) $(Archive) MCGIDI.cpp

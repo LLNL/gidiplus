@@ -32,9 +32,10 @@ Settings::Settings( ParseMode a_parseMode, PhotoMode a_photoMode ) :
         m_parseMode( a_parseMode ),
         m_photoMode( a_photoMode ),
         m_useSystem_strtod( 0 ),
-        m_lazyParsing( true ) {
+        m_lazyParsing( true ),
+        m_decayPositronium( true ) {
 
-};
+}
 
 /* *********************************************************************************************************//**
  * Copy constructor.
@@ -46,7 +47,8 @@ Settings::Settings( Settings const &a_settings ) :
         m_parseMode( a_settings.parseMode( ) ),
         m_photoMode( a_settings.photoMode( ) ),
         m_useSystem_strtod( a_settings.useSystem_strtod( ) ),
-        m_lazyParsing( a_settings.lazyParsing( ) ) {
+        m_lazyParsing( a_settings.lazyParsing( ) ),
+        m_decayPositronium( a_settings.decayPositronium( ) ) {
 }
 
 }

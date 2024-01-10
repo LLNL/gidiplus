@@ -54,7 +54,7 @@ void main2( int argc, char **argv ) {
     GIDI::Construction::PhotoMode photo_mode = parseTestOptions.photonMode( GIDI::Construction::PhotoMode::nuclearAndAtomic );
     GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, photo_mode );
     PoPI::Database pops;
-    GIDI::Protare *protare = parseTestOptions.protare( pops, "../pops.xml", "../all.map", construction, PoPI::IDs::neutron, "O16" );
+    GIDI::Protare *protare = parseTestOptions.protare( pops, "../../../TestData/PoPs/pops.xml", "../all.map", construction, PoPI::IDs::neutron, "O16" );
     GIDI::Styles::Suite const &styles = protare->protare( 0 )->styles( );
 
     std::cout << stripDirectoryBase( protare->fileName( ), "/GIDI/Test/" ) << std::endl;
@@ -70,12 +70,11 @@ void main2( int argc, char **argv ) {
 
     GIDI::Functions::XYs1d total;
     for( std::size_t index = 0; index < protare->numberOfReactions( ); ++index ) {
-        char name[63];
-        sprintf(name, "r%.4d", (int) index);
         GIDI::Reaction const *reaction = protare->reaction( index );
 
-        GIDI::Vector crossSection = reaction->multiGroupCrossSection( smr1, settings, temperature );
+        crossSection = reaction->multiGroupCrossSection( smr1, settings, temperature );
         std::string label( reaction->label( ) );
+        std::string name = LUPI::Misc::argumentsToString( "r%.4d", (int) index);
         writeVector( name, label, crossSection, groupBoundaries );
 
             // The next line is needed because FUDGE currently does not create a heated style for the large angle Coulomb scattering reaction cross section.

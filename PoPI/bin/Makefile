@@ -25,7 +25,7 @@ clean: realclean
 
 realclean:
 	$(MAKE) doDirs TARGET=realclean
-	rm -f readPoPs
+	rm -f readPoPs checkIntids
 
 doDirs:
 	for dir in $(DIRS); do cd $$dir; $(MAKE) $(TARGET); cd ../; done

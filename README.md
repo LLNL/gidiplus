@@ -7,8 +7,8 @@ Monte Carlo transport codes.
 
 # Dependency
 
-**GIDI+** requires the third party library pugixml version 1.8.  If pugixml is not already present in the **GIDI+ Misc**
-directory, download it from https://pugixml.org/2016/11/24/pugixml-1.8-release.html and place it in the 'Misc' folder.
+**GIDI+** requires the third party library pugixml version 1.13.  If pugixml is not already present in the **GIDI+ Misc**
+directory, download it from https://pugixml.org/2022/11/02/pugixml-1.13-release.html and place it in the 'Misc' folder.
 
 # Installation
 
@@ -26,17 +26,20 @@ Currently, **GIDI+** uses the **unix make** command to build and puts needed hea
 |------------|------------
 | default:   | Builds libgidiplus.a (and all other libraries) and puts them into the 'lib' directory. Puts all needed header files into the 'include' directory.
 | install:   | Copies the header files from the 'include' directory to '$(PREFIX)/include'. Copies all '.a' from the 'lib' directory to '$(PREFIX)/lib.'
+| bin:       | Compiles binary utilities for testing processed GNDS files in PoPI/bin, GIDI/bin and MCGIDI/bin.
 | check:     | Runs the tests in all the sub-libraries. This target requires that the test data have been installed.
 | realclean: | Returns **GIDI+** back to its initial state (i.e., removes all files created by the other targets).
 
-Generally, to build or test **GIDI+** one only needs to set the *-std=c++11* option for the C++ compiler. For building, this would look like:
+**GIDI+** uses features from the 2011 C++ standard, so it must be compiled with *-std=c++11* or newer.
+**GIDI+** supports parallel compilation using the '-j' flag:
 ```
-make -s CXXFLAGS="-std=c++11"
+make -s -j CXXFLAGS="-std=c++11"
 ```
 
-For running the tests, this would look like:
+For building executables and running the tests, this would look like:
 ```
-make -s CXXFLAGS="-std=c++11" check
+make -s -j CXXFLAGS="-std=c++11" bin
+make -s -j CXXFLAGS="-std=c++11" check
 ```
 
 One may specify the CC and CXX compilers and their flags when building. For example,

@@ -14,6 +14,8 @@
 #include <iomanip>
 #include <ctype.h>
 
+#include <nf_utilities.h>
+
 #include <LUPI.hpp>
 
 namespace LUPI {
@@ -103,23 +105,49 @@ std::vector<std::string> splitString( std::string const &a_string, char a_delimi
     std::stringstream stringStream( a_string );
     std::string segment;
     std::vector<std::string> segments;
-    int i1 = 0;
 
     while( std::getline( stringStream, segment, a_delimiter ) ) {
         if( ( a_delimiter == ' ' ) && ( segment.size( ) == 0 ) ) continue;
 
         if( a_strip ) segment = stripString( segment );
         segments.push_back( segment );
-        ++i1;
     }
 
     return( segments );
 }
 
 /* *********************************************************************************************************//**
- * This function splits that string *a_string* into separate strings using the delimiter character *a_delimiter*.
- * If the delimiter is the space character, consecutive spaces are treated as one space, and leading and trailing
- * white spaces are ignored.
+ * This function splits that string *a_string* into separate strings using the delimiter string *a_delimiter*.
+ *
+ * @param a_string      [in]    The string to split.
+ * @param a_delimiter   [in]    The delimiter string.
+ * @param a_strip       [in]    If **true**, white spaces are removed from the begining and ending of each string in the list returned.
+ *
+ * @return                      The list of strings.
+ ***********************************************************************************************************/
+
+std::vector<std::string> splitString( std::string const &a_string, std::string const &a_delimiter, bool a_strip ) {
+
+    std::string segment;
+    std::vector<std::string> segments;
+
+    for( std::size_t index1 = 0; ; ) {
+        std::size_t index2 = a_string.find( a_delimiter, index1 );
+
+        segment = a_string.substr( index1, index2 - index1 );
+
+        if( a_strip ) segment = stripString( segment );
+        segments.push_back( segment );
+        if( index2 == std::string::npos ) break;
+
+        index1 = index2 + a_delimiter.size( );
+    }
+
+    return( segments );
+}
+
+/* *********************************************************************************************************//**
+ * This function splits that string *a_string* into separate strings using the delimiter character "/".
  *
  * @param a_string      [in]    The string to split.
  *
@@ -192,16 +220,34 @@ std::string argumentsToString( char const *a_format, ... ) {
 
 std::string doubleToString3( char const *a_format, double a_value, bool a_reduceBits ) {
 
-    char Str[256];
 
-    if( a_reduceBits ) {
-        sprintf( Str, "%.14e", a_value );         // This line and the next line are an attempt to convert numbers like 4.764999999999999 and 4.765 to the same value.
-        a_value = std::stod( Str );
+    if( a_reduceBits ) {    // The next line is an attempt to convert numbers like 4.764999999999999 and 4.765 to the same value.
+        a_value = std::stod( LUPI::Misc::argumentsToString("%.14e", a_value ) );
     }
 
-    sprintf( Str, a_format, a_value );
+    return( LUPI::Misc::argumentsToString( a_format, a_value ) );
+}
 
-    return( Str );
+/* *********************************************************************************************************//**
+ * Returns a string representation of *a_value* that contains the smallest number of character yet still agrees with *a_value*
+ * to *a_significantDigits* significant digits. For example, for *a_value* = 1.20000000001, "1.2" will be returned if *a_significantDigits*
+ * is less than 11, otherwise "1.20000000001" is returned.
+ *
+ * @param a_value               [in/out]    The double to convert to a string.
+ * @param a_significantDigits   [in]        The number of significant digits the string representation should agree with the double.
+ * @param a_favorEFormBy        [in]        The bigger this value the more likely an e-form will be favored in the string representation.
+ *
+ * @return                      A *std::string* instance.
+  ***********************************************************************************************************/
+
+std::string doubleToShortestString( double a_value, int a_significantDigits, int a_favorEFormBy ) {
+
+    char *charValue = nf_floatToShortestString( a_value, a_significantDigits, a_favorEFormBy, nf_floatToShortestString_trimZeros );
+
+    std::string stringValue( charValue );
+    free( charValue );
+
+    return( stringValue );
 }
 
 /* *********************************************************************************************************//**

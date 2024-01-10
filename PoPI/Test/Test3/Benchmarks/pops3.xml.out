@@ -1,11 +1,13 @@
 <?xml version="1.0"?>
 <PoPs name="lPoPs" version="0.0.1" format="0.1">
   <aliases>
-    <particle id="gamma" pid="photon"/>
     <particle id="d" pid="h2"/>
     <particle id="t" pid="h3"/>
     <particle id="h" pid="he3"/>
-    <particle id="a" pid="he4"/></aliases>
+    <particle id="a" pid="he4"/>
+    <particle id="Na24_m1" pid="Na24_e1"/>
+    <particle id="Al26_m1" pid="Al26_e1"/>
+    <particle id="gamma" pid="photon"/></aliases>
   <gaugeBosons>
     <gaugeBoson id="photon">
       <mass>
@@ -26,6 +28,17 @@
         <fraction label="default" value="1/2" unit="hbar"/></spin>
       <parity>
         <integer label="default" value="1"/></parity>
+      <charge>
+        <integer label="default" value="-1" unit="e"/></charge>
+      <halflife>
+        <string label="default" value="stable" unit="s"/></halflife></lepton>
+    <lepton id="e-_anti" generation="electronic">
+      <mass>
+        <double label="default" value="0.000548579909" unit="amu"/></mass>
+      <spin>
+        <fraction label="default" value="1/2" unit="hbar"/></spin>
+      <parity>
+        <integer label="default" value="-1"/></parity>
       <charge>
         <integer label="default" value="-1" unit="e"/></charge>
       <halflife>
@@ -98,6 +111,8 @@
       <halflife>
         <string label="base" value="stable" unit="s"/></halflife></baryon></baryons>
   <unorthodoxes>
+    <unorthodox id="HinCH2"></unorthodox>
+    <unorthodox id="tnsl-Al27"></unorthodox>
     <unorthodox id="FissionProductENDL99120">
       <mass>
         <double label="default" value="117.5" unit="amu"/></mass></unorthodox>
@@ -1960,7 +1975,15 @@
                 <charge>
                   <integer label="default" value="11" unit="e"/></charge>
                 <energy>
-                  <double label="default" value="0.0" unit="eV"/></energy></nucleus></nuclide></nuclides></isotope>
+                  <double label="default" value="0.0" unit="eV"/></energy></nucleus></nuclide>
+            <nuclide id="Na24_e1">
+              <charge>
+                <integer label="eval" value="0" unit="e"/></charge>
+              <nucleus id="na24_e1" index="1">
+                <charge>
+                  <integer label="eval" value="11" unit="e"/></charge>
+                <energy>
+                  <double label="eval" value="0.47229" unit="MeV"/></energy></nucleus></nuclide></nuclides></isotope>
         <isotope symbol="Na25" A="25">
           <nuclides>
             <nuclide id="Na25">
@@ -2488,7 +2511,17 @@
                 <charge>
                   <integer label="default" value="13" unit="e"/></charge>
                 <energy>
-                  <double label="default" value="0.0" unit="eV"/></energy></nucleus></nuclide></nuclides></isotope>
+                  <double label="default" value="0.0" unit="eV"/></energy></nucleus></nuclide>
+            <nuclide id="Al26_e1">
+              <charge>
+                <integer label="default" value="0" unit="e"/></charge>
+              <nucleus id="al26_e1" index="1">
+                <spin>
+                  <fraction label="default" value="0" unit="hbar"/></spin>
+                <charge>
+                  <integer label="default" value="13" unit="e"/></charge>
+                <energy>
+                  <double label="default" value="228305.0" unit="eV"/></energy></nucleus></nuclide></nuclides></isotope>
         <isotope symbol="Al27" A="27">
           <nuclides>
             <nuclide id="Al27">
@@ -39403,7 +39436,7 @@
                   <integer label="default" value="112" unit="e"/></charge>
                 <energy>
                   <double label="default" value="0.0" unit="eV"/></energy></nucleus></nuclide></nuclides></isotope></isotopes></chemicalElement>
-    <chemicalElement symbol="Nh" Z="113" name="Ununtrium">
+    <chemicalElement symbol="Nh" Z="113" name="Nihonium">
       <isotopes>
         <isotope symbol="Nh283" A="283">
           <nuclides>
@@ -39527,7 +39560,7 @@
                   <integer label="default" value="114" unit="e"/></charge>
                 <energy>
                   <double label="default" value="0.0" unit="eV"/></energy></nucleus></nuclide></nuclides></isotope></isotopes></chemicalElement>
-    <chemicalElement symbol="Mc" Z="115" name="Ununpentium">
+    <chemicalElement symbol="Mc" Z="115" name="Moscovium">
       <isotopes>
         <isotope symbol="Mc287" A="287">
           <nuclides>
@@ -39639,7 +39672,7 @@
                   <integer label="default" value="116" unit="e"/></charge>
                 <energy>
                   <double label="default" value="0.0" unit="eV"/></energy></nucleus></nuclide></nuclides></isotope></isotopes></chemicalElement>
-    <chemicalElement symbol="Ts" Z="117" name="Ununseptium">
+    <chemicalElement symbol="Ts" Z="117" name="Tennessine">
       <isotopes>
         <isotope symbol="Ts291" A="291">
           <nuclides>
@@ -39665,7 +39698,7 @@
                   <integer label="default" value="117" unit="e"/></charge>
                 <energy>
                   <double label="default" value="0.0" unit="eV"/></energy></nucleus></nuclide></nuclides></isotope></isotopes></chemicalElement>
-    <chemicalElement symbol="Og" Z="118" name="Ununoctium">
+    <chemicalElement symbol="Og" Z="118" name="Oganesson">
       <isotopes>
         <isotope symbol="Og293" A="293">
           <nuclides>

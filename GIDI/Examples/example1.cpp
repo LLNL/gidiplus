@@ -40,7 +40,7 @@ int main( int argc, char **argv ) {
 void main2( int argc, char **argv ) {
 
                                                 //! [snippet]
-    PoPI::Database pops( "../Test/pops.xml" );
+    PoPI::Database pops( "../../TestData/PoPs/pops.xml" );
     GIDI::Map::Map map( "../Test/all.map", pops );
 
     GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all,

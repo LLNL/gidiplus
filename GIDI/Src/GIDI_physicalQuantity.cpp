@@ -57,9 +57,9 @@ PhysicalQuantity::~PhysicalQuantity( ) {
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void PhysicalQuantity::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void PhysicalQuantity::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
-    std::string attributes = a_writeInfo.addAttribute( GIDI_valueChars, doubleToShortestString( value( ) ) ) + a_writeInfo.addAttribute( GIDI_unitChars, unit( ) );
+    std::string attributes = a_writeInfo.addAttribute( GIDI_valueChars, LUPI::Misc::doubleToShortestString( value( ) ) ) + a_writeInfo.addAttribute( GIDI_unitChars, unit( ) );
 
     a_writeInfo.addNodeStarterEnder( a_indent, moniker( ), attributes );
 }

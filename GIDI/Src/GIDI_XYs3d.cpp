@@ -150,13 +150,13 @@ void XYs3d::append( Function2dForm *a_function2d ) {
  * @param       a_inRegions         [in]        If *true*, *this* is in a Regions2d container.
  ***********************************************************************************************************/
 
-void XYs3d::toXMLList_func( WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
+void XYs3d::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     std::string attributes;
 
     if( a_embedded ) {
-        attributes += a_writeInfo.addAttribute( GIDI_outerDomainValueChars, doubleToShortestString( outerDomainValue( ) ) ); }
+        attributes += a_writeInfo.addAttribute( GIDI_outerDomainValueChars, LUPI::Misc::doubleToShortestString( outerDomainValue( ) ) ); }
     else {
         if( a_inRegions ) {
             attributes = a_writeInfo.addAttribute( GIDI_indexChars, intToString( index( ) ) ); }

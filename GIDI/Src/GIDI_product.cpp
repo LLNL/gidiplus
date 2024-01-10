@@ -25,6 +25,8 @@ Product::Product( PoPI::Database const &a_pops, std::string const &a_productID, 
         Form( FormType::product ),
         m_particle( ParticleInfo( a_productID, a_pops, a_pops, true ) ),
         m_GNDS_particle( ParticleInfo( a_productID, a_pops, a_pops, true ) ),
+        m_productMultiplicity( 0 ),
+        m_treatProductAsIfInfinityMass( false ),
         m_multiplicity( GIDI_multiplicityChars, GIDI_labelChars ),
         m_distribution( GIDI_distributionChars, GIDI_labelChars ),
         m_averageEnergy( GIDI_averageEnergyChars, GIDI_labelChars ),
@@ -59,6 +61,7 @@ Product::Product( Construction::Settings const &a_construction, HAPI::Node const
         m_particle( a_node.attribute_as_string( GIDI_pidChars ), a_pops, a_internalPoPs, false ),
         m_GNDS_particle( a_node.attribute_as_string( GIDI_pidChars ), a_pops, a_internalPoPs, false ),
         m_productMultiplicity( 0 ),
+        m_treatProductAsIfInfinityMass( false ),
         m_multiplicity( a_construction, GIDI_multiplicityChars, GIDI_labelChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseMultiplicitySuite, a_styles ),
         m_distribution( a_construction, GIDI_distributionChars, GIDI_labelChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseDistributionSuite, a_styles ),
         m_averageEnergy( a_construction, GIDI_averageEnergyChars, GIDI_labelChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseAverageEnergySuite, a_styles ),
@@ -76,6 +79,10 @@ Product::Product( Construction::Settings const &a_construction, HAPI::Node const
 
     if( a_setupInfo.m_protare->projectile( ).ID( ) == PoPI::IDs::photon ) {
         if( m_particle.ID( ) == a_setupInfo.m_protare->GNDS_target( ).ID( ) ) m_particle = a_setupInfo.m_protare->target( );
+    }
+
+    if( a_setupInfo.m_protare->isPhotoAtomic( ) || a_setupInfo.m_protare->isTNSL_ProtareSingle( ) ) {
+        m_treatProductAsIfInfinityMass = m_GNDS_particle.ID( ) == a_setupInfo.m_protare->GNDS_target( ).ID( );
     }
 
     HAPI::Node const _outputChannel = a_node.child( GIDI_outputChannelChars );
@@ -147,13 +154,48 @@ bool Product::hasFission( ) const {
 }
 
 /* *********************************************************************************************************//**
- * Used by Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or nullptr if none exists.
+ * Returns **false* if *this* has delayed fission neutrons and they are not complete; otherwise, returns **true**.
+ *
+ * @param       a_isDelayedNeutron  [in]    **true** is called from FissionFragmentData::isDelayedFissionNeutronComplete and **false** otherwise.
+ *
+ * @return      bool
+ ***********************************************************************************************************/
+
+bool Product::isDelayedFissionNeutronComplete( bool a_isDelayedNeutron ) const {
+
+    if( a_isDelayedNeutron ) {
+        return( isCompleteParticle( ) ); }
+    else {
+        if( m_outputChannel != nullptr ) return( m_outputChannel->isDelayedFissionNeutronComplete( ) );
+    }
+
+    return( true );
+}
+
+/* *********************************************************************************************************//**
+ * Returns **true** if all outgoing particles (i.e., products) are specifed in *a_particles*. That is, the user
+ * will be tracking all products of *this* reaction.
+ *
+ * @param a_particles           [in]    The list of particles to be transported.
+ *
+ * @return                              bool.
+ ***********************************************************************************************************/
+
+bool Product::areAllProductsTracked( Transporting::Particles const &a_particles ) const {
+
+    if( m_outputChannel != nullptr ) return( m_outputChannel->areAllProductsTracked( a_particles ) );
+
+    return( a_particles.hasParticle( m_particle.ID( ) ) );
+}
+
+/* *********************************************************************************************************//**
+ * Used by GUPI::Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or nullptr if none exists.
  *
  * @param a_item    [in]    The name of the class member whose pointer is to be return.
  * @return                  The pointer to the class member or nullptr if class does not have a member named a_item.
  ***********************************************************************************************************/
 
-Ancestry *Product::findInAncestry3( std::string const &a_item ) {
+GUPI::Ancestry *Product::findInAncestry3( std::string const &a_item ) {
 
     if( a_item == GIDI_multiplicityChars ) return( &m_multiplicity );
     if( a_item == GIDI_distributionChars ) return( &m_distribution );
@@ -165,13 +207,13 @@ Ancestry *Product::findInAncestry3( std::string const &a_item ) {
 }
 
 /* *********************************************************************************************************//**
- * Used by Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or nullptr if none exists.
+ * Used by GUPI::Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or nullptr if none exists.
  *
  * @param a_item    [in]    The name of the class member whose pointer is to be return.
  * @return                  The pointer to the class member or nullptr if class does not have a member named a_item.
  ***********************************************************************************************************/
 
-Ancestry const *Product::findInAncestry3( std::string const &a_item ) const {
+GUPI::Ancestry const *Product::findInAncestry3( std::string const &a_item ) const {
 
     if( a_item == GIDI_multiplicityChars ) return( &m_multiplicity );
     if( a_item == GIDI_distributionChars ) return( &m_distribution );
@@ -269,7 +311,7 @@ Vector Product::multiGroupMultiplicity( LUPI::StatusMessageReporting &a_smr, Tra
     Vector vector( 0 );
 
     if( m_outputChannel == nullptr ) {
-        if( PoPI::compareSpecialParticleIDs( m_particle.ID( ), a_productID ) ) {
+        if( ( PoPI::compareSpecialParticleIDs( m_particle.ID( ), a_productID ) ) && ( !m_treatProductAsIfInfinityMass ) ) {
             Functions::Gridded1d const *form = dynamic_cast<Functions::Gridded1d const*>( a_settings.form( 
                     a_smr, m_multiplicity, a_temperatureInfo, "multiplicity" ) );
             if( form != nullptr ) vector += form->data( );
@@ -324,7 +366,7 @@ Matrix Product::multiGroupProductMatrix( LUPI::StatusMessageReporting &a_smr, Tr
     Matrix matrix( 0, 0 );
 
     if( m_outputChannel == nullptr ) {
-        if( PoPI::compareSpecialParticleIDs( m_particle.ID( ), a_productID ) ) {
+        if( ( PoPI::compareSpecialParticleIDs( m_particle.ID( ), a_productID ) ) && ( !m_treatProductAsIfInfinityMass ) ) {
             Distributions::MultiGroup3d const *form = dynamic_cast<Distributions::MultiGroup3d const*>( a_settings.form( 
                     a_smr, m_distribution, a_temperatureInfo, "distribution for product matrix" ) );
             if( form != nullptr ) {
@@ -358,7 +400,7 @@ Vector Product::multiGroupAverageEnergy( LUPI::StatusMessageReporting &a_smr, Tr
     Vector vector( 0 );
 
     if( m_outputChannel == nullptr ) {
-        if( PoPI::compareSpecialParticleIDs( m_particle.ID( ), a_productID ) ) {
+        if( ( PoPI::compareSpecialParticleIDs( m_particle.ID( ), a_productID ) ) && ( !m_treatProductAsIfInfinityMass ) ) {
             Functions::Gridded1d const *form = dynamic_cast<Functions::Gridded1d const*>( a_settings.form( 
                     a_smr, m_averageEnergy, a_temperatureInfo, "average product energy" ) );
             if( form != nullptr ) vector += form->data( );
@@ -388,7 +430,7 @@ Vector Product::multiGroupAverageMomentum( LUPI::StatusMessageReporting &a_smr, 
     Vector vector( 0 );
 
     if( m_outputChannel == nullptr ) {
-        if( PoPI::compareSpecialParticleIDs( m_particle.ID( ), a_productID ) ) {
+        if( ( PoPI::compareSpecialParticleIDs( m_particle.ID( ), a_productID ) ) && ( !m_treatProductAsIfInfinityMass ) ) {
             Functions::Gridded1d const *form = dynamic_cast<Functions::Gridded1d const*>( a_settings.form( 
                     a_smr, m_averageMomentum, a_temperatureInfo, "average product momentum" ) );
             if( form != nullptr ) vector += form->data( );
@@ -503,7 +545,7 @@ void Product::incompleteParticles( Transporting::Settings const &a_settings, std
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void Product::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void Product::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     std::string attributes;

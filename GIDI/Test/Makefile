@@ -12,7 +12,8 @@ SHELL = /bin/ksh
 DIRS = Utilities matrix VectorAndMatrixReverse map parseXML groupBoundaries inverseSpeed productIDs crossSections productMatrix \
 	transportCorrection availableEnergy multiplicity Q averageProductData depositionData \
 	settingsProcess multiGroup temperatures splitString ancestry readAll photoAtomicScattering photoScattering TNSL gain \
-	multiGroups fluxes ENDLCValues activeReactions delayedNeutronProducts sumsCheck modifiedCrossSection RIS_viaMap
+	multiGroups fluxes ENDLCValues activeReactions delayedNeutronProducts sumsCheck modifiedCrossSection RIS_viaMap \
+	areAllProductsTracked
 
 default:
 	cd Utilities; $(MAKE)

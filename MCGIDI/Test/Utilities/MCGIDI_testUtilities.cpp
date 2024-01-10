@@ -13,6 +13,7 @@
 #include <iostream>
 #include <iomanip>
 
+#include <LUPI.hpp>
 #include "MCGIDI_testUtilities.hpp"
 
 #define PRINT_NAME_WIDTH 20
@@ -55,24 +56,14 @@ double asDouble2( char const *a_chars ) {
 */
 std::string longToString2( char const *format, long value ) {
 
-    char Str[256];
-
-    sprintf( Str, format, value );
-    std::string valueAsString( Str );
-
-    return( valueAsString );
+    return( LUPI::Misc::argumentsToString( format, value ) );
 }
 /*
 =========================================================
 */
 std::string doubleToString2( char const *format, double value ) {
 
-    char Str[256];
-
-    sprintf( Str, format, value );
-    std::string valueAsString( Str );
-
-    return( valueAsString );
+    return( LUPI::Misc::argumentsToString( format, value ) );
 }
 /*
 =========================================================

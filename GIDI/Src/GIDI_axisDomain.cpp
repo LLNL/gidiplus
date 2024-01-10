@@ -59,10 +59,10 @@ AxisDomain::~AxisDomain( ) {
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void AxisDomain::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void AxisDomain::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
-    std::string attributes = a_writeInfo.addAttribute( GIDI_minChars, doubleToShortestString( minimum( ) ) ) + 
-                             a_writeInfo.addAttribute( GIDI_minChars, doubleToShortestString( maximum( ) ) ) +
+    std::string attributes = a_writeInfo.addAttribute( GIDI_minChars, LUPI::Misc::doubleToShortestString( minimum( ) ) ) + 
+                             a_writeInfo.addAttribute( GIDI_minChars, LUPI::Misc::doubleToShortestString( maximum( ) ) ) +
                              a_writeInfo.addAttribute( GIDI_unitChars, unit( ) );
 
     a_writeInfo.addNodeStarterEnder( a_indent, moniker( ), attributes );

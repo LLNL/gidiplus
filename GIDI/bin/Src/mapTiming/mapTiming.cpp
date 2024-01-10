@@ -31,7 +31,7 @@ int main( int argc, char **argv ) {
     argumentParser.parse( argc, argv );
 
     long numberOfLoops = 10;
-    if( numberOfLoopsOptions->numberEntered( ) > 0 ) numberOfLoops = std::stol( numberOfLoopsOptions->value( ) );
+    if( numberOfLoopsOptions->counts( ) > 0 ) numberOfLoops = std::stol( numberOfLoopsOptions->value( ) );
 
     pops.addFile( "/usr/gapps/data/nuclear/common/pops.xml", false );
     pops.addFile( "/usr/gapps/data/nuclear/common/metastables_alias.xml", false );

@@ -42,12 +42,11 @@ int main( int argc, char **argv ) {
 void main2( int argc, char **argv ) {
 
     std::string mapFilename( "../../../GIDI/Test/all3T.map" );
-    PoPI::Database pops( "../../../GIDI/Test/pops.xml" );
+    PoPI::Database pops( "../../../TestData/PoPs/pops.xml" );
     GIDI::Map::Map map( mapFilename, pops );
     std::string protareFilename( map.protareFilename( "n", "O16" ) );
     clock_t time0, time1;
     long numberOfSamples = 1000 * 1000, sampled = 0;
-    char timeLabel[1024];
     std::vector<std::string> libraries;
     GIDI::Transporting::Particles particles;
     std::set<int> reactionsToExclude;
@@ -68,15 +67,14 @@ void main2( int argc, char **argv ) {
     MCGIDI::Transporting::MC MC( pops, "n", &protare->styles( ), label, GIDI::Transporting::DelayedNeutrons::on, 20.0 );
 
     MCGIDI::DomainHash domainHash( 4000, 1e-8, 100.0 );
-    MCGIDI::Protare *MCProtare = MCGIDI::protareFromGIDIProtare( smr1, *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude );;
+    MCGIDI::Protare *MCProtare = MCGIDI::protareFromGIDIProtare( smr1, *protare, pops, MC, particles, domainHash, temperatures, reactionsToExclude );
     printTime( "    load MCGIDI: ", time1 );
 
     std::size_t numberOfReactions = MCProtare->numberOfReactions( );
 
     for( std::size_t i1 = 0; i1 < MCProtare->numberOfReactions( ); ++i1 ) {
         MCGIDI::Reaction const &reaction = *MCProtare->reaction( i1 );
-        char reactionLabel[256];
-        sprintf( reactionLabel, "%-40s: ", reaction.label( ).c_str( ) );
+        std::string reactionLabel = LUPI::Misc::argumentsToString( "%-40s: ", reaction.label( ).c_str( ) );
 
         std::cout << "    reaction: " << reactionLabel << " final Q = " << reaction.finalQ( 0 ) << " threshold = " << reaction.crossSectionThreshold( ) << std::endl;
     }
@@ -100,7 +98,7 @@ void main2( int argc, char **argv ) {
                 printTime_reaction( "                reaction: ", i1, time3_1 );
             }
             std::cout << std::endl;
-            sprintf( timeLabel, "            energies %.4e: ", energy );
+            std::string timeLabel = LUPI::Misc::argumentsToString( "            energies %.4e: ", energy );
             printTime( timeLabel, time2_1 );
         }
         printTime_double( "        temperature", temperature, time1_1 );

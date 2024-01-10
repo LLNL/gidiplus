@@ -14,5 +14,5 @@ include $(GIDI_PLUS_PATH)/Makefile.paths
 include ../Makefile.check
 
 check: deposition_multiGroup
-	python deposition_multiGroup.py O16
-	python deposition_multiGroup.py Th227
+	$(PYTHON) deposition_multiGroup.py O16
+	$(PYTHON) deposition_multiGroup.py Th227

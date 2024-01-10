@@ -134,9 +134,8 @@ GNDS_FileType GNDS_fileType( std::string const &a_fileName, GNDS_FileTypeInfo &a
     XML_SetUserData( xmlParser, &userData );
 
     enum XML_Status status;
-    ssize_t count, totalCount = 0;
+    ssize_t count = 0;
     while( ( count = read( fileDescriptor, buffer, bufferSize ) ) > 0 ) {
-        totalCount += count;
         status = XML_Parse( xmlParser, buffer, count, 0 );
         if( status != XML_STATUS_OK ) break;
     }

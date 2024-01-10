@@ -56,7 +56,7 @@ void main2( int argc, char **argv ) {
     GIDI::Construction::PhotoMode photonMode = parseTestOptions.photonMode( GIDI::Construction::PhotoMode::nuclearAndAtomic );
     GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, photonMode );
     PoPI::Database pops;
-    GIDI::Protare *protare = parseTestOptions.protare( pops, "../pops.xml", "../all.map", construction, PoPI::IDs::neutron, "O16" );
+    GIDI::Protare *protare = parseTestOptions.protare( pops, "../../../TestData/PoPs/pops.xml", "../all.map", construction, PoPI::IDs::neutron, "O16" );
 
     GIDI::Transporting::Particles particles;
     parseTestOptions.particles( particles );

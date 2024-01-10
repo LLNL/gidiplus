@@ -88,7 +88,7 @@ double GeneralEvaporation2d::evaluate( double a_x2, double a_x1 ) const {
  * @param       a_inRegions         [in]        This is not used in this method.
  ***********************************************************************************************************/
 
-void GeneralEvaporation2d::toXMLList_func( WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
+void GeneralEvaporation2d::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     std::string attributes;
@@ -174,7 +174,7 @@ double SimpleMaxwellianFission2d::evaluate( double a_x2, double a_x1 ) const {
  * @param       a_inRegions         [in]        This is not used in this method.
  ***********************************************************************************************************/
 
-void SimpleMaxwellianFission2d::toXMLList_func( WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
+void SimpleMaxwellianFission2d::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     std::string attributes;
@@ -258,7 +258,7 @@ double Evaporation2d::evaluate( double a_x2, double a_x1 ) const {
  * @param       a_inRegions         [in]        This is not used in this method.
  ***********************************************************************************************************/
 
-void Evaporation2d::toXMLList_func( WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
+void Evaporation2d::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     std::string attributes;
@@ -344,7 +344,7 @@ double Watt2d::evaluate( double a_x2, double a_x1 ) const {
  * @param       a_inRegions         [in]        This is not used in this method.
  ***********************************************************************************************************/
 
-void Watt2d::toXMLList_func( WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
+void Watt2d::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     std::string attributes;
@@ -430,7 +430,7 @@ double MadlandNix2d::evaluate( double a_x2, double a_x1 ) const {
  * @param       a_inRegions         [in]        This is not used in this method.
  ***********************************************************************************************************/
 
-void MadlandNix2d::toXMLList_func( WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
+void MadlandNix2d::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     std::string attributes;

@@ -19,7 +19,7 @@ namespace MCGIDI {
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE void URR_protareInfo::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+LUPI_HOST_DEVICE void URR_protareInfo::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
     DATA_MEMBER_CAST( m_inURR, a_buffer, a_mode, bool );
     DATA_MEMBER_FLOAT( m_rng_Value, a_buffer, a_mode );
@@ -31,7 +31,7 @@ MCGIDI_HOST_DEVICE void URR_protareInfo::serialize( DataBuffer &a_buffer, DataBu
  * @param a_protares            [in]    The list of protares to be check for URR data. Each protare with URR data add to *a_URR_protareInfos*.
  ***********************************************************************************************************/
 
-MCGIDI_HOST URR_protareInfos::URR_protareInfos( Vector<Protare *> &a_protares ) {
+LUPI_HOST URR_protareInfos::URR_protareInfos( Vector<Protare *> &a_protares ) {
 
     setup( a_protares );
 }
@@ -42,7 +42,7 @@ MCGIDI_HOST URR_protareInfos::URR_protareInfos( Vector<Protare *> &a_protares ) 
  * @param a_protares            [in]    The list of protares to be check for URR data. Each protare with URR data add to *a_URR_protareInfos*.
  ***********************************************************************************************************/
 
-MCGIDI_HOST void URR_protareInfos::setup( Vector<Protare *> &a_protares ) {
+LUPI_HOST void URR_protareInfos::setup( Vector<Protare *> &a_protares ) {
 
     std::vector<URR_protareInfo> URR_protareInfo_1;
 
@@ -73,7 +73,7 @@ MCGIDI_HOST void URR_protareInfos::setup( Vector<Protare *> &a_protares ) {
  * @param a_rngState            [in]    The random number generator state.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE void URR_protareInfos::updateProtare( MCGIDI::Protare const *a_protare, double a_energy, double (*a_userrng)( void * ), void *a_rngState ) {
+LUPI_HOST_DEVICE void URR_protareInfos::updateProtare( MCGIDI::Protare const *a_protare, double a_energy, double (*a_userrng)( void * ), void *a_rngState ) {
 
     for( MCGIDI_VectorSizeType i1 = 0; i1 < a_protare->numberOfProtares( ); ++i1 ) {
         ProtareSingle *protareSingle = const_cast<ProtareSingle *>( a_protare->protare( i1 ) );
@@ -95,14 +95,14 @@ MCGIDI_HOST_DEVICE void URR_protareInfos::updateProtare( MCGIDI::Protare const *
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE void URR_protareInfos::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+LUPI_HOST_DEVICE void URR_protareInfos::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
     std::size_t vectorSize = m_URR_protareInfos.size( );
     int vectorSizeInt = (int) vectorSize;
     DATA_MEMBER_INT( vectorSizeInt, a_buffer, a_mode );
     vectorSize = (std::size_t) vectorSizeInt;
-    if( a_mode == DataBuffer::Mode::Unpack ) m_URR_protareInfos.resize( vectorSize, &a_buffer.m_placement );
-    if( a_mode == DataBuffer::Mode::Memory ) a_buffer.m_placement += m_URR_protareInfos.internalSize();
+    if( a_mode == LUPI::DataBuffer::Mode::Unpack ) m_URR_protareInfos.resize( vectorSize, &a_buffer.m_placement );
+    if( a_mode == LUPI::DataBuffer::Mode::Memory ) a_buffer.m_placement += m_URR_protareInfos.internalSize();
 
     for( std::size_t vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
         m_URR_protareInfos[vectorIndex].serialize( a_buffer, a_mode );
@@ -117,7 +117,7 @@ MCGIDI_HOST_DEVICE void URR_protareInfos::serialize( DataBuffer &a_buffer, DataB
  * Simple constructor needed for broadcasting.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE ACE_URR_probabilityTable::ACE_URR_probabilityTable( ) :
+LUPI_HOST_DEVICE ACE_URR_probabilityTable::ACE_URR_probabilityTable( ) :
         m_energy( 0.0 ) {
 
 }
@@ -128,7 +128,7 @@ MCGIDI_HOST_DEVICE ACE_URR_probabilityTable::ACE_URR_probabilityTable( ) :
  * @param a_crossSection        [in]    The cross section for each probability.
  ***********************************************************************************************************/
 
-MCGIDI_HOST ACE_URR_probabilityTable::ACE_URR_probabilityTable( double a_energy, std::vector<double> const &a_propabilities, 
+LUPI_HOST ACE_URR_probabilityTable::ACE_URR_probabilityTable( double a_energy, std::vector<double> const &a_propabilities, 
                 std::vector<double> const &a_crossSection ) :
         m_energy( a_energy ),
         m_propabilities( a_propabilities ),
@@ -146,7 +146,7 @@ MCGIDI_HOST ACE_URR_probabilityTable::ACE_URR_probabilityTable( double a_energy,
  * Simple constructor needed for broadcasting.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE ACE_URR_probabilityTable::~ACE_URR_probabilityTable( ) {
+LUPI_HOST_DEVICE ACE_URR_probabilityTable::~ACE_URR_probabilityTable( ) {
 
 }
 
@@ -158,7 +158,7 @@ MCGIDI_HOST_DEVICE ACE_URR_probabilityTable::~ACE_URR_probabilityTable( ) {
  * @return                              The cross section associated with probability a_rng_Value;
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE double ACE_URR_probabilityTable::sample( double a_rng_Value ) {
+LUPI_HOST_DEVICE double ACE_URR_probabilityTable::sample( double a_rng_Value ) {
 
     MCGIDI_VectorSizeType index = binarySearchVector( a_rng_Value, m_propabilities, true );
     if( m_propabilities[index] < a_rng_Value ) ++index;
@@ -173,7 +173,7 @@ MCGIDI_HOST_DEVICE double ACE_URR_probabilityTable::sample( double a_rng_Value )
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE void ACE_URR_probabilityTable::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+LUPI_HOST_DEVICE void ACE_URR_probabilityTable::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
     DATA_MEMBER_FLOAT( m_energy, a_buffer, a_mode  );
     DATA_MEMBER_VECTOR_DOUBLE( m_propabilities, a_buffer, a_mode  );
@@ -188,7 +188,7 @@ MCGIDI_HOST_DEVICE void ACE_URR_probabilityTable::serialize( DataBuffer &a_buffe
  * Simple constructor needed for broadcasting.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE ACE_URR_probabilityTables::ACE_URR_probabilityTables( ) {
+LUPI_HOST_DEVICE ACE_URR_probabilityTables::ACE_URR_probabilityTables( ) {
 
 }
 
@@ -196,7 +196,7 @@ MCGIDI_HOST_DEVICE ACE_URR_probabilityTables::ACE_URR_probabilityTables( ) {
  * @param a_capacity            [in]    The number of energy slots to reverse.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE ACE_URR_probabilityTables::ACE_URR_probabilityTables( std::size_t a_capacity ) {
+LUPI_HOST_DEVICE ACE_URR_probabilityTables::ACE_URR_probabilityTables( std::size_t a_capacity ) {
 
     m_energies.reserve( a_capacity );
     m_ACE_URR_probabilityTables.reserve( a_capacity );
@@ -205,7 +205,7 @@ MCGIDI_HOST_DEVICE ACE_URR_probabilityTables::ACE_URR_probabilityTables( std::si
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE ACE_URR_probabilityTables::~ACE_URR_probabilityTables( ) {
+LUPI_HOST_DEVICE ACE_URR_probabilityTables::~ACE_URR_probabilityTables( ) {
 
     for( auto iter = m_ACE_URR_probabilityTables.begin( ); iter != m_ACE_URR_probabilityTables.end( ); ++iter ) delete (*iter);
 }
@@ -216,7 +216,7 @@ MCGIDI_HOST_DEVICE ACE_URR_probabilityTables::~ACE_URR_probabilityTables( ) {
  * @param a_capacity                    [in]    The size of the space to reserve.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE void ACE_URR_probabilityTables::reserve( MCGIDI_VectorSizeType a_capacity ) {
+LUPI_HOST_DEVICE void ACE_URR_probabilityTables::reserve( MCGIDI_VectorSizeType a_capacity ) {
 
     m_energies.reserve( a_capacity );
     m_ACE_URR_probabilityTables.reserve( a_capacity );
@@ -228,9 +228,9 @@ MCGIDI_HOST_DEVICE void ACE_URR_probabilityTables::reserve( MCGIDI_VectorSizeTyp
  * @param a_ACE_URR_probabilityTable    [in]    **ACE_URR_probabilityTable** instance to add.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE void ACE_URR_probabilityTables::push_back( ACE_URR_probabilityTable *a_ACE_URR_probabilityTable ) {
+LUPI_HOST_DEVICE void ACE_URR_probabilityTables::push_back( ACE_URR_probabilityTable *a_ACE_URR_probabilityTable ) {
 
-    if( m_energies.size( ) == capacity( ) ) MCGIDI_THROW( "ACE_URR_probabilityTables::addEnergyData: adding too many ACE_URR_probabilityTables." );
+    if( m_energies.size( ) == capacity( ) ) LUPI_THROW( "ACE_URR_probabilityTables::addEnergyData: adding too many ACE_URR_probabilityTables." );
     m_energies.push_back( a_ACE_URR_probabilityTable->energy( ) );
     m_ACE_URR_probabilityTables.push_back( a_ACE_URR_probabilityTable );
 }
@@ -244,7 +244,7 @@ MCGIDI_HOST_DEVICE void ACE_URR_probabilityTables::push_back( ACE_URR_probabilit
  * @return                              The cross section associated with probability a_rng_Value;
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE double ACE_URR_probabilityTables::sample( double a_energy, double a_rng_Value ) {
+LUPI_HOST_DEVICE double ACE_URR_probabilityTables::sample( double a_energy, double a_rng_Value ) {
 
     MCGIDI_VectorSizeType index = binarySearchVector( a_energy, m_energies, true );
     if( index < m_energies.size( ) - 1 ) {
@@ -262,18 +262,18 @@ MCGIDI_HOST_DEVICE double ACE_URR_probabilityTables::sample( double a_energy, do
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE void ACE_URR_probabilityTables::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+LUPI_HOST_DEVICE void ACE_URR_probabilityTables::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
     DATA_MEMBER_VECTOR_DOUBLE( m_energies, a_buffer, a_mode );
 
     MCGIDI_VectorSizeType vectorSize = m_energies.size( );
 
-    if( a_mode == DataBuffer::Mode::Unpack ) m_ACE_URR_probabilityTables.resize( vectorSize, &a_buffer.m_placement );
-    if( a_mode == DataBuffer::Mode::Memory ) a_buffer.m_placement += m_ACE_URR_probabilityTables.internalSize( );
+    if( a_mode == LUPI::DataBuffer::Mode::Unpack ) m_ACE_URR_probabilityTables.resize( vectorSize, &a_buffer.m_placement );
+    if( a_mode == LUPI::DataBuffer::Mode::Memory ) a_buffer.m_placement += m_ACE_URR_probabilityTables.internalSize( );
 
     for( MCGIDI_VectorSizeType vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
         ACE_URR_probabilityTable *ACE_URR_probabilityTable1 = m_ACE_URR_probabilityTables[vectorIndex];
-        if( a_mode == DataBuffer::Mode::Unpack ) {
+        if( a_mode == LUPI::DataBuffer::Mode::Unpack ) {
             if( a_buffer.m_placement != nullptr ) {
                 ACE_URR_probabilityTable1 = new(a_buffer.m_placement) ACE_URR_probabilityTable;
                 a_buffer.incrementPlacement( sizeof( ACE_URR_probabilityTable ) ); }
@@ -296,7 +296,7 @@ MCGIDI_HOST_DEVICE void ACE_URR_probabilityTables::serialize( DataBuffer &a_buff
  * @return                              A pointer to the converted **ACE_URR_probabilityTables** instance.
  ***********************************************************************************************************/
 
-MCGIDI_HOST void convertACE_URR_probabilityTablesFromGIDI( GIDI::ProtareSingle const &a_protare, Transporting::MC &a_settings, SetupInfo &a_setupInfo ) {
+LUPI_HOST void convertACE_URR_probabilityTablesFromGIDI( GIDI::ProtareSingle const &a_protare, Transporting::MC &a_settings, SetupInfo &a_setupInfo ) {
 
     if( ( a_settings.crossSectionLookupMode( ) == Transporting::LookupMode::Data1d::continuousEnergy ) 
             && ( a_settings._URR_mode( ) == Transporting::URR_mode::ACE_URR_protabilityTables ) ) {
@@ -337,13 +337,13 @@ MCGIDI_HOST void convertACE_URR_probabilityTablesFromGIDI( GIDI::ProtareSingle c
                 if( dValues == nullptr ) throw GIDI::Exception( "convertACE_URR_probabilityTablesFromGIDI: nfu_stringToListOfDoubles failed." );
 
                 std::vector<std::vector<double> > columns( numberOfColumns );
-                for( int columnIndex = 0; columnIndex < numberOfColumns; ++columnIndex ) {
+                for( columnIndex = 0; columnIndex < numberOfColumns; ++columnIndex ) {
                     columns[columnIndex].reserve( numberOfRows );
                     for( int rowIndex = 0; rowIndex < numberOfRows; ++rowIndex ) columns[columnIndex].push_back( dValues[rowIndex*numberOfColumns+columnIndex] );
                 }
                 free( dValues );
 
-                for( int columnIndex = 1; columnIndex < numberOfColumns; ++columnIndex ) {
+                for( columnIndex = 1; columnIndex < numberOfColumns; ++columnIndex ) {
                     ACE_URR_protabilityTablesFromGIDI1->m_ACE_URR_probabilityTables[columnNames[columnIndex]]->push_back( 
                             new ACE_URR_probabilityTable( incidentEnergy->value( ), columns[0], columns[columnIndex] ) );
                 }
@@ -363,7 +363,7 @@ MCGIDI_HOST void convertACE_URR_probabilityTablesFromGIDI( GIDI::ProtareSingle c
  * @return                              The Transporting::URR_mode value.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE Transporting::URR_mode serializeURR_mode( Transporting::URR_mode a_URR_mode, DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+LUPI_HOST_DEVICE Transporting::URR_mode serializeURR_mode( Transporting::URR_mode a_URR_mode, LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
     int type = 0;
     switch( a_URR_mode ) {
@@ -393,15 +393,15 @@ MCGIDI_HOST_DEVICE Transporting::URR_mode serializeURR_mode( Transporting::URR_m
  * @return                              A pointer to the serialized **ACE_URR_probabilityTables** instance.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE ACE_URR_probabilityTables *serializeACE_URR_probabilityTables( ACE_URR_probabilityTables *a_ACE_URR_probabilityTables, 
-                DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+LUPI_HOST_DEVICE ACE_URR_probabilityTables *serializeACE_URR_probabilityTables( ACE_URR_probabilityTables *a_ACE_URR_probabilityTables, 
+                LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
     int type = 0;
     if( a_ACE_URR_probabilityTables != nullptr ) type = 1;
     DATA_MEMBER_INT( type, a_buffer, a_mode );
     if( type == 0 ) return( nullptr );
 
-    if( a_mode == DataBuffer::Mode::Unpack ) {
+    if( a_mode == LUPI::DataBuffer::Mode::Unpack ) {
         if( a_buffer.m_placement != nullptr ) {
             a_ACE_URR_probabilityTables = new(a_buffer.m_placement) ACE_URR_probabilityTables;
             a_buffer.incrementPlacement( sizeof( ACE_URR_probabilityTables ) ); }
@@ -410,7 +410,7 @@ MCGIDI_HOST_DEVICE ACE_URR_probabilityTables *serializeACE_URR_probabilityTables
         }
     }
 
-    if( a_mode == DataBuffer::Mode::Memory ) a_buffer.incrementPlacement( sizeof( ACE_URR_probabilityTables ) );
+    if( a_mode == LUPI::DataBuffer::Mode::Memory ) a_buffer.incrementPlacement( sizeof( ACE_URR_probabilityTables ) );
 
     a_ACE_URR_probabilityTables->serialize( a_buffer, a_mode );
 
@@ -424,14 +424,14 @@ MCGIDI_HOST_DEVICE ACE_URR_probabilityTables *serializeACE_URR_probabilityTables
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-MCGIDI_HOST ACE_URR_protabilityTablesFromGIDI::ACE_URR_protabilityTablesFromGIDI( ) {
+LUPI_HOST ACE_URR_protabilityTablesFromGIDI::ACE_URR_protabilityTablesFromGIDI( ) {
 
 }
 
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-MCGIDI_HOST ACE_URR_protabilityTablesFromGIDI::~ACE_URR_protabilityTablesFromGIDI( ) {
+LUPI_HOST ACE_URR_protabilityTablesFromGIDI::~ACE_URR_protabilityTablesFromGIDI( ) {
 
     for( auto iter = m_ACE_URR_probabilityTables.begin( ); iter != m_ACE_URR_probabilityTables.end( ); ++iter ) delete (*iter).second;
 

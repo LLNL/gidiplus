@@ -1,0 +1,20 @@
+# <<BEGIN-copyright>>
+# <<END-copyright>>
+
+.PHONY: default check clean realclean
+
+Executables = $(CppSource:.cpp=)
+
+local_CXXFLAGS += $(LIB_PATHS)
+LIBS = -lCADI -lPoPI -lGUPI -lHAPI -lRISI -lLUPI -lnumericalfunctions -lstatusMessageReporting -lpugixml -lexpat -lm $(HDF5_LIBS)
+
+default: $(Executables)
+
+$(Executables): %: %.cpp
+	$(CXX) $(local_CXXFLAGS) $< -o $@ $(LIBS)
+
+clean:
+	rm -rf $(Executables) $(Archive) *.o Outputs
+
+realclean: clean
+	rm -rf *.dSYM

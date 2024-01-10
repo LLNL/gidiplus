@@ -24,6 +24,9 @@ std::string const IDs::familiarDeuteron = "d";
 std::string const IDs::familiarTriton = "t";
 std::string const IDs::familiarHelion = "h";
 std::string const IDs::familiarAlpha = "a";
+std::string const IDs::FissionProductENDL99120 = "FissionProductENDL99120";
+std::string const IDs::FissionProductENDL99125 = "FissionProductENDL99125";
+std::string const IDs::anti = "_anti";
 
 /* *********************************************************************************************************//**
  * Returns true if a_formatVersion is a format supported by **PoPI** and false otherwise;
@@ -437,6 +440,47 @@ double getPhysicalQuantityOfSuiteAsDouble( PQ_suite const &a_suite, bool a_allow
     }
 
     return( getPhysicalQuantityAsDouble( *a_suite[0] ) );
+}
+
+/* *********************************************************************************************************//**
+ * Breaks th components of a particles name into base, anti and quailier strings. Every id in GNDS PoPs can be of the
+ * form base["_anti"][qualifier] where both "_anti" and qualifier are optional. For example, an electron is represented
+ * as "e-" and an anti-electron (i.e., positron) "e-_anti". Qualifiers are endings imbedded by "{" and "}". For example,
+ * "H{1s1/2}" has the base "H" with quailifier "1s1/2" where the "{" and "}" have been stripped from the quailifier.
+ *
+ * @param a_id                      [in]    The base id for *a_id*.
+ * @param a_anti                    [in]    A std::string to be filled with "_anti" if particle is an anti-particle and an "" otherwise.
+ * @param a_qualifier               [in]    A pointer to a std::string that will be filled with the qualifer characters.
+ *
+ * @return                                  The base id for the particle.
+ ***********************************************************************************************************/
+
+std::string baseAntiQualifierFromID( std::string const &a_id, std::string &a_anti, std::string *a_qualifier) {
+
+    std::size_t curlyBraketPosition = a_id.find( "{" );
+    std::string base = a_id.substr( 0, curlyBraketPosition );
+
+    a_anti = "";
+    if( a_qualifier != nullptr ) *a_qualifier = "";
+
+    if( curlyBraketPosition != std::string::npos ) {
+        if( a_id.back( ) != '}' ) throw Exception( "Invalid quaifier string in id '" + a_id + "'." );
+        base = a_id.substr( 0, curlyBraketPosition );
+        if( a_qualifier != nullptr ) {
+            *a_qualifier = a_id.substr( curlyBraketPosition + 1, a_id.size( ) - curlyBraketPosition - 2 );
+        } }
+    else if( a_id.find( "}" ) != std::string::npos ) {
+        throw Exception( "Invalid quaifier string in id '" + a_id + "'." );
+    }
+
+    std::size_t anti_position = base.find( IDs::anti );
+    if( anti_position != std::string::npos ) {
+        a_anti = base.substr( anti_position );
+        base = base.substr( 0, anti_position );
+        if( a_anti != IDs::anti ) throw Exception( "Invalid anti string in id '" + a_id + "'." );
+    }
+
+    return( base );
 }
 
 /*! \class Exception

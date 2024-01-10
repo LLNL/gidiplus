@@ -7,7 +7,8 @@
 # <<END-copyright>>
 */
 
-#include "HAPI.hpp"
+#include <HAPI.hpp>
+#include <LUPI.hpp>
 
 namespace HAPI {
 

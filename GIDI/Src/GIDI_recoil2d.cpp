@@ -97,7 +97,7 @@ double Recoil2d::evaluate( double a_x2, double a_x1 ) const {
  * @param       a_inRegions         [in]        This is not used in this method.
  ***********************************************************************************************************/
 
-void Recoil2d::toXMLList_func( WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
+void Recoil2d::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
 
     a_writeInfo.addNodeStarterEnder( a_indent, moniker( ), a_writeInfo.addAttribute( GIDI_hrefChars, m_xlink ) );
 }

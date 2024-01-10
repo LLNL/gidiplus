@@ -7,11 +7,15 @@ SHELL = /bin/ksh
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
-.PHONY: default include docs check clean realclean
+.PHONY: default bin all include docs check clean realclean
 
-DIRS = pugixml numericalFunctions LUPI HAPI RISI PoPI GIDI MCGIDI
+DIRS = pugixml numericalFunctions LUPI HAPI GUPI CADI RISI PoPI GIDI MCGIDI
 
 default: include
+
+bin:
+
+all: default
 
 include:
 	cp ../gidiplus_version.h .

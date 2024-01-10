@@ -25,7 +25,7 @@ static char const *description = "Loops over each reaction does 1 product sampli
 */
 int main( int argc, char **argv ) {
 
-    PoPI::Database pops( "../../../GIDI/Test/pops.xml" );
+    PoPI::Database pops( "../../../TestData/PoPs/pops.xml" );
     GIDI::Protare *protare;
     GIDI::Transporting::Particles particles;
     void *rngState = nullptr;

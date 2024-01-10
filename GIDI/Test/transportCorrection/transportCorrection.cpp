@@ -52,7 +52,7 @@ void main2( int argc, char **argv ) {
     GIDI::Construction::PhotoMode photo_mode = parseTestOptions.photonMode( GIDI::Construction::PhotoMode::nuclearAndAtomic );
     GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, photo_mode );
     PoPI::Database pops;
-    GIDI::Protare *protare = parseTestOptions.protare( pops, "../pops.xml", "../all.map", construction, PoPI::IDs::neutron, "O16" );
+    GIDI::Protare *protare = parseTestOptions.protare( pops, "../../../TestData/PoPs/pops.xml", "../all.map", construction, PoPI::IDs::neutron, "O16" );
 
     std::cout << stripDirectoryBase( protare->fileName( ), "/GIDI/Test/" ) << std::endl;
 
@@ -100,7 +100,6 @@ void printVector( GIDI::Protare *protare, GIDI::Transporting::MG &settings, GIDI
         GIDI::TransportCorrectionType transportCorrectionType, GIDI::Transporting::DelayedNeutrons delayedNeutrons ) {
 
     LUPI::StatusMessageReporting smr1;
-    char Str[64];
 
     for( int order = 0; order < protare->maximumLegendreOrder( smr1, settings, temperature, protare->projectile( ).ID( ) ); ++order ) {
         try {
@@ -108,11 +107,9 @@ void printVector( GIDI::Protare *protare, GIDI::Transporting::MG &settings, GIDI
             GIDI::Vector transportCorrection = protare->multiGroupTransportCorrection( smr1, settings, temperature, particles, order, transportCorrectionType, 0.0 );
             std::string message( prefix );
 
-            sprintf( Str, ": delayedNeutrons (%s)", ( delayedNeutrons == GIDI::Transporting::DelayedNeutrons::on ? "true"  : "false" ) );
-            message += Str;
-
-            sprintf( Str, ": order = %d::", order );
-            message += Str;
+            message += LUPI::Misc::argumentsToString( ": delayedNeutrons (%s)", 
+                    ( delayedNeutrons == GIDI::Transporting::DelayedNeutrons::on ? "true"  : "false" ) );
+            message += LUPI::Misc::argumentsToString( ": order = %d::", order );
             transportCorrection.print( message ); }
         catch (char const *str) {
             std::cout << str << std::endl;

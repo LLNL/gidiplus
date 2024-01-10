@@ -20,7 +20,7 @@ namespace GIDI {
  ***********************************************************************************************************/
 
 FissionFragmentData::FissionFragmentData( ) :
-        Ancestry( GIDI_fissionFragmentDataChars ),
+        GUPI::Ancestry( GIDI_fissionFragmentDataChars ),
         m_delayedNeutrons( GIDI_delayedNeutronsChars, GIDI_labelChars ),
         m_fissionEnergyReleases( GIDI_fissionEnergyReleasesChars, GIDI_labelChars ) {
 
@@ -40,7 +40,7 @@ FissionFragmentData::FissionFragmentData( ) :
 
 FissionFragmentData::FissionFragmentData( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
 		        PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Styles::Suite const *a_styles ) :
-        Ancestry( a_node.name( ) ),
+        GUPI::Ancestry( a_node.name( ) ),
         m_delayedNeutrons( a_construction, GIDI_delayedNeutronsChars, GIDI_labelChars, a_node, a_setupInfo, a_pops, a_internalPoPs, 
                 parseDelayedNeutronsSuite, a_styles ),
         m_fissionEnergyReleases( a_construction, GIDI_fissionEnergyReleasesChars, GIDI_labelChars, a_node, a_setupInfo, a_pops, a_internalPoPs, 
@@ -64,13 +64,31 @@ FissionFragmentData::~FissionFragmentData( ) {
 }
 
 /* *********************************************************************************************************//**
- * Used by Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or nullptr if none exists.
+ * Returns **false* if *this* has delayed fission neutrons and they are not complete; otherwise, returns **true**.
+ *
+ * @return      bool
+ ***********************************************************************************************************/
+
+bool FissionFragmentData::isDelayedFissionNeutronComplete( ) const {
+
+    for( std::size_t index = 0; index < m_delayedNeutrons.size( ); ++index ) {
+        DelayedNeutron const &delayedNeutrons1 = *m_delayedNeutrons.get<DelayedNeutron>( index );
+
+        Product const &product = delayedNeutrons1.product( );
+        if( !product.isDelayedFissionNeutronComplete( true ) ) return( false );
+    }
+
+    return( true );
+}
+
+/* *********************************************************************************************************//**
+ * Used by GUPI::Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or nullptr if none exists.
  *
  * @param a_item    [in]    The name of the class member whose pointer is to be return.
  * @return                  The pointer to the class member or nullptr if class does not have a member named a_item.
  ***********************************************************************************************************/
 
-Ancestry *FissionFragmentData::findInAncestry3( std::string const &a_item ) {
+GUPI::Ancestry *FissionFragmentData::findInAncestry3( std::string const &a_item ) {
 
     if( a_item == GIDI_delayedNeutronsChars ) return( &m_delayedNeutrons );
     if( a_item == GIDI_fissionEnergyReleasesChars ) return( &m_fissionEnergyReleases );
@@ -79,13 +97,13 @@ Ancestry *FissionFragmentData::findInAncestry3( std::string const &a_item ) {
 }
 
 /* *********************************************************************************************************//**
- * Used by Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or nullptr if none exists.
+ * Used by GUPI::Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or nullptr if none exists.
  *
  * @param a_item    [in]    The name of the class member whose pointer is to be return.
  * @return                  The pointer to the class member or nullptr if class does not have a member named a_item.
  ***********************************************************************************************************/
 
-Ancestry const *FissionFragmentData::findInAncestry3( std::string const &a_item ) const {
+GUPI::Ancestry const *FissionFragmentData::findInAncestry3( std::string const &a_item ) const {
 
     if( a_item == GIDI_delayedNeutronsChars ) return( &m_delayedNeutrons );
     if( a_item == GIDI_fissionEnergyReleasesChars ) return( &m_fissionEnergyReleases );
@@ -398,7 +416,7 @@ void FissionFragmentData::mapContinuousEnergyProductData( Transporting::Settings
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void FissionFragmentData::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void FissionFragmentData::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
 

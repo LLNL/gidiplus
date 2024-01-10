@@ -20,7 +20,7 @@ namespace MCGIDI {
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-MCGIDI_HOST SetupInfo::SetupInfo( ProtareSingle &a_protare ) :
+LUPI_HOST SetupInfo::SetupInfo( ProtareSingle &a_protare ) :
         m_protare( a_protare ),
         m_initialStateIndex( -1 ) {
 
@@ -29,7 +29,7 @@ MCGIDI_HOST SetupInfo::SetupInfo( ProtareSingle &a_protare ) :
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-MCGIDI_HOST SetupInfo::~SetupInfo( ) {
+LUPI_HOST SetupInfo::~SetupInfo( ) {
 
     for( auto iter = m_ACE_URR_protabilityTablesFromGIDI.begin( ); iter != m_ACE_URR_protabilityTablesFromGIDI.end( ); ++iter ) delete (*iter).second;
 }
@@ -39,7 +39,7 @@ MCGIDI_HOST SetupInfo::~SetupInfo( ) {
  * @return                          The *index*.
  ***********************************************************************************************************/
 
-MCGIDI_HOST int MCGIDI_popsIndex( PoPI::Database const &a_pops, std::string const &a_ID ) {
+LUPI_HOST int MCGIDI_popsIndex( PoPI::Database const &a_pops, std::string const &a_ID ) {
 
     int index = -1;
 
@@ -59,7 +59,7 @@ MCGIDI_HOST int MCGIDI_popsIndex( PoPI::Database const &a_pops, std::string cons
  ***********************************************************************************************************/
 
 
-MCGIDI_HOST Vector<double> GIDI_VectorDoublesToMCGIDI_VectorDoubles( GIDI::Vector a_vector ) {
+LUPI_HOST Vector<double> GIDI_VectorDoublesToMCGIDI_VectorDoubles( GIDI::Vector a_vector ) {
 
     Vector<double> vector( static_cast<MCGIDI_VectorSizeType>( a_vector.size( ) ) );
 
@@ -75,7 +75,7 @@ MCGIDI_HOST Vector<double> GIDI_VectorDoublesToMCGIDI_VectorDoubles( GIDI::Vecto
  * @param a_productIndicesFrom          [in]    The set to add the ints to.
  ***********************************************************************************************************/
 
-MCGIDI_HOST void addVectorItemsToSet( Vector<int> const &a_productIndicesFrom, std::set<int> &a_productIndicesTo ) {
+LUPI_HOST void addVectorItemsToSet( Vector<int> const &a_productIndicesFrom, std::set<int> &a_productIndicesTo ) {
 
     for( Vector<int>::const_iterator iter = a_productIndicesFrom.begin( ); iter != a_productIndicesFrom.end( ); ++iter ) a_productIndicesTo.insert( *iter );
 }
@@ -89,7 +89,7 @@ MCGIDI_HOST void addVectorItemsToSet( Vector<int> const &a_productIndicesFrom, s
  * @return                              The relativistic kinetic energy of the particle.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE double particleKineticEnergy( double a_mass_unitOfEnergy, double a_particleBeta ) {
+LUPI_HOST_DEVICE double particleKineticEnergy( double a_mass_unitOfEnergy, double a_particleBeta ) {
 
     if( a_particleBeta < 1e-4 ) return( 0.5 * a_mass_unitOfEnergy * a_particleBeta * a_particleBeta );
 
@@ -106,7 +106,7 @@ MCGIDI_HOST_DEVICE double particleKineticEnergy( double a_mass_unitOfEnergy, dou
  * @return                              The relativistic kinetic energy of the particle.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE double particleKineticEnergyFromBeta2( double a_mass_unitOfEnergy, double a_particleBeta2 ) {
+LUPI_HOST_DEVICE double particleKineticEnergyFromBeta2( double a_mass_unitOfEnergy, double a_particleBeta2 ) {
 
     if( a_particleBeta2 < 1e-8 ) return( 0.5 * a_mass_unitOfEnergy * a_particleBeta2 );
 
@@ -123,7 +123,7 @@ MCGIDI_HOST_DEVICE double particleKineticEnergyFromBeta2( double a_mass_unitOfEn
  * @return                              The relativistic kinetic energy of the particle.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE double boostSpeed( double a_massProjectile, double a_kineticEnergyProjectile, double a_massTarget ) {
+LUPI_HOST_DEVICE double boostSpeed( double a_massProjectile, double a_kineticEnergyProjectile, double a_massTarget ) {
 
     double betaProjectile = MCGIDI_particleBeta( a_massProjectile, a_kineticEnergyProjectile );
 
@@ -147,7 +147,7 @@ MCGIDI_HOST_DEVICE double boostSpeed( double a_massProjectile, double a_kineticE
  * @return                                      The number of returned center-of-mass frame mu values. Can be 0, 1 or 2.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE int muCOM_From_muLab( double a_muLab, double a_boostBeta, double a_productBeta, double &a_muPlus, double &a_JacobianPlus, 
+LUPI_HOST_DEVICE int muCOM_From_muLab( double a_muLab, double a_boostBeta, double a_productBeta, double &a_muPlus, double &a_JacobianPlus, 
                 double &a_muMinus, double &a_JacobianMinus ) {
 
     int numberOfSolutions = 0;
@@ -202,7 +202,7 @@ MCGIDI_HOST_DEVICE int muCOM_From_muLab( double a_muLab, double a_boostBeta, dou
  * @return                              The sampled normalized Maxwellian speed.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE double sampleBetaFromMaxwellian( double (*a_userrng)( void * ), void *a_rngState ) {
+LUPI_HOST_DEVICE double sampleBetaFromMaxwellian( double (*a_userrng)( void * ), void *a_rngState ) {
 
     double _g = 2.0 / ( 1.37 * 0.5 * 1.772453850905516 );      // 1.772453850905516 = sqrt( pi ).
     double beta, r1;
@@ -228,7 +228,7 @@ MCGIDI_HOST_DEVICE double sampleBetaFromMaxwellian( double (*a_userrng)( void * 
  * @return                              Returns *true* if target velocity is sampled and false otherwise.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE bool sampleTargetBetaForUpscatterModelA( Protare const *a_protare, double a_projectileEnergy, Sampling::Input &a_input,
+LUPI_HOST_DEVICE bool sampleTargetBetaForUpscatterModelA( Protare const *a_protare, double a_projectileEnergy, Sampling::Input &a_input,
                 double (*a_userrng)( void * ), void *a_rngState ) {
 
     double projectileBeta = MCGIDI_particleBeta( a_protare->projectileMass( ), a_projectileEnergy );
@@ -294,7 +294,7 @@ MCGIDI_HOST_DEVICE bool sampleTargetBetaForUpscatterModelA( Protare const *a_pro
  * @param a_product                 [in]    The particle to boost.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE void upScatterModelABoostParticle( Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState, Sampling::Product &a_product ) {
+LUPI_HOST_DEVICE void upScatterModelABoostParticle( Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState, Sampling::Product &a_product ) {
 
     double C_rel = 1.0;
     if( a_input.m_relativeBeta != 0.0 ) C_rel = ( a_input.m_projectileBeta - a_input.m_relativeMu * a_input.m_targetBeta ) / a_input.m_relativeBeta;
@@ -331,7 +331,7 @@ MCGIDI_HOST_DEVICE void upScatterModelABoostParticle( Sampling::Input &a_input, 
  * @param a_mu                  [in]    The cosine of the angle of the scattered photon's z-axis and the incoming photon's z-axis.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE void MCGIDI_sampleKleinNishina( double a_energyIn, double (*a_userrng)( void * ), void *a_rngState, double *a_energyOut, double *a_mu ) {
+LUPI_HOST_DEVICE void MCGIDI_sampleKleinNishina( double a_energyIn, double (*a_userrng)( void * ), void *a_rngState, double *a_energyOut, double *a_mu ) {
 /*
   Description
     Sample the Klein-Nishina distribution.
@@ -408,7 +408,7 @@ MCGIDI_HOST_DEVICE void MCGIDI_sampleKleinNishina( double a_energyIn, double (*a
  * @return                              Returns a unique integer for the distribution type.
  ***********************************************************************************************************/
             
-MCGIDI_HOST_DEVICE int distributionTypeToInt( Distributions::Type a_type ) {
+LUPI_HOST_DEVICE int distributionTypeToInt( Distributions::Type a_type ) {
 
     int distributionType = 0;
 
@@ -452,6 +452,9 @@ MCGIDI_HOST_DEVICE int distributionTypeToInt( Distributions::Type a_type ) {
     case Distributions::Type::incoherentPhotoAtomicScatteringElectron :
         distributionType = 12;
         break;
+    case Distributions::Type::branching3d :
+        distributionType = 13;
+        break;
     }
 
     return( distributionType );
@@ -465,7 +468,7 @@ MCGIDI_HOST_DEVICE int distributionTypeToInt( Distributions::Type a_type ) {
  * @return                              The **Distributions::Type** corresponding to *a_type*.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE Distributions::Type intToDistributionType( int a_type ) {
+LUPI_HOST_DEVICE Distributions::Type intToDistributionType( int a_type ) {
 
     Distributions::Type type = Distributions::Type::none;
 
@@ -509,11 +512,115 @@ MCGIDI_HOST_DEVICE Distributions::Type intToDistributionType( int a_type ) {
     case 12 :
         type = Distributions::Type::incoherentPhotoAtomicScatteringElectron;
         break;
+    case 13 :
+        type = Distributions::Type::branching3d;
+        break;
     default:
-        MCGIDI_THROW( "intToDistributionType: unsupported distribution type." );
+        LUPI_THROW( "intToDistributionType: unsupported distribution type." );
     }
 
     return( type );
+}
+
+/* *********************************************************************************************************//**
+ * This method serializes *a_products* for broadcasting as needed for MPI and GPUs. The method can count the number of required
+ * bytes, pack *a_products* or unpack *a_products* depending on *a_mode*.
+ *
+ * @param a_buffer              [in]    The buffer to read or write data to depending on *a_mode*.
+ * @param a_mode                [in]    Specifies the action of this method.
+ * @param a_products            [in]    The products to serialize.
+ ***********************************************************************************************************/
+
+LUPI_HOST_DEVICE void serializeProducts( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode, Vector<Product *> &a_products ) {
+
+    std::size_t vectorSize = a_products.size( );
+    int vectorSizeInt = (int) vectorSize;
+    DATA_MEMBER_INT( vectorSizeInt, a_buffer, a_mode );
+    vectorSize = (std::size_t) vectorSizeInt;
+
+    if( a_mode == LUPI::DataBuffer::Mode::Unpack ) {
+        a_products.resize( vectorSize, &a_buffer.m_placement );
+        for( std::size_t vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
+            if( a_buffer.m_placement != nullptr ) {
+                a_products[vectorIndex] = new(a_buffer.m_placement) Product;
+                a_buffer.incrementPlacement( sizeof( Product ) );
+            }
+            else {
+               a_products[vectorIndex] = new Product;
+            }
+        } }
+    else if( a_mode == LUPI::DataBuffer::Mode::Memory ) {
+        a_buffer.m_placement += a_products.internalSize( );
+        a_buffer.incrementPlacement( sizeof( Product ) * vectorSize );
+    }
+
+    for( std::size_t vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
+        a_products[vectorIndex]->serialize( a_buffer, a_mode );
+    }
+}
+
+/* *********************************************************************************************************//**
+ * This method serializes *a_delayedNeutrons* for broadcasting as needed for MPI and GPUs. The method can count the number of required
+ * bytes, pack *a_delayedNeutrons* or unpack *a_delayedNeutrons* depending on *a_mode*.
+ *
+ * @param a_delayedNeutrons     [in]    The delayed neutrons to serialize.
+ * @param a_buffer              [in]    The buffer to read or write data to depending on *a_mode*.
+ * @param a_mode                [in]    Specifies the action of this method.
+ ***********************************************************************************************************/
+        
+LUPI_HOST_DEVICE void serializeDelayedNeutrons( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode, Vector<DelayedNeutron *> &a_delayedNeutrons ) {
+
+    std::size_t vectorSize = a_delayedNeutrons.size( );
+    int vectorSizeInt = (int) vectorSize;
+    DATA_MEMBER_INT( vectorSizeInt, a_buffer, a_mode );
+    vectorSize = (std::size_t) vectorSizeInt;
+
+    if( a_mode == LUPI::DataBuffer::Mode::Unpack ) {
+        a_delayedNeutrons.resize( vectorSize, &a_buffer.m_placement );
+        for( std::size_t vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
+            if( a_buffer.m_placement != nullptr ) {
+                a_delayedNeutrons[vectorIndex] = new(a_buffer.m_placement) DelayedNeutron;
+                a_buffer.incrementPlacement( sizeof( DelayedNeutron ) );
+            }
+            else {
+                a_delayedNeutrons[vectorIndex] = new DelayedNeutron;
+            }
+        } }
+    else if( a_mode == LUPI::DataBuffer::Mode::Memory ) {
+        a_buffer.m_placement += a_delayedNeutrons.internalSize( );
+        a_buffer.incrementPlacement( sizeof( DelayedNeutron ) * vectorSize );
+    }
+
+    for( std::size_t vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
+        a_delayedNeutrons[vectorIndex]->serialize( a_buffer, a_mode );
+    }
+}
+
+/* *********************************************************************************************************//**
+ * This method serializes *a_Qs* for broadcasting as needed for MPI and GPUs. The method can count the number of required
+ * bytes, pack *a_Qs* or unpack *a_Qs* depending on *a_mode*.
+ *
+ * @param a_Qs                  [in]    The Q functions to serialize.
+ * @param a_buffer              [in]    The buffer to read or write data to depending on *a_mode*.
+ * @param a_mode                [in]    Specifies the action of this method.
+ ***********************************************************************************************************/
+
+LUPI_HOST_DEVICE void serializeQs( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode, Vector<Functions::Function1d_d1 *> &a_Qs ) {
+
+    std::size_t vectorSize = a_Qs.size( );
+    int vectorSizeInt = (int) vectorSize;
+    DATA_MEMBER_INT( vectorSizeInt, a_buffer, a_mode );
+    vectorSize = (std::size_t) vectorSizeInt;
+
+    if( a_mode == LUPI::DataBuffer::Mode::Unpack ) {
+        a_Qs.resize( vectorSize, &a_buffer.m_placement ); }
+    else if( a_mode == LUPI::DataBuffer::Mode::Memory ) {
+        a_buffer.m_placement += a_Qs.internalSize( );
+    }
+
+    for( std::size_t vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
+        a_Qs[vectorIndex] = serializeFunction1d_d1( a_buffer, a_mode, a_Qs[vectorIndex] );
+    }
 }
 
 }

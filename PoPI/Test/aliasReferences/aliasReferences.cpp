@@ -40,9 +40,7 @@ void main2( int argc, char **argv ) {
 
     std::cerr << "    " << LUPI::FileInfo::basenameWithoutExtension( __FILE__ ) << std::endl;
 
-    std::string fileName( "../pops.xml" );
-
-    PoPI::Database database( "../pops.xml" );
+    PoPI::Database database( "../../../TestData/PoPs/pops.xml" );
     database.addFile( "../metastables_alias.xml", false );
 
     for( std::size_t index = 0; index < database.size( ); ++index ) {

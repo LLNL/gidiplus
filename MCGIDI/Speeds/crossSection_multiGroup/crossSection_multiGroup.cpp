@@ -42,7 +42,7 @@ int main( int argc, char **argv ) {
 void main2( int argc, char **argv ) {
 
     std::string mapFilename( "../../../GIDI/Test/all3T.map" );
-    PoPI::Database pops( "../../../GIDI/Test/pops.xml" );
+    PoPI::Database pops( "../../../TestData/PoPs/pops.xml" );
     GIDI::Map::Map map( mapFilename, pops );
     std::set<int> reactionsToExclude;
     LUPI::StatusMessageReporting smr1;
@@ -89,7 +89,7 @@ void main2( int argc, char **argv ) {
     protares[0] = MCProtare;
     MCGIDI::URR_protareInfos URR_protare_infos( protares );
 
-    for( double temperature = 1e-8; temperature < 2e-3; temperature *= 10.1, ++sampleTemperatures ) {
+    for( double temperature2 = 1e-8; temperature2 < 2e-3; temperature2 *= 10.1, ++sampleTemperatures ) {
         clock_t time1_1 = clock( );
         clock_t time2_1 = time1_1;
 
@@ -97,12 +97,12 @@ void main2( int argc, char **argv ) {
         for( double energy = 1e-12; energy < 200.0; energy *= 3.1, ++energyIndex ) {
             int hashIndex = multiGroupHash.index( energy );
 
-            for( long i1 = 0; i1 <= numberOfSamples; ++i1 ) MCProtare->crossSection( URR_protare_infos, hashIndex, temperature, energy );
+            for( long i1 = 0; i1 <= numberOfSamples; ++i1 ) MCProtare->crossSection( URR_protare_infos, hashIndex, temperature2, energy );
             printTime_energy( "            energies: ", energyIndex, energy, time2_1 );
         }
         sampleEnergies = energyIndex;
         std::cout << std::endl;
-        printTime_double( "        temperature: ", temperature, time1_1 );
+        printTime_double( "        temperature: ", temperature2, time1_1 );
     }
 
     long sampled = sampleTemperatures * sampleEnergies * numberOfSamples;

@@ -8,7 +8,7 @@ SHELL = /bin/ksh
 # <<END-copyright>>
 
 DIRS = readAllProtaresInMapFile directory toXML reactions GNDS_FileType incompleteParticles HAPI_ReadAllProtaresInMapFile mapTiming producedPaticles \
-		readAllProtaresInMapFilePrintMultiGroup
+		readAllProtaresInMapFilePrintMultiGroup checkMultigroupSums
 
 .PHONY: default bin compile check clean realclean doDirs $(DIRS)
 

@@ -22,7 +22,7 @@ void printVector( std::string &prefix, GIDI::Vector &vector );
 int main( int argc, char **argv ) {
 
     std::string mapFilename( "../../../GIDI/Test/all3T.map" );
-    PoPI::Database pops( "../../../GIDI/Test/pops.xml" );
+    PoPI::Database pops( "../../../TestData/PoPs/pops.xml" );
     GIDI::Map::Map map( mapFilename, pops );
     std::string neutronID( PoPI::IDs::neutron );
     std::string targetID = "O16";

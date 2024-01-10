@@ -76,42 +76,42 @@ void main2( int argc, char **argv ) {
 
     argumentParser.parse( argc, argv );
 
-    std::cout << "    " << optionTrue->name( )  << " option: number entered " << optionTrue->numberEntered( ) << ",   value = " << optionTrue->value( ) << std::endl;
-    std::cout << "    " << optionFalse->name( ) << " option: number entered " << optionFalse->numberEntered( ) << ",   value = " << optionFalse->value( ) << std::endl;
-    std::cout << "    " << optionCounter->name( ) << " option: number entered " << optionCounter->numberEntered( ) << ",   counts = " << optionCounter->counts( ) << std::endl;
-    std::cout << "    " << optionStore->name( ) << " option: number entered " << optionStore->numberEntered( ) << ",   value = '" << optionStore->value( ) << "'" << std::endl;
+    std::cout << "    " << optionTrue->name( )  << " option: number entered " << optionTrue->counts( ) << ",   value = " << optionTrue->value( ) << std::endl;
+    std::cout << "    " << optionFalse->name( ) << " option: number entered " << optionFalse->counts( ) << ",   value = " << optionFalse->value( ) << std::endl;
+    std::cout << "    " << optionCounter->name( ) << " option: number entered " << optionCounter->counts( ) << ",   counts = " << optionCounter->counts( ) << std::endl;
+    std::cout << "    " << optionStore->name( ) << " option: number entered " << optionStore->counts( ) << ",   value = '" << optionStore->value( ) << "'" << std::endl;
 
-    std::cout << "    " << optionAppend->name( ) << " option: number entered " << optionAppend->numberEntered( ) << std::endl;
+    std::cout << "    " << optionAppend->name( ) << " option: number entered " << optionAppend->counts( ) << std::endl;
     std::cout << "         ";
-    for( int index = 0; index < optionAppend->numberEntered( ); ++index ) {
+    for( int index = 0; index < optionAppend->counts( ); ++index ) {
         std::cout << " '" << optionAppend->value( index ) << "'";
     }
     std::cout << std::endl;
 
-    std::cout << "    " << p24->name( ) << " option: number entered " << p24->numberEntered( ) << std::endl;
+    std::cout << "    " << p24->name( ) << " option: number entered " << p24->counts( ) << std::endl;
     std::cout << "         ";
-    for( int index = 0; index < p24->numberEntered( ); ++index ) {
+    for( int index = 0; index < p24->counts( ); ++index ) {
         std::cout << " '" << p24->value( index ) << "'";
     }
     std::cout << std::endl;
 
-    std::cout << "    " << positional1->name( ) << positional1->numberEntered( ) << std::endl;
+    std::cout << "    " << positional1->name( ) << positional1->counts( ) << std::endl;
     std::cout << "         ";
-    for( int index = 0; index < positional1->numberEntered( ); ++index ) {
+    for( int index = 0; index < positional1->counts( ); ++index ) {
         std::cout << " '" << positional1->value( index ) << "'";
     }
     std::cout << std::endl;
 
-    std::cout << "    " << positional2->name( ) << positional2->numberEntered( ) << std::endl;
+    std::cout << "    " << positional2->name( ) << positional2->counts( ) << std::endl;
     std::cout << "         ";
-    for( int index = 0; index < positional2->numberEntered( ); ++index ) {
+    for( int index = 0; index < positional2->counts( ); ++index ) {
         std::cout << " '" << positional2->value( index ) << "'";
     }
     std::cout << std::endl;
 
-    std::cout << "    " << positional3->name( ) << positional3->numberEntered( ) << std::endl;
+    std::cout << "    " << positional3->name( ) << positional3->counts( ) << std::endl;
     std::cout << "         ";
-    for( int index = 0; index < positional3->numberEntered( ); ++index ) {
+    for( int index = 0; index < positional3->counts( ); ++index ) {
         std::cout << " '" << positional3->value( index ) << "'";
     }
     std::cout << std::endl;

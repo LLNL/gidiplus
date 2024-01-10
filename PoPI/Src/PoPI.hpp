@@ -47,16 +47,19 @@ namespace PoPI {
  * This enum represents the various type of allowed particle types.
  */
 
-enum class Particle_class { gaugeBoson,         /**< Specifies that the particle is a gauge boson. */
-                            lepton,             /**< Specifies that the particle is a lepton. */
-                            baryon,             /**< Specifies that the particle is a baryon. */
-                            unorthodox,         /**< Specifies that the particle is an unorthodox. */
-                            nuclide,            /**< Specifies that the particle is a nuclide. */
-                            nucleus,            /**< Specifies that the particle is a nucleus. */
-                            chemicalElement,    /**< Specifies that the particle is a chemicalElement. */
-                            isotope,            /**< Specifies that the particle is a isotope. */
-                            alias,              /**< Specifies that the particle is a alias. */
-                            metaStable          /**< Specifies that the particle is a metaStable. */ };
+enum class Particle_class { gaugeBoson,             /**< Specifies that the particle is a gauge boson. */
+                            lepton,                 /**< Specifies that the particle is a lepton. */
+                            baryon,                 /**< Specifies that the particle is a baryon. */
+                            unorthodox,             /**< Specifies that the particle is an unorthodox. */
+                            nuclide,                /**< Specifies that the particle is a nuclide. */
+                            nucleus,                /**< Specifies that the particle is a nucleus. */
+                            ENDL_fissionProduct,    /**< Specifies that the particle is an ENDL fissiont product (e.g., 99120, 99125). */
+                            chemicalElement,        /**< Specifies that the particle is a chemicalElement. */
+                            isotope,                /**< Specifies that the particle is a isotope. */
+                            alias,                  /**< Specifies that the particle is a alias. */
+                            metaStable,             /**< Specifies that the particle is a metaStable. */
+                            TNSL,                   /**< Specifies that the particle is a TNSL target. Currently not used. */
+                            unknown                 /**< Specifies that the particle is a unknown. */ };
 
 #define PoPI_massChars "mass"
 #define PoPI_spinChars "spin"
@@ -145,7 +148,12 @@ struct IDs {
     static std::string const familiarTriton;
     static std::string const familiarHelion;
     static std::string const familiarAlpha;
+    static std::string const FissionProductENDL99120;
+    static std::string const FissionProductENDL99125;
+    static std::string const anti;
 };
+
+extern std::map<std::string, std::string> supportedNucluesAliases;
 
 typedef std::vector<Base *> ParticleList;
 typedef std::vector<SymbolBase *> SymbolList;
@@ -161,6 +169,92 @@ class Exception : public std::runtime_error {
     public :
         explicit Exception( std::string const &a_message );
 
+};
+
+/*
+============================================================
+====================== ParseIntidInfo ======================
+============================================================
+*/
+
+class ParseIntidInfo {
+
+    private:
+        int m_intid;                        /**< The intid for the rest of the data. */
+        Particle_class m_family;            /**< The family of the particle. */
+        bool m_isAnti;                      /**< **true** if particle is an anti-particle and **false** otherwise. */
+// The following are for nuclear like particles.
+        bool m_isNuclear;                   /**< *true* if the particle is a nuclear particle and *false* otherwise. */
+        int m_AAA;                          /**< For a nuclear particle, its AAA value (i.e., atomic mass number). */
+        int m_ZZZ;                          /**< For a nuclear particle, its ZZZ value (i.e., atomic number). */
+        int m_III;                          /**< For a nuclear particle, its III value (nuclear excitation level index or meta-stable index. */
+        int m_nuclearLevelIndex;            /**< For a nuclear particle, nuclear excitation level index. */
+        int m_metaStableIndex;              /**< For a nuclear meta-stable particle, its meta-stable index. */
+// The following are for leptons.
+        int m_generation;                   /**< For a lepton, its generation. */
+        bool m_isNeutrino;                  /**< For a lepton, **true** if leption is a neutrino and **false** otherwise. */
+// The follow are for baryons.
+        int m_baryonGroup;                  /**< For a baryon, its baryon group. */
+        int m_baryonId;                     /**< For a baryon, its id within a baryon group. */
+// Other data.
+        int m_familyId;                     /**< For non-nuclear particles, the particle's indentifier within its family. */
+
+    public:
+        ParseIntidInfo( int a_intid );
+
+        int intid( ) { return( m_intid ); }                     /**< Returns the value of the *m_intid* member. */
+        Particle_class family( ) { return( m_family ); }        /**< Returns the value of the *m_family* member. */
+        bool isAnti( ) { return( m_isAnti ); }                  /**< Returns the value of the *m_isAnti * member. */
+
+        bool isNuclear( ) { return( m_isNuclear ); }            /**< Returns the value of the *m_isNuclear* member. */
+        int AAA( ) { return( m_AAA ); }                         /**< Returns the value of the *m_AAA* member. */
+        int ZZZ( ) { return( m_ZZZ ); }                         /**< Returns the value of the *m_ZZZ* member. */
+        int III( ) { return( m_III ); }                         /**< Returns the value of the *m_III* member. */
+        int metaStableIndex( ) { return( m_metaStableIndex ); } /**< Returns the value of the *m_metaStableIndex* member. */
+
+        int generation( ) { return( m_generation ); }           /**< Returns the value of the *m_generation* member. */
+        bool isNeutrino( ) { return( m_isNeutrino ); }          /**< Returns the value of the *m_isNeutrino* member. */
+
+        int baryonGroup( ) { return( m_baryonGroup ); }         /**< Returns the value of the *m_baryonGroup* member. */
+        int baryonId( ) { return( m_baryonId ); }               /**< Returns the value of the *m_baryonId * member. */
+
+        int familyId( ) { return( m_familyId ); }               /**< Returns the value of the *m_familyId* member. */
+
+        std::string id( );
+};
+
+/*
+============================================================
+======================= ParseIdInfo ========================
+============================================================
+*/
+
+class ParseIdInfo{
+
+    private:
+        std::string m_id;                                   /**< The id for the particles. */
+        bool m_isNuclear;                                   /**< **true** if particle is a valid nuclear name (i.e., nuclide, nucleus of meta-stable) and **false** otherwise. */
+        bool m_isNucleus;                                   /**< **true** if particle is a nucleus and **false** otherwise. */
+        bool m_isAnti;                                      /**< **true** if particle is an anti-particle and **false** otherwise. */
+        bool m_isMetaStable;                                /**< **true** if particle is a meta-stable alias and **false** otherwise. */
+        std::string m_symbol;                               /**< The chemical element symbol part of *m_id*. This will always be the nuclide symbol even if *m_id* is for a nucleus. */
+        int m_Z;                                            /**< The atomic number of the *m_id*. */
+        int m_A;                                            /**< The atomic mass number of the *m_id*. */
+        int m_index;                                        /**< The nuclear level index of *m_id*. */
+        std::string m_qualifier;
+
+    public:
+        ParseIdInfo( std::string const &a_id );
+
+        std::string const &Id( ) { return( m_id ); }                    /**< Returns a reference to the *m_id* member. */
+        bool isNuclear( ) { return( m_isNuclear ); }                    /**< Returns the value of the *m_isNuclear* member. */
+        bool isNucleus( ) { return( m_isNucleus ); }                    /**< Returns the value of the *m_isNucleus* member. */
+        bool isAnti( ) { return( m_isAnti ); }                          /**< Returns the value of the *m_isAnti* member. */
+        std::string const &symbol( ) { return( m_symbol); }             /**< Returns a reference to the *m_symbol* member. */
+        int Z( ) { return( m_Z ); }                                     /**< Returns the value of the *m_Z* member. */
+        int A( ) { return( m_A ); }                                     /**< Returns the value of the *m_A* member. */
+        int index( ) { return( m_index ); }                             /**< Returns the value of the *m_index* member. */
+        std::string const &qualifier( ) { return( m_qualifier ); }      /**< Returns a reference to the *m_qualifier* member. */
 };
 
 /*! \class Suite
@@ -529,11 +623,16 @@ class Base {
 
 class IDBase : public Base {
 
+    private:
+        int m_intid;                                    /**< The unique integer intid for the particle. */
+
     public:
         IDBase( std::string const &a_id, Particle_class a_class );
         IDBase( HAPI::Node const &a_node, Particle_class a_class );
         virtual ~IDBase( );       // BRB This should be virtual but I cannot get it to work without crashing.
 
+        int intid( ) const { return( m_intid ); }                                           /**< Returns the value of the *m_intid* member. */
+        void setIntid( int a_intid ) { m_intid = a_intid; }                                 /**< Sets the value of the *m_intid* member to *a_intid*. */
         int addToDatabase( Database *a_DB );
         virtual double massValue2( Database const &a_DB, std::string const &a_unit ) const = 0;
 };
@@ -664,7 +763,9 @@ class DecayData {
 class Particle : public IDBase {
 
     private:
+        std::string m_baseId;                           /**< The base part of the id (i.e., without the anti and quailifier). */
         std::string m_family;                           /**< The family of the particle. */
+        std::string m_anti;                             /**< The string "_anti" if particle is an anti-particle and an empty string otherwise. */
         int m_hasNucleus;                               /**< Indicates if the particle is or contains a nucleus. 0 = no, -1 = yes and 1 = is nucleus. */
         PQ_suite m_mass;                                /**< A suite storing the mass physical quantities for the particle. */
         PQ_suite m_spin;                                /**< A suite storing the spin physical quantities for the particle. */
@@ -677,7 +778,9 @@ class Particle : public IDBase {
         Particle( HAPI::Node const &a_node, Particle_class a_class, std::string const &a_family, int a_hasNucleus = 0 );
         virtual ~Particle( );
 
+        std::string const &baseId( void ) const { return( m_baseId ); }         /**< Returns a *const* reference to the *m_baseId* member. */
         std::string const &family( void ) const { return( m_family ); }         /**< Returns a *const* reference to the *m_family* member. */
+        bool isAnti( ) const { return( m_anti == IDs::anti ); }                              /**< Returns the value of the *m_anti* member. */
         int hasNucleus( void ) const { return( m_hasNucleus ); }                /**< Returns the value of the *m_hasNucleus* member. */
 
         virtual PQ_suite const &mass( void ) const { return( m_mass ); }        /**< Returns a *const* reference to the *m_mass* member. */
@@ -969,6 +1072,8 @@ class Database {
         void addAlias( Alias *a_alias ) { m_aliases.push_back( a_alias ); }                 /**< Added the **Alias** *a_alias* to *this*. */
 
         std::string::size_type size( void ) const { return( m_list.size( ) ); }             /**< Returns the number of particle in *this*. */
+        ParticleList const &list( ) { return( m_list ); }                                    /**< Returns a *const* *reference* to the *m_list* member. */
+        SymbolList const &symbolList( ) { return( m_symbolList ); }                          /**< Returns a *const* *reference* to the *m_symbolList* member. */
         int operator[]( std::string const &a_id ) const ;
         template<typename T> T const &get( std::string const &a_id ) const ;
         template<typename T> T const &get( int a_index ) const ;
@@ -997,6 +1102,10 @@ class Database {
 
         std::string final( std::string const &a_id, bool a_returnAtMetaStableAlias = false ) const ;
         int final( int a_index, bool a_returnAtMetaStableAlias = false ) const ;
+
+        std::string chemicalElementSymbol( std::string const &a_id ) const ;
+        std::string isotopeSymbol( std::string const &a_id ) const ;
+        int intid( std::string const &a_id ) const ;
 
         int add( Base *a_item );
         int addSymbol( SymbolBase *a_item );
@@ -1047,6 +1156,15 @@ template<typename T> T const &Database::get( std::string const &a_id ) const {
 double getPhysicalQuantityAsDouble( PhysicalQuantity const &a_physicalQuantity );
 double getPhysicalQuantityOfSuiteAsDouble( PQ_suite const &a_suite, bool a_allowEmpty = false, double a_emptyValue = 0.0 );
 bool supportedFormat( LUPI::FormatVersion const &a_formatVersion );
+std::string baseAntiQualifierFromID( std::string const &a_id, std::string &a_anti, std::string *a_qualifier = nullptr );
+
+int maximumChemicalElementZ( );
+std::string chemicalElementInfoFromZ( int a_Z, bool a_wantSymbol, bool a_asNucleus = false );
+std::string const &chemicalElementSymbolFromZ( int a_Z );
+int Z_FromChemicalElementSymbol( std::string const &a_symbol );
+
+int family2Integer( Particle_class a_family );
+int intidHelper( bool a_isAnti, Particle_class a_family, int a_SSSSSSS );
 
 }
 

@@ -23,7 +23,7 @@ namespace MCGIDI {
  * Default constructor used when broadcasting a Protare as needed by MPI or GPUs.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE ProtareComposite::ProtareComposite( ) :
+LUPI_HOST_DEVICE ProtareComposite::ProtareComposite( ) :
         Protare( ProtareType::composite ),
         m_numberOfReactions( 0 ),
         m_numberOfOrphanProducts( 0 ),
@@ -45,7 +45,7 @@ MCGIDI_HOST_DEVICE ProtareComposite::ProtareComposite( ) :
  * @param a_allowFixedGrid              [in]    For internal (i.e., MCGIDI) use only. Users must use the default value.
  ***********************************************************************************************************/
 
-MCGIDI_HOST ProtareComposite::ProtareComposite( LUPI::StatusMessageReporting &a_smr, GIDI::ProtareComposite const &a_protare, PoPI::Database const &a_pops, Transporting::MC &a_settings, 
+LUPI_HOST ProtareComposite::ProtareComposite( LUPI::StatusMessageReporting &a_smr, GIDI::ProtareComposite const &a_protare, PoPI::Database const &a_pops, Transporting::MC &a_settings, 
                 GIDI::Transporting::Particles const &a_particles, DomainHash const &a_domainHash, GIDI::Styles::TemperatureInfos const &a_temperatureInfos,
                 std::set<int> const &a_reactionsToExclude, int a_reactionsToExcludeOffset, bool a_allowFixedGrid ) :
         Protare( ProtareType::composite, a_protare, a_pops, a_settings ),
@@ -86,7 +86,7 @@ MCGIDI_HOST ProtareComposite::ProtareComposite( LUPI::StatusMessageReporting &a_
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE ProtareComposite::~ProtareComposite( ) {
+LUPI_HOST_DEVICE ProtareComposite::~ProtareComposite( ) {
 
     std::size_t length = static_cast<std::size_t>( m_protares.size( ) );
 
@@ -100,9 +100,8 @@ MCGIDI_HOST_DEVICE ProtareComposite::~ProtareComposite( ) {
  * @param a_userParticleIndex   [in]    The particle id specified by the user.
  ***********************************************************************************************************/
 
-MCGIDI_HOST void ProtareComposite::setUserParticleIndex( int a_particleIndex, int a_userParticleIndex ) {
+LUPI_HOST void ProtareComposite::setUserParticleIndex2( int a_particleIndex, int a_userParticleIndex ) {
 
-    Protare::setUserParticleIndex( a_particleIndex, a_userParticleIndex );
     for( auto iter = m_protares.begin( ); iter != m_protares.end( ); ++iter ) (*iter)->setUserParticleIndex( a_particleIndex, a_userParticleIndex );
 }
 
@@ -114,7 +113,7 @@ MCGIDI_HOST void ProtareComposite::setUserParticleIndex( int a_particleIndex, in
  * @return                              Pointer to the requested protare or nullptr if invalid *a_index*..
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE ProtareSingle const *ProtareComposite::protare( MCGIDI_VectorSizeType a_index ) const {
+LUPI_HOST_DEVICE ProtareSingle const *ProtareComposite::protare( MCGIDI_VectorSizeType a_index ) const {
 
     for( MCGIDI_VectorSizeType i1 = 0; i1 < m_protares.size( ); ++i1 ) {
         MCGIDI_VectorSizeType number = m_protares[i1]->numberOfProtares( );
@@ -134,7 +133,7 @@ MCGIDI_HOST_DEVICE ProtareSingle const *ProtareComposite::protare( MCGIDI_Vector
  * @return                              Pointer to the requested protare or nullptr if invalid *a_index*..
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE ProtareSingle *ProtareComposite::protare( MCGIDI_VectorSizeType a_index ) {
+LUPI_HOST_DEVICE ProtareSingle *ProtareComposite::protare( MCGIDI_VectorSizeType a_index ) {
 
     for( MCGIDI_VectorSizeType i1 = 0; i1 < m_protares.size( ); ++i1 ) {
         MCGIDI_VectorSizeType number = m_protares[i1]->numberOfProtares( );
@@ -154,7 +153,7 @@ MCGIDI_HOST_DEVICE ProtareSingle *ProtareComposite::protare( MCGIDI_VectorSizeTy
  * @return                              Pointer to the requested protare or nullptr if invalid *a_index*..
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE ProtareSingle const *ProtareComposite::protareWithReaction( int a_index ) const {
+LUPI_HOST_DEVICE ProtareSingle const *ProtareComposite::protareWithReaction( int a_index ) const {
 
     if( a_index < 0 ) return( nullptr );
 
@@ -176,7 +175,7 @@ MCGIDI_HOST_DEVICE ProtareSingle const *ProtareComposite::protareWithReaction( i
  * @return                              Vector of doubles.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE Vector<double> ProtareComposite::temperatures( MCGIDI_VectorSizeType a_index ) const {
+LUPI_HOST_DEVICE Vector<double> ProtareComposite::temperatures( MCGIDI_VectorSizeType a_index ) const {
 
     for( MCGIDI_VectorSizeType i1 = 0; i1 < m_protares.size( ); ++i1 ) {
         MCGIDI_VectorSizeType number = m_protares[i1]->numberOfProtares( );
@@ -185,7 +184,7 @@ MCGIDI_HOST_DEVICE Vector<double> ProtareComposite::temperatures( MCGIDI_VectorS
         a_index -= number;
     }
 
-    MCGIDI_THROW( "ProtareSingle::temperatures: a_index not in range." );
+    LUPI_THROW( "ProtareSingle::temperatures: a_index not in range." );
 
     Vector<double> temps;                           // Only to stop compilers from complaining.
     return( temps );
@@ -200,7 +199,7 @@ MCGIDI_HOST_DEVICE Vector<double> ProtareComposite::temperatures( MCGIDI_VectorS
  * @return                          The reaction at index *a_index*.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE Reaction const *ProtareComposite::reaction( int a_index ) const {
+LUPI_HOST_DEVICE Reaction const *ProtareComposite::reaction( int a_index ) const {
 
     std::size_t length = static_cast<std::size_t>( m_protares.size( ) );
 
@@ -223,7 +222,7 @@ MCGIDI_HOST_DEVICE Reaction const *ProtareComposite::reaction( int a_index ) con
  * @return                          The reaction at index *a_index*.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE Reaction const *ProtareComposite::orphanProduct( int a_index ) const {
+LUPI_HOST_DEVICE Reaction const *ProtareComposite::orphanProduct( int a_index ) const {
 
     std::size_t length = static_cast<std::size_t>( m_protares.size( ) );
 
@@ -243,7 +242,7 @@ MCGIDI_HOST_DEVICE Reaction const *ProtareComposite::orphanProduct( int a_index 
  * @return                          *true* is one of the protares has a fission channel and *false* otherwise.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE bool ProtareComposite::hasFission( ) const {
+LUPI_HOST_DEVICE bool ProtareComposite::hasFission( ) const {
 
     std::size_t length = static_cast<std::size_t>( m_protares.size( ) );
 
@@ -260,7 +259,7 @@ MCGIDI_HOST_DEVICE bool ProtareComposite::hasFission( ) const {
  * @return                              true is if *this* has a URR data.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE bool ProtareComposite::hasURR_probabilityTables( ) const {
+LUPI_HOST_DEVICE bool ProtareComposite::hasURR_probabilityTables( ) const {
    
     std::size_t length = static_cast<std::size_t>( m_protares.size( ) );
 
@@ -277,7 +276,7 @@ MCGIDI_HOST_DEVICE bool ProtareComposite::hasURR_probabilityTables( ) const {
  * @return                              The energy or -1 if not URR data present.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE double ProtareComposite::URR_domainMin( ) const {
+LUPI_HOST_DEVICE double ProtareComposite::URR_domainMin( ) const {
 
     std::size_t length = static_cast<std::size_t>( m_protares.size( ) );
     double URR_domain_min = 1e32;
@@ -299,7 +298,7 @@ MCGIDI_HOST_DEVICE double ProtareComposite::URR_domainMin( ) const {
  * @return                              true is if *this* has a URR data.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE double ProtareComposite::URR_domainMax( ) const {
+LUPI_HOST_DEVICE double ProtareComposite::URR_domainMax( ) const {
 
     std::size_t length = static_cast<std::size_t>( m_protares.size( ) );
     double URR_domain_max = -1.0;
@@ -322,7 +321,7 @@ MCGIDI_HOST_DEVICE double ProtareComposite::URR_domainMax( ) const {
  * @return                          *true* if the reaction has URR robability tables and false otherwise.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE bool ProtareComposite::reactionHasURR_probabilityTables( int a_index ) const {
+LUPI_HOST_DEVICE bool ProtareComposite::reactionHasURR_probabilityTables( int a_index ) const {
 
     std::size_t length = static_cast<std::size_t>( m_protares.size( ) );
 
@@ -345,7 +344,7 @@ MCGIDI_HOST_DEVICE bool ProtareComposite::reactionHasURR_probabilityTables( int 
  * @return                          The threshold for reaction at index *a_index*.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE double ProtareComposite::threshold( int a_index ) const {
+LUPI_HOST_DEVICE double ProtareComposite::threshold( int a_index ) const {
 
     std::size_t length = static_cast<std::size_t>( m_protares.size( ) );
 
@@ -372,7 +371,7 @@ MCGIDI_HOST_DEVICE double ProtareComposite::threshold( int a_index ) const {
  * @return                              The total cross section.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE double ProtareComposite::crossSection( URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, bool a_sampling ) const {
+LUPI_HOST_DEVICE double ProtareComposite::crossSection( URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, bool a_sampling ) const {
 
     std::size_t length = static_cast<std::size_t>( m_protares.size( ) );
     double cross_section = 0.0;
@@ -391,7 +390,7 @@ MCGIDI_HOST_DEVICE double ProtareComposite::crossSection( URR_protareInfos const
  * @param   a_crossSectionVector        [in/out]    The energy dependent, total cross section to add cross section data to.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE void ProtareComposite::crossSectionVector( double a_temperature, double a_userFactor, int a_numberAllocated, double *a_crossSectionVector ) const {
+LUPI_HOST_DEVICE void ProtareComposite::crossSectionVector( double a_temperature, double a_userFactor, int a_numberAllocated, double *a_crossSectionVector ) const {
 
     std::size_t length = static_cast<std::size_t>( m_protares.size( ) );
 
@@ -412,7 +411,7 @@ MCGIDI_HOST_DEVICE void ProtareComposite::crossSectionVector( double a_temperatu
  * @return                              The total cross section.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE double ProtareComposite::reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, bool a_sampling ) const {
+LUPI_HOST_DEVICE double ProtareComposite::reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, bool a_sampling ) const {
 
     std::size_t length = static_cast<std::size_t>( m_protares.size( ) );
     double cross_section = 0.0;
@@ -441,7 +440,7 @@ MCGIDI_HOST_DEVICE double ProtareComposite::reactionCrossSection( int a_reaction
  * @return                              The total cross section.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE double ProtareComposite::reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, double a_temperature, double a_energy ) const {
+LUPI_HOST_DEVICE double ProtareComposite::reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, double a_temperature, double a_energy ) const {
 
     std::size_t length = static_cast<std::size_t>( m_protares.size( ) );
     double cross_section = 0.0;
@@ -473,7 +472,7 @@ MCGIDI_HOST_DEVICE double ProtareComposite::reactionCrossSection( int a_reaction
  * @return                          The index of the sampled reaction.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE int ProtareComposite::sampleReaction( URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, double a_crossSection, double (*a_userrng)( void * ), void *a_rngState ) const {
+LUPI_HOST_DEVICE int ProtareComposite::sampleReaction( URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, double a_crossSection, double (*a_userrng)( void * ), void *a_rngState ) const {
 
     std::size_t length = static_cast<std::size_t>( m_protares.size( ) );
     int reaction_index = 0;
@@ -507,7 +506,7 @@ MCGIDI_HOST_DEVICE int ProtareComposite::sampleReaction( URR_protareInfos const 
  * @return                          The total deposition energy.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE double ProtareComposite::depositionEnergy( int a_hashIndex, double a_temperature, double a_energy ) const {
+LUPI_HOST_DEVICE double ProtareComposite::depositionEnergy( int a_hashIndex, double a_temperature, double a_energy ) const {
 
     std::size_t length = static_cast<std::size_t>( m_protares.size( ) );
     double deposition_energy = 0.0;
@@ -527,7 +526,7 @@ MCGIDI_HOST_DEVICE double ProtareComposite::depositionEnergy( int a_hashIndex, d
  * @return                          The total deposition momentum.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE double ProtareComposite::depositionMomentum( int a_hashIndex, double a_temperature, double a_energy ) const {
+LUPI_HOST_DEVICE double ProtareComposite::depositionMomentum( int a_hashIndex, double a_temperature, double a_energy ) const {
 
     std::size_t length = static_cast<std::size_t>( m_protares.size( ) );
     double deposition_momentum = 0.0;
@@ -547,7 +546,7 @@ MCGIDI_HOST_DEVICE double ProtareComposite::depositionMomentum( int a_hashIndex,
  * @return                          The total production energy.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE double ProtareComposite::productionEnergy( int a_hashIndex, double a_temperature, double a_energy ) const {
+LUPI_HOST_DEVICE double ProtareComposite::productionEnergy( int a_hashIndex, double a_temperature, double a_energy ) const {
 
     std::size_t length = static_cast<std::size_t>( m_protares.size( ) );
     double production_energy = 0.0;
@@ -568,7 +567,7 @@ MCGIDI_HOST_DEVICE double ProtareComposite::productionEnergy( int a_hashIndex, d
  * @return                      [in]    A vector of the length of the number of multi-group groups.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE double ProtareComposite::gain( int a_hashIndex, double a_temperature, double a_energy, int a_particleIndex ) const {
+LUPI_HOST_DEVICE double ProtareComposite::gain( int a_hashIndex, double a_temperature, double a_energy, int a_particleIndex ) const {
 
     std::size_t length = static_cast<std::size_t>( m_protares.size( ) );
     double gain1 = m_protares[0]->gain( a_hashIndex, a_temperature, a_energy, a_particleIndex );
@@ -586,13 +585,11 @@ MCGIDI_HOST_DEVICE double ProtareComposite::gain( int a_hashIndex, double a_temp
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE void ProtareComposite::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
-
-    Protare::serialize( a_buffer, a_mode );
+LUPI_HOST_DEVICE void ProtareComposite::serialize2( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
     MCGIDI_VectorSizeType vectorSize = m_protares.size( );
     int vectorSizeInt = static_cast<int>( vectorSize );
-    DataBuffer *workingBuffer = &a_buffer;
+    LUPI::DataBuffer *workingBuffer = &a_buffer;
 
     DATA_MEMBER_INT( m_numberOfReactions, a_buffer, a_mode );
     DATA_MEMBER_INT( m_numberOfOrphanProducts, a_buffer, a_mode );
@@ -602,7 +599,7 @@ MCGIDI_HOST_DEVICE void ProtareComposite::serialize( DataBuffer &a_buffer, DataB
     DATA_MEMBER_INT( vectorSizeInt, *workingBuffer, a_mode );
     vectorSize = static_cast<MCGIDI_VectorSizeType>( vectorSizeInt );
 
-    if( a_mode == DataBuffer::Mode::Unpack ) {
+    if( a_mode == LUPI::DataBuffer::Mode::Unpack ) {
         m_protares.resize( vectorSize, &(workingBuffer->m_placement) );
         for( MCGIDI_VectorSizeType vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
             if( workingBuffer->m_placement != nullptr ) {
@@ -613,12 +610,12 @@ MCGIDI_HOST_DEVICE void ProtareComposite::serialize( DataBuffer &a_buffer, DataB
             }
         }
     }
-    if( a_mode == DataBuffer::Mode::Memory ) {
+    if( a_mode == LUPI::DataBuffer::Mode::Memory ) {
         a_buffer.m_placement += m_protares.internalSize();
         a_buffer.incrementPlacement( sizeof( ProtareSingle ) * vectorSize );
     }
 
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < vectorSize; ++i1 ) m_protares[i1]->serialize( a_buffer, a_mode );
+    for( MCGIDI_VectorSizeType i1 = 0; i1 < vectorSize; ++i1 ) m_protares[i1]->serialize2( a_buffer, a_mode );
 }
 
 }

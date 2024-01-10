@@ -18,7 +18,7 @@ int main( int argc, char **argv ) {
 
     std::cerr << "    " << LUPI::FileInfo::basenameWithoutExtension( __FILE__ ) << std::endl;
 
-    std::string fileName( "../pops.xml" );
+    std::string fileName( "../../../TestData/PoPs/pops.xml" );
 
     try {
         PoPI::Database database( fileName );

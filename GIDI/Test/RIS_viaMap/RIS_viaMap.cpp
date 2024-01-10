@@ -52,18 +52,18 @@ void main2( int argc, char **argv ) {
 
     argumentParser.parse( argc, argv );
 
-    if( popsOption->values( ).size( ) == 0 ) pops.addFile( "../pops.xml", false );
+    if( popsOption->values( ).size( ) == 0 ) pops.addFile( "../../../TestData/PoPs/pops.xml", false );
     for( std::size_t index = 0; index < popsOption->values( ).size( ); ++index ) pops.addFile( popsOption->value( index ), false );
 
-    if( mapOption->numberEntered( ) > 0 ) mapFilename = mapOption->value( );
+    if( mapOption->counts( ) > 0 ) mapFilename = mapOption->value( );
     GIDI::Map::Map map( mapFilename, pops );
 
     int maxLevel = 99;
-    if( levelOption->value( ) != "" ) maxLevel = std::stoi( levelOption->value( ) );
+    if( levelOption->counts( ) > 0 ) maxLevel = std::stoi( levelOption->value( ) );
     std::cout << "maxLevel = " << maxLevel << std::endl;
 
     double energyMax = 20;
-    if( energyMaxOption->value( ) != "" ) energyMax = std::stod( energyMaxOption->value( ) );
+    if( energyMaxOption->counts( ) > 0 ) energyMax = std::stod( energyMaxOption->value( ) );
     std::cout << "energyMax = " << energyMax << " MeV" << std::endl;
 
     std::vector<std::string> seedTargets = seedTargetsArgument->values( );

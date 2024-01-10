@@ -43,7 +43,7 @@ int main( int argc, char **argv ) {
         std::cout << function3d->label( ) << std::endl;
 
         std::vector<GIDI::Transporting::Flux> setting_fluxes = GIDI::settingsFluxesFromFunction3d( *function3d );
-        for( std::size_t i1 = 0; i1 < setting_fluxes.size( ); ++i1 ) setting_fluxes[i1].print( "" );
+        for( std::size_t i2 = 0; i2 < setting_fluxes.size( ); ++i2 ) setting_fluxes[i2].print( "" );
     }
 
 }

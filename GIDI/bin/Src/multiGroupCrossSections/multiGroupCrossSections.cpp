@@ -65,7 +65,7 @@ void main2( int argc, char **argv ) {
     GIDI::Construction::PhotoMode photo_mode = parseTestOptions.photonMode( GIDI::Construction::PhotoMode::nuclearAndAtomic );
     GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, photo_mode );
     PoPI::Database pops;
-    GIDI::Protare *protare = parseTestOptions.protare( pops, "../pops.xml", "../all.map", construction, PoPI::IDs::neutron, "O16" );
+    GIDI::Protare *protare = parseTestOptions.protare( pops, "../../../../TestData/PoPs/pops.xml", "../all.map", construction, PoPI::IDs::neutron, "O16" );
     if( protare == nullptr ) throw "No matching protare.";
 
     GIDI::Styles::TemperatureInfos temperatures = protare->temperatures( );
@@ -136,13 +136,12 @@ void writeBoundaries( std::string a_outputDir, std::vector<double> const &a_boun
 void write( std::string a_outputDir, int a_index, int a_ENDL_C, std::vector<double> const &a_groupBoundaries, 
                 GIDI::Vector a_vector, std::string const &a_fileName ) {
 
-    char Str[256];
+    std::string Str = LUPI::Misc::argumentsToString( "C_%.2d", a_ENDL_C );
 
-    sprintf( Str, "C_%.2d", a_ENDL_C );
     if( a_index >= 0 ) {
-        sprintf( Str, "reactionIndex_%.4d_C%.2d", a_index, a_ENDL_C ); }
+        Str = LUPI::Misc::argumentsToString( "reactionIndex_%.4d_C%.2d", a_index, a_ENDL_C ); }
     else {
-        if( a_fileName != "" ) sprintf( Str, a_fileName.c_str( ) );
+        if( a_fileName != "" ) Str = a_fileName;
     }
     std::string fileName = a_outputDir + "/" + Str + ".dat";
 

@@ -42,14 +42,13 @@ int main( int argc, char **argv ) {
 void main2( int argc, char **argv ) {
 
     std::string mapFilename( "../../../GIDI/Test/all3T.map" );
-    PoPI::Database pops( "../../../GIDI/Test/pops.xml" );
+    PoPI::Database pops( "../../../TestData/PoPs/pops.xml" );
     GIDI::Map::Map map( mapFilename, pops );
     std::vector<std::string> libraries;
     GIDI::Transporting::Particles particles;
     std::set<int> reactionsToExclude;
     clock_t time0, time1;
     long numberOfSamples = 100 * 1000, sampleTemperatures = 0, sampleEnergies = 0;
-    char label1[1024];
     void *rngState = nullptr;
     LUPI::StatusMessageReporting smr1;
 
@@ -103,7 +102,7 @@ void main2( int argc, char **argv ) {
             }
             sampleEnergies = energyIndex;
             std::cout << std::endl;
-            sprintf( label1, "            reaction %d: ", reactionIndex );
+            std::string label1 = LUPI::Misc::argumentsToString( "            reaction %d: ", reactionIndex );
             printTime( label1, time2_1 );
         }
         printTime_double( "        temperature: ", temperature, time1_1 );

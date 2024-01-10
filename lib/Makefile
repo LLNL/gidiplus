@@ -7,11 +7,15 @@ SHELL = /bin/ksh
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
-.PHONY: default libs docs check clean realclean
+.PHONY: default bin all libs docs check clean realclean
 
-DIRS = pugixml numericalFunctions LUPI HAPI RISI PoPI GIDI MCGIDI
+DIRS = pugixml numericalFunctions LUPI HAPI GUPI CADI RISI PoPI GIDI MCGIDI
 
 default: libs
+
+bin:
+
+all: default
 
 libs:
 	rm -f *.a *.o

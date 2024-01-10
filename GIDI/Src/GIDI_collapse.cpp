@@ -13,6 +13,8 @@ namespace GIDI {
 
 static Vector collapseVector( Vector const &a_vector, std::vector<int> const &a_collapseIndices, 
         std::vector<double> const &a_weight, bool a_normalize );
+static void multiGroupSetup( Transporting::MultiGroup const &a_boundaries, ptwXPoints **a_boundaries_xs,
+                Transporting::Flux const &a_flux, ptwXYPoints **a_fluxes_xys, ptwXPoints **a_multiGroupFlux );
 
 /* *********************************************************************************************************//**
  * Collapses a multi-group vector.
@@ -189,15 +191,98 @@ Vector multiGroupXYs1d( Transporting::MultiGroup const &a_boundaries, Functions:
         groups = ptwXY_groupTwoFunctions( nullptr, ptwXY, fluxes_xys, boundaries_xs, ptwXY_group_normType_norm, multiGroupFlux );
     }
     ptwX_free( boundaries_xs );
-    ptwXY_free( ptwXY );
     ptwXY_free( fluxes_xys );
     ptwX_free( multiGroupFlux );
+    ptwXY_free( ptwXY );
     if( groups == nullptr ) throw Exception( "GIDI::multiGroup: ptwXY_groupTwoFunctions failed." );
 
     Vector vector( ptwX_length( nullptr, groups ), ptwX_getPointAtIndex( nullptr, groups, 0 ) );
     ptwX_free( groups );
 
     return( vector );
+}
+
+/* *********************************************************************************************************//**
+ * Returns a flux weighted multi-group version of the function *a_function1* * *a_function2*.
+ *
+ * @param a_boundaries              [in]    List of multi-group boundaries.
+ * @param a_function                [in]    Function to multi-group.
+ * @param a_flux                    [in]    Flux to use for weighting.
+ *
+ * @return                                  Returns the multi-grouped Vector of *a_function*.
+ ***********************************************************************************************************/
+
+Vector multiGroupTwoXYs1ds( Transporting::MultiGroup const &a_boundaries, Functions::XYs1d const &a_function1, 
+                Functions::XYs1d const &a_function2, Transporting::Flux const &a_flux ) {
+
+    ptwXPoints *boundaries_xs = nullptr, *multiGroupFlux = nullptr;
+    ptwXYPoints *fluxes_xys = nullptr, *ptwXY1 = nullptr, *ptwXY2 = nullptr;
+    std::string errorMessage( "GIDI::multiGroupTwoXYs1ds: ptwXY_clone2 for a_function1 failed." );
+    
+
+    multiGroupSetup( a_boundaries, &boundaries_xs, a_flux, &fluxes_xys, &multiGroupFlux );
+
+    ptwXPoints *groups = nullptr;
+    ptwXY1 = ptwXY_clone2( nullptr, a_function1.ptwXY( ) );
+    if( ptwXY1 != nullptr ) {
+        ptwXY2 = ptwXY_clone2( nullptr, a_function2.ptwXY( ) );
+        if( ptwXY2 == nullptr ) {
+            errorMessage = "GIDI::multiGroupTwoXYs1ds: ptwXY_clone2 for a_function2 failed."; }
+        else {
+            ptwXY_mutualifyDomains( nullptr, ptwXY1,     1e-12, 1e-12, 1, ptwXY2,     1e-12, 1e-12, 1 );
+            ptwXY_mutualifyDomains( nullptr, ptwXY1,     1e-12, 1e-12, 1, fluxes_xys, 1e-12, 1e-12, 1 );
+            ptwXY_mutualifyDomains( nullptr, fluxes_xys, 1e-12, 1e-12, 1, ptwXY2,     1e-12, 1e-12, 1 );
+            groups = ptwXY_groupThreeFunctions( nullptr, ptwXY1, ptwXY2, fluxes_xys, boundaries_xs, ptwXY_group_normType_norm, multiGroupFlux );
+        }
+    }
+    ptwX_free( boundaries_xs );
+    ptwXY_free( fluxes_xys );
+    ptwX_free( multiGroupFlux );
+    ptwXY_free( ptwXY1 );
+    ptwXY_free( ptwXY2 );
+
+    if( groups == nullptr ) throw Exception( errorMessage );
+
+    Vector vector( ptwX_length( nullptr, groups ), ptwX_getPointAtIndex( nullptr, groups, 0 ) );
+    ptwX_free( groups );
+
+    return( vector );
+}
+
+/* *********************************************************************************************************//**
+ * Setups *a_boundaries_xs*, *a_fluxes_xys* and *a_multiGroupFlux* as needed by multi-grouping functions. Calling code are
+ * responsible for free-ing *a_boundaries_xs*, *a_fluxes_xys* and *a_multiGroupFlux*.
+ *
+ * @param a_boundaries              [in]    List of multi-group boundaries.
+ * @param a_boundaries_xs           [out]   A ptwXPoints representation of *a_boundaries*.
+ * @param a_flux                    [in]    Flux to use for weighting.
+ * @param a_fluxes_xys              [out]   A ptwXYPoints representation of *a_flux*.
+ * @param a_multiGroupFlux          [out]   A ptwYPoints multi-grouped representation of *a_fluxes_xys*.
+ ***********************************************************************************************************/
+
+static void multiGroupSetup( Transporting::MultiGroup const &a_boundaries, ptwXPoints **a_boundaries_xs,
+                Transporting::Flux const &a_flux, ptwXYPoints **a_fluxes_xys, ptwXPoints **a_multiGroupFlux ) {
+
+    std::vector<double> const &boundaries = a_boundaries.boundaries( );
+    *a_boundaries_xs = ptwX_create( nullptr, boundaries.size( ), boundaries.size( ), &(boundaries[0]) );
+    if( *a_boundaries_xs == nullptr ) throw Exception( "GIDI::multiGroup: ptwX_create failed." );
+
+    Transporting::Flux_order const &flux_order_0 = a_flux[0];
+    double const *energies = flux_order_0.energies( );
+    double const *fluxes = flux_order_0.fluxes( );
+    *a_fluxes_xys = ptwXY_createFrom_Xs_Ys( nullptr, ptwXY_interpolationLinLin, ptwXY_interpolationToString( ptwXY_interpolationLinLin ),
+        12, 1e-3, flux_order_0.size( ), 10, flux_order_0.size( ), energies, fluxes, 0 );
+    if( *a_fluxes_xys == nullptr ) {
+        *a_boundaries_xs = ptwX_free( *a_boundaries_xs );
+        throw Exception( "GIDI::multiGroup: ptwXY_createFrom_Xs_Ys failed." );
+    }
+
+    *a_multiGroupFlux = ptwXY_groupOneFunction( nullptr, *a_fluxes_xys, *a_boundaries_xs, ptwXY_group_normType_none, nullptr );
+    if( *a_multiGroupFlux == nullptr ) {
+        *a_boundaries_xs = ptwX_free( *a_boundaries_xs );
+        *a_fluxes_xys = ptwXY_free( *a_fluxes_xys );
+        throw Exception( "GIDI::multiGroup: ptwXY_groupOneFunction failed." );
+    }
 }
 
 }

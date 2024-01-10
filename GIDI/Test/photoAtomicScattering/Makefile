@@ -16,4 +16,4 @@ include ../Makefile.check
 check: $(Executables)
 	if [ ! -e Outputs ]; then mkdir Outputs; fi
 	./coherentPhotonScattering > Outputs/coherentPhotonScattering.out
-	python ../Utilities/diff.py photoAtomicScattering/coherentPhotonScattering Benchmarks/coherentPhotonScattering.out Outputs/coherentPhotonScattering.out
+	$(PYTHON) ../Utilities/diff.py photoAtomicScattering/coherentPhotonScattering Benchmarks/coherentPhotonScattering.out Outputs/coherentPhotonScattering.out

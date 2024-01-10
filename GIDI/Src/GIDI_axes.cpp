@@ -84,7 +84,7 @@ Axes::~Axes( ) {
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void Axes::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void Axes::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     if( m_axes.size( ) == 0 ) return;
 

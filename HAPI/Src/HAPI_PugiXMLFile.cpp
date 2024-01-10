@@ -27,11 +27,13 @@ PugiXMLFile::PugiXMLFile() :
  * @param filename
  * @return
  */
-PugiXMLFile::PugiXMLFile(char const *filename) :
+PugiXMLFile::PugiXMLFile(char const *filename, std::string const &a_callingFunctionName) :
         m_name( filename ) {
 
     pugi::xml_parse_result result = m_doc.load_file(filename);
-    if (result.status != pugi::status_ok) throw std::runtime_error( result.description() );
+    if (result.status != pugi::status_ok) {
+        throw std::runtime_error( "ERROR from PugiXMLFile::PugiXMLFile via " + a_callingFunctionName + " for file '" + filename + "': " + result.description() );
+    }
 
 }
 /*

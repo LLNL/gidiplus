@@ -3,6 +3,8 @@
 
 .PHONY: default check clean realclean
 
+PYTHON = python3
+
 Executables = $(CppSource:.cpp=)
 
 local_CXXFLAGS += -I$(GIDI_PATH)/Test/Utilities -I$(MCGIDI_PATH)/Test/Utilities
@@ -10,8 +12,7 @@ ifndef COMPILE_UTILITIES
     local_CXXFLAGS += $(LIB_PATHS) -L$(GIDI_PATH)/Test/Utilities -L$(MCGIDI_PATH)/Test/Utilities
 endif
 
-
-LIBS =  -lGIDI_testUtilities -lMCGIDI_testUtilities -lMCGIDI -lGIDI -lPoPI -lHAPI -lRISI -lLUPI \
+LIBS =  -lGIDI_testUtilities -lMCGIDI_testUtilities -lMCGIDI -lGIDI -lPoPI -lGUPI -lHAPI -lRISI -lLUPI \
         -lnumericalfunctions -lstatusMessageReporting -lpugixml -lexpat -lm $(HDF5_LIBS)
 
 default: $(Executables)

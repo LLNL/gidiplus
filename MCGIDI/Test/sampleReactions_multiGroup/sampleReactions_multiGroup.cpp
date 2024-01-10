@@ -24,10 +24,10 @@ static char const *description = "Loops over energy at the specified temperature
 */
 int main( int argc, char **argv ) {
 
-    PoPI::Database pops( "../../../GIDI/Test/pops.xml" );
+    PoPI::Database pops( "../../../TestData/PoPs/pops.xml" );
     GIDI::Protare *protare;
     GIDI::Transporting::Particles particles;
-    char *endChar, Str[128];
+    char *endChar;
     std::size_t numberOfSamples = 1000 * 1000;
     void *rngState = nullptr;
     unsigned long long seed = 1;
@@ -143,25 +143,25 @@ int main( int argc, char **argv ) {
         MCGIDI::ProtareSingle const *protare_single = MCProtare->protare( i1 );
         MCGIDI::HeatedCrossSectionMultiGroup const &heatedCrossSectionMultiGroup = *protare_single->heatedMultigroupCrossSections( ).heatedCrossSections( )[0];
 
-        for( MCGIDI_VectorSizeType i2 = 0; i2 < boundaries.size( ); ++i2 ) {
-            MCGIDI_VectorSizeType i3 = i2;
+        for( MCGIDI_VectorSizeType i3 = 0; i3 < boundaries.size( ); ++i3 ) {
+            MCGIDI_VectorSizeType i4 = i3;
 
-            if( i2 >= ( boundaries.size( ) - 1 ) ) i3 = boundaries.size( ) - 2;
+            if( i3 >= ( boundaries.size( ) - 1 ) ) i4 = boundaries.size( ) - 2;
             MCGIDI::HeatedCrossSectionsMultiGroup const &heated_cross_sections = protare_single->heatedMultigroupCrossSections( );
-            double crossSection = heated_cross_sections.crossSection( i3, 0.0 );
-            double augmentedCrossSection = heated_cross_sections.crossSection( i3, 0.0, true );
+            double crossSection = heated_cross_sections.crossSection( i4, 0.0 );
+            double augmentedCrossSection = heated_cross_sections.crossSection( i4, 0.0, true );
             double percentChange = 0.0;
 
             if( crossSection != 0.0 ) percentChange = 100 * ( augmentedCrossSection / crossSection - 1.0 );
 
-            std::cout << std::setw( 7 ) << i2 << std::setw( 12 ) << std::setprecision( 7 ) << boundaries[i2] << 
+            std::cout << std::setw( 7 ) << i3 << std::setw( 12 ) << std::setprecision( 7 ) << boundaries[i3] << 
                     std::setw( 15 ) << std::setprecision( 10 ) << crossSection << std::setw( 15 ) << augmentedCrossSection <<
                     std::setw( 12 ) << std::setprecision( 2 ) << percentChange << std::setprecision( 7 );
 
-            for( std::size_t i3 = 0; i3 < protare_single->numberOfReactions( ); ++i3 ) {
-                MCGIDI::HeatedReactionCrossSectionMultiGroup const &reaction = *heatedCrossSectionMultiGroup[i3];
+            for( std::size_t i5 = 0; i5 < protare_single->numberOfReactions( ); ++i5 ) {
+                MCGIDI::HeatedReactionCrossSectionMultiGroup const &reaction = *heatedCrossSectionMultiGroup[i5];
 
-                if( reaction.offset( ) == (int) i2 ) std::cout << "  " << reaction.augmentedThresholdCrossSection( );
+                if( reaction.offset( ) == (int) i3 ) std::cout << "  " << reaction.augmentedThresholdCrossSection( );
             }
             std::cout << std::endl;
         }
@@ -184,16 +184,14 @@ int main( int argc, char **argv ) {
         std::cout << "      ";
         for( std::size_t i1 = 0; i1 < numberOfReactions; ++i1 ) {
             double reactionCrossSection = MCProtare->reactionCrossSection( i1, URR_protare_infos, hashIndex, temperature, energy );
-            sprintf( Str, " %9.6f", reactionCrossSection / crossSection );
-            std::cout << Str;
+            std::cout << LUPI::Misc::argumentsToString( " %9.6f", reactionCrossSection / crossSection );
         }
         std::cout << std::endl;
 
         std::cout << "      ";
         for( std::size_t i1 = 0; i1 < numberOfReactions; ++i1 ) {
             double reactionCrossSection = MCProtare->reactionCrossSection( i1, URR_protare_infos, hashIndex, temperature, energy, true );
-            sprintf( Str, " %9.6f", reactionCrossSection / crossSection );
-            std::cout << Str;
+            std::cout << LUPI::Misc::argumentsToString( " %9.6f", reactionCrossSection / crossSection );
         }
         std::cout << std::endl;
 
@@ -208,15 +206,13 @@ int main( int argc, char **argv ) {
         std::cout << "      ";
         for( std::size_t i1 = 0; i1 < numberOfReactions + 2; ++i1 ) {
             double ratio = counts[i1];
-            sprintf( Str, " %9.6f", ratio / numberOfSamples );
-            std::cout << Str;
+            std::cout << LUPI::Misc::argumentsToString( " %9.6f", ratio / numberOfSamples );
         }
         std::cout << std::endl;
 
         std::cout << "      ";
         for( std::size_t i1 = 0; i1 < numberOfReactions + 2; ++i1 ) {
-            sprintf( Str, " %9ld", counts[i1] );
-            std::cout << Str;
+            std::cout << LUPI::Misc::argumentsToString( " %9ld", counts[i1] );
         }
         std::cout << std::endl;
     }

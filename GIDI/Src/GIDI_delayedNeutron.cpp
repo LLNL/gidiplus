@@ -47,13 +47,13 @@ DelayedNeutron::~DelayedNeutron( ) {
 }
 
 /* *********************************************************************************************************//**
- * Used by Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or nullptr if none exists.
+ * Used by GUPI::Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or nullptr if none exists.
  *
  * @param a_item    [in]    The name of the class member whose pointer is to be return.
  * @return                  The pointer to the class member or nullptr if class does not have a member named a_item.
  ***********************************************************************************************************/
 
-Ancestry *DelayedNeutron::findInAncestry3( std::string const &a_item ) {
+GUPI::Ancestry *DelayedNeutron::findInAncestry3( std::string const &a_item ) {
 
     if( a_item == GIDI_rateChars ) return( &m_rate );
     if( a_item == GIDI_productChars ) return( &m_product );
@@ -62,13 +62,13 @@ Ancestry *DelayedNeutron::findInAncestry3( std::string const &a_item ) {
 }
 
 /* *********************************************************************************************************//**
- * Used by Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or nullptr if none exists.
+ * Used by GUPI::Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or nullptr if none exists.
  * 
  * @param a_item    [in]    The name of the class member whose pointer is to be return.
  * @return                  The pointer to the class member or nullptr if class does not have a member named a_item.
  ***********************************************************************************************************/
 
-Ancestry const *DelayedNeutron::findInAncestry3( std::string const &a_item ) const {
+GUPI::Ancestry const *DelayedNeutron::findInAncestry3( std::string const &a_item ) const {
 
     if( a_item == GIDI_rateChars ) return( &m_rate );
     if( a_item == GIDI_productChars ) return( &m_product );
@@ -251,7 +251,7 @@ void DelayedNeutron::mapContinuousEnergyProductData( Transporting::Settings cons
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void DelayedNeutron::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void DelayedNeutron::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
     
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     

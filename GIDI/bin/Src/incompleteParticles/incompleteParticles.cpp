@@ -63,7 +63,7 @@ void main2( int argc, char **argv ) {
     GIDI::Construction::PhotoMode photo_mode = parseTestOptions.photonMode( GIDI::Construction::PhotoMode::nuclearAndAtomic );
     GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, photo_mode );
     PoPI::Database pops;
-    GIDI::Protare *protare = parseTestOptions.protare( pops, "../../../Test/pops.xml", "../../../Test/all.map", construction, PoPI::IDs::neutron, "O16" );
+    GIDI::Protare *protare = parseTestOptions.protare( pops, "../../../../TestData/pops.xml", "../../../Test/all.map", construction, PoPI::IDs::neutron, "O16" );
     GIDI::Transporting::Settings settings( PoPI::IDs::neutron, delayedNeutrons );
 
     for( std::size_t protareIndex = 0; protareIndex < protare->numberOfProtares( ); ++protareIndex ) {

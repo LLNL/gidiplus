@@ -16,7 +16,7 @@
 #include "GIDI_testUtilities.hpp"
 #include "MCGIDI_testUtilities.hpp"
 
-static char const *description = "Loops over energy at the specified temperature, sampling reactions. If projectile is a photon, see options *-pa* and *-pn*.";
+static char const *description = "Does some testing of the serialize methods which are used to broadcast for use in MPI and on GPUs.";
 
 void main2( int argc, char **argv );
 /*
@@ -42,7 +42,6 @@ int main( int argc, char **argv ) {
 */
 void main2( int argc, char **argv ) {
 
-    char Str[1024];
     PoPI::Database pops;
     GIDI::Transporting::Particles particles;
     GIDI::Groups groups( "../../../GIDI/Test/groups.xml" );
@@ -62,7 +61,7 @@ void main2( int argc, char **argv ) {
     if( argv_options.find( "--multiGroup" )->present( ) ) transportingMode = GIDI::Transporting::Mode::multiGroup;
 
     GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, parseTestOptions.photonMode( ) );
-    GIDI::Protare *protare = parseTestOptions.protare( pops, "../../../GIDI/Test/pops.xml", "../../../GIDI/Test/all3T.map", construction, PoPI::IDs::neutron, "O16" );
+    GIDI::Protare *protare = parseTestOptions.protare( pops, "../../../TestData/PoPs/pops.xml", "../../../GIDI/Test/all3T.map", construction, PoPI::IDs::neutron, "O16" );
 
     GIDI::Styles::TemperatureInfos temperatures = protare->temperatures( );
 
@@ -87,20 +86,20 @@ void main2( int argc, char **argv ) {
     protares[0] = MCProtare;
     MCGIDI::URR_protareInfos URR_protare_infos( protares );
 
-    MCGIDI::DataBuffer dataBuffer;
+    LUPI::DataBuffer dataBuffer;
 
 // Count phase
     int protareType = 0;
     if( MCProtare->protareType( ) == MCGIDI::ProtareType::composite ) { protareType = 1; }
     if( MCProtare->protareType( ) == MCGIDI::ProtareType::TNSL ) { protareType = 2; }
     dataBuffer.m_intIndex++;                                                        // Add 1 for storing the protare type
-    MCProtare->serialize( dataBuffer, MCGIDI::DataBuffer::Mode::Count );
+    MCProtare->serialize( dataBuffer, LUPI::DataBuffer::Mode::Count );
     dataBuffer.allocateBuffers( );
     dataBuffer.zeroIndexes( );
 
 // Pack phase
     dataBuffer.m_intData[dataBuffer.m_intIndex++] = protareType;                    // Protare type is special
-    MCProtare->serialize( dataBuffer, MCGIDI::DataBuffer::Mode::Pack );
+    MCProtare->serialize( dataBuffer, LUPI::DataBuffer::Mode::Pack );
 
 // Memory phase
     dataBuffer.m_maxPlacementSize = MCProtare->memorySize( );
@@ -123,17 +122,17 @@ void main2( int argc, char **argv ) {
         MCProtare = new(dataBuffer.m_placementStart) MCGIDI::ProtareTNSL( );
         dataBuffer.m_placement += sizeof( MCGIDI::ProtareTNSL ); }
     else {
-        sprintf( Str, "Bad protare type %d.", protareType );
-        throw std::runtime_error( Str );
+        
+        throw std::runtime_error( LUPI::Misc::argumentsToString( "Bad protare type %d.", protareType ) );
     }
 
-    MCProtare->serialize( dataBuffer, MCGIDI::DataBuffer::Mode::Unpack );
+    MCProtare->serialize( dataBuffer, LUPI::DataBuffer::Mode::Unpack );
 
     long actual = (long) ( dataBuffer.m_placement - dataBuffer.m_placementStart );
     long diff = (long) dataBuffer.m_maxPlacementSize - actual;
     if( diff != 0 ) {                                                               // diff = 0 is success.
-        sprintf( Str, "Protare %s + %s, predicted size %ld, actual size %ld, diff %ld.", MCProtare->projectileID( ).c_str( ), 
-                MCProtare->targetID( ).c_str( ), (long) dataBuffer.m_maxPlacementSize, actual, diff );
+        std::string Str = LUPI::Misc::argumentsToString( "Protare %s + %s, predicted size %ld, actual size %ld, diff %ld.", 
+                MCProtare->projectileID( ).c_str( ), MCProtare->targetID( ).c_str( ), (long) dataBuffer.m_maxPlacementSize, actual, diff );
         throw std::runtime_error( Str );
     }
 

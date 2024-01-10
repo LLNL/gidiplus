@@ -15,11 +15,11 @@
 static char const *description = "This code checks that the Ancestry class functions findInAncestry and toXLink are working, and that GIDI set setAncestry in all the required objects.";
 
 void main2( int argc, char **argv );
-void printReaction( GIDI::Reaction *a_reaction, GIDI::Ancestry *a_protare );
-void printSuite( GIDI::Suite &a_suite, GIDI::Ancestry *a_protare, GIDI::Ancestry *a_reaction, bool a_isProduct = false );
-void printOutputChannel( GIDI::OutputChannel *a_outputChannel, GIDI::Ancestry *a_protare, GIDI::Ancestry *a_reaction );
-std::string checkXLink( GIDI::Ancestry &ancestry, GIDI::Ancestry *a_protare, GIDI::Ancestry *a_reaction );
-void checkXLink2( GIDI::Ancestry &a_ancestry, std::string &xlink, GIDI::Ancestry *from );
+void printReaction( GIDI::Reaction *a_reaction, GUPI::Ancestry *a_protare );
+void printSuite( GIDI::Suite &a_suite, GUPI::Ancestry *a_protare, GUPI::Ancestry *a_reaction, bool a_isProduct = false );
+void printOutputChannel( GIDI::OutputChannel *a_outputChannel, GUPI::Ancestry *a_protare, GUPI::Ancestry *a_reaction );
+std::string checkXLink( GUPI::Ancestry &ancestry, GUPI::Ancestry *a_protare, GUPI::Ancestry *a_reaction );
+void checkXLink2( GUPI::Ancestry &a_ancestry, std::string &xlink, GUPI::Ancestry *from );
 /*
 =========================================================
 */
@@ -55,7 +55,7 @@ void main2( int argc, char **argv ) {
     GIDI::Construction::PhotoMode photo_mode = parseTestOptions.photonMode( GIDI::Construction::PhotoMode::atomicOnly );
     GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, photo_mode );
     PoPI::Database pops;
-    GIDI::Protare *protare = parseTestOptions.protare( pops, "../pops.xml", "../all.map", construction, PoPI::IDs::photon, "O" );
+    GIDI::Protare *protare = parseTestOptions.protare( pops, "../../../TestData/PoPs/pops.xml", "../all.map", construction, PoPI::IDs::photon, "O" );
 
     std::cout << stripDirectoryBase( protare->fileName( ), "/GIDI/Test/" ) << std::endl;
 
@@ -65,12 +65,12 @@ void main2( int argc, char **argv ) {
     printSuite( protare->styles( ), protare, reaction );
 
     for( std::size_t index = 0; index < protare->numberOfReactions( ); ++index ) {
-        GIDI::Reaction *reaction = protare->reaction( index );
+        reaction = protare->reaction( index );
         printReaction( reaction, protare );
     }
 
     for( std::size_t index = 0; index < protare->numberOfOrphanProducts( ); ++index ) {
-        GIDI::Reaction *reaction = protare->orphanProduct( index );
+        reaction = protare->orphanProduct( index );
         printReaction( reaction, protare );
     }
 
@@ -79,7 +79,7 @@ void main2( int argc, char **argv ) {
 /*
 =========================================================
 */
-void printReaction( GIDI::Reaction *a_reaction, GIDI::Ancestry *a_protare ) {
+void printReaction( GIDI::Reaction *a_reaction, GUPI::Ancestry *a_protare ) {
 
     std::cout << "" << checkXLink( *a_reaction, a_protare, a_reaction ) << std::endl;
 
@@ -93,7 +93,7 @@ void printReaction( GIDI::Reaction *a_reaction, GIDI::Ancestry *a_protare ) {
 /*
 =========================================================
 */
-void printSuite( GIDI::Suite &a_suite, GIDI::Ancestry *a_protare, GIDI::Ancestry *a_reaction, bool a_isProduct ) {
+void printSuite( GIDI::Suite &a_suite, GUPI::Ancestry *a_protare, GUPI::Ancestry *a_reaction, bool a_isProduct ) {
 
     std::cout << "    " << checkXLink( a_suite, a_protare, a_reaction ) << std::endl;
     for( std::size_t i1 = 0; i1 < a_suite.size( ); ++i1 ) {
@@ -116,7 +116,7 @@ void printSuite( GIDI::Suite &a_suite, GIDI::Ancestry *a_protare, GIDI::Ancestry
 /*
 =========================================================
 */
-void printOutputChannel( GIDI::OutputChannel *a_outputChannel, GIDI::Ancestry *a_protare, GIDI::Ancestry *a_reaction ) {
+void printOutputChannel( GIDI::OutputChannel *a_outputChannel, GUPI::Ancestry *a_protare, GUPI::Ancestry *a_reaction ) {
 
     std::cout << "    " << checkXLink( *a_outputChannel, a_protare, a_reaction ) << std::endl;
     printSuite( a_outputChannel->Q( ), a_protare, a_reaction );
@@ -125,7 +125,7 @@ void printOutputChannel( GIDI::OutputChannel *a_outputChannel, GIDI::Ancestry *a
 /*
 =========================================================
 */
-std::string checkXLink( GIDI::Ancestry &a_ancestry, GIDI::Ancestry *a_protare, GIDI::Ancestry *a_reaction ) {
+std::string checkXLink( GUPI::Ancestry &a_ancestry, GUPI::Ancestry *a_protare, GUPI::Ancestry *a_reaction ) {
 
     std::string xlink = a_ancestry.toXLink( );
 
@@ -137,9 +137,9 @@ std::string checkXLink( GIDI::Ancestry &a_ancestry, GIDI::Ancestry *a_protare, G
 /*
 =========================================================
 */
-void checkXLink2( GIDI::Ancestry &a_ancestry, std::string &a_xlink, GIDI::Ancestry *a_from ) {
+void checkXLink2( GUPI::Ancestry &a_ancestry, std::string &a_xlink, GUPI::Ancestry *a_from ) {
 
-    GIDI::Ancestry *link = a_from->findInAncestry( a_xlink );
+    GUPI::Ancestry *link = a_from->findInAncestry( a_xlink );
 
     if( link == nullptr ) {
         std::cout << " LINK NOT FOUND "; }

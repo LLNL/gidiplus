@@ -98,7 +98,7 @@ void Database::addFile( std::string const &a_fileName, bool a_warnIfDuplicate ) 
 
 void Database::addFile( char const *a_fileName, bool a_warnIfDuplicate ) {
 
-    HAPI::File *doc = new HAPI::PugiXMLFile( a_fileName );
+    HAPI::File *doc = new HAPI::PugiXMLFile( a_fileName, "Database::addFile" );
     HAPI::Node database = doc->first_child( );
     addDatabase( database, a_warnIfDuplicate );
     delete doc;
@@ -321,6 +321,95 @@ int Database::final( int a_index, bool a_returnAtMetaStableAlias ) const {
 }
 
 /* *********************************************************************************************************//**
+ * This method returns the chemical element symbol for *a_id* if it is a PoPs id for a chemicalElement, isotope, nuclide,
+ * or nucleus object. Otherwise, it returns an empty string. The PoPs id *a_id* must be in *this*.
+ *
+ * @param a_id                          [in]    A particle's id whose chemical element symbol is requested.
+ *
+ * @return                                      The string for the chemical element symbol.
+ ***********************************************************************************************************/
+
+std::string Database::chemicalElementSymbol( std::string const &a_id ) const {
+
+    std::string symbol1;
+    Base const *base = nullptr;
+
+    std::map<std::string, int>::const_iterator iter = m_map.find( a_id );
+    if( iter != m_map.end( ) ) {
+        std::string finalId = final( a_id );
+        iter = m_map.find( finalId );
+        base = m_list[iter->second]; }
+    else {
+        std::map<std::string,int>::const_iterator iter2 = m_symbolMap.find( a_id );
+        if( iter2 != m_symbolMap.end( ) ) base = m_symbolList[iter2->second];
+    }
+
+    if( base != nullptr ) {
+        if( base->isNucleus( ) ) base = static_cast<Nucleus const *>( base )->nuclide( );
+        if( base->isNuclide( ) ) base = static_cast<Nuclide const *>( base )->isotope( );
+        if( base->isIsotope( ) ) base = static_cast<Isotope const *>( base )->chemicalElement( );
+        if( base->isChemicalElement( ) ) symbol1 = base->ID( );
+    }
+
+    return( symbol1 );
+}
+
+/* *********************************************************************************************************//**
+ * This method returns the isotope symbol for *a_id* if it is a PoPs id for an isotope, nuclide,
+ * or nucleus object. Otherwise, it returns an empty string. The PoPs id *a_id* must be in *this*.
+ *
+ * @param a_id                          [in]    A particle's id whose isotope symbol is requested.
+ *
+ * @return                                      The string for the isopte symbol.
+ ***********************************************************************************************************/
+
+std::string Database::isotopeSymbol( std::string const &a_id ) const {
+    
+    std::string symbol1;
+    Base const *base = nullptr;
+    
+    std::map<std::string, int>::const_iterator iter = m_map.find( a_id );
+    if( iter != m_map.end( ) ) {
+        std::string finalId = final( a_id );
+        iter = m_map.find( finalId );
+        base = m_list[iter->second]; }
+    else {
+        std::map<std::string,int>::const_iterator iter2 = m_symbolMap.find( a_id );
+        if( iter2 != m_symbolMap.end( ) ) base = m_symbolList[iter2->second];
+    }
+    
+    if( base != nullptr ) {
+        if( base->isNucleus( ) ) base = static_cast<Nucleus const *>( base )->nuclide( );
+        if( base->isNuclide( ) ) base = static_cast<Nuclide const *>( base )->isotope( );
+        if( base->isIsotope( ) ) symbol1 = base->ID( );
+    }
+
+    return( symbol1 );
+}
+
+/* *********************************************************************************************************//**
+ * Returns the intid for particle *a_id*.
+ *
+ * @param a_id                          [in]    A particle's id whose isotope symbol is requested.
+ *
+ * @return                                      The intid for *a_id*.
+ ***********************************************************************************************************/
+
+int Database::intid( std::string const &a_id ) const {
+
+    int intid2 = -1;
+
+    Base const &base = get<Base const>( a_id );
+
+    if( base.isParticle( ) ) {
+        IDBase const &idBase = static_cast<IDBase const &>( base );
+        intid2 =  idBase.intid( );
+    }
+
+    return( intid2 );
+}
+
+/* *********************************************************************************************************//**
  * This method adds a **PoPI::Base** instance to *this* and returns the unique index for it.
  *
  * @param a_item                        [in]    The **PoPI::Base** instance to add to *this*.
@@ -460,12 +549,13 @@ void Database::print( bool a_printIndices ) {
             is_alias += std::string( "')" ); }
         else if( item->isParticle( ) ) {
             Particle *particle = (Particle *) item;
-        
-            double dmass = particle->massValue( "amu" );
-            char massString[64];
 
-            sprintf( massString, "  mass = %e amu", dmass );
-            mass = massString;
+            try {
+                double dmass = particle->massValue( "amu" );
+                mass = LUPI::Misc::argumentsToString( "  mass = %e amu", dmass ); }
+            catch (...) {
+                mass = " particle has no mass data.";
+            }
         }
 
         std::cout << iter->first << " (" << item->ID( ) << ") --> ";

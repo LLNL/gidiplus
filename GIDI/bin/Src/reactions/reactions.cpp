@@ -56,7 +56,7 @@ void main2( int argc, char **argv ) {
     parseTestOptions.parse( );
 
     PoPI::Database pops;
-    parseTestOptions.pops( pops, "../../../Test/pops.xml" );
+    parseTestOptions.pops( pops, "../../../../TestData/PoPs/pops.xml" );
 
     GIDI::Construction::PhotoMode photo_mode = parseTestOptions.photonMode( GIDI::Construction::PhotoMode::nuclearAndAtomic );
     GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, photo_mode );

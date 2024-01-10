@@ -23,7 +23,7 @@ namespace GIDI {
  ***********************************************************************************************************/
 
 Form::Form( FormType a_type ) :
-        Ancestry( "" ),
+        GUPI::Ancestry( "" ),
         m_parent( nullptr ),
         m_type( a_type ),
         m_keyName( GIDI_labelChars ) {
@@ -37,7 +37,7 @@ Form::Form( FormType a_type ) :
  ***********************************************************************************************************/
 
 Form::Form( std::string const &a_moniker, FormType a_type, std::string const &a_label ) :
-        Ancestry( a_moniker ),
+        GUPI::Ancestry( a_moniker ),
         m_parent( nullptr ),
         m_type( a_type ),
         m_keyName( GIDI_labelChars ),
@@ -54,7 +54,7 @@ Form::Form( std::string const &a_moniker, FormType a_type, std::string const &a_
  ***********************************************************************************************************/
 
 Form::Form( HAPI::Node const &a_node, SetupInfo &a_setupInfo, FormType a_type, Suite *a_parent ) :
-        Ancestry( a_node.name( ) ),
+        GUPI::Ancestry( a_node.name( ) ),
         m_parent( a_parent ),
         m_type( a_type ),
         m_keyName( GIDI_labelChars ),
@@ -67,7 +67,7 @@ Form::Form( HAPI::Node const &a_node, SetupInfo &a_setupInfo, FormType a_type, S
  ***********************************************************************************************************/
 
 Form::Form( Form const &a_form ) :
-        Ancestry( a_form.moniker( ), a_form.attribute( ) ),
+        GUPI::Ancestry( a_form.moniker( ), a_form.attribute( ) ),
         m_parent( nullptr ),
         m_type( a_form.type( ) ),
         m_keyName( a_form.keyName( ) ),
@@ -269,7 +269,7 @@ FunctionForm::~FunctionForm( ) {
  * @param       a_inRegions         [in]        If *true*, *this* is in a Regions container.
  ***********************************************************************************************************/
 
-void FunctionForm::toXMLList_func( WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
+void FunctionForm::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
 
     std::cout << "Node '" << moniker( ) << "' needs toXMLList methods." << std::endl;
 }

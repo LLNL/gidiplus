@@ -93,36 +93,21 @@ double asDouble( char const *a_chars ) {
 */
 std::string intToString( char const *format, int value ) {
 
-    char Str[256];
-
-    sprintf( Str, format, value );
-    std::string valueAsString( Str );
-
-    return( valueAsString );
+    return( LUPI::Misc::argumentsToString( format, value ) );
 }
 /*
 =========================================================
 */
 std::string longToString( char const *format, long value ) {
 
-    char Str[256];
-
-    sprintf( Str, format, value );
-    std::string valueAsString( Str );
-
-    return( valueAsString );
+    return( LUPI::Misc::argumentsToString( format, value ) );
 }
 /*
 =========================================================
 */
 std::string doubleToString( char const *format, double value ) {
 
-    char Str[256];
-
-    sprintf( Str, format, value );
-    std::string valueAsString( Str );
-
-    return( valueAsString );
+    return( LUPI::Misc::argumentsToString( format, value ) );
 }
 
 /*
@@ -262,7 +247,7 @@ void argvOptions::parseArgv( int argc, char **argv ) {
                 try {
                     ::asDouble( arg.c_str( ) );
                     m_arguments.push_back( iargc ); }
-                catch (std::runtime_error) {
+                catch (std::runtime_error const &) {
                     throw std::runtime_error( std::string( "ERROR: invalid option '" ) + arg + "'." );
                 }
             } }

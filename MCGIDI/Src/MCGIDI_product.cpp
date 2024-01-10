@@ -19,7 +19,7 @@ namespace MCGIDI {
  * Default constructor used when broadcasting a Protare as needed by MPI or GPUs.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE Product::Product( ) :
+LUPI_HOST_DEVICE Product::Product( ) :
         m_ID( ),
         m_index( 0 ),
         m_userParticleIndex( -1 ),
@@ -27,6 +27,7 @@ MCGIDI_HOST_DEVICE Product::Product( ) :
         m_excitationEnergy( 0.0 ),
         m_twoBodyOrder( TwoBodyOrder::notApplicable ),
         m_neutronIndex( 0 ),
+        m_initialStateIndex( -1 ),
         m_multiplicity( nullptr ),
         m_distribution( nullptr ),
         m_outputChannel( nullptr ) {
@@ -41,7 +42,7 @@ MCGIDI_HOST_DEVICE Product::Product( ) :
  * @param a_isFission           [in]    *true* if parent channel is a fission channel and *false* otherwise.
  ***********************************************************************************************************/
 
-MCGIDI_HOST Product::Product( GIDI::Product const *a_product, SetupInfo &a_setupInfo, Transporting::MC const &a_settings, 
+LUPI_HOST Product::Product( GIDI::Product const *a_product, SetupInfo &a_setupInfo, Transporting::MC const &a_settings, 
                 GIDI::Transporting::Particles const &a_particles, bool a_isFission ) :
         m_ID( a_product->particle( ).ID( ).c_str( ) ),
         m_index( MCGIDI_popsIndex( a_settings.pops( ), a_product->particle( ).ID( ) ) ),
@@ -52,18 +53,21 @@ MCGIDI_HOST Product::Product( GIDI::Product const *a_product, SetupInfo &a_setup
         m_excitationEnergy( a_product->particle( ).excitationEnergy( ).value( ) ),
         m_twoBodyOrder( a_setupInfo.m_twoBodyOrder ),
         m_neutronIndex( a_settings.neutronIndex( ) ),
+        m_initialStateIndex( -1 ),
         m_multiplicity( Functions::parseMultiplicityFunction1d( a_setupInfo, a_settings, a_product->multiplicity( ) ) ),
         m_distribution( nullptr ),
         m_outputChannel( nullptr ) {
 
     a_setupInfo.m_product1Mass = mass( );                           // Includes nuclear excitation energy.
+    a_setupInfo.m_initialStateIndex = -1;
     m_distribution = Distributions::parseGIDI( a_product->distribution( ), a_setupInfo, a_settings );
+    m_initialStateIndex = a_setupInfo.m_initialStateIndex;
 
     GIDI::OutputChannel const *output_channel = a_product->outputChannel( );
     if( output_channel != nullptr ) m_outputChannel = new OutputChannel( output_channel, a_setupInfo, a_settings, a_particles );
 
     if( a_isFission && ( m_index == a_settings.neutronIndex( ) ) && a_settings.wantTerrellPromptNeutronDistribution( ) ) {
-        Functions::Function1d *multiplicity1 = m_multiplicity;
+        Functions::Function1d_d1 *multiplicity1 = static_cast<Functions::Function1d_d1 *>( m_multiplicity );
 
         m_multiplicity = new Functions::TerrellFissionNeutronMultiplicityModel( -1.0, multiplicity1 );
     }
@@ -75,7 +79,7 @@ MCGIDI_HOST Product::Product( GIDI::Product const *a_product, SetupInfo &a_setup
  * @param a_label               [in]    The **GNDS** label for the product.
  ***********************************************************************************************************/
 
-MCGIDI_HOST Product::Product( PoPI::Database const &a_pops, std::string const &a_ID, std::string const &a_label ) :
+LUPI_HOST Product::Product( PoPI::Database const &a_pops, std::string const &a_ID, std::string const &a_label ) :
         m_ID( a_ID.c_str( ) ),
         m_index( MCGIDI_popsIndex( a_pops, a_ID ) ),
         m_userParticleIndex( -1 ),
@@ -84,6 +88,7 @@ MCGIDI_HOST Product::Product( PoPI::Database const &a_pops, std::string const &a
         m_excitationEnergy( 0.0 ),
         m_twoBodyOrder( TwoBodyOrder::notApplicable ),
         m_neutronIndex( a_pops[PoPI::IDs::neutron] ),
+        m_initialStateIndex( -1 ),
         m_multiplicity( nullptr ),
         m_distribution( nullptr ),
         m_outputChannel( nullptr ) {
@@ -93,10 +98,56 @@ MCGIDI_HOST Product::Product( PoPI::Database const &a_pops, std::string const &a
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE Product::~Product( ) {
+LUPI_HOST_DEVICE Product::~Product( ) {
 
     delete m_multiplicity;
-    delete m_distribution;
+
+    Distributions::Type type = Distributions::Type::none;
+    if( m_distribution != nullptr ) type = m_distribution->type( );
+    switch( type ) {
+    case Distributions::Type::none:
+        break;
+    case Distributions::Type::unspecified:
+        delete static_cast<Distributions::Unspecified *>( m_distribution );
+        break;
+    case Distributions::Type::angularTwoBody:
+        delete static_cast<Distributions::AngularTwoBody *>( m_distribution );
+        break;
+    case Distributions::Type::KalbachMann:
+        delete static_cast<Distributions::KalbachMann *>( m_distribution );
+        break;
+    case Distributions::Type::uncorrelated:
+        delete static_cast<Distributions::Uncorrelated *>( m_distribution );
+        break;
+    case Distributions::Type::branching3d:
+        delete static_cast<Distributions::Branching3d *>( m_distribution );
+        break;
+    case Distributions::Type::energyAngularMC:
+        delete static_cast<Distributions::EnergyAngularMC *>( m_distribution );
+        break;
+    case Distributions::Type::angularEnergyMC:
+        delete static_cast<Distributions::AngularEnergyMC *>( m_distribution );
+        break;
+    case Distributions::Type::coherentPhotoAtomicScattering:
+        delete static_cast<Distributions::CoherentPhotoAtomicScattering *>( m_distribution );
+        break;
+    case Distributions::Type::incoherentPhotoAtomicScattering:
+        delete static_cast<Distributions::IncoherentPhotoAtomicScattering *>( m_distribution );
+        break;
+    case Distributions::Type::incoherentPhotoAtomicScatteringElectron:
+        delete static_cast<Distributions::IncoherentPhotoAtomicScatteringElectron *>( m_distribution );
+        break;
+    case Distributions::Type::pairProductionGamma:
+        delete static_cast<Distributions::PairProductionGamma *>( m_distribution );
+        break;
+    case Distributions::Type::coherentElasticTNSL:
+        delete static_cast<Distributions::CoherentElasticTNSL *>( m_distribution );
+        break;
+    case Distributions::Type::incoherentElasticTNSL:
+        delete static_cast<Distributions::IncoherentElasticTNSL *>( m_distribution );
+        break;
+    }
+
     delete m_outputChannel;
 }
 
@@ -107,10 +158,12 @@ MCGIDI_HOST_DEVICE Product::~Product( ) {
  * @param a_userParticleIndex   [in]    The particle id specified by the user.
  ***********************************************************************************************************/
 
-MCGIDI_HOST void Product::setUserParticleIndex( int a_particleIndex, int a_userParticleIndex ) {
+LUPI_HOST void Product::setUserParticleIndex( int a_particleIndex, int a_userParticleIndex ) {
 
     if( m_index == a_particleIndex ) m_userParticleIndex = a_userParticleIndex;
+#ifdef MCGIDI_USE_OUTPUT_CHANNEL
     if( m_outputChannel != nullptr ) m_outputChannel->setUserParticleIndex( a_particleIndex, a_userParticleIndex );
+#endif
 }
 
 /* *********************************************************************************************************//**
@@ -121,9 +174,11 @@ MCGIDI_HOST void Product::setUserParticleIndex( int a_particleIndex, int a_userP
  * @return                              The Q-value at product energy *a_x1*.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE double Product::finalQ( double a_x1 ) const {
+LUPI_HOST_DEVICE double Product::finalQ( double a_x1 ) const {
 
+#ifdef MCGIDI_USE_OUTPUT_CHANNEL
     if( m_outputChannel != nullptr ) return( m_outputChannel->finalQ( a_x1 ) );
+#endif
     return( m_excitationEnergy );
 }
 
@@ -133,9 +188,11 @@ MCGIDI_HOST_DEVICE double Product::finalQ( double a_x1 ) const {
  * @return                              *true* if any sub-output channel is a fission channel and *false* otherwise.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE bool Product::hasFission( ) const {
+LUPI_HOST_DEVICE bool Product::hasFission( ) const {
 
+#ifdef MCGIDI_USE_OUTPUT_CHANNEL
     if( m_outputChannel != nullptr ) return( m_outputChannel->hasFission( ) );
+#endif
     return( false );
 }
 
@@ -149,7 +206,7 @@ MCGIDI_HOST_DEVICE bool Product::hasFission( ) const {
  * @return                                  The multiplicity value for the requested particle.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE double Product::productAverageMultiplicity( int a_id, double a_projectileEnergy ) const {
+LUPI_HOST_DEVICE double Product::productAverageMultiplicity( int a_id, double a_projectileEnergy ) const {
 
     double multiplicity1 = 0.0;
 
@@ -157,7 +214,9 @@ MCGIDI_HOST_DEVICE double Product::productAverageMultiplicity( int a_id, double 
         if( ( m_multiplicity->domainMin( ) <= a_projectileEnergy ) && ( m_multiplicity->domainMax( ) >= a_projectileEnergy ) )
             multiplicity1 += m_multiplicity->evaluate( a_projectileEnergy );
     }
+#ifdef MCGIDI_USE_OUTPUT_CHANNEL
     if( m_outputChannel != nullptr ) multiplicity1 += m_outputChannel->productAverageMultiplicity( a_id, a_projectileEnergy );
+#endif
 
     return( multiplicity1 );
 }
@@ -173,21 +232,19 @@ MCGIDI_HOST_DEVICE double Product::productAverageMultiplicity( int a_id, double 
  * @param a_products                [in]    The object to add all sampled products to.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE void Product::sampleProducts( Protare const *a_protare, double a_projectileEnergy, Sampling::Input &a_input, 
+LUPI_HOST_DEVICE void Product::sampleProducts( Protare const *a_protare, double a_projectileEnergy, Sampling::Input &a_input, 
                 double (*a_userrng)( void * ), void *a_rngState, Sampling::ProductHandler &a_products ) const {
 
+#ifdef MCGIDI_USE_OUTPUT_CHANNEL
     if( m_outputChannel != nullptr ) {
         m_outputChannel->sampleProducts( a_protare, a_projectileEnergy, a_input, a_userrng, a_rngState, a_products ); }
     else {
+#endif
         if( m_twoBodyOrder == TwoBodyOrder::secondParticle ) {
             a_products.add( a_projectileEnergy, index( ), userParticleIndex( ), mass( ), a_input, a_userrng, a_rngState, index( ) == a_protare->photonIndex( ) ); }
-        else if( m_multiplicity->type( ) == Function1dType::branching ) {
-            Functions::Branching1d *branching1d = static_cast<Functions::Branching1d *>( m_multiplicity );
-            ProtareSingle const *protare( static_cast<ProtareSingle const *>( a_protare ) );
-
-            protare->sampleBranchingGammas( a_input, a_projectileEnergy, branching1d->initialStateIndex( ), a_userrng, a_rngState, a_products ); }
         else {
             int _multiplicity = m_multiplicity->sampleBoundingInteger( a_projectileEnergy, a_userrng, a_rngState );
+            int __multiplicity = _multiplicity;
 
             for( ; _multiplicity > 0; --_multiplicity ) {
                 m_distribution->sample( a_projectileEnergy, a_input, a_userrng, a_rngState );
@@ -195,7 +252,42 @@ MCGIDI_HOST_DEVICE void Product::sampleProducts( Protare const *a_protare, doubl
                 a_input.m_delayedNeutronDecayRate = 0.0;
                 a_products.add( a_projectileEnergy, index( ), userParticleIndex( ), mass( ), a_input, a_userrng, a_rngState, index( ) == a_protare->photonIndex( ) );
             }
+            if( m_initialStateIndex >= 0 ) {
+                if( __multiplicity == 0 ) {
+                    ProtareSingle const *protare( static_cast<ProtareSingle const *>( a_protare ) );
+                    protare->sampleBranchingGammas( a_input, a_projectileEnergy, m_initialStateIndex, a_userrng, a_rngState, a_products );
+                }
+            }
         }
+#ifdef MCGIDI_USE_OUTPUT_CHANNEL
+    }
+#endif
+}
+
+/* *********************************************************************************************************//**
+ * This method adds sampled products to *a_products*. In particular, the product is a capture reaction 
+ * primary gamma what has a finalState attribute. This gamma is added as well as the gammas from the
+ * gamma cascade.
+ *
+ * @param a_protare                 [in]    The Protare this Reaction belongs to.
+ * @param a_projectileEnergy        [in]    The energy of the projectile.
+ * @param a_input                   [in]    Sample options requested by user.
+ * @param a_userrng                 [in]    The random number gnerator.
+ * @param a_rngState                [in]    The state for the random number gnerator.
+ * @param a_products                [in]    The object to add all sampled products to.
+ ***********************************************************************************************************/
+
+LUPI_HOST_DEVICE void Product::sampleFinalState( Protare const *a_protare, double a_projectileEnergy, Sampling::Input &a_input, 
+                double (*a_userrng)( void * ), void *a_rngState, Sampling::ProductHandler &a_products ) const {
+
+    m_distribution->sample( a_projectileEnergy, a_input, a_userrng, a_rngState );
+    a_input.m_delayedNeutronIndex = -1;
+    a_input.m_delayedNeutronDecayRate = 0.0;
+    a_products.add( a_projectileEnergy, index( ), userParticleIndex( ), mass( ), a_input, a_userrng, a_rngState, index( ) == a_protare->photonIndex( ) );
+
+    if( m_initialStateIndex >= 0 ) {
+        ProtareSingle const *protare( static_cast<ProtareSingle const *>( a_protare ) );
+        protare->sampleBranchingGammas( a_input, a_projectileEnergy, m_initialStateIndex, a_userrng, a_rngState, a_products );
     }
 }
 
@@ -215,12 +307,14 @@ MCGIDI_HOST_DEVICE void Product::sampleProducts( Protare const *a_protare, doubl
  * @param a_cumulative_weight       [in]    The sum of the multiplicity for other outgoing particles with index *a_pid*.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE void Product::angleBiasing( Reaction const *a_reaction, int a_pid, double a_temperature, double a_energy_in, double a_mu_lab, 
+LUPI_HOST_DEVICE void Product::angleBiasing( Reaction const *a_reaction, int a_pid, double a_temperature, double a_energy_in, double a_mu_lab, 
                 double &a_weight, double &a_energy_out, double (*a_userrng)( void * ), void *a_rngState, double &a_cumulative_weight ) const {
 
+#ifdef MCGIDI_USE_OUTPUT_CHANNEL
     if( m_outputChannel != nullptr ) {
         m_outputChannel->angleBiasing( a_reaction, a_pid, a_temperature, a_energy_in, a_mu_lab, a_weight, a_energy_out, a_userrng, a_rngState, a_cumulative_weight ); }
     else {
+#endif
         if( index( ) != a_pid ) return;
 
         double probability = 0.0;
@@ -240,7 +334,9 @@ MCGIDI_HOST_DEVICE void Product::angleBiasing( Reaction const *a_reaction, int a
             a_weight = weight;
             a_energy_out = energy_out;
         }
+#ifdef MCGIDI_USE_OUTPUT_CHANNEL
     }
+#endif
 }
 
 /* *********************************************************************************************************//**
@@ -251,7 +347,7 @@ MCGIDI_HOST_DEVICE void Product::angleBiasing( Reaction const *a_reaction, int a
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE void Product::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+LUPI_HOST_DEVICE void Product::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
     DATA_MEMBER_STRING( m_ID, a_buffer, a_mode );
     DATA_MEMBER_INT( m_index, a_buffer, a_mode );
@@ -273,7 +369,7 @@ MCGIDI_HOST_DEVICE void Product::serialize( DataBuffer &a_buffer, DataBuffer::Mo
         break;
     }
     DATA_MEMBER_INT( twoBodyOrder , a_buffer, a_mode );
-    if( a_mode == DataBuffer::Mode::Unpack ) {
+    if( a_mode == LUPI::DataBuffer::Mode::Unpack ) {
         switch( twoBodyOrder ) {
         case 0 :
             m_twoBodyOrder = TwoBodyOrder::notApplicable;
@@ -288,165 +384,15 @@ MCGIDI_HOST_DEVICE void Product::serialize( DataBuffer &a_buffer, DataBuffer::Mo
     }
 
     DATA_MEMBER_INT( m_neutronIndex, a_buffer, a_mode );
+    DATA_MEMBER_INT( m_initialStateIndex, a_buffer, a_mode );
 
     m_multiplicity = serializeFunction1d( a_buffer, a_mode, m_multiplicity );
+    m_distribution = serializeDistribution( a_buffer, a_mode, m_distribution );
 
-    Distributions::Type type = Distributions::Type::none;
-    if( m_distribution != nullptr ) type = m_distribution->type( );
-    int distributionType = distributionTypeToInt( type );
-    DATA_MEMBER_INT( distributionType, a_buffer, a_mode );
-    type = intToDistributionType( distributionType );
-    
-    if( a_mode == DataBuffer::Mode::Unpack ) {
-        switch( type ) {
-        case Distributions::Type::none :
-            m_distribution = nullptr;
-            break;
-        case Distributions::Type::unspecified :
-            if (a_buffer.m_placement != nullptr) {
-                m_distribution = new(a_buffer.m_placement) Distributions::Unspecified;
-                a_buffer.incrementPlacement( sizeof( Distributions::Unspecified ) ); }
-            else {
-                m_distribution = new Distributions::Unspecified;
-            }
-            break;
-        case Distributions::Type::angularTwoBody :
-            if (a_buffer.m_placement != nullptr) {
-                m_distribution = new(a_buffer.m_placement) Distributions::AngularTwoBody;
-                a_buffer.incrementPlacement( sizeof( Distributions::AngularTwoBody ) ); }
-            else {
-                m_distribution = new Distributions::AngularTwoBody;
-            }
-            break;
-        case Distributions::Type::KalbachMann :
-            if (a_buffer.m_placement != nullptr) {
-                m_distribution = new(a_buffer.m_placement) Distributions::KalbachMann;
-                a_buffer.incrementPlacement( sizeof( Distributions::KalbachMann ) ); }
-            else {
-                m_distribution = new Distributions::KalbachMann;
-            }
-            break;
-        case Distributions::Type::uncorrelated :
-            if (a_buffer.m_placement != nullptr) {
-                m_distribution = new(a_buffer.m_placement) Distributions::Uncorrelated;
-                a_buffer.incrementPlacement( sizeof( Distributions::Uncorrelated ) ); }
-            else {
-                m_distribution = new Distributions::Uncorrelated;
-            }
-            break;
-        case Distributions::Type::energyAngularMC :
-            if (a_buffer.m_placement != nullptr) {
-                m_distribution = new(a_buffer.m_placement) Distributions::EnergyAngularMC;
-                a_buffer.incrementPlacement( sizeof( Distributions::EnergyAngularMC ) ); }
-            else {
-                m_distribution = new Distributions::EnergyAngularMC;
-            }
-            break;
-        case Distributions::Type::angularEnergyMC :
-            if (a_buffer.m_placement != nullptr) {
-                m_distribution = new(a_buffer.m_placement) Distributions::AngularEnergyMC;
-                a_buffer.incrementPlacement( sizeof( Distributions::AngularEnergyMC ) ); }
-            else {
-                m_distribution = new Distributions::AngularEnergyMC;
-            }
-            break;
-        case Distributions::Type::coherentPhotoAtomicScattering :
-            if( a_buffer.m_placement != nullptr ) {
-                 m_distribution = new(a_buffer.m_placement) Distributions::CoherentPhotoAtomicScattering;
-                 a_buffer.incrementPlacement( sizeof( Distributions::CoherentPhotoAtomicScattering ) ); }
-             else {
-                 m_distribution = new Distributions::CoherentPhotoAtomicScattering;
-             }
-             break;
-        case Distributions::Type::incoherentPhotoAtomicScattering :
-            if( a_buffer.m_placement != nullptr ) {
-                 m_distribution = new(a_buffer.m_placement) Distributions::IncoherentPhotoAtomicScattering;
-                 a_buffer.incrementPlacement( sizeof( Distributions::IncoherentPhotoAtomicScattering ) ); }
-             else {
-                 m_distribution = new Distributions::IncoherentPhotoAtomicScattering;
-             }
-             break;
-        case Distributions::Type::pairProductionGamma :
-            if( a_buffer.m_placement != nullptr ) {
-                 m_distribution = new(a_buffer.m_placement) Distributions::PairProductionGamma;
-                 a_buffer.incrementPlacement( sizeof( Distributions::PairProductionGamma ) ); }
-             else {
-                 m_distribution = new Distributions::PairProductionGamma;
-             }
-             break;
-        case Distributions::Type::coherentElasticTNSL :
-            if( a_buffer.m_placement != nullptr ) {
-                 m_distribution = new(a_buffer.m_placement) Distributions::CoherentElasticTNSL;
-                 a_buffer.incrementPlacement( sizeof( Distributions::CoherentElasticTNSL ) ); }
-             else {
-                 m_distribution = new Distributions::CoherentElasticTNSL;
-             }
-             break;
-        case Distributions::Type::incoherentElasticTNSL :
-            if( a_buffer.m_placement != nullptr ) {
-                 m_distribution = new(a_buffer.m_placement) Distributions::IncoherentElasticTNSL;
-                 a_buffer.incrementPlacement( sizeof( Distributions::IncoherentElasticTNSL ) ); }
-             else {
-                 m_distribution = new Distributions::IncoherentElasticTNSL;
-             }
-             break;
-        case Distributions::Type::incoherentPhotoAtomicScatteringElectron :
-            if( a_buffer.m_placement != nullptr ) {
-                 m_distribution = new(a_buffer.m_placement) Distributions::IncoherentPhotoAtomicScatteringElectron;
-                 a_buffer.incrementPlacement( sizeof( Distributions::IncoherentPhotoAtomicScatteringElectron ) ); }
-             else {
-                 m_distribution = new Distributions::IncoherentPhotoAtomicScatteringElectron;
-             }
-             break;
-        }
-    }
-    if( a_mode == DataBuffer::Mode::Memory ) {
-        switch( type ) {
-        case Distributions::Type::none :
-            break;
-        case Distributions::Type::unspecified :
-            a_buffer.incrementPlacement( sizeof( Distributions::Unspecified ) );
-            break;
-        case Distributions::Type::angularTwoBody :
-            a_buffer.incrementPlacement( sizeof( Distributions::AngularTwoBody ) );
-            break;
-        case Distributions::Type::KalbachMann :
-            a_buffer.incrementPlacement( sizeof( Distributions::KalbachMann ) );
-            break;
-        case Distributions::Type::uncorrelated :
-            a_buffer.incrementPlacement( sizeof( Distributions::Uncorrelated ) );
-            break;
-        case Distributions::Type::energyAngularMC :
-            a_buffer.incrementPlacement( sizeof( Distributions::EnergyAngularMC ) );
-            break;
-        case Distributions::Type::angularEnergyMC :
-            a_buffer.incrementPlacement( sizeof( Distributions::AngularEnergyMC ) );
-            break;
-        case Distributions::Type::coherentPhotoAtomicScattering :
-             a_buffer.incrementPlacement( sizeof( Distributions::CoherentPhotoAtomicScattering ) );
-             break;
-        case Distributions::Type::incoherentPhotoAtomicScattering :
-             a_buffer.incrementPlacement( sizeof( Distributions::IncoherentPhotoAtomicScattering ) );
-             break;
-        case Distributions::Type::pairProductionGamma :
-             a_buffer.incrementPlacement( sizeof( Distributions::PairProductionGamma ) );
-             break;
-        case Distributions::Type::coherentElasticTNSL :
-             a_buffer.incrementPlacement( sizeof( Distributions::CoherentElasticTNSL ) );
-             break;
-        case Distributions::Type::incoherentElasticTNSL :
-             a_buffer.incrementPlacement( sizeof( Distributions::IncoherentElasticTNSL ) );
-             break;
-        case Distributions::Type::incoherentPhotoAtomicScatteringElectron :
-             a_buffer.incrementPlacement( sizeof( Distributions::IncoherentPhotoAtomicScatteringElectron ) );
-             break;
-        }
-    }
-    if( m_distribution != nullptr ) m_distribution->serialize( a_buffer, a_mode );
-
+#ifdef MCGIDI_USE_OUTPUT_CHANNEL
     bool haveChannel = m_outputChannel != nullptr;
     DATA_MEMBER_CAST( haveChannel, a_buffer, a_mode, bool );
-    if( haveChannel && a_mode == DataBuffer::Mode::Unpack ) {
+    if( haveChannel && a_mode == LUPI::DataBuffer::Mode::Unpack ) {
         if (a_buffer.m_placement != nullptr) {
             m_outputChannel = new(a_buffer.m_placement) OutputChannel();
             a_buffer.incrementPlacement( sizeof(OutputChannel));
@@ -455,11 +401,11 @@ MCGIDI_HOST_DEVICE void Product::serialize( DataBuffer &a_buffer, DataBuffer::Mo
             m_outputChannel = new OutputChannel();
         }
     }
-    if( haveChannel && a_mode == DataBuffer::Mode::Memory ) {
+    if( haveChannel && a_mode == LUPI::DataBuffer::Mode::Memory ) {
         a_buffer.incrementPlacement( sizeof(OutputChannel));
     }
     if( haveChannel ) m_outputChannel->serialize( a_buffer, a_mode );
-
+#endif
 }
 
 }

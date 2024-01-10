@@ -50,7 +50,7 @@ void main2( int argc, char **argv ) {
     GIDI::Construction::PhotoMode photo_mode = parseTestOptions.photonMode( GIDI::Construction::PhotoMode::nuclearAndAtomic );
     GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, photo_mode );
     PoPI::Database pops;
-    GIDI::Protare *protare = parseTestOptions.protare( pops, "../pops.xml", "../all.map", construction, PoPI::IDs::neutron, "O16" );
+    GIDI::Protare *protare = parseTestOptions.protare( pops, "../../../TestData/PoPs/pops.xml", "../all.map", construction, PoPI::IDs::neutron, "O16" );
 
     std::cout << stripDirectoryBase( protare->fileName( ) ) << std::endl;
 
@@ -92,7 +92,7 @@ void averageMomentum( GIDI::Protare *a_protare, PoPI::Database &a_pops, GIDI::Tr
 
     for( std::size_t index = 0; index < a_protare->numberOfReactions( ); ++index ) {
         GIDI::Reaction const *reaction = a_protare->reaction( index );
-        GIDI::Vector _averageMomentum = reaction->multiGroupAverageMomentum( smr1, a_settings, temperatures[0], a_productID );
+        _averageMomentum = reaction->multiGroupAverageMomentum( smr1, a_settings, temperatures[0], a_productID );
         std::string string( reaction->label( ) );
 
         string.insert( string.size( ), width - string.size( ), ' ' );

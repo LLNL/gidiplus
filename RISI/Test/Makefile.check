@@ -7,7 +7,7 @@ Executables = $(CppSource:.cpp=)
 
 local_CXXFLAGS += $(LIB_PATHS)
 
-LIBS = -lRISI -lLUPI -lstatusMessageReporting
+LIBS = -lRISI -lLUPI -lnumericalfunctions -lstatusMessageReporting
 
 default: $(Executables)
 

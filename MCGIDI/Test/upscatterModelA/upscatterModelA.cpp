@@ -88,7 +88,7 @@ int main( int argc, char **argv ) {
 void main2( int argc, char **argv ) {
 
     std::string mapFilename( "../upscatterModelB/Data/upscatterModelB.map" );
-    PoPI::Database pops( "../../../GIDI/Test/pops.xml" );
+    PoPI::Database pops( "../../../TestData/PoPs/pops.xml" );
     GIDI::Map::Map map( mapFilename, pops );
     std::string neutronID( PoPI::IDs::neutron );
     std::string targetID = "O16";
@@ -132,12 +132,11 @@ void main2( int argc, char **argv ) {
     protares[0] = MCProtare;
     URR_protare_infos.setup( protares );
 
-    char Str[512];
     PoPI::Base const &target = pops.get<PoPI::Base>( targetID );
     std::string fileNamePrefix = "relax." + target.ID( );
-    sprintf( Str, "relax.%s.dat", target.ID( ).c_str( ) );
+    std::string Str = LUPI::Misc::argumentsToString( "relax.%s.dat", target.ID( ).c_str( ) );
     FILE *fOut;
-    if( ( fOut = fopen( Str, "w" ) ) == nullptr ) throw "error opening output file";
+    if( ( fOut = fopen( Str.c_str( ), "w" ) ) == nullptr ) throw "error opening output file";
 
     fileInfo[0] = new FileInfo( fileNamePrefix, "E" );
     fileInfo[1] = new FileInfo( fileNamePrefix, "v" );
@@ -251,9 +250,7 @@ void printBins( FILE *fOut, double time, ParticleInfo *particleInfos, long *bins
         particleInfos[i1].numberOfCollisionsInTimeStep = 0;
     }
 
-    char Str[256];
-    sprintf( Str, "# time = %e\n", time );
-    std::string timeLabel( Str );
+    std::string timeLabel = LUPI::Misc::argumentsToString( "# time = %e\n", time );
 
     fprintf( fOut, "\n\n" );
     fprintf( fOut, "# time = %e\n", time );

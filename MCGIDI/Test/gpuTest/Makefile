@@ -27,7 +27,7 @@ local_LDFLAGS = $(subst -x cu,,$(local_LDFLAGS_tmp))
 # LDFLAGS = local_CXXFLAGS .strip("-x hip")
 # local_LDFLAGS =  $(LDFLAGS) $(LIB_PATHS) -L$(GIDI_PATH)/Test/Utilities -L$(MCGIDI_PATH)/Test/Utilities
 
-LIBS =  -lGIDI_testUtilities -lMCGIDI_testUtilities $(MCGIDI_PATH)/Src/libMCGIDI.a -lGIDI -lPoPI -lHAPI -lLUPI \
+LIBS =  -lGIDI_testUtilities -lMCGIDI_testUtilities $(MCGIDI_PATH)/Src/libMCGIDI.a -lGIDI -lPoPI -lHAPI -lLUPI -lGUPI -lRISI \
         -lnumericalfunctions -lstatusMessageReporting -lpugixml -lexpat -lm $(HDF5_LIBS)
 
 default: $(Executables)

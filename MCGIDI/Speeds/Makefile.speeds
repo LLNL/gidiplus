@@ -5,10 +5,10 @@
 
 Executables = $(CppSource:.cpp=)
 
-local_CXXFLAGS += $(LIB_PATHS) -I$(GIDI_PATH)/Test/Utilities -L$(GIDI_PATH)/Test/Utilities \
-        -I$(MCGIDI_PATH)/Test/Utilities -L$(MCGIDI_PATH)/Test/Utilities -I$(MCGIDI_PATH)/Speeds/Utilities -L$(MCGIDI_PATH)/Speeds/Utilities
+local_CXXFLAGS2 := $(local_CXXFLAGS) -I$(GIDI_PATH)/Test/Utilities -I$(MCGIDI_PATH)/Test/Utilities -I$(MCGIDI_PATH)/Speeds/Utilities
+local_CXXFLAGS = $(local_CXXFLAGS2) $(LIB_PATHS) -L$(GIDI_PATH)/Test/Utilities -L$(MCGIDI_PATH)/Test/Utilities -L$(MCGIDI_PATH)/Speeds/Utilities
 
-LIBS =  -lGIDI_testUtilities -lMCGIDI_testUtilities -lutilities4Speed -lMCGIDI -lGIDI -lPoPI -lRISI -lHAPI -lLUPI \
+LIBS =  -lGIDI_testUtilities -lMCGIDI_testUtilities -lutilities4Speed -lMCGIDI -lGIDI -lPoPI -lRISI -lGUPI -lHAPI -lLUPI \
 		-lnumericalfunctions -lstatusMessageReporting -lpugixml -lexpat -lm $(HDF5_LIBS)
 
 default: $(Executables)

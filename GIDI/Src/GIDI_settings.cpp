@@ -26,7 +26,8 @@ Settings::Settings( std::string const &a_projectileID, DelayedNeutrons a_delayed
         m_projectileID( a_projectileID ),
         m_delayedNeutrons( a_delayedNeutrons ),
         m_nuclearPlusCoulombInterferenceOnly( false ),
-        m_throwOnError( true ) {
+        m_throwOnError( true ),
+        m_zeroDepositionIfAllProductsTracked( true ) {
 
 }
 

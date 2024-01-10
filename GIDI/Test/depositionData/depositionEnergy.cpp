@@ -47,13 +47,14 @@ void main2( int argc, char **argv ) {
     ParseTestOptions parseTestOptions( argv_options, argc, argv );
 
     parseTestOptions.m_askGNDS_File = true;
+    argv_options.add( argvOption( "-z", false, "If present, setZeroDepositionIfAllProductsTracked is called with **true**, otherwise **false**." ) );
 
     parseTestOptions.parse( );
 
     GIDI::Construction::PhotoMode photo_mode = parseTestOptions.photonMode( GIDI::Construction::PhotoMode::nuclearAndAtomic );
     GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, photo_mode );
     PoPI::Database pops;
-    GIDI::Protare *protare = parseTestOptions.protare( pops, "../pops.xml", "../all.map", construction, PoPI::IDs::neutron, "O16" );
+    GIDI::Protare *protare = parseTestOptions.protare( pops, "../../../TestData/PoPs/pops.xml", "../all.map", construction, PoPI::IDs::neutron, "O16" );
 
     std::cout << stripDirectoryBase( protare->fileName( ), "/GIDI/Test/" ) << std::endl;
 
@@ -71,7 +72,9 @@ void main2( int argc, char **argv ) {
     GIDI::Transporting::Fluxes_from_bdfls fluxes_from_bdfls( "../bdfls", 0 );
 
     GIDI::Styles::TemperatureInfos temperatures = protare->temperatures( );
+    GIDI::Styles::TemperatureInfo const &temperature = temperatures[0];
     GIDI::Transporting::MG settings( protare->projectile( ).ID( ), GIDI::Transporting::Mode::multiGroup, GIDI::Transporting::DelayedNeutrons::on );
+    settings.setZeroDepositionIfAllProductsTracked( argv_options.find( "-z" )->present( ) || true );
     GIDI::Transporting::Particles particles;
 
     for( std::size_t i1 = 0; i1 < argv_options.m_arguments.size( ); ++i1 ) {
@@ -82,8 +85,11 @@ void main2( int argc, char **argv ) {
         particles.add( particle );
     }
 
+    std::vector<double> groupBoundaries = protare->groupBoundaries( settings, temperature, protare->projectile( ).ID( ) );
+    printVectorOfDoubles( "Group boundaries        ::", groupBoundaries );
+
     GIDI::Vector depositionEnergy;
-    depositionEnergy += protare->multiGroupDepositionEnergy( smr1, settings, temperatures[0], particles );
+    depositionEnergy += protare->multiGroupDepositionEnergy( smr1, settings, temperature, particles );
     std::string prefix( "Deposition energy       ::" );
     printVector( prefix, depositionEnergy );
 
@@ -91,15 +97,15 @@ void main2( int argc, char **argv ) {
     for( std::size_t index = 0; index < protare->numberOfReactions( ); ++index ) {
         GIDI::Reaction const *reaction = protare->reaction( index );
 
-        depositionEnergySum += reaction->multiGroupDepositionEnergy( smr1, settings, temperatures[0], particles );
+        depositionEnergySum += reaction->multiGroupDepositionEnergy( smr1, settings, temperature, particles );
     }
 
     GIDI::Vector photonAverageEnergy;
     for( std::size_t index = 0; index < protare->numberOfOrphanProducts( ); ++index ) {
         GIDI::Reaction const *reaction = protare->orphanProduct( index );
 
-        depositionEnergySum -= reaction->multiGroupAverageEnergy( smr1, settings, temperatures[0], PoPI::IDs::photon );
-        photonAverageEnergy += reaction->multiGroupAverageEnergy( smr1, settings, temperatures[0], PoPI::IDs::photon );
+        depositionEnergySum -= reaction->multiGroupAverageEnergy( smr1, settings, temperature, PoPI::IDs::photon );
+        photonAverageEnergy += reaction->multiGroupAverageEnergy( smr1, settings, temperature, PoPI::IDs::photon );
     }
 
     prefix = "Deposition energy sum   ::";

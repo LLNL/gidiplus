@@ -51,7 +51,7 @@ void main2( int argc, char **argv ) {
     GIDI::Construction::PhotoMode photo_mode = parseTestOptions.photonMode( GIDI::Construction::PhotoMode::nuclearAndAtomic );
     GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, photo_mode );
     PoPI::Database pops;
-    GIDI::Protare *protare = parseTestOptions.protare( pops, "../pops.xml", "../all.map", construction, PoPI::IDs::neutron, "O16" );
+    GIDI::Protare *protare = parseTestOptions.protare( pops, "../../../TestData/PoPs/pops.xml", "../all.map", construction, PoPI::IDs::neutron, "O16" );
 
     std::cout << stripDirectoryBase( protare->fileName( ), "/GIDI/Test/" ) << std::endl;
 
@@ -64,7 +64,7 @@ void main2( int argc, char **argv ) {
 
     for( std::size_t index = 0; index < protare->numberOfReactions( ); ++index ) {
         GIDI::Reaction const *reaction = protare->reaction( index );
-        GIDI::Vector availableMomentum = reaction->multiGroupAvailableMomentum( smr1, settings, temperatures[0] );
+        availableMomentum = reaction->multiGroupAvailableMomentum( smr1, settings, temperatures[0] );
         std::string string( reaction->label( ) );
 
         string = "    " + string + ":: ";

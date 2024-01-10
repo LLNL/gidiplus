@@ -378,6 +378,30 @@ Reaction const *ProtareComposite::reaction( std::size_t a_index ) const {
 }
 
 /* *********************************************************************************************************//**
+ * Returns the (*a_index*+1)th reaction or **nullptr**. If the indexed reaction is deactivated or exlucded, 
+ * a **nullptr** is returned.
+ *
+ * @param a_index               [in]    The index of the requested reaction.
+ * @param a_settings            [in]    Specifies the requested label.
+ * @param a_reactionsToExclude  [in]    A list of reaction indices that are to be ignored when calculating the cross section.
+ *
+ * @return                          The (*a_index*+1)th reaction or **nullptr**.
+ ***********************************************************************************************************/
+
+Reaction const *ProtareComposite::reaction( std::size_t a_index, Transporting::MG const &a_settings, 
+                ExcludeReactionsSet const &a_reactionsToExclude ) const {
+
+    for( std::size_t i1 = 0; i1 < m_protares.size( ); ++i1 ) {
+        std::size_t numberOfReactions1 = m_protares[i1]->numberOfReactions( );
+
+        if( a_index < numberOfReactions1 ) return( m_protares[i1]->reaction( a_index, a_settings, a_reactionsToExclude ) );
+        a_index -= numberOfReactions1;
+    }
+
+    throw Exception( "ProtareComposite::reaction: index out of range" );
+}
+
+/* *********************************************************************************************************//**
  * Returns the number of orphanProduct for all Protares contained in *this*.
  *  
  * @return              The total number of orphanProducts.
@@ -446,6 +470,22 @@ bool ProtareComposite::hasFission( ) const {
 }
 
 /* *********************************************************************************************************//**
+ * Returns **false* if protare has delayed fission neutrons for an active reaction and they are not complete; otherwise, returns **true**.
+ *
+ * @return      bool
+ ***********************************************************************************************************/
+
+bool ProtareComposite::isDelayedFissionNeutronComplete( ) const {
+
+    for( std::size_t i1 = 0; i1 < m_protares.size( ); ++i1 ) {
+    
+        if( !m_protares[i1]->isDelayedFissionNeutronComplete( ) ) return( true );
+    }
+
+    return( true );
+}
+
+/* *********************************************************************************************************//**
  * Returns the multi-group boundaries for the requested label and product.
  *
  * @param a_settings        [in]    Specifies the requested label.
@@ -479,19 +519,24 @@ Vector ProtareComposite::multiGroupInverseSpeed( LUPI::StatusMessageReporting &a
 /* *********************************************************************************************************//**
  * Returns the multi-group, total cross section for the requested label. This is summed over all reactions.
  *
- * @param a_smr             [Out]   If errors are not to be thrown, then the error is reported via this instance.
- * @param a_settings        [in]    Specifies the requested label.
- * @param a_temperatureInfo [in]    Specifies the temperature and labels use to lookup the requested data.
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
+ * @param a_settings            [in]    Specifies the requested label.
+ * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
+ * @param a_reactionsToExclude  [in]    A list of reaction indices that are to be ignored when calculating the cross section.
  *
- * @return                          The requested multi-group cross section as a GIDI::Vector.
+ * @return                              The requested multi-group cross section as a GIDI::Vector.
  ***********************************************************************************************************/
 
 Vector ProtareComposite::multiGroupCrossSection( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
-                Styles::TemperatureInfo const &a_temperatureInfo ) const {
+                Styles::TemperatureInfo const &a_temperatureInfo, ExcludeReactionsSet const &a_reactionsToExclude ) const {
 
     Vector vector;
+    ExcludeReactionsSet excludeReactionsSet( a_reactionsToExclude );
 
-    for( std::size_t i1 = 0; i1 < m_protares.size( ); ++i1 ) vector += m_protares[i1]->multiGroupCrossSection( a_smr, a_settings, a_temperatureInfo );
+    for( std::size_t i1 = 0; i1 < m_protares.size( ); ++i1 ) {
+        vector += m_protares[i1]->multiGroupCrossSection( a_smr, a_settings, a_temperatureInfo, a_reactionsToExclude );
+        excludeReactionsSetAdjust( excludeReactionsSet, *m_protares[i1] );
+    }
 
     return( vector );
 }
@@ -500,20 +545,26 @@ Vector ProtareComposite::multiGroupCrossSection( LUPI::StatusMessageReporting &a
  * Returns the multi-group, total Q for the requested label. This is a cross section weighted multiplicity
  * summed over all reactions
  *
- * @param a_smr             [Out]   If errors are not to be thrown, then the error is reported via this instance.
- * @param a_settings        [in]    Specifies the requested label.
- * @param a_temperatureInfo [in]    Specifies the temperature and labels use to lookup the requested data.
- * @param a_final           [in]    If false, only the Q for the primary reactions are return, otherwise, the Q for the final reactions.
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
+ * @param a_settings            [in]    Specifies the requested label.
+ * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
+ * @param a_final               [in]    If false, only the Q for the primary reactions are return, otherwise, the Q for the final reactions.
+ * @param a_reactionsToExclude  [in]    A list of reaction indices that are to be ignored when calculating the Q.
  *
- * @return                          The requested multi-group Q as a GIDI::Vector.
+ * @return                              The requested multi-group Q as a GIDI::Vector.
  ***********************************************************************************************************/
 
 Vector ProtareComposite::multiGroupQ( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
-                Styles::TemperatureInfo const &a_temperatureInfo, bool a_final ) const {
+                Styles::TemperatureInfo const &a_temperatureInfo, bool a_final, bool a_effectivePhotoAtomic,
+                ExcludeReactionsSet const &a_reactionsToExclude ) const {
 
     Vector vector;
-    
-    for( std::size_t i1 = 0; i1 < m_protares.size( ); ++i1 ) vector += m_protares[i1]->multiGroupQ( a_smr, a_settings, a_temperatureInfo, a_final );
+    ExcludeReactionsSet excludeReactionsSet( a_reactionsToExclude );
+
+    for( std::size_t i1 = 0; i1 < m_protares.size( ); ++i1 ) {
+        vector += m_protares[i1]->multiGroupQ( a_smr, a_settings, a_temperatureInfo, a_final, a_effectivePhotoAtomic, excludeReactionsSet );
+        excludeReactionsSetAdjust( excludeReactionsSet, *m_protares[i1] );
+    }
 
     return( vector );
 }
@@ -521,20 +572,26 @@ Vector ProtareComposite::multiGroupQ( LUPI::StatusMessageReporting &a_smr, Trans
 /* *********************************************************************************************************//**
  * Returns the multi-group, total multiplicity for the requested label for the requested product. This is a cross section weighted multiplicity.
  *
- * @param a_smr             [Out]   If errors are not to be thrown, then the error is reported via this instance.
- * @param a_settings        [in]    Specifies the requested label.
- * @param a_temperatureInfo [in]    Specifies the temperature and labels use to lookup the requested data.
- * @param a_productID       [in]    Id for the requested product.
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
+ * @param a_settings            [in]    Specifies the requested label.
+ * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
+ * @param a_productID           [in]    Id for the requested product.
+ * @param a_reactionsToExclude  [in]    A list of reaction indices that are to be ignored when calculating the multiplicity.
  *
- * @return                          The requested multi-group multiplicity as a GIDI::Vector.
+ * @return                              The requested multi-group multiplicity as a GIDI::Vector.
  ***********************************************************************************************************/
 
 Vector ProtareComposite::multiGroupMultiplicity( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
-                Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
+                Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID,
+                ExcludeReactionsSet const &a_reactionsToExclude ) const {
 
     Vector vector;
+    ExcludeReactionsSet excludeReactionsSet( a_reactionsToExclude );
 
-    for( std::size_t i1 = 0; i1 < m_protares.size( ); ++i1 ) vector += m_protares[i1]->multiGroupMultiplicity( a_smr, a_settings, a_temperatureInfo, a_productID );
+    for( std::size_t i1 = 0; i1 < m_protares.size( ); ++i1 ) {
+        vector += m_protares[i1]->multiGroupMultiplicity( a_smr, a_settings, a_temperatureInfo, a_productID, excludeReactionsSet );
+        excludeReactionsSetAdjust( excludeReactionsSet, *m_protares[i1] );
+    }
 
     return( vector );
 }
@@ -542,19 +599,49 @@ Vector ProtareComposite::multiGroupMultiplicity( LUPI::StatusMessageReporting &a
 /* *********************************************************************************************************//**
  * Returns the multi-group, total fission neutron multiplicity for the requested label. This is a cross section weighted multiplicity.
  *
- * @param a_smr             [Out]   If errors are not to be thrown, then the error is reported via this instance.
- * @param a_settings        [in]    Specifies the requested label.
- * @param a_temperatureInfo [in]    Specifies the temperature and labels use to lookup the requested data.
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
+ * @param a_settings            [in]    Specifies the requested label.
+ * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
+ * @param a_reactionsToExclude  [in]    A list of reaction indices that are to be ignored when calculating the multiplicity.
  *
- * @return                          The requested multi-group fission neutron multiplicity as a GIDI::Vector.
+ * @return                              The requested multi-group fission neutron multiplicity as a GIDI::Vector.
  ***********************************************************************************************************/
 
 Vector ProtareComposite::multiGroupFissionNeutronMultiplicity( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
-                Styles::TemperatureInfo const &a_temperatureInfo ) const {
+                Styles::TemperatureInfo const &a_temperatureInfo, ExcludeReactionsSet const &a_reactionsToExclude ) const {
 
     Vector vector;
+    ExcludeReactionsSet excludeReactionsSet( a_reactionsToExclude );
 
-    for( std::size_t i1 = 0; i1 < m_protares.size( ); ++i1 ) vector += m_protares[i1]->multiGroupFissionNeutronMultiplicity( a_smr, a_settings, a_temperatureInfo );
+    for( std::size_t i1 = 0; i1 < m_protares.size( ); ++i1 ) {
+        vector += m_protares[i1]->multiGroupFissionNeutronMultiplicity( a_smr, a_settings, a_temperatureInfo, excludeReactionsSet );
+        excludeReactionsSetAdjust( excludeReactionsSet, *m_protares[i1] );
+    }
+
+    return( vector );
+}
+
+/* *********************************************************************************************************//**
+ * Returns the multi-group, total fission gamma multiplicity for the requested label. This is a cross section weighted multiplicity.
+ *
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
+ * @param a_settings            [in]    Specifies the requested label.
+ * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
+ * @param a_reactionsToExclude  [in]    A list of reaction indices that are to be ignored when calculating the multiplicity.
+ *
+ * @return                              The requested multi-group fission neutron multiplicity as a GIDI::Vector.
+ ***********************************************************************************************************/
+
+Vector ProtareComposite::multiGroupFissionGammaMultiplicity( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+                Styles::TemperatureInfo const &a_temperatureInfo, ExcludeReactionsSet const &a_reactionsToExclude ) const {
+
+    Vector vector;
+    ExcludeReactionsSet excludeReactionsSet( a_reactionsToExclude );
+
+    for( std::size_t i1 = 0; i1 < m_protares.size( ); ++i1 ) {
+        vector += m_protares[i1]->multiGroupFissionGammaMultiplicity( a_smr, a_settings, a_temperatureInfo, excludeReactionsSet );
+        excludeReactionsSetAdjust( excludeReactionsSet, *m_protares[i1] );
+    }
 
     return( vector );
 }
@@ -563,22 +650,29 @@ Vector ProtareComposite::multiGroupFissionNeutronMultiplicity( LUPI::StatusMessa
  * Returns the multi-group, total product matrix for the requested label for the requested product id for the requested Legendre order.
  * If no data are found, an empty GIDI::Matrix is returned.
  *
- * @param a_smr             [Out]   If errors are not to be thrown, then the error is reported via this instance.
- * @param a_settings        [in]    Specifies the requested label and if delayed neutrons should be included.
- * @param a_temperatureInfo [in]    Specifies the temperature and labels use to lookup the requested data.
- * @param a_particles       [in]    The list of particles to be transported.
- * @param a_productID       [in]    PoPs id for the requested product.
- * @param a_order           [in]    Requested product matrix, Legendre order.
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
+ * @param a_settings            [in]    Specifies the requested label and if delayed neutrons should be included.
+ * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
+ * @param a_particles           [in]    The list of particles to be transported.
+ * @param a_productID           [in]    PoPs id for the requested product.
+ * @param a_order               [in]    Requested product matrix, Legendre order.
+ * @param a_reactionsToExclude  [in]    A list of reaction indices that are to be ignored when calculating the product matrix.
  *
- * @return                          The requested multi-group product matrix as a GIDI::Matrix.
+ * @return                              The requested multi-group product matrix as a GIDI::Matrix.
  ***********************************************************************************************************/
 
 Matrix ProtareComposite::multiGroupProductMatrix( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
-                Styles::TemperatureInfo const &a_temperatureInfo, Transporting::Particles const &a_particles, std::string const &a_productID, int a_order ) const {
+                Styles::TemperatureInfo const &a_temperatureInfo, Transporting::Particles const &a_particles, 
+                std::string const &a_productID, int a_order, ExcludeReactionsSet const &a_reactionsToExclude ) const {
 
     Matrix matrix( 0, 0 );
+    ExcludeReactionsSet excludeReactionsSet( a_reactionsToExclude );
 
-    for( std::size_t i1 = 0; i1 < m_protares.size( ); ++i1 ) matrix += m_protares[i1]->multiGroupProductMatrix( a_smr, a_settings, a_temperatureInfo, a_particles, a_productID, a_order );
+    for( std::size_t i1 = 0; i1 < m_protares.size( ); ++i1 ) {
+        matrix += m_protares[i1]->multiGroupProductMatrix( a_smr, a_settings, a_temperatureInfo, a_particles, a_productID, a_order,
+                excludeReactionsSet );
+        excludeReactionsSetAdjust( excludeReactionsSet, *m_protares[i1] );
+    }
 
     return( matrix );
 }
@@ -586,21 +680,27 @@ Matrix ProtareComposite::multiGroupProductMatrix( LUPI::StatusMessageReporting &
 /* *********************************************************************************************************//**
  * Like ProtareComposite::multiGroupProductMatrix, but only returns the fission neutron, transfer matrix.
  *
- * @param a_smr             [Out]   If errors are not to be thrown, then the error is reported via this instance.
- * @param a_settings        [in]    Specifies the requested label and if delayed neutrons should be included.
- * @param a_temperatureInfo [in]    Specifies the temperature and labels use to lookup the requested data.
- * @param a_particles       [in]    The list of particles to be transported.
- * @param a_order           [in]    Requested product matrix, Legendre order.
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
+ * @param a_settings            [in]    Specifies the requested label and if delayed neutrons should be included.
+ * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
+ * @param a_particles           [in]    The list of particles to be transported.
+ * @param a_order               [in]    Requested product matrix, Legendre order.
+ * @param a_reactionsToExclude  [in]    A list of reaction indices that are to be ignored when calculating the fission matrix.
  *
- * @return                      The requested multi-group neutron fission matrix as a GIDI::Matrix.
+ * @return                              The requested multi-group neutron fission matrix as a GIDI::Matrix.
  ***********************************************************************************************************/
 
 Matrix ProtareComposite::multiGroupFissionMatrix( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
-                Styles::TemperatureInfo const &a_temperatureInfo, Transporting::Particles const &a_particles, int a_order ) const {
+                Styles::TemperatureInfo const &a_temperatureInfo, Transporting::Particles const &a_particles, int a_order,
+                ExcludeReactionsSet const &a_reactionsToExclude ) const {
 
     Matrix matrix( 0, 0 );
+    ExcludeReactionsSet excludeReactionsSet( a_reactionsToExclude );
 
-    for( std::size_t i1 = 0; i1 < m_protares.size( ); ++i1 ) matrix += m_protares[i1]->multiGroupFissionMatrix( a_smr, a_settings, a_temperatureInfo, a_particles, a_order );
+    for( std::size_t i1 = 0; i1 < m_protares.size( ); ++i1 ) {
+        matrix += m_protares[i1]->multiGroupFissionMatrix( a_smr, a_settings, a_temperatureInfo, a_particles, a_order, excludeReactionsSet );
+        excludeReactionsSetAdjust( excludeReactionsSet, *m_protares[i1] );
+    }
 
     return( matrix );
 }
@@ -616,16 +716,23 @@ Matrix ProtareComposite::multiGroupFissionMatrix( LUPI::StatusMessageReporting &
  * @param a_order                   [in]    Maximum Legendre order for transport. The returned transport correction is for the next higher Legender order.
  * @param a_transportCorrectionType [in]    Requested transport correction type.
  * @param a_temperature             [in]    The temperature of the flux to use when collapsing. Pass to the GIDI::collapse method.
+ * @param a_reactionsToExclude      [in]    A list of reaction indices that are to be ignored when calculating the transport correction.
  *
  * @return                                  The requested multi-group transport correction as a GIDI::Vector.
  ***********************************************************************************************************/
 
 Vector ProtareComposite::multiGroupTransportCorrection( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
-                Styles::TemperatureInfo const &a_temperatureInfo, Transporting::Particles const &a_particles, int a_order, TransportCorrectionType a_transportCorrectionType, double a_temperature ) const {
+                Styles::TemperatureInfo const &a_temperatureInfo, Transporting::Particles const &a_particles, int a_order, 
+                TransportCorrectionType a_transportCorrectionType, double a_temperature, ExcludeReactionsSet const &a_reactionsToExclude ) const {
 
     Vector vector;
+    ExcludeReactionsSet excludeReactionsSet( a_reactionsToExclude );
 
-    for( std::size_t i1 = 0; i1 < m_protares.size( ); ++i1 ) vector += m_protares[i1]->multiGroupTransportCorrection( a_smr, a_settings, a_temperatureInfo, a_particles, a_order, a_transportCorrectionType, a_temperature );
+    for( std::size_t i1 = 0; i1 < m_protares.size( ); ++i1 ) {
+        vector += m_protares[i1]->multiGroupTransportCorrection( a_smr, a_settings, a_temperatureInfo, a_particles, a_order, 
+                a_transportCorrectionType, a_temperature, excludeReactionsSet );
+        excludeReactionsSetAdjust( excludeReactionsSet, *m_protares[i1] );
+    }
 
     return( vector );
 }
@@ -634,19 +741,24 @@ Vector ProtareComposite::multiGroupTransportCorrection( LUPI::StatusMessageRepor
  * Returns the multi-group, total available energy for the requested label. This is a cross section weighted available energy
  * summed over all reactions.
  *
- * @param a_smr             [Out]   If errors are not to be thrown, then the error is reported via this instance.
- * @param a_settings        [in]    Specifies the requested label.
- * @param a_temperatureInfo [in]    Specifies the temperature and labels use to lookup the requested data.
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
+ * @param a_settings            [in]    Specifies the requested label.
+ * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
+ * @param a_reactionsToExclude  [in]    A list of reaction indices that are to be ignored when calculating the available energy.
  *
- * @return                          The requested multi-group available energy as a GIDI::Vector.
+ * @return                              The requested multi-group available energy as a GIDI::Vector.
  ***********************************************************************************************************/
 
 Vector ProtareComposite::multiGroupAvailableEnergy( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
-                Styles::TemperatureInfo const &a_temperatureInfo ) const {
+                Styles::TemperatureInfo const &a_temperatureInfo, ExcludeReactionsSet const &a_reactionsToExclude ) const {
 
     Vector vector;
+    ExcludeReactionsSet excludeReactionsSet( a_reactionsToExclude );
 
-    for( std::size_t i1 = 0; i1 < m_protares.size( ); ++i1 ) vector += m_protares[i1]->multiGroupAvailableEnergy( a_smr, a_settings, a_temperatureInfo );
+    for( std::size_t i1 = 0; i1 < m_protares.size( ); ++i1 )  {
+        vector += m_protares[i1]->multiGroupAvailableEnergy( a_smr, a_settings, a_temperatureInfo, excludeReactionsSet );
+        excludeReactionsSetAdjust( excludeReactionsSet, *m_protares[i1] );
+    }
 
     return( vector );
 }
@@ -655,20 +767,25 @@ Vector ProtareComposite::multiGroupAvailableEnergy( LUPI::StatusMessageReporting
  * Returns the multi-group, total average energy for the requested label for the requested product. This is a cross section weighted average energy
  * summed over all reactions.
  *
- * @param a_smr             [Out]   If errors are not to be thrown, then the error is reported via this instance.
- * @param a_settings        [in]    Specifies the requested label.
- * @param a_temperatureInfo [in]    Specifies the temperature and labels use to lookup the requested data.
- * @param a_productID       [in]    Particle id for the requested product.
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
+ * @param a_settings            [in]    Specifies the requested label.
+ * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
+ * @param a_productID           [in]    Particle id for the requested product.
+ * @param a_reactionsToExclude  [in]    A list of reaction indices that are to be ignored when calculating the average energy.
  *
- * @return                          The requested multi-group average energy as a GIDI::Vector.
+ * @return                              The requested multi-group average energy as a GIDI::Vector.
  ***********************************************************************************************************/
 
 Vector ProtareComposite::multiGroupAverageEnergy( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
-                Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
+                Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID, ExcludeReactionsSet const &a_reactionsToExclude ) const {
 
     Vector vector;
+    ExcludeReactionsSet excludeReactionsSet( a_reactionsToExclude );
 
-    for( std::size_t i1 = 0; i1 < m_protares.size( ); ++i1 ) vector += m_protares[i1]->multiGroupAverageEnergy( a_smr, a_settings, a_temperatureInfo, a_productID );
+    for( std::size_t i1 = 0; i1 < m_protares.size( ); ++i1 ) {
+        vector += m_protares[i1]->multiGroupAverageEnergy( a_smr, a_settings, a_temperatureInfo, a_productID, excludeReactionsSet );
+        excludeReactionsSetAdjust( excludeReactionsSet, *m_protares[i1] );
+    }
 
     return( vector );
 }
@@ -678,20 +795,26 @@ Vector ProtareComposite::multiGroupAverageEnergy( LUPI::StatusMessageReporting &
  * summed over all reactions. The deposition energy is calculated by subtracting the average energy from each transportable particle
  * from the available energy. The list of transportable particles is specified via the list of particle specified in the *a_settings* argument.
  *
- * @param a_smr             [Out]   If errors are not to be thrown, then the error is reported via this instance.
- * @param a_settings        [in]    Specifies the requested label and the products that are transported.
- * @param a_temperatureInfo [in]    Specifies the temperature and labels use to lookup the requested data.
- * @param a_particles       [in]    The list of particles to be transported.
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
+ * @param a_settings            [in]    Specifies the requested label and the products that are transported.
+ * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
+ * @param a_particles           [in]    The list of particles to be transported.
+ * @param a_reactionsToExclude  [in]    A list of reaction indices that are to be ignored when calculating the deposition energy.
  *
- * @return                          The requested multi-group deposition energy as a GIDI::Vector.
+ * @return                              The requested multi-group deposition energy as a GIDI::Vector.
  ***********************************************************************************************************/
 
 Vector ProtareComposite::multiGroupDepositionEnergy( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
-                Styles::TemperatureInfo const &a_temperatureInfo, Transporting::Particles const &a_particles ) const {
+                Styles::TemperatureInfo const &a_temperatureInfo, Transporting::Particles const &a_particles,
+                ExcludeReactionsSet const &a_reactionsToExclude ) const {
 
     Vector vector;
+    ExcludeReactionsSet excludeReactionsSet( a_reactionsToExclude );
 
-    for( std::size_t i1 = 0; i1 < m_protares.size( ); ++i1 ) vector += m_protares[i1]->multiGroupDepositionEnergy( a_smr, a_settings, a_temperatureInfo, a_particles );
+    for( std::size_t i1 = 0; i1 < m_protares.size( ); ++i1 ) {
+        vector += m_protares[i1]->multiGroupDepositionEnergy( a_smr, a_settings, a_temperatureInfo, a_particles, excludeReactionsSet );
+        excludeReactionsSetAdjust( excludeReactionsSet, *m_protares[i1] );
+    }
 
     return( vector );
 }
@@ -700,19 +823,24 @@ Vector ProtareComposite::multiGroupDepositionEnergy( LUPI::StatusMessageReportin
  * Returns the multi-group, total available momentum for the requested label. This is a cross section weighted available momentum
  * summed over all reactions.
  *
- * @param a_smr             [Out]   If errors are not to be thrown, then the error is reported via this instance.
- * @param a_settings        [in]    Specifies the requested label.
- * @param a_temperatureInfo [in]    Specifies the temperature and labels use to lookup the requested data.
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
+ * @param a_settings            [in]    Specifies the requested label.
+ * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
+ * @param a_reactionsToExclude  [in]    A list of reaction indices that are to be ignored when calculating the available momentum.
  *
- * @return                          The requested multi-group available momentum as a GIDI::Vector.
+ * @return                              The requested multi-group available momentum as a GIDI::Vector.
  ***********************************************************************************************************/
 
 Vector ProtareComposite::multiGroupAvailableMomentum( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
-                Styles::TemperatureInfo const &a_temperatureInfo ) const {
+                Styles::TemperatureInfo const &a_temperatureInfo, ExcludeReactionsSet const &a_reactionsToExclude ) const {
 
     Vector vector;
+    ExcludeReactionsSet excludeReactionsSet( a_reactionsToExclude );
 
-    for( std::size_t i1 = 0; i1 < m_protares.size( ); ++i1 ) vector += m_protares[i1]->multiGroupAvailableMomentum( a_smr, a_settings, a_temperatureInfo );
+    for( std::size_t i1 = 0; i1 < m_protares.size( ); ++i1 )  {
+        vector += m_protares[i1]->multiGroupAvailableMomentum( a_smr, a_settings, a_temperatureInfo, excludeReactionsSet );
+        excludeReactionsSetAdjust( excludeReactionsSet, *m_protares[i1] );
+    }
 
     return( vector );
 }
@@ -721,20 +849,26 @@ Vector ProtareComposite::multiGroupAvailableMomentum( LUPI::StatusMessageReporti
  * Returns the multi-group, total average momentum for the requested label for the requested product. This is a cross section weighted average momentum
  * summed over all reactions.
  *
- * @param a_smr             [Out]   If errors are not to be thrown, then the error is reported via this instance.
- * @param a_settings        [in]    Specifies the requested label.
- * @param a_temperatureInfo [in]    Specifies the temperature and labels use to lookup the requested data.
- * @param a_productID       [in]    Particle id for the requested product.
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
+ * @param a_settings            [in]    Specifies the requested label.
+ * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
+ * @param a_productID           [in]    Particle id for the requested product.
+ * @param a_reactionsToExclude  [in]    A list of reaction indices that are to be ignored when calculating the average momentum.
  *
- * @return                          The requested multi-group average momentum as a GIDI::Vector.
+ * @return                              The requested multi-group average momentum as a GIDI::Vector.
  ***********************************************************************************************************/
 
 Vector ProtareComposite::multiGroupAverageMomentum( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
-                Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
+                Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID,
+                ExcludeReactionsSet const &a_reactionsToExclude ) const {
 
     Vector vector;
+    ExcludeReactionsSet excludeReactionsSet( a_reactionsToExclude );
 
-    for( std::size_t i1 = 0; i1 < m_protares.size( ); ++i1 ) vector += m_protares[i1]->multiGroupAverageMomentum( a_smr, a_settings, a_temperatureInfo, a_productID );
+    for( std::size_t i1 = 0; i1 < m_protares.size( ); ++i1 ) {
+        vector += m_protares[i1]->multiGroupAverageMomentum( a_smr, a_settings, a_temperatureInfo, a_productID, excludeReactionsSet );
+        excludeReactionsSetAdjust( excludeReactionsSet, *m_protares[i1] );
+    }
 
     return( vector );
 }
@@ -744,20 +878,26 @@ Vector ProtareComposite::multiGroupAverageMomentum( LUPI::StatusMessageReporting
  * summed over all reactions. The deposition momentum is calculated by subtracting the average momentum from each transportable particle
  * from the available momentum. The list of transportable particles is specified via the list of particle specified in the *a_settings* argument.
  *
- * @param a_smr             [Out]   If errors are not to be thrown, then the error is reported via this instance.
- * @param a_settings        [in]    Specifies the requested label.
- * @param a_temperatureInfo [in]    Specifies the temperature and labels use to lookup the requested data.
- * @param a_particles       [in]    The list of particles to be transported.
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
+ * @param a_settings            [in]    Specifies the requested label.
+ * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
+ * @param a_particles           [in]    The list of particles to be transported.
+ * @param a_reactionsToExclude  [in]    A list of reaction indices that are to be ignored when calculating the deposition momentum.
  *
- * @return                          The requested multi-group deposition momentum as a GIDI::Vector.
+ * @return                              The requested multi-group deposition momentum as a GIDI::Vector.
  ***********************************************************************************************************/
 
 Vector ProtareComposite::multiGroupDepositionMomentum( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
-                Styles::TemperatureInfo const &a_temperatureInfo, Transporting::Particles const &a_particles ) const {
+                Styles::TemperatureInfo const &a_temperatureInfo, Transporting::Particles const &a_particles,
+                ExcludeReactionsSet const &a_reactionsToExclude ) const {
 
     Vector vector;
+    ExcludeReactionsSet excludeReactionsSet( a_reactionsToExclude );
 
-    for( std::size_t i1 = 0; i1 < m_protares.size( ); ++i1 ) vector += m_protares[i1]->multiGroupDepositionMomentum( a_smr, a_settings, a_temperatureInfo, a_particles );
+    for( std::size_t i1 = 0; i1 < m_protares.size( ); ++i1 ) {
+        vector += m_protares[i1]->multiGroupDepositionMomentum( a_smr, a_settings, a_temperatureInfo, a_particles, excludeReactionsSet );
+        excludeReactionsSetAdjust( excludeReactionsSet, *m_protares[i1] );
+    }
 
     return( vector );
 }
@@ -765,20 +905,26 @@ Vector ProtareComposite::multiGroupDepositionMomentum( LUPI::StatusMessageReport
 /* *********************************************************************************************************//**
  * Returns the multi-group, gain for the requested particle and label. This is a cross section weighted gain summed over all reactions.
  *
- * @param a_smr             [Out]   If errors are not to be thrown, then the error is reported via this instance.
- * @param a_settings        [in]    Specifies the requested label.
- * @param a_temperatureInfo [in]    Specifies the temperature and labels use to lookup the requested data.
- * @param a_productID       [in]    The PoPs' id for the particle whose gain is to be calculated.
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
+ * @param a_settings            [in]    Specifies the requested label.
+ * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
+ * @param a_productID           [in]    The PoPs' id for the particle whose gain is to be calculated.
+ * @param a_reactionsToExclude  [in]    A list of reaction indices that are to be ignored when calculating the gain.
  *
- * @return                          The requested multi-group gain as a **GIDI::Vector**.
+ * @return                              The requested multi-group gain as a **GIDI::Vector**.
  ***********************************************************************************************************/
 
 Vector ProtareComposite::multiGroupGain( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
-                Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
+                Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID,
+                ExcludeReactionsSet const &a_reactionsToExclude ) const {
 
     Vector vector;
+    ExcludeReactionsSet excludeReactionsSet( a_reactionsToExclude );
 
-    for( std::size_t i1 = 0; i1 < m_protares.size( ); ++i1 ) vector += m_protares[i1]->multiGroupGain( a_smr, a_settings, a_temperatureInfo, a_productID );
+    for( std::size_t i1 = 0; i1 < m_protares.size( ); ++i1 ) {
+        vector += m_protares[i1]->multiGroupGain( a_smr, a_settings, a_temperatureInfo, a_productID, excludeReactionsSet );
+        excludeReactionsSetAdjust( excludeReactionsSet, *m_protares[i1] );
+    }
 
     return( vector );
 }

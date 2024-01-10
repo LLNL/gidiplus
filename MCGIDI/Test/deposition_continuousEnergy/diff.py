@@ -1,4 +1,3 @@
-from __future__ import print_function
 import sys
 
 with open( sys.argv[2] ) as file : lines1 = file.readlines( )
@@ -15,8 +14,7 @@ def test( ) :
                 if( 'energy =' in line2 ) :
                     doubles1 = map( float, line1.split( '=' )[-1].split( ) )
                     doubles2 = map( float, line2.split( '=' )[-1].split( ) )
-                    for index2, double1 in enumerate( doubles1 ) :
-                        double2 = doubles2[index2]
+                    for index2, (double1, double2) in enumerate( zip(doubles1, doubles2) ) :
                         if( double1 != double2 ) :
                             err = abs( double1 - double2 ) / max( abs( double1 ), abs( double2 ) )
                             if( err > errs[index2] ) : return( 1 )

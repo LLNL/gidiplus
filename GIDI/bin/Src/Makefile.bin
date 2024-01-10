@@ -5,7 +5,7 @@
 
 local_CXXFLAGS += $(LIB_PATHS) -I$(GIDI_PATH)/Test/Utilities -L$(GIDI_PATH)/Test/Utilities
 
-LIBS = -lGIDI_testUtilities -lGIDI -lPoPI -lRISI -lLUPI -lHAPI -lnumericalfunctions -lstatusMessageReporting -lexpat -lpugixml -lm $(HDF5_LIBS)
+LIBS = -lGIDI_testUtilities -lGIDI -lPoPI -lRISI -lGUPI -lLUPI -lHAPI -lnumericalfunctions -lstatusMessageReporting -lexpat -lpugixml -lm $(HDF5_LIBS)
 
 EXES = $(CppSources:.cpp=)
 
@@ -23,3 +23,4 @@ clean:
 
 realclean: clean
 	rm -rf *.dSYM
+	cd ../../; rm -f $(EXES)

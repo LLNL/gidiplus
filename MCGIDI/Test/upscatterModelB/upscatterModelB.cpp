@@ -57,7 +57,7 @@ int main( int argc, char **argv ) {
 void main2( int argc, char **argv ) {
 
     std::string mapFilename( "Data/upscatterModelB.map" );
-    PoPI::Database pops( "../../../GIDI/Test/pops.xml" );
+    PoPI::Database pops( "../../../TestData/PoPs/pops.xml" );
     GIDI::Map::Map map( mapFilename, pops );
     std::string neutronID( PoPI::IDs::neutron );
     std::string targetID = "O16";
@@ -99,11 +99,10 @@ void main2( int argc, char **argv ) {
     protares[0] = MCProtare;
     URR_protare_infos.setup( protares );
 
-    char Str[512];
     PoPI::Base const &target = pops.get<PoPI::Base>( targetID );
-    sprintf( Str, "relax.%s.dat", target.ID( ).c_str( ) );
+    std::string Str = LUPI::Misc::argumentsToString( "relax.%s.dat", target.ID( ).c_str( ) );
     FILE *fOut;
-    if( ( fOut = fopen( Str, "w" ) ) == nullptr ) throw "error opening output file";
+    if( ( fOut = fopen( Str.c_str( ), "w" ) ) == nullptr ) throw "error opening output file";
 
     neutronMass = MCProtare->projectileMass( );
     double targetMass = MCProtare->targetMass( );

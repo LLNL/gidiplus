@@ -65,7 +65,7 @@ ResonancesWithBackground1d::~ResonancesWithBackground1d( ) {
  * @param       a_inRegions         [in]        If *true*, *this* is in a Regions2d container.
  ***********************************************************************************************************/
 
-void ResonancesWithBackground1d::toXMLList_func( WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
+void ResonancesWithBackground1d::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     std::string attributes;
@@ -154,7 +154,7 @@ double ResonanceBackground1d::evaluate( double a_x1 ) const {
  * @param       a_inRegions         [in]        If *true*, *this* is in a Regions2d container.
  ***********************************************************************************************************/
 
-void ResonanceBackground1d::toXMLList_func( WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
+void ResonanceBackground1d::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
 
@@ -237,7 +237,7 @@ double ResonanceBackgroundRegion1d::evaluate( double a_x1 ) const {
  * @param       a_inRegions         [in]        If *true*, *this* is in a Regions2d container.
  ***********************************************************************************************************/
 
-void ResonanceBackgroundRegion1d::toXMLList_func( WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
+void ResonanceBackgroundRegion1d::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
 

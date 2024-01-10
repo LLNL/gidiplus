@@ -146,6 +146,9 @@ class Bins {
                 fprintf( a_fOut, "# underflow weight = %15.7e\n", m_underFlowWeights );
                 fprintf( a_fOut, "# overflow weight = %15.7e\n", m_overFlowWeights );
             }
+            fprintf( a_fOut, "# x-values                      pdf         counts       fraction" );
+            if( a_includeWeights ) fprintf( a_fOut, "       weighted pdf       weights       weighted fraction" );
+            fprintf( a_fOut, "\n" );
 
             if( _total == 0 ) _total = 1;
             if( weightedTotal == 0.0 ) weightedTotal = 1.0;

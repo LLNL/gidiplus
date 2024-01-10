@@ -52,7 +52,7 @@ void main2( int argc, char **argv ) {
     argv_options.add( argvOption( "--map", true, "The map file to use." ) );
     argv_options.parseArgv( argc, argv );
 
-    PoPI::Database pops( "../pops.xml" );
+    PoPI::Database pops( "../../../TestData/PoPs/pops.xml" );
     GIDI::Map::Map map( argv_options.find( "--map" )->zeroOrOneOption( argv, "../all.map" ), pops );
 
     readProtare( map, pops, "O16" );
@@ -91,7 +91,7 @@ void readProtare( GIDI::Map::Map &map, PoPI::Database const &pops, std::string c
 
                 std::cout << "          href = " << coherentPhotonScattering->href( ) << std::endl;
 
-                GIDI::Ancestry *link = coherentPhotonScattering->findInAncestry( coherentPhotonScattering->href( ) );
+                GUPI::Ancestry *link = coherentPhotonScattering->findInAncestry( coherentPhotonScattering->href( ) );
 
                 GIDI::DoubleDifferentialCrossSection::CoherentPhotoAtomicScattering *dd = static_cast<GIDI::DoubleDifferentialCrossSection::CoherentPhotoAtomicScattering *>( link );
                 std::cout << "          dd moniker = " << dd->moniker( ) << std::endl;
@@ -217,7 +217,5 @@ double integrateSub( int _n, double _a, double logX, double E1, double _y1, doub
 std::string toString( double a_value, char const *a_fmt ) {
 
     if( a_fmt == nullptr ) a_fmt = " % 23.16e";
-    char Str[128];
-    sprintf( Str, a_fmt, a_value );
-    return( std::string( Str ) );
+    return( LUPI::Misc::argumentsToString( a_fmt, a_value ) );
 }

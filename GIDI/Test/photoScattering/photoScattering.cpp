@@ -77,7 +77,7 @@ void readProtare( ParseTestOptions &a_parseTestOptions, GIDI::Construction::Phot
     LUPI::StatusMessageReporting smr1;
     GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, photoMode );
     PoPI::Database pops;
-    GIDI::Protare *protare = a_parseTestOptions.protare( pops, "../pops.xml", "../all.map", construction, PoPI::IDs::photon, "O16" );
+    GIDI::Protare *protare = a_parseTestOptions.protare( pops, "../../../TestData/PoPs/pops.xml", "../all.map", construction, PoPI::IDs::photon, "O16" );
     if( protare == nullptr ) {
         std::string targetID = a_parseTestOptions.m_argvOptions.find( "--tid" )->zeroOrOneOption( a_parseTestOptions.m_argv, "O16" );
         std::cout << "protare for " << targetID << " not found." << std::endl;

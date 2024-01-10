@@ -49,7 +49,7 @@ void main2( int argc, char **argv ) {
     GIDI::Construction::PhotoMode photo_mode = parseTestOptions.photonMode( GIDI::Construction::PhotoMode::nuclearAndAtomic );
     GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, photo_mode );
     PoPI::Database pops;
-    GIDI::Protare *protare = parseTestOptions.protare( pops, "../pops.xml", "../all.map", construction, PoPI::IDs::neutron, "O16" );
+    GIDI::Protare *protare = parseTestOptions.protare( pops, "../../../TestData/PoPs/pops.xml", "../all.map", construction, PoPI::IDs::neutron, "O16" );
 
     std::cout << stripDirectoryBase( protare->fileName( ), "/GIDI/Test" ) << std::endl;
 
@@ -64,7 +64,6 @@ void main2( int argc, char **argv ) {
 */
 void printQ( GIDI::Protare *protare, bool final ) {
 
-    char Str[256];
     LUPI::StatusMessageReporting smr1;
 
     std::cout << "final = " << final << std::endl;
@@ -77,16 +76,14 @@ void printQ( GIDI::Protare *protare, bool final ) {
 
     GIDI::Transporting::MG settings( protare->projectile( ).ID( ), GIDI::Transporting::Mode::multiGroup, GIDI::Transporting::DelayedNeutrons::off );
     GIDI::Vector Q = protare->multiGroupQ( smr1, settings, temperatures[0], final );
-    sprintf( Str, "%-40s:: ", "Total Q" );
-    std::string prefix( Str );
+    std::string prefix = LUPI::Misc::argumentsToString( "%-40s:: ", "Total Q" );
     printVector( prefix, Q );
 
     for( std::size_t index = 0; index < protare->numberOfReactions( ); ++index ) {
         GIDI::Reaction const *reaction = protare->reaction( index );
 
-        GIDI::Vector Q = reaction->multiGroupQ( smr1, settings, temperatures[0], final );
-        sprintf( Str, "%-40s:: ", reaction->label( ).c_str( ) );
-        std::string string( Str );
+        Q = reaction->multiGroupQ( smr1, settings, temperatures[0], final );
+        std::string string = LUPI::Misc::argumentsToString( "%-40s:: ", reaction->label( ).c_str( ) );
         printVector( string, Q );
     }
 }

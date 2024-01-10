@@ -9,7 +9,7 @@ SHELL = /bin/ksh
 
 .PHONY: default bin compile check clean realclean doDirs
 
-DIRS = readPoPs
+DIRS = readPoPs checkIntids
 
 default: compile
 

@@ -8,8 +8,8 @@ SHELL = /bin/ksh
 # <<END-copyright>>
 
 GIDI_PLUS_PATH ?= $(abspath ../../..)
-CppSources = $(sort $(wildcard *.cpp))
-CppObjs = $(CppSources:.cpp=.o)
+CppSource2 = $(sort $(wildcard *.cpp))
+CppObj2 = $(CppSource2:.cpp=.o)
 Archive = libutilities4Speed.a
 
 include $(GIDI_PLUS_PATH)/Makefile.paths
@@ -17,12 +17,16 @@ include ../Makefile.speeds
 
 default: $(Archive)
 
-$(Archive): $(CppObjs)
+$(Archive): $(CppObj2)
 	rm -f $@
-	$(AR) -cr $@ $(CppObjs)
+	$(AR) -cr $@ $(CppObj2)
 
 speeds: $(Archive)
 
-$(CppSources): utilities4Speed.hpp
+$(CppSource2): utilities4Speed.hpp
+
+%.o: %.cpp
+	echo "    "$@
+	$(CXX) $(local_CXXFLAGS2) $< -c -o $@
 
 check:

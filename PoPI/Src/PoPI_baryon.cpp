@@ -26,6 +26,15 @@ namespace PoPI {
 Baryon::Baryon( HAPI::Node const &a_node, Database *a_DB, Database *a_parent ) :
         Particle( a_node, Particle_class::baryon, PoPI_baryonChars ) {
 
+    int baryonIndex = -1;
+
+    if( baseId( ) == IDs::neutron ) {
+        baryonIndex = 0; }
+    if( baseId( ) == IDs::proton ) {
+        baryonIndex = 1;
+    }
+    if( baryonIndex != -1 ) setIntid( intidHelper( isAnti( ), Particle_class::baryon, baryonIndex ) );
+
     addToDatabase( a_DB );
 }
 

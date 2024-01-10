@@ -42,12 +42,11 @@ int main( int argc, char **argv ) {
 void main2( int argc, char **argv ) {
 
     std::string mapFilename( "../../../GIDI/Test/all3T.map" );
-    PoPI::Database pops( "../../../GIDI/Test/pops.xml" );
+    PoPI::Database pops( "../../../TestData/PoPs/pops.xml" );
     GIDI::Map::Map map( mapFilename, pops );
     std::set<int> reactionsToExclude;
     clock_t time0, time1;
     long numberOfSamples = 1000 * 1000, sampled = 0;
-    char label1[1024];
     std::vector<std::string> libraries;
     LUPI::StatusMessageReporting smr1;
 
@@ -88,8 +87,7 @@ void main2( int argc, char **argv ) {
 
     for( std::size_t i1 = 0; i1 < MCProtare->numberOfReactions( ); ++i1 ) {
         MCGIDI::Reaction const &reaction = *MCProtare->reaction( i1 );
-        char label2[256];
-        sprintf( label2, "%-40s: ", reaction.label( ).c_str( ) );
+        std::string label2 = LUPI::Misc::argumentsToString( "%-40s: ", reaction.label( ).c_str( ) );
 
         std::cout << "    reaction: " << label2 << " final Q = " << reaction.finalQ( 0 ) << " threshold = " << reaction.crossSectionThreshold( ) << std::endl;
     }
@@ -98,7 +96,7 @@ void main2( int argc, char **argv ) {
     protares[0] = MCProtare;
     MCGIDI::URR_protareInfos URR_protare_infos( protares );
 
-    for( double temperature = 1e-8; temperature < 2e-3; temperature *= 10.1 ) {
+    for( double temperature2 = 1e-8; temperature2 < 2e-3; temperature2 *= 10.1 ) {
         clock_t time1_1 = clock( );
         clock_t time2_1 = time1_1;
         clock_t time3_1 = time1_1;
@@ -108,15 +106,15 @@ void main2( int argc, char **argv ) {
             int hashIndex = multiGroupHash.index( energy );
 
             for( std::size_t i1 = 0; i1 < numberOfReactions; ++i1 ) {
-                for( long i2 = 0; i2 <= numberOfSamples; ++i2 ) MCProtare->reactionCrossSection( i1, URR_protare_infos, hashIndex, temperature, energy );
+                for( long i2 = 0; i2 <= numberOfSamples; ++i2 ) MCProtare->reactionCrossSection( i1, URR_protare_infos, hashIndex, temperature2, energy );
                 sampled += numberOfSamples;
                 printTime_reaction( "                reaction: ", i1, time3_1 );
             }
             std::cout << std::endl;
-            sprintf( label1, "            energies %.4e: ", energy );
+            std::string label1 = LUPI::Misc::argumentsToString( "            energies %.4e: ", energy );
             printTime( label1, time2_1 );
         }
-        printTime_double( "        temperature", temperature, time1_1 );
+        printTime_double( "        temperature", temperature2, time1_1 );
         std::cout << std::endl;
     }
 

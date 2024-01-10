@@ -25,7 +25,7 @@ int main( int argc, char **argv ) {
 
     std::string protareFilename( "../sampleFile.xml" );
 
-    HAPI::File *file = new HAPI::PugiXMLFile( protareFilename.c_str() );
+    HAPI::File *file = new HAPI::PugiXMLFile( protareFilename.c_str(), "main" );
     HAPI::Node protare = file->first_child();
 
     cout << "projectile: " << protare.attribute("projectile").value() << ", ";

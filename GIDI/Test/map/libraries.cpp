@@ -49,7 +49,7 @@ void main2( int argc, char **argv ) {
 
     parseTestOptions.parse( );
 
-    PoPI::Database pops( "../pops.xml" );
+    PoPI::Database pops( "../../../TestData/PoPs/pops.xml" );
     parseTestOptions.pops( pops, "../pops.xml" );
     std::string mapFilename = argv_options.find( "--map" )->zeroOrOneOption( argv, "libraries.map" );
     GIDI::Map::Map map( mapFilename, pops );

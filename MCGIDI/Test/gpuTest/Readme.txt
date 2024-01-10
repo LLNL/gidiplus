@@ -5,8 +5,8 @@ Then make this test with the following command after changing the directory to M
 
 For RZAnsel Cuda10 opt:
 gmake CXX=/usr/tce/packages/cuda/cuda-10.1.243/bin/nvcc CXXFLAGS='-x cu --relocatable-device-code=true -lineinfo -g -O2 -std=c++11 -gencode=arch=compute_70,code=sm_70 -I$(CUDA_PATH)/include'
-For RZAnsel Cuda11 opt (doesn't work):
-gmake CXX=/usr/tce/packages/cuda/cuda-11.2.0/bin/nvcc CXXFLAGS='-x cu --relocatable-device-code=true -lineinfo -g -O2 -std=c++11 -gencode=arch=compute_70,code=sm_70 -I$(CUDA_PATH)/include'
+For RZAnsel Cuda11 opt:
+gmake CXX=/usr/tce/packages/cuda/cuda-11.7.0/bin/nvcc CXXFLAGS='-x cu --relocatable-device-code=true -lineinfo -g -O2 -std=c++11 -gencode=arch=compute_70,code=sm_70 -I$(CUDA_PATH)/include'
 For RZwhamo/HIP:
 gmake CXX=/opt/rocm-4.5.2/hip/bin/hipcc CXXFLAGS='-g -O1 -x hip -fgpu-rdc --offload-arch=gfx908 -Wno-unused-command-line-argument -D __HIP__ -I/opt/cray/pe/mpich/8.1.11/ofi/crayclang/10.0/include' 
 

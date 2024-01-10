@@ -68,7 +68,7 @@ void main2( int argc, char **argv ) {
         GIDI::Functions::Function3dForm *flux = fluxes_from_bdfls.get3dViaFID( *fid );
         std::cout << "            " << flux->label( ) << std::endl;
 
-        GIDI::WriteInfo writeInfo;
+        GUPI::WriteInfo writeInfo;
         flux->toXMLList_func( writeInfo, "", false, false );
         writeInfo.print( );
 

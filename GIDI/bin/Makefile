@@ -25,8 +25,6 @@ clean: realclean
 
 realclean:
 	$(MAKE) doDirs TARGET=realclean
-	rm -f readAllProtaresInMapFile directory toXML reactions GNDS_FileType incompleteParticles HAPI_ReadAllProtaresInMapFile mapTiming \
-		multiGroupCrossSections producedPaticles readAllProtaresInMapFilePrintMultiGroup
 
 doDirs:
 	for dir in $(DIRS); do cd $$dir; $(MAKE) $(TARGET); cd ../; done

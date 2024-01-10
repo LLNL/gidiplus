@@ -64,7 +64,7 @@ void main2( int argc, char **argv ) {
     GIDI::Construction::PhotoMode photo_mode = parseTestOptions.photonMode( GIDI::Construction::PhotoMode::nuclearAndAtomic );
     GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, photo_mode );
     PoPI::Database pops;
-    GIDI::Protare *protare = parseTestOptions.protare( pops, "../../../GIDI/Test/pops.xml", "../../../GIDI/Test/all3T.map", construction, PoPI::IDs::neutron, "H1" );
+    GIDI::Protare *protare = parseTestOptions.protare( pops, "../../../TestData/PoPs/pops.xml", "../../../GIDI/Test/all3T.map", construction, PoPI::IDs::neutron, "H1" );
 
     std::cout << stripDirectoryBase( protare->fileName( ), "/GIDI/Test/" ) << std::endl;
 
@@ -93,7 +93,7 @@ void main2( int argc, char **argv ) {
     labelsAndUnits.push_back( std::pair<std::string, std::string>( "Cross section", "b" ) );
     GIDI::Axes offsetAxes = GIDI::Axes::makeAxes( labelsAndUnits );
 
-    GIDI::WriteInfo writeInfo = GIDI::WriteInfo( );
+    GUPI::WriteInfo writeInfo = GUPI::WriteInfo( );
     offsetAxes.toXMLList( writeInfo, "  " );
     std::cout << std::endl << "Offset Axes" << std::endl;
     writeInfo.print( );

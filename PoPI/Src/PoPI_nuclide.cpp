@@ -34,6 +34,9 @@ Nuclide::Nuclide( HAPI::Node const &a_node, Database *a_DB, Isotope *a_isotope )
         m_isotope( a_isotope ),
         m_nucleus( a_node.child( PoPI_nucleusChars ), a_DB, this ) {
 
+    int sign = ( isAnti( ) ? -1 : 1 );
+    setIntid( sign * ( 1000 * ( 1000 * levelIndex( ) + Z( ) ) + A( ) ) );
+
     addToDatabase( a_DB );
 }
 

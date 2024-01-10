@@ -26,6 +26,8 @@ namespace PoPI {
 GaugeBoson::GaugeBoson( HAPI::Node const &a_node, Database *a_DB, Database *a_parent ) :
         Particle( a_node, Particle_class::gaugeBoson, PoPI_gaugeBosonChars ) {
 
+    if( ID( ) == IDs::photon ) setIntid( intidHelper( isAnti( ), Particle_class::gaugeBoson, 0 ) );
+
     addToDatabase( a_DB );
 }
 

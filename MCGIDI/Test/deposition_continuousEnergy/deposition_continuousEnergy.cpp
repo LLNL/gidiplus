@@ -41,22 +41,21 @@ int main( int argc, char **argv ) {
 */
 void main2( int argc, char **argv ) {
 
-    PoPI::Database pops( "../../../GIDI/Test/pops.xml" );
+    PoPI::Database pops;
     GIDI::Protare *protare;
     GIDI::Transporting::Particles particles;
     std::set<int> reactionsToExclude;
     GIDI::Construction::PhotoMode photo_mode = GIDI::Construction::PhotoMode::nuclearOnly;
-    int neutronIndex = pops[PoPI::IDs::neutron];
-    int photonIndex = pops[PoPI::IDs::photon];
     LUPI::StatusMessageReporting smr1;
 
     std::cerr << "    " << __FILE__;
     for( int i1 = 1; i1 < argc; i1++ ) std::cerr << " " << argv[i1];
     std::cerr << std::endl;
 
-    argvOptions2 argv_options( "crossSections", description );
+    argvOptions2 argv_options( "deposition_continuousEnergy", description );
 
     argv_options.add( argvOption2( "--map", true, "The map file to use." ) );
+    argv_options.add( argvOption2( "--pops", true, "A PoPs file to use." ) );
     argv_options.add( argvOption2( "--pid", true, "The PoPs id of the projectile." ) );
     argv_options.add( argvOption2( "--tid", true, "The PoPs id of the target." ) );
     argv_options.add( argvOption2( "--pa", false, "Include photo-atomic protare if relevant. If present, disables photo-nuclear unless *-n* present." ) );
@@ -71,6 +70,15 @@ void main2( int argc, char **argv ) {
     std::string mapFilename = argv_options.find( "--map" )->zeroOrOneOption( argv, "../../../GIDI/Test/all3T.map" );
     std::string projectileID = argv_options.find( "--pid" )->zeroOrOneOption( argv, PoPI::IDs::neutron );
     std::string targetID = argv_options.find( "--tid" )->zeroOrOneOption( argv, "O16" );
+
+    argvOption2 *popsOption = argv_options.find( "--pops" );
+    if( popsOption->present( ) ) {
+        for( int index = 0; index < popsOption->m_counter; ++index ) {
+            pops.addFile( argv[popsOption->m_indices[index]], false );
+        } }
+    else {
+        pops.addFile( "../../../TestData/PoPs/pops.xml", false );
+    }
 
     if( argv_options.find( "--pa" )->present( ) ) {
         photo_mode = GIDI::Construction::PhotoMode::atomicOnly;
@@ -125,7 +133,8 @@ void main2( int argc, char **argv ) {
         std::cout << "    reaction: " << reaction.label( ).c_str( ) << std::endl;
     }
 
-
+    int neutronIndex = pops[PoPI::IDs::neutron];
+    int photonIndex = pops[PoPI::IDs::photon];
     for( double temperature = 1e-8; temperature < 2e-3; temperature *= 100.0 ) {
         std::cout << "temperature = " << doubleToString2( "%8.1e", temperature ) << "                          cross section deposition energy  deposition momentum  production energy";
         if( particles.hasParticle( PoPI::IDs::neutron ) ) std::cout << "      neutron gain";

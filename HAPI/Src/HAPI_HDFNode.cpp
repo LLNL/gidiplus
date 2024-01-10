@@ -294,31 +294,30 @@ bool HDFNode::empty() const {
  */
 Text HDFNode::text() const {
 
-  H5O_info_t infobuf;
-  herr_t status = H5Oget_info(m_node_id, &infobuf);
-  if (status != 0) {
-      throw "unable to extract text from HDF";
-  }
+#if H5_VERSION_GE(1,12,0)
+    H5O_info2_t infobuf;
+    herr_t status = H5Oget_info3(m_node_id, &infobuf, H5O_INFO_NUM_ATTRS);
+#else
+    H5O_info_t infobuf;
+    herr_t status = H5Oget_info(m_node_id, &infobuf);
+#endif
+    if (status != 0) throw "unable to extract text from HDF";
 
-  switch (infobuf.type) {
-      case H5O_TYPE_GROUP:
-          return Text( );
-          break;
-      case H5O_TYPE_DATASET:
-      {
-          size_t len = H5Dget_storage_size(m_node_id);
-          hid_t dtype = H5Dget_type(m_node_id);
+    switch (infobuf.type) {
+    case H5O_TYPE_GROUP:
+        return Text( );
+        break;
+    case H5O_TYPE_DATASET: {
+        size_t len = H5Dget_storage_size(m_node_id);
+        hid_t dtype = H5Dget_type(m_node_id);
+        std::vector<char> buffer(len+1,0);
+        H5Dread(m_node_id, dtype, H5S_ALL, H5S_ALL, H5P_DEFAULT, buffer.data());
 
-          std::vector<char> buffer(len+1,0);
-          H5Dread(m_node_id, dtype, H5S_ALL, H5S_ALL, H5P_DEFAULT, buffer.data());
-
-          return Text(std::string(buffer.data()));
-
-      }break;
-      default:
-          throw "encountered unexpected type in HDF::text()!";
-  }
-
+        return Text(std::string(buffer.data())); }
+        break;
+    default:
+        throw "encountered unexpected type in HDF::text()!";
+    }
 }
 /*
 ============================================================
@@ -343,8 +342,13 @@ Data_internal *HDFNode::data() const {
  */
 hid_t getNodeId(hid_t loc_id, std::string name)
 {
+#if H5_VERSION_GE(1,12,0)
+    H5O_info2_t infobuf;
+    herr_t status = H5Oget_info_by_name3( loc_id, name.c_str( ), &infobuf, H5O_INFO_NUM_ATTRS, H5P_DEFAULT );
+#else
     H5O_info_t infobuf;
     herr_t status = H5Oget_info_by_name(loc_id, name.c_str(), &infobuf, H5P_DEFAULT);
+#endif
     if (status != 0) {
         throw "requested child node not found in getNodeId";
     }

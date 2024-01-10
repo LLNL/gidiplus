@@ -20,9 +20,10 @@ namespace MCGIDI {
  * Default constructor used when broadcasting a Protare as needed by MPI or GPUs.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE OutputChannel::OutputChannel( ) :
+LUPI_HOST_DEVICE OutputChannel::OutputChannel( ) :
         m_channelType( ChannelType::none ),
         m_isFission( false ),
+        m_hasFinalStatePhotons( false ),
         m_neutronIndex( 0 ),
         m_Q( nullptr ),
         m_products( ),
@@ -37,10 +38,11 @@ MCGIDI_HOST_DEVICE OutputChannel::OutputChannel( ) :
  * @param a_particles           [in]    List of transporting particles and their information (e.g., multi-group boundaries and fluxes).
  ***********************************************************************************************************/
 
-MCGIDI_HOST OutputChannel::OutputChannel( GIDI::OutputChannel const *a_outputChannel, SetupInfo &a_setupInfo, Transporting::MC const &a_settings, 
+LUPI_HOST OutputChannel::OutputChannel( GIDI::OutputChannel const *a_outputChannel, SetupInfo &a_setupInfo, Transporting::MC const &a_settings, 
                 GIDI::Transporting::Particles const &a_particles ) :
         m_channelType( ChannelType::none ),
         m_isFission( false ),
+        m_hasFinalStatePhotons( false ),
         m_neutronIndex( a_settings.neutronIndex( ) ),
         m_Q( nullptr ),
         m_products( ),
@@ -50,7 +52,7 @@ MCGIDI_HOST OutputChannel::OutputChannel( GIDI::OutputChannel const *a_outputCha
         m_channelType = a_outputChannel->twoBody( ) ? ChannelType::twoBody : ChannelType::uncorrelatedBodies;
         m_isFission = a_outputChannel->isFission( );
 
-        m_Q = Functions::parseFunction1d( a_outputChannel->Q( ).get<GIDI::Functions::Function1dForm>( 0 ) );
+        m_Q = Functions::parseFunction1d_d1( a_outputChannel->Q( ).get<GIDI::Functions::Function1dForm>( 0 ) );
         if( a_setupInfo.m_isPairProduction ) {
             double domainMin = m_Q->domainMin( ), domainMax = m_Q->domainMax( );
 
@@ -127,10 +129,10 @@ MCGIDI_HOST OutputChannel::OutputChannel( GIDI::OutputChannel const *a_outputCha
             if( addIncoherentPhotoAtomicScatteringElectron && ( product->particle( ).ID( ) == PoPI::IDs::photon ) ) {
                 addIncoherentPhotoAtomicScatteringElectron = false;
 
-                Product *product = new Product( a_settings.pops( ), PoPI::IDs::electron, PoPI::IDs::electron );
-                product->setMultiplicity( new Functions::Constant1d( a_setupInfo.m_domainMin, a_setupInfo.m_domainMax, 1.0, 0.0 ) );
-                product->distribution( new Distributions::IncoherentPhotoAtomicScatteringElectron( a_setupInfo ) );
-                m_products.push_back( product );
+                Product *product2 = new Product( a_settings.pops( ), PoPI::IDs::electron, PoPI::IDs::electron );
+                product2->setMultiplicity( new Functions::Constant1d( a_setupInfo.m_domainMin, a_setupInfo.m_domainMax, 1.0, 0.0 ) );
+                product2->distribution( new Distributions::IncoherentPhotoAtomicScatteringElectron( a_setupInfo ) );
+                m_products.push_back( product2 );
             }
         }
 
@@ -170,13 +172,15 @@ MCGIDI_HOST OutputChannel::OutputChannel( GIDI::OutputChannel const *a_outputCha
                 if( !missingData ) m_totalDelayedNeutronMultiplicity = new Functions::XYs1d( totalDelayedNeutronMultiplicity );
             }
         }
+
+        m_hasFinalStatePhotons = a_setupInfo.m_hasFinalStatePhotons;
     }
 }
 
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE OutputChannel::~OutputChannel( ) {
+LUPI_HOST_DEVICE OutputChannel::~OutputChannel( ) {
 
     delete m_Q;
     for( MCGIDI_VectorSizeType i1 = 0; i1 < m_products.size( ); ++i1 ) delete m_products[i1];
@@ -193,7 +197,7 @@ MCGIDI_HOST_DEVICE OutputChannel::~OutputChannel( ) {
  * @return                              The Q-value at product energy *a_x1*.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE double OutputChannel::finalQ( double a_x1 ) const {
+LUPI_HOST_DEVICE double OutputChannel::finalQ( double a_x1 ) const {
 
     double final_Q = m_Q->evaluate( a_x1 );
 
@@ -207,7 +211,7 @@ MCGIDI_HOST_DEVICE double OutputChannel::finalQ( double a_x1 ) const {
  * @return                              *true* if *this* or any sub-output channel is a fission channel and *false* otherwise.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE bool OutputChannel::hasFission( ) const {
+LUPI_HOST_DEVICE bool OutputChannel::hasFission( ) const {
 
     if( m_isFission ) return( true );
     for( MCGIDI_VectorSizeType i1 = 0; i1 < m_products.size( ); ++i1 ) {
@@ -223,11 +227,73 @@ MCGIDI_HOST_DEVICE bool OutputChannel::hasFission( ) const {
  * @param a_userParticleIndex   [in]    The particle id specified by the user.
  ***********************************************************************************************************/
 
-MCGIDI_HOST void OutputChannel::setUserParticleIndex( int a_particleIndex, int a_userParticleIndex ) {
+LUPI_HOST void OutputChannel::setUserParticleIndex( int a_particleIndex, int a_userParticleIndex ) {
 
     for( auto iter = m_products.begin( ); iter != m_products.end( ); ++iter ) (*iter)->setUserParticleIndex( a_particleIndex, a_userParticleIndex );
     for( auto iter = m_delayedNeutrons.begin( ); iter != m_delayedNeutrons.end( ); ++iter ) (*iter)->setUserParticleIndex( a_particleIndex, a_userParticleIndex );
 }
+
+/* *********************************************************************************************************//**
+ * Returns the energy dependent multiplicity for outgoing particle with pops id *a_id*. The returned value may not
+ * be an integer. Energy dependent multiplicity mainly occurs for photons and fission neutrons.
+ *
+ * @param a_products                            [in]    The std::vector instance to add products to.
+ * @param a_totalDelayedNeutronMultiplicity     [in]    The std::vector instance to add delayed neutron multiplicities to.
+ * @param a_delayedNeutrons                     [in]    The std::vector instance to add delayed neutrons to.
+ * @param a_Qs                                  [in]    The std::vector instance to add Q functions to.
+ ***********************************************************************************************************/
+
+LUPI_HOST void OutputChannel::moveProductsEtAlToReaction( std::vector<Product *> &a_products, Functions::Function1d **a_totalDelayedNeutronMultiplicity, 
+                std::vector<DelayedNeutron *> &a_delayedNeutrons, std::vector<Functions::Function1d_d1 *> &a_Qs  ) {
+
+    if( a_totalDelayedNeutronMultiplicity != nullptr ) {    /* This will not work if fission is a nested channel. Ergo "n + (R -> fission)". */
+        *a_totalDelayedNeutronMultiplicity = m_totalDelayedNeutronMultiplicity;
+        m_totalDelayedNeutronMultiplicity = nullptr;
+        for( int index = 0; index < m_delayedNeutrons.size( ); ++index ) {
+            a_delayedNeutrons.push_back( m_delayedNeutrons[index] );
+            m_delayedNeutrons[index] = nullptr;
+        }
+    }
+
+    a_Qs.push_back( m_Q );
+    m_Q = nullptr;
+    for( int productIndex = 0; productIndex < m_products.size( ); ++productIndex ) {
+        Product *product = m_products[productIndex];
+
+        if( product->outputChannel( ) != nullptr ) {
+            product->outputChannel( )->moveProductsEtAlToReaction( a_products, nullptr, a_delayedNeutrons, a_Qs ); }
+        else {
+            a_products.push_back( product );
+        }
+        m_products[productIndex] = nullptr;
+    }
+}
+
+#ifdef MCGIDI_USE_OUTPUT_CHANNEL
+/* *********************************************************************************************************//**
+ * Returns the energy dependent multiplicity for outgoing particle with pops id *a_id*. The returned value may not
+ * be an integer. Energy dependent multiplicity mainly occurs for photons and fission neutrons.
+ *
+ * @param a_products                [in]    The std::vector instance to add products to.
+ ***********************************************************************************************************/
+
+LUPI_HOST_DEVICE int OutputChannel::referenceOrphanProductsToReaction( Vector<Product *> &a_products, bool a_pushProducts ) const {
+
+    int numberOfProducts = 0;
+
+    for( int productIndex = 0; productIndex < m_products.size( ); ++productIndex ) {
+        Product *product = m_products[productIndex];
+
+        if( product->outputChannel( ) != nullptr ) {
+            numberOfProducts += product->outputChannel( )->referenceOrphanProductsToReaction( a_products, a_pushProducts ); }
+        else {
+            if( a_pushProducts ) a_products.push_back( product );
+        }
+    }
+
+    return( numberOfProducts );
+}
+#endif
 
 /* *********************************************************************************************************//**
  * Returns the energy dependent multiplicity for outgoing particle with pops id *a_id*. The returned value may not
@@ -239,7 +305,7 @@ MCGIDI_HOST void OutputChannel::setUserParticleIndex( int a_particleIndex, int a
  * @return                                  The multiplicity value for the requested particle.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE double OutputChannel::productAverageMultiplicity( int a_index, double a_projectileEnergy ) const {
+LUPI_HOST_DEVICE double OutputChannel::productAverageMultiplicity( int a_index, double a_projectileEnergy ) const {
 
     double multiplicity = 0.0;
 
@@ -265,11 +331,27 @@ MCGIDI_HOST_DEVICE double OutputChannel::productAverageMultiplicity( int a_index
  * @param a_products                [in]    The object to add all sampled products to.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE void OutputChannel::sampleProducts( Protare const *a_protare, double a_projectileEnergy, Sampling::Input &a_input, 
+LUPI_HOST_DEVICE void OutputChannel::sampleProducts( Protare const *a_protare, double a_projectileEnergy, Sampling::Input &a_input, 
                 double (*a_userrng)( void * ), void *a_rngState, Sampling::ProductHandler &a_products ) const {
 
-    for( Vector<Product *>::const_iterator iter = m_products.begin( ); iter != m_products.end( ); ++iter )
-        (*iter)->sampleProducts( a_protare, a_projectileEnergy, a_input, a_userrng, a_rngState, a_products );
+    if( m_hasFinalStatePhotons ) {
+        double random = a_userrng( a_rngState );
+        double cumulative = 0.0;
+        bool sampled = false;
+        for( auto productIter = m_products.begin( ); productIter != m_products.end( ); ++productIter ) {
+            cumulative += (*productIter)->multiplicity( )->evaluate( a_projectileEnergy );
+            if( cumulative >= random ) {
+                (*productIter)->sampleFinalState( a_protare, a_projectileEnergy, a_input, a_userrng, a_rngState, a_products );
+                sampled = true;
+                break;
+            }
+        }
+        if( !sampled ) {     // BRB: FIXME: still need to code for continuum photon.
+        } }
+    else {
+        for( Vector<Product *>::const_iterator iter = m_products.begin( ); iter != m_products.end( ); ++iter )
+            (*iter)->sampleProducts( a_protare, a_projectileEnergy, a_input, a_userrng, a_rngState, a_products );
+    }
 
     if( m_totalDelayedNeutronMultiplicity != nullptr ) {
         double totalDelayedNeutronMultiplicity = m_totalDelayedNeutronMultiplicity->evaluate( a_projectileEnergy );
@@ -311,7 +393,7 @@ MCGIDI_HOST_DEVICE void OutputChannel::sampleProducts( Protare const *a_protare,
  * @param a_cumulative_weight       [in]    The sum of the multiplicity for other outgoing particles with index *a_pid*.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE void OutputChannel::angleBiasing( Reaction const *a_reaction, int a_pid, double a_temperature, double a_energy_in, double a_mu_lab, 
+LUPI_HOST_DEVICE void OutputChannel::angleBiasing( Reaction const *a_reaction, int a_pid, double a_temperature, double a_energy_in, double a_mu_lab, 
                 double &a_weight, double &a_energy_out, double (*a_userrng)( void * ), void *a_rngState, double &a_cumulative_weight ) const {
 
     for( Vector<Product *>::const_iterator iter = m_products.begin( ); iter != m_products.end( ); ++iter )
@@ -335,7 +417,7 @@ MCGIDI_HOST_DEVICE void OutputChannel::angleBiasing( Reaction const *a_reaction,
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE void OutputChannel::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+LUPI_HOST_DEVICE void OutputChannel::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
     int channelType = 0;
     switch( m_channelType ) {
@@ -349,7 +431,7 @@ MCGIDI_HOST_DEVICE void OutputChannel::serialize( DataBuffer &a_buffer, DataBuff
         break;
     }
     DATA_MEMBER_INT( channelType, a_buffer, a_mode );
-    if( a_mode == DataBuffer::Mode::Unpack ) {
+    if( a_mode == LUPI::DataBuffer::Mode::Unpack ) {
         switch( channelType ) {
         case 0 :
             m_channelType = ChannelType::none;
@@ -364,60 +446,13 @@ MCGIDI_HOST_DEVICE void OutputChannel::serialize( DataBuffer &a_buffer, DataBuff
     }
 
     DATA_MEMBER_CAST( m_isFission, a_buffer, a_mode, bool );
+    DATA_MEMBER_CAST( m_hasFinalStatePhotons, a_buffer, a_mode, bool );
     DATA_MEMBER_INT( m_neutronIndex, a_buffer, a_mode );
 
-    m_Q = serializeFunction1d( a_buffer, a_mode, m_Q );
-
-    std::size_t vectorSize = m_products.size( );
-    int vectorSizeInt = (int) vectorSize;
-    DATA_MEMBER_INT( vectorSizeInt, a_buffer, a_mode );
-    vectorSize = (std::size_t) vectorSizeInt;
-
-    if( a_mode == DataBuffer::Mode::Unpack ) {
-        m_products.resize( vectorSize, &a_buffer.m_placement );
-        for( std::size_t vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
-            if (a_buffer.m_placement != nullptr) {
-                m_products[vectorIndex] = new(a_buffer.m_placement) Product;
-                a_buffer.incrementPlacement( sizeof(Product));
-            }
-            else {
-                m_products[vectorIndex] = new Product;
-            }
-        }
-    }
-    if( a_mode == DataBuffer::Mode::Memory ) {
-        a_buffer.m_placement += m_products.internalSize();
-        a_buffer.incrementPlacement( sizeof(Product)*vectorSize);
-    }
-    for( std::size_t vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
-        m_products[vectorIndex]->serialize( a_buffer, a_mode );
-    }
-
+    m_Q = serializeFunction1d_d1( a_buffer, a_mode, m_Q );
+    serializeProducts( a_buffer, a_mode, m_products );
     m_totalDelayedNeutronMultiplicity = serializeFunction1d( a_buffer, a_mode, m_totalDelayedNeutronMultiplicity );
-
-    vectorSize = m_delayedNeutrons.size( );
-    vectorSizeInt = (int) vectorSize;
-    DATA_MEMBER_INT( vectorSizeInt, a_buffer, a_mode );
-    vectorSize = (std::size_t) vectorSizeInt;
-    if( a_mode == DataBuffer::Mode::Unpack ) {
-        m_delayedNeutrons.resize( vectorSize, &a_buffer.m_placement );
-        for( std::size_t vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
-            if (a_buffer.m_placement != nullptr) {
-                m_delayedNeutrons[vectorIndex] = new(a_buffer.m_placement) DelayedNeutron;
-                a_buffer.incrementPlacement( sizeof( DelayedNeutron ) );
-            }
-            else {
-                m_delayedNeutrons[vectorIndex] = new DelayedNeutron;
-            }
-        }
-    }
-    if( a_mode == DataBuffer::Mode::Memory ) {
-        a_buffer.m_placement += m_delayedNeutrons.internalSize();
-        a_buffer.incrementPlacement(sizeof( DelayedNeutron ) * vectorSize);
-    }
-    for( std::size_t vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
-        m_delayedNeutrons[vectorIndex]->serialize( a_buffer, a_mode );
-    }
+    serializeDelayedNeutrons( a_buffer, a_mode, m_delayedNeutrons );
 }
 
 }

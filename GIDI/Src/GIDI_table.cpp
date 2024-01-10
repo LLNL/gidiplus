@@ -51,7 +51,7 @@ Table::~Table( ) {
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void Table::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void Table::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
 
@@ -114,7 +114,7 @@ void Column::setKeyValue( std::string const &a_keyName ) const {
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void Column::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void Column::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
     
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     
@@ -137,7 +137,7 @@ void Column::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) co
  ***********************************************************************************************************/
 
 Data::Data( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo ) :
-        Ancestry( GIDI_dataChars ),
+        GUPI::Ancestry( GIDI_dataChars ),
         m_sep( a_node.attribute_as_string( GIDI_sepChars ) ),
         m_body( a_node.text().get() ) {
 
@@ -158,7 +158,7 @@ Data::~Data( ) {
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void Data::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void Data::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string attributes;
     if( m_sep != " " ) attributes += a_writeInfo.addAttribute( GIDI_sepChars, m_sep );

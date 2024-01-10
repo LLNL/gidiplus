@@ -1,0 +1,334 @@
+/.../GIDI/Test/Data/MG_MC/neutrons/n-008_O_016.xml
+  List of reactions:
+    n + O16
+    n + (O16_e1 -> O16)
+    n + (O16_e2 -> O16)
+    n + (O16_e3 -> O16)
+    n + (O16_e4 -> O16)
+    n + (O16_e5 -> O16)
+    n + (O16_e6 -> O16)
+    n + (O16_e7 -> O16)
+    n + (O16 -> O16 + photon) [continuum]
+    2n + O15 + photon
+    n + H1 + N15 + photon
+    n + H2 + N14 + photon
+    H1 + N16
+    H1 + (N16_e1 -> N16)
+    H1 + (N16_e2 -> N16)
+    H1 + (N16_e3 -> N16)
+    H2 + N15
+    H2 + (N15_e1 -> N15)
+    H2 + (N15_e2 -> N15)
+    H2 + (N15_e3 -> N15)
+    H2 + (N15_e4 -> N15)
+    H2 + (N15_e5 -> N15)
+    H2 + (N15_e6 -> N15)
+    H2 + (N15_e7 -> N15)
+    H2 + (N15_e8 -> N15)
+    H2 + (N15_e9 -> N15)
+    H2 + (N15_e10 -> N15)
+    H2 + (N15_e11 -> N15)
+    H2 + (N15_e12 -> N15)
+    H2 + (N15_e13 -> N15)
+    H2 + (N15_e14 -> N15)
+    H2 + (N15_e15 -> N15)
+    H2 + (N15_e16 -> N15)
+    H2 + (N15_e17 -> N15)
+    H2 + (N15_e18 -> N15)
+    H2 + (N15_e19 -> N15)
+    H3 + N14
+    H3 + (N14_e1 -> N14)
+    H3 + (N14_e2 -> N14)
+    H3 + (N14_e3 -> N14)
+    H3 + (N14_e4 -> N14)
+    H3 + (N14_e5 -> N14)
+    H3 + (N14_e6 -> N14)
+    H3 + (N14_e7 -> N14)
+    H3 + (N14_e8 -> N14)
+    H3 + (N14_e9 -> N14)
+    H3 + (N14 -> N14 + photon) [continuum]
+    He4 + C13
+    He4 + (C13_e1 -> C13)
+    He4 + (C13_e2 -> C13)
+    He4 + (C13_e3 -> C13)
+    O17 + photon
+    n + He4 + C12 + photon
+    n + 4He4 + photon
+    2n + H1 + N14 + photon
+    n + 2H1 + C14 + photon
+    n + H1 + He4 + B11 + photon
+    2He4 + Be9 + photon
+    H1 + He4 + B12 + photon
+    sumOfRemainingOutputChannels
+
+  Tracked particles:
+
+  Tracked particles: n
+
+  Tracked particles: H1
+
+  Tracked particles: n H1
+
+  Tracked particles: H2
+
+  Tracked particles: n H2
+
+  Tracked particles: H1 H2
+
+  Tracked particles: n H1 H2
+
+  Tracked particles: H3
+
+  Tracked particles: n H3
+
+  Tracked particles: H1 H3
+
+  Tracked particles: n H1 H3
+
+  Tracked particles: H2 H3
+
+  Tracked particles: n H2 H3
+
+  Tracked particles: H1 H2 H3
+
+  Tracked particles: n H1 H2 H3
+
+  Tracked particles: He3
+
+  Tracked particles: n He3
+
+  Tracked particles: H1 He3
+
+  Tracked particles: n H1 He3
+
+  Tracked particles: H2 He3
+
+  Tracked particles: n H2 He3
+
+  Tracked particles: H1 H2 He3
+
+  Tracked particles: n H1 H2 He3
+
+  Tracked particles: H3 He3
+
+  Tracked particles: n H3 He3
+
+  Tracked particles: H1 H3 He3
+
+  Tracked particles: n H1 H3 He3
+
+  Tracked particles: H2 H3 He3
+
+  Tracked particles: n H2 H3 He3
+
+  Tracked particles: H1 H2 H3 He3
+
+  Tracked particles: n H1 H2 H3 He3
+
+  Tracked particles: He4
+
+  Tracked particles: n He4
+
+  Tracked particles: H1 He4
+
+  Tracked particles: n H1 He4
+
+  Tracked particles: H2 He4
+
+  Tracked particles: n H2 He4
+
+  Tracked particles: H1 H2 He4
+
+  Tracked particles: n H1 H2 He4
+
+  Tracked particles: H3 He4
+
+  Tracked particles: n H3 He4
+
+  Tracked particles: H1 H3 He4
+
+  Tracked particles: n H1 H3 He4
+
+  Tracked particles: H2 H3 He4
+
+  Tracked particles: n H2 H3 He4
+
+  Tracked particles: H1 H2 H3 He4
+
+  Tracked particles: n H1 H2 H3 He4
+
+  Tracked particles: He3 He4
+
+  Tracked particles: n He3 He4
+
+  Tracked particles: H1 He3 He4
+
+  Tracked particles: n H1 He3 He4
+
+  Tracked particles: H2 He3 He4
+
+  Tracked particles: n H2 He3 He4
+
+  Tracked particles: H1 H2 He3 He4
+
+  Tracked particles: n H1 H2 He3 He4
+
+  Tracked particles: H3 He3 He4
+
+  Tracked particles: n H3 He3 He4
+
+  Tracked particles: H1 H3 He3 He4
+
+  Tracked particles: n H1 H3 He3 He4
+
+  Tracked particles: H2 H3 He3 He4
+
+  Tracked particles: n H2 H3 He3 He4
+
+  Tracked particles: H1 H2 H3 He3 He4
+
+  Tracked particles: n H1 H2 H3 He3 He4
+
+  Tracked particles: photon
+
+  Tracked particles: n photon
+
+  Tracked particles: H1 photon
+
+  Tracked particles: n H1 photon
+
+  Tracked particles: H2 photon
+
+  Tracked particles: n H2 photon
+
+  Tracked particles: H1 H2 photon
+
+  Tracked particles: n H1 H2 photon
+
+  Tracked particles: H3 photon
+
+  Tracked particles: n H3 photon
+
+  Tracked particles: H1 H3 photon
+
+  Tracked particles: n H1 H3 photon
+
+  Tracked particles: H2 H3 photon
+
+  Tracked particles: n H2 H3 photon
+
+  Tracked particles: H1 H2 H3 photon
+
+  Tracked particles: n H1 H2 H3 photon
+
+  Tracked particles: He3 photon
+
+  Tracked particles: n He3 photon
+
+  Tracked particles: H1 He3 photon
+
+  Tracked particles: n H1 He3 photon
+
+  Tracked particles: H2 He3 photon
+
+  Tracked particles: n H2 He3 photon
+
+  Tracked particles: H1 H2 He3 photon
+
+  Tracked particles: n H1 H2 He3 photon
+
+  Tracked particles: H3 He3 photon
+
+  Tracked particles: n H3 He3 photon
+
+  Tracked particles: H1 H3 He3 photon
+
+  Tracked particles: n H1 H3 He3 photon
+
+  Tracked particles: H2 H3 He3 photon
+
+  Tracked particles: n H2 H3 He3 photon
+
+  Tracked particles: H1 H2 H3 He3 photon
+
+  Tracked particles: n H1 H2 H3 He3 photon
+
+  Tracked particles: He4 photon
+
+  Tracked particles: n He4 photon
+    n + 4He4 + photon
+
+  Tracked particles: H1 He4 photon
+
+  Tracked particles: n H1 He4 photon
+    n + 4He4 + photon
+
+  Tracked particles: H2 He4 photon
+
+  Tracked particles: n H2 He4 photon
+    n + 4He4 + photon
+
+  Tracked particles: H1 H2 He4 photon
+
+  Tracked particles: n H1 H2 He4 photon
+    n + 4He4 + photon
+
+  Tracked particles: H3 He4 photon
+
+  Tracked particles: n H3 He4 photon
+    n + 4He4 + photon
+
+  Tracked particles: H1 H3 He4 photon
+
+  Tracked particles: n H1 H3 He4 photon
+    n + 4He4 + photon
+
+  Tracked particles: H2 H3 He4 photon
+
+  Tracked particles: n H2 H3 He4 photon
+    n + 4He4 + photon
+
+  Tracked particles: H1 H2 H3 He4 photon
+
+  Tracked particles: n H1 H2 H3 He4 photon
+    n + 4He4 + photon
+
+  Tracked particles: He3 He4 photon
+
+  Tracked particles: n He3 He4 photon
+    n + 4He4 + photon
+
+  Tracked particles: H1 He3 He4 photon
+
+  Tracked particles: n H1 He3 He4 photon
+    n + 4He4 + photon
+
+  Tracked particles: H2 He3 He4 photon
+
+  Tracked particles: n H2 He3 He4 photon
+    n + 4He4 + photon
+
+  Tracked particles: H1 H2 He3 He4 photon
+
+  Tracked particles: n H1 H2 He3 He4 photon
+    n + 4He4 + photon
+
+  Tracked particles: H3 He3 He4 photon
+
+  Tracked particles: n H3 He3 He4 photon
+    n + 4He4 + photon
+
+  Tracked particles: H1 H3 He3 He4 photon
+
+  Tracked particles: n H1 H3 He3 He4 photon
+    n + 4He4 + photon
+
+  Tracked particles: H2 H3 He3 He4 photon
+
+  Tracked particles: n H2 H3 He3 He4 photon
+    n + 4He4 + photon
+
+  Tracked particles: H1 H2 H3 He3 He4 photon
+
+  Tracked particles: n H1 H2 H3 He3 He4 photon
+    n + 4He4 + photon

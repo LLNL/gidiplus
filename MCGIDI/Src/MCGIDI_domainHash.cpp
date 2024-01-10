@@ -21,7 +21,7 @@ namespace MCGIDI {
  * Default constructor used when broadcasting a Protare as needed by MPI or GPUs.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE DomainHash::DomainHash( ) :
+LUPI_HOST_DEVICE DomainHash::DomainHash( ) :
         m_bins( 0 ),
         m_domainMin( 0.0 ),
         m_domainMax( 0.0 ),
@@ -37,7 +37,7 @@ MCGIDI_HOST_DEVICE DomainHash::DomainHash( ) :
  * @param a_domainMax           [in]    The maximum value of the energy domain for the hash function.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE DomainHash::DomainHash( int a_bins, double a_domainMin, double a_domainMax ) :
+LUPI_HOST_DEVICE DomainHash::DomainHash( int a_bins, double a_domainMin, double a_domainMax ) :
         m_bins( a_bins ),
         m_domainMin( a_domainMin ),
         m_domainMax( a_domainMax ),
@@ -51,7 +51,7 @@ MCGIDI_HOST_DEVICE DomainHash::DomainHash( int a_bins, double a_domainMin, doubl
  * @param a_domainHash          [in]    The DomainHash instance to copy.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE DomainHash::DomainHash( DomainHash const &a_domainHash ) :
+LUPI_HOST_DEVICE DomainHash::DomainHash( DomainHash const &a_domainHash ) :
         m_bins( a_domainHash.bins( ) ),
         m_domainMin( a_domainHash.domainMin( ) ),
         m_domainMax( a_domainHash.domainMax( ) ), 
@@ -70,7 +70,7 @@ MCGIDI_HOST_DEVICE DomainHash::DomainHash( DomainHash const &a_domainHash ) :
  * @return                              The hash index.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE int DomainHash::index( double a_domain ) const {
+LUPI_HOST_DEVICE int DomainHash::index( double a_domain ) const {
 
     if( a_domain < m_domainMin ) return( 0 );
     if( a_domain > m_domainMax ) return( m_bins + 1 );
@@ -86,7 +86,7 @@ MCGIDI_HOST_DEVICE int DomainHash::index( double a_domain ) const {
  * @return                              The hash indices.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE Vector<int> DomainHash::map( Vector<double> &a_domainValues ) const {
+LUPI_HOST_DEVICE Vector<int> DomainHash::map( Vector<double> &a_domainValues ) const {
 
     std::size_t i1, size( a_domainValues.size( ) );
     Vector<int> indices( m_bins + 2, 0 );
@@ -113,7 +113,7 @@ MCGIDI_HOST_DEVICE Vector<int> DomainHash::map( Vector<double> &a_domainValues )
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE void DomainHash::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+LUPI_HOST_DEVICE void DomainHash::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
     DATA_MEMBER_INT( m_bins, a_buffer, a_mode );
     DATA_MEMBER_FLOAT( m_domainMin, a_buffer, a_mode );
@@ -129,7 +129,7 @@ MCGIDI_HOST_DEVICE void DomainHash::serialize( DataBuffer &a_buffer, DataBuffer:
  * @param a_printValues         [in]    If true, the domain values that divide the hash indices are also printed.
  ***********************************************************************************************************/
 
-MCGIDI_HOST void DomainHash::print( bool a_printValues ) const {
+LUPI_HOST void DomainHash::print( bool a_printValues ) const {
 #ifndef __CUDA_ARCH__
     std::cout << "bins = " << m_bins << std::endl;
     std::cout << "    m_domainMin = " << m_domainMin << "  << m_domainMax = " << m_domainMax << std::endl;
@@ -137,16 +137,12 @@ MCGIDI_HOST void DomainHash::print( bool a_printValues ) const {
     std::cout << "    m_inverse_du = " << m_inverse_du << std::endl;
     if( a_printValues ) {
         double domain = m_domainMin, factor = pow( m_domainMax / m_domainMin, 1. / m_bins );
-        char Str[32];
 
         for( int i1 = 0; i1 < bins( ); ++i1, domain *= factor ) {
-            sprintf( Str, " %14.7e", domain );
-            std::cout << Str;
+            std::cout << LUPI::Misc::argumentsToString( " %14.7e", domain );
             if( ( ( i1 + 1 ) % 10 ) == 0 ) std::cout << std::endl;
         }
-        sprintf( Str, " %14.7e", m_domainMax );
-        std::cout << Str;
-        std::cout << std::endl;
+        std::cout << LUPI::Misc::argumentsToString( " %14.7e", m_domainMax ) << std::endl;
     }
 #endif
 }
@@ -159,7 +155,7 @@ MCGIDI_HOST void DomainHash::print( bool a_printValues ) const {
  * @param a_boundaries          [in]    The list of multi-group boundaries.
  ***********************************************************************************************************/
 
-MCGIDI_HOST MultiGroupHash::MultiGroupHash( std::vector<double> a_boundaries ) :
+LUPI_HOST MultiGroupHash::MultiGroupHash( std::vector<double> a_boundaries ) :
         m_boundaries( a_boundaries ) {
 
 }
@@ -173,7 +169,7 @@ MCGIDI_HOST MultiGroupHash::MultiGroupHash( std::vector<double> a_boundaries ) :
  * @param a_particleID          [in]    The PoPs' id of the particle whose multi-group boundaries are desired.
  ***********************************************************************************************************/
 
-MCGIDI_HOST MultiGroupHash::MultiGroupHash( GIDI::Protare const &a_protare, GIDI::Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_particleID ) {
+LUPI_HOST MultiGroupHash::MultiGroupHash( GIDI::Protare const &a_protare, GIDI::Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_particleID ) {
 
     initialize( a_protare, a_temperatureInfo, a_particleID );
 }
@@ -185,7 +181,7 @@ MCGIDI_HOST MultiGroupHash::MultiGroupHash( GIDI::Protare const &a_protare, GIDI
  * @param a_particles           [in]    The list of transportable particles.
  ***********************************************************************************************************/
 
-MCGIDI_HOST MultiGroupHash::MultiGroupHash( GIDI::Protare const &a_protare, GIDI::Transporting::Particles const &a_particles ) {
+LUPI_HOST MultiGroupHash::MultiGroupHash( GIDI::Protare const &a_protare, GIDI::Transporting::Particles const &a_particles ) {
 
     GIDI::Transporting::Particle const &particle = *a_particles.particle( a_protare.projectile( ).pid( ) );
 
@@ -200,7 +196,7 @@ MCGIDI_HOST MultiGroupHash::MultiGroupHash( GIDI::Protare const &a_protare, GIDI
  * @param a_particleID          [in]    The PoPs' id of the particle whose multi-group boundaries are desired.
  ***********************************************************************************************************/
 
-MCGIDI_HOST void MultiGroupHash::initialize( GIDI::Protare const &a_protare, GIDI::Styles::TemperatureInfo const &a_temperatureInfo, std::string a_particleID ) {
+LUPI_HOST void MultiGroupHash::initialize( GIDI::Protare const &a_protare, GIDI::Styles::TemperatureInfo const &a_temperatureInfo, std::string a_particleID ) {
 
     if( a_particleID == "" ) a_particleID = a_protare.projectile( ).ID( );
 
@@ -218,7 +214,7 @@ MCGIDI_HOST void MultiGroupHash::initialize( GIDI::Protare const &a_protare, GID
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE void MultiGroupHash::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+LUPI_HOST_DEVICE void MultiGroupHash::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
     DATA_MEMBER_VECTOR_DOUBLE( m_boundaries, a_buffer, a_mode );
 }

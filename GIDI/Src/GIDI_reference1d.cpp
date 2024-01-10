@@ -82,7 +82,7 @@ double Reference1d::evaluate( double a_x1 ) const {
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void Reference1d::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void Reference1d::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string attributes;
 

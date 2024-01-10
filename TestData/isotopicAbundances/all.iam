@@ -1,0 +1,4 @@
+<iam library="Test" format="2.0" checksum="fe057d1f517dd76f21e260c4016b855b7873c958" algorithm="sha1">
+  <import path="FUDGE.iam" checksum="7fa5c554629e5792064473d1b172c4b5c23402c8"/>
+  <import path="COGZA2a.iam" checksum="10c9624fd95bbb2aa210f2c009979e5066a13913"/>
+  <import path="CIAAW.iam" checksum="62305841cc552513ed21b05cc6ff939e128281cc"/></iam>

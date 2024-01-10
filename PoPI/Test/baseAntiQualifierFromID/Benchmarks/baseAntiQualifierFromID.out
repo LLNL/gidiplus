@@ -1,0 +1,47 @@
+
+Co: 'Co' ''
+    'Co' '' ''
+
+Co58: 'Co58' ''
+      'Co58' '' ''
+
+Co58_e1: 'Co58_e1' ''
+         'Co58_e1' '' ''
+
+Co58_m1: 'Co58_m1' ''
+         'Co58_m1' '' ''
+
+gamma: 'gamma' ''
+       'gamma' '' ''
+
+photon: 'photon' ''
+        'photon' '' ''
+
+p: 'p' ''
+   'p' '' ''
+
+p_anti: 'p' '_anti'
+        'p' '_anti' ''
+
+e-: 'e-' ''
+    'e-' '' ''
+
+e-_anti: 'e-' '_anti'
+         'e-' '_anti' ''
+
+e-_anti_anti: FAILED: for id = e-_anti_anti
+
+H2{1s1/2}: 'H2' ''
+           'H2' '' '1s1/2'
+
+H2{1s1/2}: 'H2' ''
+           'H2' '' '1s1/2'
+
+H21s1/2}: FAILED: for id = H21s1/2}
+
+H2{1s1/2: FAILED: for id = H2{1s1/2
+
+H2_anti{1s1/2}: 'H2' '_anti'
+                'H2' '_anti' '1s1/2'
+
+H2{1s1/2}_anti: FAILED: for id = H2{1s1/2}_anti

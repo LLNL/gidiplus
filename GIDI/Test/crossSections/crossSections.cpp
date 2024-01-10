@@ -46,12 +46,14 @@ void main2( int argc, char **argv ) {
 
     parseTestOptions.m_askGNDS_File = true;
 
+    argv_options.add( argvOption( "--noCoulomb", false, "If present, only nuclear plus Coulomb interference elastic scattering is used." ) );
+
     parseTestOptions.parse( );
 
     GIDI::Construction::PhotoMode photo_mode = parseTestOptions.photonMode( GIDI::Construction::PhotoMode::nuclearAndAtomic );
     GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, photo_mode );
     PoPI::Database pops;
-    GIDI::Protare *protare = parseTestOptions.protare( pops, "../pops.xml", "../all.map", construction, PoPI::IDs::neutron, "O16" );
+    GIDI::Protare *protare = parseTestOptions.protare( pops, "../../../TestData/PoPs/pops.xml", "../all.map", construction, PoPI::IDs::neutron, "O16" );
 
     std::cout << stripDirectoryBase( protare->fileName( ), "/GIDI/Test/" ) << std::endl;
     if( protare->libraries( ).size( ) > 0 ) std::cout << "library = " << protare->libraries( )[0] << std::endl;
@@ -65,14 +67,18 @@ void main2( int argc, char **argv ) {
 
     GIDI::Transporting::MG settings( protare->projectile( ).ID( ), GIDI::Transporting::Mode::multiGroup, GIDI::Transporting::DelayedNeutrons::on );
 
+    settings.setNuclearPlusCoulombInterferenceOnly( argv_options.find( "--noCoulomb" )->present( ) );
+
     GIDI::Vector crossSection = protare->multiGroupCrossSection( smr1, settings, temperatures[0] );
     std::string prefix( "Total cross section:: " );
     printVector( prefix, crossSection );
 
     for( std::size_t index = 0; index < protare->numberOfReactions( ); ++index ) {
-        GIDI::Reaction const *reaction = protare->reaction( index );
+        GIDI::Reaction const *reaction = protare->reaction( index, settings );
 
-        GIDI::Vector crossSection = reaction->multiGroupCrossSection( smr1, settings, temperatures[0] );
+        if( reaction == nullptr ) continue;
+
+        crossSection = reaction->multiGroupCrossSection( smr1, settings, temperatures[0] );
         std::string string( reaction->label( ) );
         string = "    " + string + ":: ";
         printVector( string, crossSection );

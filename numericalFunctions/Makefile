@@ -7,12 +7,12 @@
 
 SHELL = /bin/sh
 
-PYTHON = python
+PYTHON = python3
 
 SOURCE_DIRS = ptwC ptwX ptwXY nf_Legendre nf_specialFunctions nf_integration
 SUB_DIRS = include lib $(SOURCE_DIRS) Doc _Src
 
-.PHONY: default purgeIncludeAndLib includeAndLib $(SOURCE_DIRS) python utilities docs check checke checkPython checkePython \
+.PHONY: default bin all purgeIncludeAndLib includeAndLib $(SOURCE_DIRS) python utilities docs check checke checkPython checkePython \
 	collectSources clean realclean doTarget statusMessageReporting
 
 SMR_PATH = $(abspath ./statusMessageReporting)
@@ -23,6 +23,10 @@ MAKEFLAGS += SMR_PATH=$(SMR_PATH)
 
 default: purgeIncludeAndLib $(SOURCE_DIRS)
 	$(MAKE) utilities
+
+bin:
+
+all: default
 
 purgeIncludeAndLib: 
 	cd include; $(MAKE) realclean

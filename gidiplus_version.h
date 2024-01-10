@@ -1,18 +1,9 @@
-/*
-# <<BEGIN-copyright>>
-# Copyright 2019, Lawrence Livermore National Security, LLC.
-# See the top-level COPYRIGHT file for details.
-# 
-# SPDX-License-Identifier: MIT
-# <<END-copyright>>
-*/
-
 #define GIDIPLUS_MAJOR 3
-#define GIDIPLUS_MINOR 25
-#define GIDIPLUS_PATCHLEVEL 7
-#define GIDIPLUS_GIT 6539ba29d6d2d89bb2511a21f0efee2d380a20e4
-#define NUMERICAL_FUNCTIONS_GIT 762d33b53f5b46ed2c728d4d24ddd0819dd61bb7
-#define HAPI_GIT f25a0dfad6d0c743a48cfb750cb049823d98cf0e
-#define POPI_GIT 58d26db1fdd6fb38fcc96fd0adc59d51ba6fdeec
-#define GIDI_GIT b3a5771c82350bc6485808a383e626c31386a4f2
-#define MCGIDI_GIT 97b0eb1750c8df755af5aec59c971dd7e1871c40
+#define GIDIPLUS_MINOR 28
+#define GIDIPLUS_PATCHLEVEL 22
+#define GIDIPLUS_GIT 7c8e2fcf94f29acf45476377f7b7ef1289d205e2
+#define NUMERICAL_FUNCTIONS_GIT 6513c6332d2f9b846262d5df470cb04e2c1ff2f5
+#define HAPI_GIT b82dba8e4e41ac12621b738c3dff7bf70c183ac4
+#define POPI_GIT 0104c6cea5b8c934265f8aa1123ab3d91f8a6f73
+#define GIDI_GIT 1250ce6d7300539675c55983d17ea242a008d8ae
+#define MCGIDI_GIT 81a9cddec45450c1f910c9df95328b9846ae1789

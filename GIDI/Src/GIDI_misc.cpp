@@ -94,7 +94,7 @@ long binarySearchVector( double a_x, std::vector<double> const &a_Xs ) {
  * @param a_attributes          [in]        String representation of the attributes for the GNDS **values** node.
  ***********************************************************************************************************/
 
-void intsToXMLList( WriteInfo &a_writeInfo, std::string const &a_indent, std::vector<int> a_values, std::string const &a_attributes ) {
+void intsToXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent, std::vector<int> a_values, std::string const &a_attributes ) {
 
     a_writeInfo.addNodeStarter( a_indent, GIDI_valuesChars, a_attributes );
 
@@ -211,7 +211,7 @@ void parseValuesOfInts( HAPI::Node const &a_node, SetupInfo &a_setupInfo, nf_Buf
  * @param a_valueType           [in]        The value for the *valueType* attribute.
  ***********************************************************************************************************/
 
-void doublesToXMLList( WriteInfo &a_writeInfo, std::string const &a_indent, std::vector<double> a_values, std::size_t a_start, bool a_newLine, std::string const &a_valueType ) {
+void doublesToXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent, std::vector<double> a_values, std::size_t a_start, bool a_newLine, std::string const &a_valueType ) {
 
     int valuesPerLine( a_writeInfo.m_valuesPerLine );
     std::string indent( a_indent );
@@ -228,7 +228,7 @@ void doublesToXMLList( WriteInfo &a_writeInfo, std::string const &a_indent, std:
     if( valuesPerLine < 1 ) valuesPerLine = 1;
     int numberOfValuesInLine = 0;
     for( std::size_t i1 = 0; i1 < a_values.size( ); ++i1 ) {
-        XMLLine += sep + doubleToShortestString( a_values[i1] );
+        XMLLine += sep + LUPI::Misc::doubleToShortestString( a_values[i1] );
         sep = a_writeInfo.m_sep;
         ++numberOfValuesInLine;
 
@@ -256,28 +256,6 @@ void doublesToXMLList( WriteInfo &a_writeInfo, std::string const &a_indent, std:
     }
 
     a_writeInfo.addNodeEnder( GIDI_valuesChars );
-}
-
-/* *********************************************************************************************************//**
- * @param   a_incrementalIndent     [in]    The incremental amount of indentation a node adds to a sub-nodes indentation.
- * @param   a_valuesPerLine         [in]    The maximum number of integer or float values that are written per line before a new line is created.
- * @param   a_sep                   [in]    The separation character to use between integer and float values in a list.
- ***********************************************************************************************************/
-
-WriteInfo::WriteInfo( std::string const &a_incrementalIndent, int a_valuesPerLine, std::string const &a_sep ) :
-        m_incrementalIndent( a_incrementalIndent ),
-        m_valuesPerLine( a_valuesPerLine ),
-        m_sep( a_sep ) {
-
-}
-
-/* *********************************************************************************************************//**
- * Prints to contents the *this* to std::cout.
- ***********************************************************************************************************/
-
-void WriteInfo::print( ) {
-
-    for( auto line = m_lines.begin( ); line != m_lines.end( ); ++line ) std::cout << *line << std::endl;
 }
 
 /* *********************************************************************************************************//**
@@ -366,12 +344,7 @@ Functions::Ys1d vector2GIDI_Ys1d( Axes const &a_axes, Vector const &a_vector ) {
 
 std::string LLNL_gidToLabel( int a_gid ) {
 
-    char cLabel[64];
-
-    sprintf( cLabel, "LLNL_gid_%d", a_gid );
-    std::string label( cLabel );
-
-    return( label );
+    return( LUPI::Misc::argumentsToString( "LLNL_gid_%d", a_gid ) );
 }
 
 /* *********************************************************************************************************//**
@@ -384,12 +357,7 @@ std::string LLNL_gidToLabel( int a_gid ) {
 
 std::string LLNL_fidToLabel( int a_fid ) {
 
-    char cLabel[64];
-
-    sprintf( cLabel, "LLNL_fid_%d", a_fid );
-    std::string label( cLabel );
-
-    return( label );
+    return( LUPI::Misc::argumentsToString( "LLNL_fid_%d", a_fid ) );
 }
 
 /* *********************************************************************************************************//**
@@ -454,14 +422,14 @@ std::string frameToString( Frame a_frame ) {
  * @return                      A *std::string* instance.
   ***********************************************************************************************************/
 
-std::string nodeWithValuesToDoubles( WriteInfo &a_writeInfo, std::string const &a_nodeName, std::vector<double> const &a_values ) {
+std::string nodeWithValuesToDoubles( GUPI::WriteInfo &a_writeInfo, std::string const &a_nodeName, std::vector<double> const &a_values ) {
 
     std::string xml = a_writeInfo.nodeStarter( "", a_nodeName );
     std::string sep( "" );
 
     xml += a_writeInfo.nodeStarter( "", GIDI_valuesChars );
     for( std::size_t i1 = 0; i1 < a_values.size( ); ++i1 ) {
-        xml += sep + doubleToShortestString( a_values[i1] );
+        xml += sep + LUPI::Misc::doubleToShortestString( a_values[i1] );
         if( i1 == 0 ) sep = " ";
     }
     xml += a_writeInfo.nodeEnder( GIDI_valuesChars );
@@ -480,10 +448,7 @@ std::string nodeWithValuesToDoubles( WriteInfo &a_writeInfo, std::string const &
 
 std::string intToString( int a_value ) {
 
-    char str[256];
-
-    sprintf( str, "%d", a_value );
-    return( std::string( str ) );
+    return( LUPI::Misc::argumentsToString( "%d", a_value ) );
 }
 
 /* *********************************************************************************************************//**
@@ -496,32 +461,7 @@ std::string intToString( int a_value ) {
 
 std::string size_t_ToString( std::size_t a_value ) {
 
-    char str[256];
-
-    sprintf( str, "%zu", a_value );
-    return( std::string( str ) );
-}
-
-/* *********************************************************************************************************//**
- * Returns a string representation of *a_value* that contains the smallest number of character yet still agrees with *a_value*
- * to *a_significantDigits* significant digits. For example, for *a_value* = 1.20000000001, "1.2" will be returned if *a_significantDigits*
- * is less than 11, otherwise "1.20000000001" is returned.
- *
- * @param a_value               [in/out]    The double to convert to a string.
- * @param a_significantDigits   [in]        The number of significant digits the string representation should agree with the double.
- * @param a_favorEFormBy        [in]        The bigger this value the more likely an e-form will be favored in the string representation.
- *
- * @return                      A *std::string* instance.
-  ***********************************************************************************************************/
-
-std::string doubleToShortestString( double a_value, int a_significantDigits, int a_favorEFormBy ) {
-
-    char *charValue = nf_floatToShortestString( a_value, a_significantDigits, a_favorEFormBy, nf_floatToShortestString_trimZeros );
-
-    std::string stringValue( charValue );
-    free( charValue );
-
-    return( stringValue );
+    return( LUPI::Misc::argumentsToString( "%zu", a_value ) );
 }
 
 /* *********************************************************************************************************//**
@@ -533,7 +473,7 @@ std::string doubleToShortestString( double a_value, int a_significantDigits, int
  * @param       a_function          [in]        The energy function whose information is converted to XML.
  ***********************************************************************************************************/
 
-void energy2dToXMLList( WriteInfo &a_writeInfo, std::string const &a_moniker, std::string const &a_indent, Functions::Function1dForm *a_function ) {
+void energy2dToXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_moniker, std::string const &a_indent, Functions::Function1dForm *a_function ) {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
 
@@ -545,13 +485,32 @@ void energy2dToXMLList( WriteInfo &a_writeInfo, std::string const &a_moniker, st
 }
 
 /* *********************************************************************************************************//**
+ * Returns a new **ExcludeReactionsSet** with 
+ *
+ * @param a_protare     [in]            The **Protare** instance used to determine the number of reactions to adjust the new indices by.
+ *
+ * @return                              returns the startIndex attribute of *a_node*.
+ ***********************************************************************************************************/
+
+void excludeReactionsSetAdjust( ExcludeReactionsSet a_excludeReactionsSet, Protare const &a_protare ) {
+
+    ExcludeReactionsSet excludeReactionsSet;
+
+    for( auto iter = a_excludeReactionsSet.begin( ); iter != a_excludeReactionsSet.end( ); ++iter ) {
+        int index = (*iter) - a_protare.numberOfReactions( );
+        if( index > -1 ) excludeReactionsSet.insert( index );
+    }
+
+    a_excludeReactionsSet = excludeReactionsSet;
+}
+
+/* *********************************************************************************************************//**
  * For internal use only.
  *
  * @param a_node                [in]    The **HAPI::Node** node whose text is to be converted into a list of doubles.
  *
  * @return                              returns the startIndex attribute of *a_node*.
  ***********************************************************************************************************/
-
 
 static std::size_t startIndexAttribute( HAPI::Node const &a_node ) {
 

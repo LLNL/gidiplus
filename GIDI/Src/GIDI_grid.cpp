@@ -63,7 +63,7 @@ Grid::Grid( Grid const &a_grid ) :
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void Grid::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void Grid::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     std::string attributes = a_writeInfo.addAttribute( GIDI_indexChars, intToString( index( ) ) );

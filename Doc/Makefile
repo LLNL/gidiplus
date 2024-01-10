@@ -9,9 +9,13 @@ SHELL = /bin/ksh
 
 DIRS = StyleGuide
 
-.PHONY: default check clean realclean doDIRS
+.PHONY: default bin all docs check clean realclean doDIRS
 
 default:
+
+bin:
+
+all:
 
 docs:
 

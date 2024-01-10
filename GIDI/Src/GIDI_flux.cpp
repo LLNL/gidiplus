@@ -40,7 +40,7 @@ Flux::~Flux( ) {
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void Flux::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void Flux::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     std::string attributes = a_writeInfo.addAttribute( GIDI_labelChars, label( ) );
@@ -79,7 +79,7 @@ Fluxes::Fluxes( std::string const &a_fileName ) :
 
 void Fluxes::addFile( std::string const &a_fileName ) {
 
-    HAPI::PugiXMLFile *doc = new HAPI::PugiXMLFile( a_fileName.c_str( ) );
+    HAPI::File *doc = new HAPI::PugiXMLFile( a_fileName.c_str( ), "Fluxes::addFile" );
 
     HAPI::Node fluxes = doc->first_child( );
 

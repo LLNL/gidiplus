@@ -39,9 +39,9 @@ int main( int argc, char **argv ) {
 */
 void main2( int argc, char **argv ) {
 
-    PoPI::Database pops( "../../../GIDI/Test/pops.xml" );
+    PoPI::Database pops( "../../../TestData/PoPs/pops.xml" );
     GIDI::Transporting::Particles particles;
-    char *endChar, Str[128];
+    char *endChar;
     std::size_t numberOfSamples = 1000 * 1000;
     void *rngState = nullptr;
     unsigned long long seed = 1;
@@ -128,8 +128,7 @@ void main2( int argc, char **argv ) {
         std::cout << "      ";
         for( int i1 = 0; i1 < numberOfReactions; ++i1 ) {
             double reactionCrossSection = MCProtare->reactionCrossSection( i1, URR_protare_infos, hashIndex, temperature, energy );
-            sprintf( Str, " %9.6f", reactionCrossSection / crossSection );
-            std::cout << Str;
+            std::cout << LUPI::Misc::argumentsToString( " %9.6f", reactionCrossSection / crossSection );
         }
         std::cout << std::endl;
 
@@ -143,15 +142,13 @@ void main2( int argc, char **argv ) {
         std::cout << "      ";
         for( int i1 = 0; i1 < numberOfReactions; ++i1 ) {
             double ratio = counts[i1];
-            sprintf( Str, " %9.6f", ratio / numberOfSamples );
-            std::cout << Str;
+            std::cout << LUPI::Misc::argumentsToString( " %9.6f", ratio / numberOfSamples );
         }
         std::cout << std::endl;
 
         std::cout << "      ";
         for( int i1 = 0; i1 < numberOfReactions; ++i1 ) {
-            sprintf( Str, " %9ld", counts[i1] );
-            std::cout << Str;
+            std::cout << LUPI::Misc::argumentsToString( " %9ld", counts[i1] );
         }
         std::cout << std::endl;
     }

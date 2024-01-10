@@ -55,40 +55,71 @@ void main2( int argc, char **argv ) {
     GIDI::Construction::PhotoMode photo_mode = parseTestOptions.photonMode( GIDI::Construction::PhotoMode::nuclearAndAtomic );
     GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, photo_mode );
     PoPI::Database pops;
-    GIDI::Protare *protare = parseTestOptions.protare( pops, "../pops.xml", "../all.map", construction, PoPI::IDs::neutron, "O16" );
+    GIDI::Protare *protare = parseTestOptions.protare( pops, "../../../TestData/PoPs/pops.xml", "../all.map", construction, PoPI::IDs::neutron, "O16" );
 
     std::cout << stripDirectoryBase( protare->fileName( ), "/GIDI/Test/" ) << std::endl;
 
+    std::string productID = argv_options.find( "--oid" )->zeroOrOneOption( argv, protare->projectile( ).ID( ) );
+
     GIDI::Transporting::DelayedNeutrons includeDelayedNeutrons = GIDI::Transporting::DelayedNeutrons::off;
     if( argv_options.find( "--delayed" )->present( ) ) includeDelayedNeutrons = GIDI::Transporting::DelayedNeutrons::on;
-    GIDI::Styles::TemperatureInfos temperatures = protare->temperatures( );
     GIDI::Transporting::MG settings( protare->projectile( ).ID( ), GIDI::Transporting::Mode::multiGroup, includeDelayedNeutrons );
-    GIDI::Transporting::Particles particles;
 
-    std::string productID = argv_options.find( "--oid" )->zeroOrOneOption( argv, protare->projectile( ).ID( ) );
-    std::string prefix( "Total " + productID + " production matrix: " );
-    int maxOrder = protare->maximumLegendreOrder( smr1, settings, temperatures[0], productID );
+    GIDI::Styles::TemperatureInfos temperatures = protare->temperatures( );
+    GIDI::Styles::TemperatureInfo temperature = temperatures[0];
+    std::string label( temperature.heatedMultiGroup( ) );
+    GIDI::Styles::HeatedMultiGroup const &heatedMultiGroup = *(protare->styles( ).get<GIDI::Styles::HeatedMultiGroup>( label ));
 
-    int order = argv_options.find( "--order" )->asInt( argv );
-    GIDI::Matrix m1 = protare->multiGroupProductMatrix( smr1, settings, temperatures[0], particles, productID, order );
-    printMatrix( prefix, maxOrder, m1 );
+    GIDI::Suite const &transportables = heatedMultiGroup.transportables( );
+    GIDI::Transportable const *transportable = nullptr;
+    for( std::size_t i1 = 0; i1 < transportables.size( ); ++i1 ) {
+        GIDI::Transportable const *transportable2 = transportables.get<GIDI::Transportable const>( i1 );
+        if( transportable2->pid( ) == productID ) {
+            transportable = transportable2;
+            break;
+        }
+    }
+    if( transportable == nullptr ) {
+        std::cout << "No transportable data for " << productID << "." << std::endl; }
+    else {
+        GIDI::Transporting::Particles particles;
+        GIDI::Group group( transportable->group( ) );
+        GIDI::Transporting::Particle productParticle( productID, group, GIDI::Transporting::Mode::multiGroup );
 
-    prefix = "Total fission matrix: ";
-    m1 = protare->multiGroupFissionMatrix( smr1, settings, temperatures[0], particles, order );
-    printMatrix( prefix, -2, m1 );
+        GIDI::Transporting::Flux flux( "flat", 0.0 );
+        double fluxEnergies[2] = { 0.0, 0.0 }, fluxValues[2] = { 1.0, 1.0 };
+        fluxEnergies[1] = group.grid( ).data( )[group.grid( ).data( ).size( ) - 1];
+        GIDI::Transporting::Flux_order flux_0_order = GIDI::Transporting::Flux_order( 0, 2, fluxEnergies, fluxValues );
+        flux.addFluxOrder( flux_0_order );
+        productParticle.appendFlux( flux );
 
-    for( std::size_t index = 0; index < protare->numberOfReactions( ); ++index ) {
-        GIDI::Reaction const *reaction = protare->reaction( index );
-        int maxOrder = reaction->maximumLegendreOrder( smr1, settings, temperatures[0], productID );
-        GIDI::Matrix m1 = reaction->multiGroupProductMatrix( smr1, settings, temperatures[0], particles, productID, order );
-        std::string string( reaction->label( ) );
+        particles.add( productParticle );
+        particles.process( *protare, label );
 
-        string += ": ";
-        printMatrix( string, maxOrder, m1 );
+        std::string prefix( "Total " + productID + " production matrix: " );
+        int maxOrder = protare->maximumLegendreOrder( smr1, settings, temperature, productID );
 
-        m1 = reaction->multiGroupFissionMatrix( smr1, settings, temperatures[0], particles, order );
-        string = "  fission:";
-        if( m1.size( ) > 0 ) printMatrix( string, -2, m1 );
+        int order = argv_options.find( "--order" )->asInt( argv );
+        GIDI::Matrix m1 = protare->multiGroupProductMatrix( smr1, settings, temperature, particles, productID, order );
+        printMatrix( prefix, maxOrder, m1 );
+
+        prefix = "Total fission matrix: ";
+        m1 = protare->multiGroupFissionMatrix( smr1, settings, temperature, particles, order );
+        printMatrix( prefix, -2, m1 );
+
+        for( std::size_t index = 0; index < protare->numberOfReactions( ); ++index ) {
+            GIDI::Reaction const *reaction = protare->reaction( index );
+            maxOrder = reaction->maximumLegendreOrder( smr1, settings, temperature, productID );
+            m1 = reaction->multiGroupProductMatrix( smr1, settings, temperature, particles, productID, order );
+            std::string string( reaction->label( ) );
+
+            string += ": ";
+            printMatrix( string, maxOrder, m1 );
+
+            m1 = reaction->multiGroupFissionMatrix( smr1, settings, temperature, particles, order );
+            string = "  fission:";
+            if( m1.size( ) > 0 ) printMatrix( string, -2, m1 );
+        }
     }
 
     delete protare;

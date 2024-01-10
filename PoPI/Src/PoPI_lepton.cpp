@@ -29,6 +29,8 @@ Lepton::Lepton( HAPI::Node const &a_node, Database *a_DB, Database *a_parent ) :
         Particle( a_node, Particle_class::lepton, PoPI_leptonChars ),
         m_generation( a_node.attribute( PoPI_generationChars ).value( ) ) {
 
+    if( ID( ).substr(0, 2) == IDs::electron ) setIntid( intidHelper( isAnti( ), Particle_class::lepton, 0 ) );
+
     addToDatabase( a_DB );
 }
 

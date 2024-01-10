@@ -7,7 +7,7 @@ SHELL = /bin/ksh
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
-.PHONY: default include lib bin clean realclean docs doDIRS
+.PHONY: default all include lib bin clean realclean docs doDIRS
 
 DIRS = Src include lib Test bin Doc Examples
 
@@ -16,6 +16,8 @@ export GIDI_PLUS_PATH
 
 default: include lib
 	cd Test; $(MAKE) default
+
+all: default
 	$(MAKE) bin
 
 include:

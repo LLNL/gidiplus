@@ -49,7 +49,7 @@ ProbabilityTable::~ProbabilityTable( ) {
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void ProbabilityTable::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void ProbabilityTable::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     std::string attributes;
@@ -95,12 +95,12 @@ IncidentEnergy::~IncidentEnergy( ) {
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void IncidentEnergy::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void IncidentEnergy::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     std::string attributes;
 
-    attributes = a_writeInfo.addAttribute( GIDI_valueChars, doubleToShortestString( m_value ) );
+    attributes = a_writeInfo.addAttribute( GIDI_valueChars, LUPI::Misc::doubleToShortestString( m_value ) );
     attributes += a_writeInfo.addAttribute( GIDI_unitChars, m_unit );
     a_writeInfo.addNodeStarter( a_indent, moniker( ), attributes );
 

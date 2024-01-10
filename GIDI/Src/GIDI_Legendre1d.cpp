@@ -88,13 +88,13 @@ double Legendre1d::evaluate( double a_x1 ) const {
  * @param       a_inRegions         [in]        If *true*, *this* is in a Regions1d container.
  ***********************************************************************************************************/
 
-void Legendre1d::toXMLList_func( WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
+void Legendre1d::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     std::string attributes;
 
     if( a_embedded ) {
-        attributes += a_writeInfo.addAttribute( GIDI_outerDomainValueChars, doubleToShortestString( outerDomainValue( ) ) ); }
+        attributes += a_writeInfo.addAttribute( GIDI_outerDomainValueChars, LUPI::Misc::doubleToShortestString( outerDomainValue( ) ) ); }
     else {
         if( a_inRegions ) {
             attributes = a_writeInfo.addAttribute( GIDI_indexChars, intToString( index( ) ) ); }

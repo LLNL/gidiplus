@@ -16,4 +16,4 @@ include ../Makefile.check
 check: $(Executables)
 	if [ ! -e Outputs ]; then mkdir Outputs; fi
 	./multiGroup > Outputs/multiGroup.out
-	python ../Utilities/diff.py multiGroup/multiGroup Benchmarks/multiGroup.out Outputs/multiGroup.out
+	$(PYTHON) ../Utilities/diff.py multiGroup/multiGroup Benchmarks/multiGroup.out Outputs/multiGroup.out

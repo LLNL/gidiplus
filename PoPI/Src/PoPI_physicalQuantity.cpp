@@ -126,13 +126,10 @@ double PQ_double::value( char const *a_unit ) const {
 
 std::string PQ_double::valueToString( void ) const {
 
-    char str[64];
-
-    sprintf( str, "%.12g", m_value );
+    std::string sValue = LUPI::Misc::argumentsToString( "%.12g", m_value );
     if( fabs( m_value ) < 1e10 ) {
-        if( strchr( str, '.' ) == nullptr ) sprintf( str, "%.1f", m_value );
+        if( sValue.find( '.' ) == std::string::npos ) sValue = LUPI::Misc::argumentsToString( "%.1f", m_value );
     }
-    std::string sValue( str );
 
     return( sValue );
 }
@@ -178,10 +175,7 @@ int PQ_integer::value( char const *a_unit ) const {
 
 std::string PQ_integer::valueToString( void ) const {
 
-    char str[64];
-    sprintf( str, "%d", m_value );
-    std::string sValue( str );
-    return( sValue );
+    return( LUPI::Misc::argumentsToString( "%d", m_value ) );
 }
 
 /*! \class PQ_fraction

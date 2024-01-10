@@ -7,7 +7,7 @@ SHELL = /bin/ksh
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
-.PHONY: default include lib bin check speeds clean realclean docs doDIRS
+.PHONY: default all include lib bin speeds check clean realclean docs doDIRS
 
 DIRS = Src include lib bin Test Speeds Doc
 
@@ -16,8 +16,9 @@ export GIDI_PLUS_PATH
 
 default: include lib
 	cd Test; $(MAKE) default
-	$(MAKE) bin
-	cd Speeds; $(MAKE) default
+
+all: default
+	$(MAKE) bin speeds
 
 include:
 	cd include; $(MAKE)
@@ -28,11 +29,11 @@ lib:
 bin:
 	cd bin; $(MAKE) bin
 
+speeds:
+	cd Speeds; $(MAKE) default
+
 check:
 	cd Test; $(MAKE) check
-
-speeds:
-	cd Speeds; $(MAKE) speeds
 
 clean:
 	$(MAKE) doDIRS _DIRS="$(DIRS)" _TARGET=clean

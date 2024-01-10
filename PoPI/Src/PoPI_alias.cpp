@@ -30,6 +30,11 @@ Alias::Alias( HAPI::Node const &a_node, Database *a_DB, Particle_class a_class )
         m_pid( a_node.attribute( PoPI_pidChars ).value( ) ),
         m_pidIndex( -1 ) {
 
+    if( supportedNucluesAliases.find( ID( ) ) != supportedNucluesAliases.end( ) ) {
+        ParseIdInfo idInfo( supportedNucluesAliases[ID( )] );
+
+        setIntid( 1000 * ( 1000 * (idInfo.index( ) + 500) + idInfo.Z( ) ) + idInfo.A( ) );       // Anti is currently not supported.
+    }
     if( a_class == Particle_class::alias ) addToDatabase( a_DB );
 }
 
@@ -84,6 +89,14 @@ MetaStable::MetaStable( HAPI::Node const &a_node, Database *a_DB ) :
         Alias( a_node, a_DB, Particle_class::metaStable ),
         m_metaStableIndex( a_node.attribute( PoPI_metaStableIndexChars ).as_int( ) ) {
 
+    ParseIdInfo idInfo( ID( ) );
+    if( idInfo.isNuclear( ) ) {
+        int offset = 480;
+        if( idInfo.isNucleus( ) ) offset += 500;
+
+        setIntid( 1000 * ( 1000 * (idInfo.index( ) + offset) + idInfo.Z( ) ) + idInfo.A( ) );       // Anti is currently not supported.
+    }
+
     addToDatabase( a_DB );
 }
 
@@ -103,9 +116,7 @@ MetaStable::~MetaStable( ) {
 
 void MetaStable::toXMLList( std::vector<std::string> &a_XMLList, std::string const &a_indent1 ) const {
 
-    char indexStr[18];
-
-    sprintf( indexStr, "%d", m_metaStableIndex );
+    std::string indexStr = LUPI::Misc::argumentsToString( "%d", m_metaStableIndex );
     std::string header = a_indent1 + "<metaStable id=\"" + ID( ) + "\" pid=\"" + pid( ) + "\" metaStableIndex=\"" + indexStr + "\"/>";
     a_XMLList.push_back( header );
 }

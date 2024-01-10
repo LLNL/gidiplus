@@ -7,7 +7,6 @@ export CFLAGS="  -g -O3 -ffp-contract=off -mcpu=a2 -mtune=a2";
 gmake clean; \
 gmake \
 PREFIX=`pwd`/test_install/bgq/clang \
-NUCLEAR_PATH=/usr/gapps/bdiv/bgqos_0/bgqclang++11-opt-2017/nuclear/r184 \
 install;
 
 export -n CXX;

@@ -41,6 +41,20 @@ namespace GIDI {
 namespace Map {
 
 /* *********************************************************************************************************//**
+ * Returns the type of file for *a_filename*.
+ *
+ * @param a_filename                [in]    Path of the file.
+ *
+ * @return                                  A **FileType** instance.
+ ***********************************************************************************************************/
+
+static FileType fileType( std::string const &a_path ) {
+
+    if( a_path.compare( a_path.size( ) - 2, 2, "h5" ) == 0 ) return( GIDI::FileType::HDF );
+    return( GIDI::FileType::XML );
+}
+
+/* *********************************************************************************************************//**
  * User data passed to the Map::directory method. It stores the desired projectile, target, library and evalaute infomation
  * as a list of found matches. An empty string for the projectile's id matches all projectiles. 
  * A empty string for the target's id matches all targets. An empty evaluation string matches all evaluations.
@@ -112,7 +126,7 @@ bool MapWalkDirectoryCallback( ProtareBase const *a_protareEntry, std::string co
  ***********************************************************************************************************/
 
 BaseEntry::BaseEntry( HAPI::Node const &a_node, std::string const &a_basePath, Map const *a_parent ) :
-        Ancestry( a_node.name( ) ),
+        GUPI::Ancestry( a_node.name( ) ),
         m_name( a_node.name( ) ),
         m_parent( a_parent ),
         m_path( a_node.attribute_as_string( GIDI_pathChars ) ),
@@ -251,7 +265,7 @@ std::vector<std::string> Import::availableEvaluations( std::string const &a_proj
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void Import::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void Import::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string attributes;
 
@@ -397,6 +411,8 @@ Protare::~Protare( ) {
 }
 
 /* *********************************************************************************************************//**
+ * Returns a GIDI::Protare instance of the protare reference by the *m_path* member.
+ *
  * @param a_construction            [in]    Used to pass user options to the constructor.
  * @param a_pops                    [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_particleSubstitution    [in]    Map of particles to substitute with another particles.
@@ -406,17 +422,25 @@ Protare::~Protare( ) {
 
 GIDI::Protare *Protare::protare( Construction::Settings const &a_construction, PoPI::Database const &a_pops, ParticleSubstitution const &a_particleSubstitution ) const {
 
+    return( protareSingle( a_construction, a_pops, a_particleSubstitution ) );
+}
+
+/* *********************************************************************************************************//**
+ * Returns a GIDI::ProtareSingle instance of the protare reference by the *m_path* member.
+ *
+ * @param a_construction            [in]    Used to pass user options to the constructor.
+ * @param a_pops                    [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
+ * @param a_particleSubstitution    [in]    Map of particles to substitute with another particles.
+ *
+ * @return                          Returns the Protare matching the TNSL protare.
+ ***********************************************************************************************************/
+
+GIDI::ProtareSingle *Protare::protareSingle( Construction::Settings const &a_construction, PoPI::Database const &a_pops, ParticleSubstitution const &a_particleSubstitution ) const {
+
     std::vector<std::string> libraries1;
     libraries( libraries1 );
 
-    FileType fileType;
-    if( path( ).compare( path( ).size( ) - 2, 2, "h5" ) == 0 ) {
-      fileType = GIDI::FileType::HDF; }
-    else {
-      fileType = GIDI::FileType::XML;
-    }
-
-    return( new ProtareSingle( a_construction, path( ), fileType, a_pops, a_particleSubstitution, libraries1, interaction( ), true ) );
+    return( new ProtareSingle( a_construction, path( ), fileType( path( ) ), a_pops, a_particleSubstitution, libraries1, interaction( ), true ) );
 }
 
 /* *********************************************************************************************************//**
@@ -426,7 +450,7 @@ GIDI::Protare *Protare::protare( Construction::Settings const &a_construction, P
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void Protare::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void Protare::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string attributes;
 
@@ -468,6 +492,8 @@ TNSL::~TNSL( ) {
 }
 
 /* *********************************************************************************************************//**
+ * Returns a GIDI::ProtareTNSL instance of the protare reference by the *m_path* member.
+ *
  * @param a_construction            [in]    Used to pass user options to the constructor.
  * @param a_pops                    [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_particleSubstitution    [in]    Map of particles to substitute with another particles.
@@ -483,13 +509,7 @@ GIDI::Protare *TNSL::protare( Construction::Settings const &a_construction, PoPI
     std::vector<std::string> libraries1;
     libraries( libraries1 );
 
-    FileType FT;
-    if (path( ).compare(path( ).size()-2,2,"h5") == 0)
-      FT = GIDI::FileType::HDF;
-    else
-      FT = GIDI::FileType::XML;
-
-    ProtareSingle *protare1 = new ProtareSingle( a_construction, path( ), FT, a_pops, particleSubstitution, libraries1, GIDI_MapInteractionTNSLChars, false );
+    ProtareSingle *protare1 = new ProtareSingle( a_construction, path( ), fileType( path( ) ), a_pops, particleSubstitution, libraries1, GIDI_MapInteractionTNSLChars, false );
 
     while( true ) {
         Map const *parent = map->parent( );
@@ -505,6 +525,24 @@ GIDI::Protare *TNSL::protare( Construction::Settings const &a_construction, PoPI
     return( protareTNSL );
 }
 
+/* *********************************************************************************************************//**
+ * Returns a GIDI::ProtareSingle instance of the protare reference by the *m_path* member. Note, this is different from the *protare* method
+ * which returns a **GIDI::ProtareTNSL** instance.
+ *
+ * @param a_construction            [in]    Used to pass user options to the constructor.
+ * @param a_pops                    [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
+ * @param a_particleSubstitution    [in]    Map of particles to substitute with another particles.
+ *
+ * @return                          Returns the Protare matching the TNSL protare.
+ ***********************************************************************************************************/
+
+GIDI::ProtareSingle *TNSL::protareSingle( Construction::Settings const &a_construction, PoPI::Database const &a_pops, ParticleSubstitution const &a_particleSubstitution ) const {
+
+    std::vector<std::string> libraries1;
+    libraries( libraries1 );
+
+    return( new ProtareSingle( a_construction, path( ), fileType( path( ) ), a_pops, a_particleSubstitution, libraries1, GIDI_MapInteractionTNSLChars, false ) );
+}
 
 /* *********************************************************************************************************//**
  * Fills the argument *a_writeInfo* with the XML lines that represent *this*. Recursively enters each sub-node.
@@ -513,7 +551,7 @@ GIDI::Protare *TNSL::protare( Construction::Settings const &a_construction, PoPI
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void TNSL::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void TNSL::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string attributes;
 
@@ -533,7 +571,7 @@ void TNSL::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) cons
  ***********************************************************************************************************/
 
 Map::Map( std::string const &a_fileName, PoPI::Database const &a_pops, Map const *a_parent ) :
-        Ancestry( GIDI_mapChars ) {
+        GUPI::Ancestry( GIDI_mapChars ) {
 
     initialize( a_fileName, a_pops, a_parent );
 }
@@ -547,7 +585,7 @@ Map::Map( std::string const &a_fileName, PoPI::Database const &a_pops, Map const
  ***********************************************************************************************************/
 
 Map::Map( HAPI::Node const &a_node, std::string const &a_fileName, PoPI::Database const &a_pops, Map const *a_parent ) :
-        Ancestry( a_node.name( ) ) {
+        GUPI::Ancestry( a_node.name( ) ) {
 
     initialize( a_node, a_fileName, a_pops, a_parent );
 }
@@ -562,8 +600,7 @@ Map::Map( HAPI::Node const &a_node, std::string const &a_fileName, PoPI::Databas
 
 void Map::initialize( std::string const &a_fileName, PoPI::Database const &a_pops, Map const *a_parent ) {
 
-    HAPI::File *doc = new HAPI::PugiXMLFile( a_fileName.c_str( ) );;
-    //if( result.status != pugi::status_ok ) throw Exception( "ERROR reading file '" + a_fileName + "': " + result.description( ) );
+    HAPI::File *doc = new HAPI::PugiXMLFile( a_fileName.c_str( ), "Map::initialize" );
 
     HAPI::Node map = doc->first_child( );
 
@@ -886,7 +923,7 @@ bool Map::walk( MapWalkCallBack a_mapWalkCallBack, void *a_userData, int a_level
 
 void Map::saveAs( std::string const &a_fileName ) const {
 
-    WriteInfo writeInfo;
+    GUPI::WriteInfo writeInfo;
 
     toXMLList( writeInfo, "" );
 
@@ -903,10 +940,10 @@ void Map::saveAs( std::string const &a_fileName ) const {
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void Map::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void Map::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
-    std::string header = GNDS_XML_verionEncoding;
+    std::string header = LUPI_XML_verionEncoding;
     std::string attributes;
 
     a_writeInfo.push_back( header );

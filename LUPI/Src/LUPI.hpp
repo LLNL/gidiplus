@@ -15,10 +15,14 @@
 #include <sys/stat.h>
 #include <string>
 #include <vector>
+#include <list>
 #include <map>
 #include <stdexcept>
+#include <iostream>
 
 #include <statusMessageReporting.h>
+
+#define LUPI_XML_verionEncoding "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
 
 namespace LUPI {
 
@@ -106,17 +110,16 @@ class StatusMessageReporting {
 ============================================================
 */
 
-enum class ArgumentType { Boolean, Count, Store, Append, Positional };
+enum class ArgumentType { True, False, Count, Store, Append, Positional };
 
 class ArgumentBase;
 
 class ArgumentParser {
 
     private:
-        std::string m_codeName;
-        std::string m_descriptor;
-        std::vector<ArgumentBase *> m_arguments;
-        std::map<std::string,int> m_indices;
+        std::string m_codeName;                                 /**< The name of the code that is using **ArgumentParser**. */
+        std::string m_descriptor;                               /**< The descriptor that is printed when help (i.e., '-h') is entered. */
+        std::vector<ArgumentBase *> m_arguments;                /**< The list of arguments (positional and optional) supported. */
 
         void add2( ArgumentBase *a_argumentBase );
 
@@ -127,10 +130,13 @@ class ArgumentParser {
         std::string const &codeName( ) const { return( m_codeName ); }
         std::string const &descriptor( ) const { return( m_descriptor ); }
         template<typename T> T *add( std::string const &a_name, std::string const &a_descriptor, int a_minimumNeeded = 1, int a_maximumNeeded = 1 );
+        ArgumentBase *add( ArgumentType a_argumentType, std::string const &a_name, std::string const &a_descriptor, 
+                int a_minimumNeeded = -2, int a_maximumNeeded = -2 );
         void addAlias( std::string const &a_name, std::string const &a_alias );
         void addAlias( ArgumentBase const * const a_argumentBase, std::string const &a_alias );
         bool hasName( std::string const &a_name ) const ;
-        void parse( int a_argc, char **a_argv );
+        bool isOptionalArgument( std::string const &a_name ) const ;
+        void parse( int a_argc, char **a_argv, bool a_printArguments = true );
         template<typename T> T *get( std::size_t a_name );
         void help( ) const ;
         void usage( ) const ;
@@ -170,10 +176,11 @@ class ArgumentBase {
         std::string m_descriptor;                           /**< The desciption printed help. */
         int m_minimumNeeded;                                /**< Minimum number of times *this* argument is required on the command line. */
         int m_maximumNeeded;                                /**< Maximum number of times *this* argument is required on the command line. */
-        int m_numberEntered;                                /**< The number of time this argument was entered on the command line. */
+        int m_counts;                                       /**< The number of time this argument was entered on the command line. */
+        std::vector<std::string> m_values;                  /**< list of values entered for this argument. Only used for types Store, Append and Positional. */
 
-        void addAlias( std::string const &a_name );
-        virtual std::string printStatus2( ) const ;
+        void addAlias( std::string const &a_name );                         /**< Adds the alias *a_name* to *this*. */
+        virtual std::string printStatus2( ) const ;                         /**< For internal use. Called by method **printStatus**. */
         virtual void printStatus3( std::string const &a_indent ) const ;
 
         friend void ArgumentParser::addAlias( std::string const &a_name, std::string const &a_alias );
@@ -189,8 +196,10 @@ class ArgumentBase {
         std::string const &descriptor( ) const { return( m_descriptor ); }
         int minimumNeeded( ) const { return( m_minimumNeeded ); }
         int maximumNeeded( ) const { return( m_maximumNeeded ); }
-        int numberEntered( ) const { return( m_numberEntered ); }
+        int counts( ) const { return( m_counts ); }
 
+        virtual std::string const &value( std::size_t a_index = 0 ) const ;
+        std::vector<std::string> const &values( ) const { return( m_values ); }
         virtual bool isOptionalArgument( ) const { return( true ); }
         virtual bool requiresAValue( ) const { return( false ); }
         virtual int parse( ArgumentParser const &a_argumentParser, int a_index, int a_argc, char **a_argv );
@@ -210,15 +219,10 @@ class OptionBoolean : public ArgumentBase {
         bool m_default;
 
     public:
-        OptionBoolean( std::string const &a_name, std::string const &a_descriptor, bool a_default ) :
-            ArgumentBase( ArgumentType::Boolean, a_name, a_descriptor, 0, -1 ),
-            m_default( a_default ) {
-
-        }
+        OptionBoolean( ArgumentType a_argumentType, std::string const &a_name, std::string const &a_descriptor, bool a_default );
         virtual ~OptionBoolean( ) = 0 ;
 
         bool _default( ) const { return( m_default ); }
-        bool value( ) const ;
         std::string printStatus2( ) const ;
 };
 
@@ -231,10 +235,8 @@ class OptionBoolean : public ArgumentBase {
 class OptionTrue : public OptionBoolean {
 
     public:
-        OptionTrue( std::string const &a_name, std::string const &a_descriptor = "", int a_minimumNeeded = 0, int a_maximumNeeded = -1 ) :
-            OptionBoolean( a_name, a_descriptor, false ) {
-        }
-        ~OptionTrue( ) {}
+        OptionTrue( std::string const &a_name, std::string const &a_descriptor = "", int a_minimumNeeded = 0, int a_maximumNeeded = -1 );
+        ~OptionTrue( ) { }
 };
 
 /*
@@ -246,10 +248,8 @@ class OptionTrue : public OptionBoolean {
 class OptionFalse : public OptionBoolean {
 
     public:
-        OptionFalse( std::string const &a_name, std::string const &a_descriptor = "", int a_minimumNeeded = 0, int a_maximumNeeded = -1 ) :
-                OptionBoolean( a_name, a_descriptor, true ) {
-        }
-        ~OptionFalse( ) {}
+        OptionFalse( std::string const &a_name, std::string const &a_descriptor = "", int a_minimumNeeded = 0, int a_maximumNeeded = -1 );
+        ~OptionFalse( ) { }
 };
 
 /*
@@ -261,13 +261,9 @@ class OptionFalse : public OptionBoolean {
 class OptionCounter : public ArgumentBase {
 
     public:
-        OptionCounter( std::string const &a_name, std::string const &a_descriptor = "", int a_minimumNeeded = 0, int a_maximumNeeded = -1 ) :
-                ArgumentBase( ArgumentType::Count, a_name, a_descriptor, 0, -1 ) {
+        OptionCounter( std::string const &a_name, std::string const &a_descriptor = "", int a_minimumNeeded = 0, int a_maximumNeeded = -1 );
+        ~OptionCounter( ) { }
 
-        }
-        ~OptionCounter( ) {}
-
-        int counts( ) const { return( numberEntered( ) ); }
         std::string printStatus2( ) const ;
 };
 
@@ -279,21 +275,12 @@ class OptionCounter : public ArgumentBase {
 
 class OptionStore : public ArgumentBase {
 
-    private:
-        std::string m_value;
-
     public:
-        OptionStore( std::string const &a_name, std::string const &a_descriptor = "", int a_minimumNeeded = 0, int a_maximumNeeded = -1 ) :
-                ArgumentBase( ArgumentType::Store, a_name, a_descriptor, 0, -1 ),
-                m_value( "" ) {
+        OptionStore( std::string const &a_name, std::string const &a_descriptor = "", int a_minimumNeeded = 0, int a_maximumNeeded = -1 );
+        ~OptionStore( ) { }
 
-        }
-        ~OptionStore( ) {}
-
+        std::string const &value( std::size_t a_index = 0 ) const ;
         bool requiresAValue( ) const { return( true ); }
-        int parse( ArgumentParser const &a_argumentParser, int a_index, int a_argc, char **a_argv );
-
-        std::string const &value( ) const { return( m_value ); }
         void printStatus3( std::string const &a_indent ) const ;
 };
 
@@ -305,23 +292,11 @@ class OptionStore : public ArgumentBase {
 
 class OptionAppend : public ArgumentBase {
 
-    private:
-        std::vector<std::string> m_values;
-
     public:
-        OptionAppend( std::string const &a_name, std::string const &a_descriptor = "", int a_minimumNeeded = 0, int a_maximumNeeded = -1 ) :
-                ArgumentBase( ArgumentType::Append, a_name, a_descriptor, a_minimumNeeded, a_maximumNeeded ) {
-
-        }
-        ~OptionAppend( ) {}
+        OptionAppend( std::string const &a_name, std::string const &a_descriptor = "", int a_minimumNeeded = 0, int a_maximumNeeded = -1 );
+        ~OptionAppend( ) { }
 
         bool requiresAValue( ) const { return( true ); }
-        int parse( ArgumentParser const &a_argumentParser, int a_index, int a_argc, char **a_argv );
-
-        std::vector<std::string> const &values( ) const { return( m_values ); }
-        std::string const &value( int a_index ) const { return( m_values[a_index] ); }
-        std::string const &value( std::size_t a_index ) const { return( m_values[a_index] ); }
-        void addValue( std::string a_value ) { m_values.push_back( a_value ); }
         void printStatus3( std::string const &a_indent ) const ;
 };
 
@@ -333,23 +308,12 @@ class OptionAppend : public ArgumentBase {
 
 class Positional : public ArgumentBase {
 
-    private:
-        std::vector<std::string> m_values;
-
     public:
-        Positional( std::string const &a_name, std::string const &a_descriptor = "", int a_minimumNeeded = 1, int a_maximumNeeded = 1 ) :
-            ArgumentBase( ArgumentType::Positional, a_name, a_descriptor, a_minimumNeeded, a_maximumNeeded ) {
-
-        }
+        Positional( std::string const &a_name, std::string const &a_descriptor = "", int a_minimumNeeded = 1, int a_maximumNeeded = 1 );
         ~Positional( ) { }
 
         bool isOptionalArgument( ) const { return( false ); }
         bool requiresAValue( ) const { return( true ); }
-        int parse( ArgumentParser const &a_argumentParser, int a_index, int a_argc, char **a_argv );
-
-        std::vector<std::string> const &values( ) { return( m_values ); }
-        std::string const &value( int a_index ) const { return( m_values[a_index] ); }
-        void addValue( std::string a_value ) { m_values.push_back( a_value ); }
         void printStatus3( std::string const &a_indent ) const ;
 };
 
@@ -374,7 +338,7 @@ class DeltaTime {
         DeltaTime( );
         DeltaTime( double a_CPU_time, double a_wallTime, double a_CPU_timeIncremental, double a_wallTimeIncremental );
         DeltaTime( DeltaTime const &deltaTime );
-        ~DeltaTime( ) {}
+        ~DeltaTime( ) { }
 
         double CPU_time( ) const { return( m_CPU_time ); }
         double wallTime( ) const { return( m_wallTime ); }
@@ -400,7 +364,7 @@ class Timer {
 
     public:
         Timer( );
-        ~Timer( ) {}
+        ~Timer( ) { }
 
         DeltaTime deltaTime( );
         DeltaTime deltaTimeAndReset( );
@@ -446,11 +410,14 @@ namespace Misc {
 
 std::string stripString( std::string const &a_string, bool a_left = true, bool a_right = true );
 std::vector<std::string> splitString( std::string const &a_string, char a_delimiter, bool a_strip = false );
+std::vector<std::string> splitString( std::string const &a_string, std::string const &a_delimiter, bool a_strip = false );
 std::vector<std::string> splitXLinkString( std::string const &a_string );
 bool stringToInt( std::string const &a_string, int &a_value );
 
 std::string argumentsToString( char const *a_format, ... );
 std::string doubleToString3( char const *a_format, double a_value, bool a_reduceBits = false );
+std::string doubleToShortestString( double a_value, int a_significantDigits = 15, int a_favorEFormBy = 0 );
+
 void printCommand( std::string const &a_indent, int a_argc, char **a_argv );
 
 }               // End of namespace Misc.

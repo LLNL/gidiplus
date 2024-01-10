@@ -110,7 +110,7 @@ Base const *Base::getDerivedStyle( std::string const &a_moniker ) const {
  * @return                                      The base attributes as a XML attribute string.
  ***********************************************************************************************************/
 
-std::string Base::baseXMLAttributes( WriteInfo &a_writeInfo ) const {
+std::string Base::baseXMLAttributes( GUPI::WriteInfo &a_writeInfo ) const {
 
     std::string attributes( a_writeInfo.addAttribute( GIDI_labelChars, label( ) ) );
 
@@ -147,7 +147,7 @@ Evaluated::Evaluated( HAPI::Node const &a_node, SetupInfo &a_setupInfo, GIDI::Su
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void Evaluated::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void Evaluated::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     std::string attributes = baseXMLAttributes( a_writeInfo );
@@ -214,7 +214,7 @@ PhysicalQuantity const &CrossSectionReconstructed::temperature( ) const {
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void CrossSectionReconstructed::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void CrossSectionReconstructed::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
 
@@ -275,7 +275,7 @@ PhysicalQuantity const &AngularDistributionReconstructed::temperature( ) const {
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void AngularDistributionReconstructed::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void AngularDistributionReconstructed::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
 
@@ -322,11 +322,11 @@ PhysicalQuantity const &CoulombPlusNuclearElasticMuCutoff::temperature( ) const 
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void CoulombPlusNuclearElasticMuCutoff::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void CoulombPlusNuclearElasticMuCutoff::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string attributes = baseXMLAttributes( a_writeInfo );
 
-    attributes += a_writeInfo.addAttribute( GIDI_muCutoffChars, doubleToShortestString( m_muCutoff ) );
+    attributes += a_writeInfo.addAttribute( GIDI_muCutoffChars, LUPI::Misc::doubleToShortestString( m_muCutoff ) );
     a_writeInfo.addNodeStarter( a_indent, moniker( ), attributes );
     a_writeInfo.addNodeEnder( moniker( ) );
 }
@@ -368,7 +368,7 @@ PhysicalQuantity const &Realization::temperature( ) const {
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void Realization::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void Realization::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string attributes = baseXMLAttributes( a_writeInfo );
 
@@ -428,7 +428,7 @@ PhysicalQuantity const &AverageProductData::temperature( ) const {
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void AverageProductData::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void AverageProductData::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
 
@@ -460,7 +460,7 @@ Heated::Heated( HAPI::Node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void Heated::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void Heated::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
 
@@ -507,7 +507,7 @@ PhysicalQuantity const &MonteCarlo_cdf::temperature( ) const {
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void MonteCarlo_cdf::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void MonteCarlo_cdf::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
     
     a_writeInfo.addNodeStarter( a_indent, moniker( ), baseXMLAttributes( a_writeInfo ) );
     a_writeInfo.addNodeEnder( moniker( ) );
@@ -584,7 +584,7 @@ std::vector<double> MultiGroup::groupBoundaries( std::string const &a_productID 
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void MultiGroup::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void MultiGroup::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     std::string attributes = baseXMLAttributes( a_writeInfo );
@@ -712,7 +712,7 @@ std::vector<double> HeatedMultiGroup::groupBoundaries( std::string const &a_ID )
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void HeatedMultiGroup::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void HeatedMultiGroup::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
     
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     std::string indent3 = a_writeInfo.incrementalIndent( indent2 );
@@ -774,7 +774,7 @@ PhysicalQuantity const &SnElasticUpScatter::temperature( ) const {
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void SnElasticUpScatter::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void SnElasticUpScatter::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
     
     std::string attributes = baseXMLAttributes( a_writeInfo );
     
@@ -830,7 +830,7 @@ PhysicalQuantity const &GriddedCrossSection::temperature( ) const {
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void GriddedCrossSection::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void GriddedCrossSection::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
     
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     
@@ -885,7 +885,7 @@ PhysicalQuantity const &URR_probabilityTables::temperature( ) const {
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void URR_probabilityTables::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void URR_probabilityTables::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     a_writeInfo.addNodeStarterEnder( a_indent, moniker( ), baseXMLAttributes( a_writeInfo ) );
 }

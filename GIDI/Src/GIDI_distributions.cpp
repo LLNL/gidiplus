@@ -53,7 +53,7 @@ Distribution::Distribution( HAPI::Node const &a_node, SetupInfo &a_setupInfo, Fo
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void Distribution::toXMLNodeStarter( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void Distribution::toXMLNodeStarter( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string attributes;
 
@@ -87,7 +87,7 @@ MultiGroup3d::MultiGroup3d( Construction::Settings const &a_construction, HAPI::
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void MultiGroup3d::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void MultiGroup3d::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
 
@@ -143,7 +143,7 @@ AngularTwoBody::~AngularTwoBody( ) {
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
  
-void AngularTwoBody::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void AngularTwoBody::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
     
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
 
@@ -191,7 +191,7 @@ KalbachMann::~KalbachMann( ) {
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
  
-void KalbachMann::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void KalbachMann::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
     
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
 
@@ -235,7 +235,7 @@ EnergyAngular::~EnergyAngular( ) {
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
  
-void EnergyAngular::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void EnergyAngular::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
     
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
 
@@ -279,7 +279,7 @@ EnergyAngularMC::~EnergyAngularMC( ) {
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
  
-void EnergyAngularMC::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void EnergyAngularMC::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
     
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     std::string indent3 = a_writeInfo.incrementalIndent( indent2 );
@@ -330,7 +330,7 @@ AngularEnergy::~AngularEnergy( ) {
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
  
-void AngularEnergy::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void AngularEnergy::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
     
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
 
@@ -374,7 +374,7 @@ AngularEnergyMC::~AngularEnergyMC( ) {
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
  
-void AngularEnergyMC::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void AngularEnergyMC::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
     
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     std::string indent3 = a_writeInfo.incrementalIndent( indent2 );
@@ -424,7 +424,7 @@ Uncorrelated::~Uncorrelated( ) {
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
  
-void Uncorrelated::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void Uncorrelated::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     std::string indent3 = a_writeInfo.incrementalIndent( indent2 );
@@ -477,7 +477,7 @@ LLNLAngularEnergy::~LLNLAngularEnergy( ) {
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
  
-void LLNLAngularEnergy::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void LLNLAngularEnergy::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
     
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     std::string indent3 = a_writeInfo.incrementalIndent( indent2 );
@@ -562,7 +562,8 @@ ThermalNeutronScatteringLaw::ThermalNeutronScatteringLaw( Construction::Settings
  ***********************************************************************************************************/
 
 Branching3d::Branching3d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
-        Distribution( a_node, a_setupInfo, FormType::branching3d, a_parent ) {
+        Distribution( a_node, a_setupInfo, FormType::branching3d, a_parent ),
+        m_initialState( a_setupInfo.m_initialState ) {
 
 }
 
@@ -591,7 +592,7 @@ Reference3d::Reference3d( Construction::Settings const &a_construction, HAPI::No
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void Reference3d::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void Reference3d::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string attributes;
 
@@ -625,7 +626,7 @@ CoulombPlusNuclearElastic::CoulombPlusNuclearElastic( Construction::Settings con
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void CoulombPlusNuclearElastic::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void CoulombPlusNuclearElastic::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string attributes;
 
@@ -659,7 +660,7 @@ LLNLLegendre::LLNLLegendre( Construction::Settings const &a_construction, HAPI::
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void LLNLLegendre::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void LLNLLegendre::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string attributes;
 
@@ -691,7 +692,7 @@ Unspecified::Unspecified( Construction::Settings const &a_construction, HAPI::No
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
  
-void Unspecified::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void Unspecified::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
     
     toXMLNodeStarter( a_writeInfo, a_indent );
     a_writeInfo.addNodeEnder( moniker( ) );

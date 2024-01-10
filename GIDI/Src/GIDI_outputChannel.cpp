@@ -17,7 +17,7 @@ namespace GIDI {
 */
 
 OutputChannel::OutputChannel( bool a_twoBody, bool a_fissions, std::string a_process ) :
-        Ancestry( GIDI_outputChannelChars ),
+        GUPI::Ancestry( GIDI_outputChannelChars ),
         m_twoBody( a_twoBody ),
         m_fissions( a_fissions ),
         m_process( a_process ),
@@ -45,7 +45,7 @@ OutputChannel::OutputChannel( bool a_twoBody, bool a_fissions, std::string a_pro
 
 OutputChannel::OutputChannel( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, 
                 PoPI::Database const &a_internalPoPs, Styles::Suite const *a_styles, bool a_isFission ) :
-        Ancestry( a_node.name( ) ),
+        GUPI::Ancestry( a_node.name( ) ),
         m_twoBody( std::string( a_node.attribute_as_string( GIDI_genreChars ) ) == GIDI_twoBodyChars ),
         m_fissions( a_isFission ),
         m_process( std::string( a_node.attribute_as_string( GIDI_processChars ) ) ),
@@ -87,6 +87,27 @@ int OutputChannel::depth( ) const {
 }
 
 /* *********************************************************************************************************//**
+ * Returns **true** if all outgoing particles (i.e., products) are specifed in *a_particles*. That is, the user
+ * will be tracking all products of *this* reaction.
+ *
+ * @param a_particles           [in]    The list of particles to be transported.
+ *
+ * @return                              bool.
+ ***********************************************************************************************************/
+
+bool OutputChannel::areAllProductsTracked( Transporting::Particles const &a_particles ) const {
+// Does not check m_fissionFragmentData as its will only have neutrons which should already be in m_products at least for now.
+
+    for( auto iter = m_products.begin( ); iter != m_products.end( ); ++iter ) {
+        Product *product = static_cast<Product *>( *iter );
+
+        if( !product->areAllProductsTracked( a_particles ) ) return( false );
+    }
+
+    return( true );
+}
+
+/* *********************************************************************************************************//**
  * Only for internal use. Called by a ProtareTNSL instance to zero the lower energy multi-group data covered by the TNSL ProtareSingle.
  *
  * @param a_maximumTNSL_MultiGroupIndex     [in]    A map that contains labels for heated multi-group data and the last valid group boundary
@@ -104,13 +125,13 @@ void OutputChannel::modifiedMultiGroupElasticForTNSL( std::map<std::string,std::
 }
 
 /* *********************************************************************************************************//**
- * Used by Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or nullptr if none exists.
+ * Used by GUPI::Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or nullptr if none exists.
  *
  * @param a_item    [in]    The name of the class member whose pointer is to be return.
  * @return                  The pointer to the class member or nullptr if class does not have a member named a_item.
  ***********************************************************************************************************/
 
-Ancestry *OutputChannel::findInAncestry3( std::string const &a_item ) {
+GUPI::Ancestry *OutputChannel::findInAncestry3( std::string const &a_item ) {
 
     if( a_item == GIDI_QChars ) return( &m_Q );
     if( a_item == GIDI_productsChars ) return( &m_products );
@@ -120,13 +141,13 @@ Ancestry *OutputChannel::findInAncestry3( std::string const &a_item ) {
 }
 
 /* *********************************************************************************************************//**
- * Used by Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or nullptr if none exists.
+ * Used by GUPI::Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or nullptr if none exists.
  *
  * @param a_item    [in]    The name of the class member whose pointer is to be return.
  * @return                  The pointer to the class member or nullptr if class does not have a member named a_item.
  ***********************************************************************************************************/
 
-Ancestry const *OutputChannel::findInAncestry3( std::string const &a_item ) const {
+GUPI::Ancestry const *OutputChannel::findInAncestry3( std::string const &a_item ) const {
 
     if( a_item == GIDI_QChars ) return( &m_Q );
     if( a_item == GIDI_productsChars ) return( &m_products );
@@ -152,6 +173,26 @@ bool OutputChannel::hasFission( ) const {
         if( product.hasFission( ) ) return( true );
     }
     return( false );
+}
+
+/* *********************************************************************************************************//**
+ * Returns **false* if outputChannel has delayed fission neutrons and they are not complete; otherwise, returns **true**.
+ *
+ * @return      bool
+ ***********************************************************************************************************/
+
+bool OutputChannel::isDelayedFissionNeutronComplete( ) const {
+
+    if( !m_fissionFragmentData.isDelayedFissionNeutronComplete( ) ) return( false );
+
+    std::size_t size = m_products.size( );
+    for( std::size_t index = 0; index < size; ++index ) {
+        Product const &product = *m_products.get<Product>( index );
+
+        if( !product.isDelayedFissionNeutronComplete( false ) ) return( false );
+    }
+
+    return( true );
 }
 
 /* *********************************************************************************************************//**
@@ -459,7 +500,7 @@ void OutputChannel::mapContinuousEnergyProductData( Transporting::Settings const
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
  
-void OutputChannel::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void OutputChannel::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
     
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     std::string attributes;

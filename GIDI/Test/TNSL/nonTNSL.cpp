@@ -43,7 +43,7 @@ void main2( int argc, char **argv ) {
     printCodeArguments( __FILE__, argc, argv );
 
     std::string tid( "HinCH2" );
-    PoPI::Database pops( "../pops.xml" );
+    PoPI::Database pops( "../../../TestData/PoPs/pops.xml" );
     GIDI::Map::Map map( "../Data/MG_MC/all_maps.map", pops );
     GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, GIDI::Construction::PhotoMode::nuclearAndAtomic );
 

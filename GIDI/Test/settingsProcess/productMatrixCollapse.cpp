@@ -56,7 +56,7 @@ void main2( int argc, char **argv ) {
     GIDI::Construction::PhotoMode photo_mode = parseTestOptions.photonMode( GIDI::Construction::PhotoMode::nuclearAndAtomic );
     GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, photo_mode );
     PoPI::Database pops;
-    GIDI::Protare *protare = parseTestOptions.protare( pops, "../pops.xml", "../all.map", construction, PoPI::IDs::neutron, "O16" );
+    GIDI::Protare *protare = parseTestOptions.protare( pops, "../../../TestData/PoPs/pops.xml", "../all.map", construction, PoPI::IDs::neutron, "O16" );
 
     std::cout << stripDirectoryBase( protare->fileName( ) ) << std::endl;
 
@@ -134,7 +134,7 @@ return;
     GIDI::Matrix summedCollapsed( 0, 0 );
     for( std::size_t index = 0; index < protare->numberOfReactions( ); ++index ) {
         GIDI::Reaction *reaction = protare->reaction( index );
-        int maxOrder = reaction->maximumLegendreOrder( smr1, settings, temperature, PoPI::IDs::photon );
+        maxOrder = reaction->maximumLegendreOrder( smr1, settings, temperature, PoPI::IDs::photon );
         GIDI::Matrix m1 = reaction->multiGroupProductMatrix( smr1, settings, temperature, particles, PoPI::IDs::photon, 0 );
         std::string string( reaction->label( ) );
 

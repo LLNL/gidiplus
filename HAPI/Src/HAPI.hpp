@@ -15,18 +15,22 @@
 #include <vector>
 #include <stdexcept>
 
-#include <LUPI.hpp>
 #include <nf_buffer.h>
 #include <nf_utilities.h>
+
+// #define HAPI_USE_PUGIXML 1
 
 #ifdef HAPI_USE_PUGIXML
 #include <pugixml.hpp>
 #endif
 
+
 #ifdef HAPI_USE_HDF5
 #include <hdf5.h>
 #include <time.h>
 #endif
+
+#include <LUPI.hpp>
 
 namespace HAPI {
 
@@ -299,7 +303,7 @@ class PugiXMLFile : public File {
 
     public:
         PugiXMLFile();
-        PugiXMLFile(char const *filename);
+        PugiXMLFile(char const *filename, std::string const &a_callingFunctionName);
         virtual ~PugiXMLFile();
         Node child(char const *name);
         Node first_child();
@@ -390,6 +394,9 @@ class HDFFile : public File {
 class HDFDataManager : public DataManager{
 
     private:
+        std::string m_filename;
+        bool m_iDataPresent;
+        bool m_dDataPresent;
         hid_t m_file_id;
         hid_t m_dataset_ints, m_dataset_doubles;
         hid_t m_dataspace_ints, m_dataspace_doubles;
@@ -406,7 +413,7 @@ class HDFDataManager : public DataManager{
         TimeType m_tstart;
          */
     public:
-        HDFDataManager(std::string filename);
+        HDFDataManager(std::string const &filename);
         virtual ~HDFDataManager();
         virtual void getDoubles(nf_Buffer<double> &result, size_t startIndex, size_t endIndex);
         virtual void getInts(nf_Buffer<int> &result, size_t startIndex, size_t endIndex);

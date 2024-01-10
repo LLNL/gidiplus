@@ -62,14 +62,18 @@ void main2( int argc, char **argv ) {
 
     argumentParser.parse( argc, argv );
 
-    std::cout << "    " << optionTrue->name( )  << " option: number entered " << optionTrue->numberEntered( ) << ",   value = " << optionTrue->value( ) << std::endl;
-    std::cout << "    " << optionFalse->name( ) << " option: number entered " << optionFalse->numberEntered( ) << ",   value = " << optionFalse->value( ) << std::endl;
-    std::cout << "    " << optionCounter->name( ) << " option: number entered " << optionCounter->numberEntered( ) << ",   counts = " << optionCounter->counts( ) << std::endl;
-    std::cout << "    " << optionStore->name( ) << " option: number entered " << optionStore->numberEntered( ) << ",   value = '" << optionStore->value( ) << "'" << std::endl;
+    bool bValue = optionTrue->counts( ) > 0;
+    std::cout << "    " << optionTrue->name( )  << " option: number entered " << optionTrue->counts( ) << ",   value = " << bValue << std::endl;
+    bValue = optionFalse->counts( ) == 0;
+    std::cout << "    " << optionFalse->name( ) << " option: number entered " << optionFalse->counts( ) << ",   value = " << bValue << std::endl;
+    std::cout << "    " << optionCounter->name( ) << " option: number entered " << optionCounter->counts( ) << ",   counts = " << optionCounter->counts( ) << std::endl;
+    std::string sValue = "";
+    if( optionStore->counts( ) > 0 ) sValue = optionStore->value( );
+    std::cout << "    " << optionStore->name( ) << " option: number entered " << optionStore->counts( ) << ",   value = '" << sValue << "'" << std::endl;
 
-    std::cout << "    " << optionAppend->name( ) << " option: number entered " << optionAppend->numberEntered( ) << std::endl;
+    std::cout << "    " << optionAppend->name( ) << " option: number entered " << optionAppend->counts( ) << std::endl;
     std::cout << "         ";
-    for( int index = 0; index < optionAppend->numberEntered( ); ++index ) {
+    for( int index = 0; index < optionAppend->counts( ); ++index ) {
         std::cout << " '" << optionAppend->value( index ) << "'";
     }
     std::cout << std::endl;

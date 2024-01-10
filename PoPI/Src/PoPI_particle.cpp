@@ -24,7 +24,9 @@ namespace PoPI {
 
 Particle::Particle( HAPI::Node const &a_node, Particle_class a_class, std::string const &a_family, int a_hasNucleus ) :
         IDBase( a_node, a_class ),
+        m_baseId( "" ),
         m_family( a_family ),
+        m_anti( "" ),
         m_hasNucleus( a_hasNucleus ),
         m_mass( a_node.child( PoPI_massChars ) ),
         m_spin( a_node.child( PoPI_spinChars ) ),
@@ -33,6 +35,7 @@ Particle::Particle( HAPI::Node const &a_node, Particle_class a_class, std::strin
         m_halflife( a_node.child( PoPI_halflifeChars ) ),
         m_decayData( a_node.child( PoPI_decayDataChars ) ) {
 
+    m_baseId = baseAntiQualifierFromID( ID( ), m_anti );
 }
 
 /* *********************************************************************************************************//**
@@ -52,7 +55,7 @@ Particle::~Particle( ) {
 
 double Particle::massValue( char const *a_unit ) const {
 
-    if( m_mass.size( ) == 0 ) throw Exception( "Particle does not have any mass data." );
+    if( m_mass.size( ) == 0 ) throw Exception( "Particle \"" + ID( ) + "\" does not have any mass data." );
 
     PQ_double const *pq_mass = dynamic_cast<PQ_double const *>( mass( )[0] );
 

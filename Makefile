@@ -9,13 +9,12 @@ SHELL = /bin/ksh
 
 # These must be set by hand when we do a release.
 gidiplus_major = 3
-gidiplus_minor = 25
+gidiplus_minor = 28
 baseTag = GIDI_plus.$(gidiplus_major).$(gidiplus_minor).0
 
-CXXFLAGS += -std=c++11
-
-DIRS_GIDI_plus = LUPI HAPI PoPI RISI GIDI MCGIDI include lib Doc
-DIRS = pugixml numericalFunctions $(DIRS_GIDI_plus)
+DIRS_GIDI_plus = LUPI HAPI GUPI PoPI CADI RISI GIDI MCGIDI include lib Doc
+DIRS_default2 = numericalFunctions $(DIRS_GIDI_plus)
+DIRS = pugixml $(DIRS_default2)
 
 GIDI_PLUS_PATH ?= $(abspath .)
 export GIDI_PLUS_PATH
@@ -24,9 +23,19 @@ include Makefile.paths
 
 PREFIX = `pwd`/install
 
-.PHONY: default include lib pugixml pugixml_dummy install clean realclean tar doDIRS
+.PHONY: default pugixml pugixml_dummy install clean realclean tar doDIRS
 
-default: pugixml
+default:
+	$(MAKE) _TARGET=default default2
+	echo 'Note, bin executables not built, use target bin or all to build bin executables.'
+
+all:
+	$(MAKE) _TARGET=all default2
+
+bin:
+	$(MAKE) _TARGET=bin default2
+
+default2: pugixml
 	@echo
 	@echo "INFO: GIDI_PLUS_PATH = $(GIDI_PLUS_PATH)"
 	@echo "INFO: CXX            = $(CXX)"
@@ -38,24 +47,18 @@ default: pugixml
 	@echo "INFO: HDF5_PATH      = $(HDF5_PATH)"
 	@echo "INFO: HDF5_INCLUDE   = $(HDF5_INCLUDE)"
 	@echo "INFO: HDF5_LIB       = $(HDF5_LIB)"
-	cd pugixml; $(MAKE) default
+	cd pugixml; $(MAKE) default CXXFLAGS="$(CXXFLAGS)"
 	cd numericalFunctions; $(MAKE) default
-	$(MAKE) doDIRS _DIRS="$(DIRS)" _TARGET=default
-
-include:
-	cd include; $(MAKE)
-
-lib:
-	cd lib; $(MAKE)
+	$(MAKE) doDIRS _DIRS="$(DIRS_default2)"
 
 pugixml:
-	rm -rf pugixml pugixml-1.8
-	unzip -q Misc/pugixml-1.8.zip
-	ln -s pugixml-1.8 pugixml
+	rm -rf pugixml pugixml-1.13
+	unzip -q Misc/pugixml-1.13.zip
+	ln -s pugixml-1.13 pugixml
 	cd pugixml; tar -xf ../Misc/pugixml.addon.tar
 
 pugixml_dummy:
-	rm -rf pugixml-1.8 pugixml
+	rm -rf pugixml-1.13 pugixml
 	mkdir pugixml
 	cp Misc/Makefile_dummy pugixml/Makefile
 

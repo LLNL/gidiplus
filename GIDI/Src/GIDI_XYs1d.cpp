@@ -106,13 +106,12 @@ XYs1d::XYs1d( Construction::Settings const &a_construction, HAPI::Node const &a_
     HAPI::Node values = a_node.child("values");
     nf_Buffer<double> vals;
     parseValuesOfDoubles( a_construction, values, a_setupInfo, vals );
+
     int primarySize = vals.size() / 2, secondarySize = 0;
-    // not sure we really need a copy here...
-    double dvals[vals.size()];
-    for (size_t idx=0; idx<vals.size(); idx++)
-      dvals[idx] = vals[idx];
-    m_ptwXY = ptwXY_create( NULL, interpolation( ), interpolationString( ).c_str( ), 12, 1e-3, primarySize, secondarySize, primarySize,
-        dvals, 0 );
+    double *dvals = new double[vals.size()];                  // Not sure we really need a copy here.
+    for( size_t idx = 0; idx < vals.size(); idx++ ) dvals[idx] = vals[idx];
+    m_ptwXY = ptwXY_create( NULL, interpolation( ), interpolationString( ).c_str( ), 12, 1e-3, primarySize, secondarySize, primarySize, dvals, 0 );
+    delete[] dvals;
     if( m_ptwXY == nullptr ) throw Exception( "XYs1d::XYs1d: ptwXY_fromString failed" );
 }
 
@@ -447,13 +446,13 @@ void XYs1d::mapToXsAndAdd( int a_offset, std::vector<double> const &a_Xs, std::v
  * @param       a_inRegions         [in]        If *true*, *this* is in a Regions1d container.
  ***********************************************************************************************************/
 
-void XYs1d::toXMLList_func( WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
+void XYs1d::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     std::string attributes;
 
     if( a_embedded ) {
-        attributes += a_writeInfo.addAttribute( GIDI_outerDomainValueChars, doubleToShortestString( outerDomainValue( ) ) ); }
+        attributes += a_writeInfo.addAttribute( GIDI_outerDomainValueChars, LUPI::Misc::doubleToShortestString( outerDomainValue( ) ) ); }
     else {
         if( a_inRegions ) {
             attributes = a_writeInfo.addAttribute( GIDI_indexChars, intToString( index( ) ) ); }

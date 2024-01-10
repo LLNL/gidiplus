@@ -17,4 +17,6 @@ check: $(Executables)
 	if [ ! -e Outputs ]; then mkdir Outputs; fi
 	./splitString > Outputs/splitString.out
 	./splitString 1 > Outputs/splitString.stripped.out
+	./splitString2 > Outputs/splitString2.out
+	./splitString2 1 > Outputs/splitString2.stripped.out
 	-diff -r Benchmarks Outputs > /dev/null; if [ $$? -ne 0 ]; then echo "FAILURE: splitString"; fi

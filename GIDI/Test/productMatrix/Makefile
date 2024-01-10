@@ -16,8 +16,8 @@ include ../Makefile.check
 check: $(Executables)
 	if [ ! -e Outputs ]; then mkdir Outputs; fi
 	./productMatrix --tid O16 > Outputs/O16.out
-	python ../Utilities/diff.py "productMatrix/productMatrix O16" Benchmarks/O16.out Outputs/O16.out
+	$(PYTHON) ../Utilities/diff.py "productMatrix/productMatrix O16" Benchmarks/O16.out Outputs/O16.out
 	./productMatrix --tid Th227 > Outputs/Th227.noDelayed.out
-	python ../Utilities/diff.py "productMatrix/productMatrix Th227" Benchmarks/Th227.noDelayed.out Outputs/Th227.noDelayed.out
+	$(PYTHON) ../Utilities/diff.py "productMatrix/productMatrix Th227" Benchmarks/Th227.noDelayed.out Outputs/Th227.noDelayed.out
 	./productMatrix --tid Th227 --delayed > Outputs/Th227.delayed.out
-	python ../Utilities/diff.py "productMatrix/productMatrix Th227" Benchmarks/Th227.delayed.out Outputs/Th227.delayed.out
+	$(PYTHON) ../Utilities/diff.py "productMatrix/productMatrix Th227" Benchmarks/Th227.delayed.out Outputs/Th227.delayed.out

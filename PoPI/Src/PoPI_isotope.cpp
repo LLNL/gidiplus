@@ -65,8 +65,7 @@ void Isotope::calculateNuclideGammaBranchStateInfos( PoPI::Database const &a_pop
 void Isotope::toXMLList( std::vector<std::string> &a_XMLList, std::string const &a_indent1 ) const {
 
     std::string::size_type size = m_nuclides.size( );
-    char AStr[32];
-    sprintf( AStr, "%d", m_A );
+    std::string AStr = LUPI::Misc::argumentsToString( "%d", m_A );
 
     std::string header = a_indent1 + "<isotope symbol=\"" + symbol( ) + "\" A=\"" + AStr + "\">";
     a_XMLList.push_back( header );

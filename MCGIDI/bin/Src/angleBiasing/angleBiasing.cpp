@@ -83,7 +83,7 @@ void main2( int argc, char **argv ) {
     MCGIDI_test_rngSetup( seed );
 
     GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, parseTestOptions.photonMode( ) );
-    GIDI::Protare *protare = parseTestOptions.protare( pops, "../../../../GIDI/Test/pops.xml", "../../../../GIDI/Test/Data/MG_MC/all_maps.map", construction, PoPI::IDs::neutron, "O16" );
+    GIDI::Protare *protare = parseTestOptions.protare( pops, "../../../../TestData/PoPs/pops.xml", "../../../../GIDI/Test/Data/MG_MC/all_maps.map", construction, PoPI::IDs::neutron, "O16" );
 
     std::string productID = argv_options.find( "--oid" )->zeroOrOneOption( argv, protare->projectile( ).ID( ) );
     long numberOfSamples = argv_options.find( "-n" )->asLong( argv, -1000 );
@@ -121,7 +121,7 @@ void main2( int argc, char **argv ) {
     if( reactionIndex >= static_cast<int>( MCProtare->numberOfReactions( ) ) ) throw "Invalid reaction index.";
     if( reactionIndex < 0 ) {
         std::cout << "List of reaction indices, thresholds and labels are:" << std::endl;
-        for( int reactionIndex = 0; reactionIndex < static_cast<int>( MCProtare->numberOfReactions( ) ); ++reactionIndex ) {
+        for( reactionIndex = 0; reactionIndex < static_cast<int>( MCProtare->numberOfReactions( ) ); ++reactionIndex ) {
             MCGIDI::Reaction const *reaction = MCProtare->reaction( reactionIndex );
 
             std::cout << std::setw( 4 ) << reactionIndex << "  " << doubleToString( "%14.6e", reaction->crossSectionThreshold( ) ) << "  " << reaction->label( ).c_str( ) << std::endl;

@@ -48,7 +48,7 @@ Group::Group( Group const &a_group ) :
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void Group::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void Group::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
 
@@ -87,7 +87,7 @@ Groups::Groups( std::string const &a_fileName ) :
 
 void Groups::addFile( std::string const &a_fileName ) {
 
-    HAPI::PugiXMLFile *doc = new HAPI::PugiXMLFile( a_fileName.c_str( ) );
+    HAPI::File *doc = new HAPI::PugiXMLFile( a_fileName.c_str( ), "Groups::addFile" );
 
     HAPI::Node groups = doc->first_child( );
 

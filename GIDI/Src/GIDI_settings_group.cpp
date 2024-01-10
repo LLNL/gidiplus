@@ -136,7 +136,6 @@ void MultiGroup::set( std::string const &a_label, std::vector<double> const &a_b
 void MultiGroup::print( std::string const &a_indent, bool a_outline, int a_valuesPerLine ) const {
 
     int nbs = size( );
-    char buffer[128];
     bool printIndent( true );
 
     std::cout << a_indent << "GROUP: label = '" << m_label << "': length = " << nbs << std::endl;
@@ -144,8 +143,7 @@ void MultiGroup::print( std::string const &a_indent, bool a_outline, int a_value
     for( int ib = 0; ib < nbs; ib++ ) {
         if( printIndent ) std::cout << a_indent;
         printIndent = false;
-        sprintf( buffer, "%16.8e", m_boundaries[ib] );
-        std::cout << buffer;
+        std::cout << LUPI::Misc::argumentsToString( "%16.8e", m_boundaries[ib] );
         if( ( ( ib + 1 ) % a_valuesPerLine ) == 0 ) {
             std::cout << std::endl;
             printIndent = true;

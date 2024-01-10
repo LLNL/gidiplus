@@ -134,13 +134,13 @@ void Polynomial1d::mapToXsAndAdd( int a_offset, std::vector<double> const &a_Xs,
  * @param       a_inRegions         [in]        If *true*, *this* is in a Regions1d container.
  ***********************************************************************************************************/
 
-void Polynomial1d::toXMLList_func( WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
+void Polynomial1d::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     std::string attributes;
 
     if( a_embedded ) {
-        attributes += a_writeInfo.addAttribute( GIDI_outerDomainValueChars, doubleToShortestString( outerDomainValue( ) ) ); }
+        attributes += a_writeInfo.addAttribute( GIDI_outerDomainValueChars, LUPI::Misc::doubleToShortestString( outerDomainValue( ) ) ); }
     else {
         if( a_inRegions ) {
             attributes = a_writeInfo.addAttribute( GIDI_indexChars, intToString( index( ) ) ); }
@@ -149,8 +149,8 @@ void Polynomial1d::toXMLList_func( WriteInfo &a_writeInfo, std::string const &a_
         }
     }
 
-    attributes = a_writeInfo.addAttribute( GIDI_domainMinChars, doubleToShortestString( domainMin( ) ) );
-    attributes += a_writeInfo.addAttribute( GIDI_domainMaxChars, doubleToShortestString( domainMax( ) ) );
+    attributes = a_writeInfo.addAttribute( GIDI_domainMinChars, LUPI::Misc::doubleToShortestString( domainMin( ) ) );
+    attributes += a_writeInfo.addAttribute( GIDI_domainMaxChars, LUPI::Misc::doubleToShortestString( domainMax( ) ) );
     a_writeInfo.addNodeStarter( a_indent, moniker( ), attributes );
 
     axes( ).toXMLList( a_writeInfo, indent2 );

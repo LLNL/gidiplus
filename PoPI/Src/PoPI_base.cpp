@@ -61,7 +61,8 @@ Base::~Base( ) {
  ***********************************************************************************************************/
 
 IDBase::IDBase( std::string const &a_id, Particle_class a_class ) :
-        Base( a_id, a_class ) {
+        Base( a_id, a_class ),
+        m_intid( -1 ) {
 
 }
 
@@ -73,7 +74,8 @@ IDBase::IDBase( std::string const &a_id, Particle_class a_class ) :
  ***********************************************************************************************************/
 
 IDBase::IDBase( HAPI::Node const &a_node, Particle_class a_class ) :
-        Base( a_node, PoPI_idChars, a_class ) {
+        Base( a_node, PoPI_idChars, a_class ),
+        m_intid( -1 ) {
 
 }
 

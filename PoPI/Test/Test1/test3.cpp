@@ -20,7 +20,7 @@ int main( int argc, char **argv ) {
 
     std::cerr << "    " << LUPI::FileInfo::basenameWithoutExtension( __FILE__ ) << std::endl;
 
-    std::string fileName( "../pops.xml" );
+    std::string fileName( "../../../TestData/PoPs/pops.xml" );
 
     try {
         PoPI::Database database( fileName );
@@ -75,13 +75,11 @@ void printParticleInfo( PoPI::Database const &database, std::string const &ID, b
 std::string check3Ints( int i1, int i2, int i3 ) {
 
     std::string message;
-    char Str[128] = "";
 
     if( ( i1 == i2 ) and ( i1 == i3 ) ) {
         }
     else {
-        sprintf( Str, ": check3Ints FAILURE; %4d, %4d, %4d", i1, i2, i3 );
+        message = LUPI::Misc::argumentsToString( ": check3Ints FAILURE; %4d, %4d, %4d", i1, i2, i3 );
     }
-    message = Str;
     return( message );
 }

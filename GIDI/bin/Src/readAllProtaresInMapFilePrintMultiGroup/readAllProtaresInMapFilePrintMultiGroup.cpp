@@ -186,8 +186,8 @@ void readProtare( std::string const &protareFilename, PoPI::Database const &pops
 
         productID = PoPI::IDs::neutron;
         if( projectileID != productID ) {
-            GIDI::Transporting::MultiGroup multiGroup( productID, protare->groupBoundaries( settings, temperatures[0], productID ) );
-            GIDI::Transporting::Particle neutron( productID, multiGroup, flux3d );
+            GIDI::Transporting::MultiGroup multiGroup2( productID, protare->groupBoundaries( settings, temperatures[0], productID ) );
+            GIDI::Transporting::Particle neutron( productID, multiGroup2, flux3d );
             particles.add( neutron );
         }
 

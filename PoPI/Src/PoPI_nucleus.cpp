@@ -39,6 +39,9 @@ Nucleus::Nucleus( HAPI::Node const &a_node, Database *a_DB, Nuclide *a_nuclide )
 
     if( a_node.empty( ) ) throw Exception( "nuclide is missing nuclues" );
 
+    int sign = ( isAnti( ) ? -1 : 1 );
+    setIntid( sign * ( 1000 * ( 1000 * (levelIndex( ) + 500) + Z( ) ) + A( ) ) );
+
     addToDatabase( a_DB );
 }
 
@@ -98,6 +101,11 @@ double Nucleus::massValue( char const *a_unit ) const {
 
 double Nucleus::energy( std::string const &a_unit ) const {
 
+    if( m_energy.size( ) == 0 ) {
+        if( m_levelIndex != 0 )
+        std::cerr << std::endl << "Particle " << ID( ) << " missing energy node, please report to PoPs maintainer. Using 0.0 and continuing." << std::endl;
+        return( 0.0 );
+    }
     PQ_double *pq = dynamic_cast<PQ_double *>( m_energy[0] );
     if( pq->unit( ) == "eV" ) return( pq->value( ) * 1e-6 );        // Kludge until units are functional.
     return( pq->value( a_unit ) );

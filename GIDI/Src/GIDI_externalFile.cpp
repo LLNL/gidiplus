@@ -51,7 +51,7 @@ ExternalFile::~ExternalFile( ) {
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void ExternalFile::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void ExternalFile::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string attributes;
 

@@ -37,7 +37,7 @@ int main( int argc, char **argv ) {
 */
 int main2( int argc, char **argv ) {
 
-    PoPI::Database pops( "../../../GIDI/Test/pops.xml" );
+    PoPI::Database pops( "../../../TestData/PoPs/pops.xml" );
     std::string projectileID( PoPI::IDs::photon );
     GIDI::Protare *protare;
     GIDI::Transporting::Particles particles;

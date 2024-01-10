@@ -15,13 +15,19 @@
 namespace HAPI {
 
     // constructor
-    HDFDataManager::HDFDataManager(std::string filename)
-    {
-        m_file_id = H5Fopen( filename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT );
+    HDFDataManager::HDFDataManager(std::string const &a_filename) :
+        m_filename( a_filename ) {
+
+        m_file_id = H5Fopen( a_filename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT );
+        H5Eset_auto1( nullptr, nullptr );
+
         m_dataset_ints = H5Dopen2( m_file_id, "iData", H5P_DEFAULT );
-        m_dataspace_ints = H5Dget_space( m_dataset_ints );
+        m_iDataPresent = m_dataset_ints != H5I_INVALID_HID;
+        if( m_iDataPresent ) m_dataspace_ints = H5Dget_space( m_dataset_ints );
+
         m_dataset_doubles = H5Dopen2( m_file_id, "dData", H5P_DEFAULT );
-        m_dataspace_doubles = H5Dget_space( m_dataset_doubles );
+        m_dDataPresent = m_dataset_doubles != H5I_INVALID_HID;
+        if( m_dDataPresent ) m_dataspace_doubles = H5Dget_space( m_dataset_doubles );
 
         m_stride[0] = 1;
         m_block[0] = 1;
@@ -59,15 +65,21 @@ namespace HAPI {
       printf("HDFDataManager: Megabytes/second: %lf\n", MB_sec);
       */
 
-      H5Dclose(m_dataset_ints);
-      H5Sclose(m_dataspace_ints);
-      H5Dclose(m_dataset_doubles);
-      H5Sclose(m_dataspace_doubles);
+        if( m_iDataPresent ) {
+            H5Dclose(m_dataset_ints);
+            H5Sclose(m_dataspace_ints);
+        }   
+        if( m_iDataPresent ) {
+            H5Dclose(m_dataset_doubles);
+            H5Sclose(m_dataspace_doubles);
+        }
       H5Fclose(m_file_id);
     }
 
     void HDFDataManager::getDoubles(nf_Buffer<double> &result, size_t startIndex, size_t endIndex)
     {
+        if( !m_dDataPresent ) throw LUPI::Exception( "HDFDataManager::getDoubles: HDF5 file " + m_filename + " has no 'dData' dataset." );
+
         hid_t memspace;
         herr_t status;
 
@@ -96,6 +108,8 @@ namespace HAPI {
 
     void HDFDataManager::getInts(nf_Buffer<int> &result, size_t startIndex, size_t endIndex)
     {
+        if( !m_iDataPresent ) throw LUPI::Exception( "HDFDataManager::getInts: HDF5 file " + m_filename + " has no 'iData' dataset." );
+
         hid_t memspace;
         herr_t status;
         hsize_t size = endIndex - startIndex;

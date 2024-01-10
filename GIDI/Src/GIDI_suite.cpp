@@ -20,7 +20,7 @@ namespace GIDI {
  ***********************************************************************************************************/
 
 Suite::Suite( std::string const &a_keyName ) :
-        Ancestry( "" ),
+        GUPI::Ancestry( "" ),
         m_keyName( a_keyName ),
         m_styles( nullptr ),
         m_allowsLazyParsing( false ) {
@@ -33,7 +33,7 @@ Suite::Suite( std::string const &a_keyName ) :
  ***********************************************************************************************************/
 
 Suite::Suite( std::string const &a_moniker, std::string const &a_keyName ) :
-        Ancestry( a_moniker ),
+        GUPI::Ancestry( a_moniker ),
         m_keyName( a_keyName ),
         m_styles( nullptr ),
         m_allowsLazyParsing( false ) {
@@ -57,7 +57,7 @@ Suite::Suite( std::string const &a_moniker, std::string const &a_keyName ) :
 Suite::Suite( Construction::Settings const &a_construction, std::string const &a_moniker, std::string const &a_keyName, HAPI::Node const &a_node, 
                 SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, parseSuite a_parseSuite,
                 Styles::Suite const *a_styles, bool a_allowsLazyParsing ) :
-        Ancestry( a_moniker ),
+        GUPI::Ancestry( a_moniker ),
         m_keyName( a_keyName ),
         m_styles( a_styles ),
         m_allowsLazyParsing( a_allowsLazyParsing ) {
@@ -334,13 +334,13 @@ void Suite::modifiedMultiGroupElasticForTNSL( std::map<std::string,std::size_t> 
 }
 
 /* *********************************************************************************************************//**
- * Used by Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or nullptr if none exists.
+ * Used by GUPI::Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or nullptr if none exists.
  *
  * @param a_item    [in]    The name of the class member whose pointer is to be return.
  * @return                  The pointer to the class member or nullptr if class does not have a member named a_item.
  ***********************************************************************************************************/
 
-Ancestry *Suite::findInAncestry3( std::string const &a_item ) {
+GUPI::Ancestry *Suite::findInAncestry3( std::string const &a_item ) {
 
     std::size_t index( a_item.find( '=' ) ), lastQuote = a_item.size( ) - 2;
 
@@ -353,17 +353,17 @@ Ancestry *Suite::findInAncestry3( std::string const &a_item ) {
 
     std::string keyValue( a_item.substr( index, lastQuote - index ) );
 
-    return( get<Ancestry>( keyValue ) );
+    return( get<GUPI::Ancestry>( keyValue ) );
 }
 
 /* *********************************************************************************************************//**
- * Used by Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or nullptr if none exists.
+ * Used by GUPI::Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or nullptr if none exists.
  *
  * @param a_item    [in]    The name of the class member whose pointer is to be return.
  * @return                  The pointer to the class member or nullptr if class does not have a member named a_item.
  ***********************************************************************************************************/
 
-Ancestry const *Suite::findInAncestry3( std::string const &a_item ) const {
+GUPI::Ancestry const *Suite::findInAncestry3( std::string const &a_item ) const {
 
     std::size_t index( a_item.find( '=' ) ), lastQuote = a_item.size( ) - 2;
 
@@ -376,7 +376,7 @@ Ancestry const *Suite::findInAncestry3( std::string const &a_item ) const {
 
     std::string keyValue( a_item.substr( index, lastQuote - index ) );
 
-    return( get<Ancestry>( keyValue ) );
+    return( get<GUPI::Ancestry>( keyValue ) );
 }
 
 /* *********************************************************************************************************//**
@@ -386,7 +386,7 @@ Ancestry const *Suite::findInAncestry3( std::string const &a_item ) const {
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void Suite::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void Suite::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
 

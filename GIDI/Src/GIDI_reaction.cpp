@@ -7,6 +7,8 @@
 # <<END-copyright>>
 */
 
+#include <cmath>
+
 #include "GIDI.hpp"
 #include <HAPI.hpp>
 
@@ -21,6 +23,14 @@ Reaction::Reaction( int a_ENDF_MT, std::string a_fissionGenre ) :
         m_active( true ),
         m_ENDF_MT( a_ENDF_MT ),
         m_fissionGenre( a_fissionGenre ),
+        m_QThreshold( 0.0 ),
+        m_crossSectionThreshold( 0.0 ),
+        m_twoBodyThreshold( 0.0 ),
+        m_isPairProduction( false ),
+        m_isPhotoAtomicIncoherentScattering( false ),
+        m_RutherfordScatteringPresent( false ),
+        m_onlyRutherfordScatteringPresent( false ),
+        m_decayPositronium( false ),
         m_doubleDifferentialCrossSection( GIDI_doubleDifferentialCrossSectionChars, GIDI_labelChars ),
         m_crossSection( GIDI_crossSectionChars, GIDI_labelChars ),
         m_availableEnergy( GIDI_availableEnergyChars, GIDI_labelChars ),
@@ -28,6 +38,8 @@ Reaction::Reaction( int a_ENDF_MT, std::string a_fissionGenre ) :
         m_outputChannel( ) {
 
     setMoniker( GIDI_reactionChars );
+
+    ENDL_CFromENDF_MT( m_ENDF_MT, &m_ENDL_C, &m_ENDL_S );
 }
 
 /* *********************************************************************************************************//**
@@ -53,6 +65,12 @@ Reaction::Reaction( Construction::Settings const &a_construction, HAPI::Node con
         m_fissionGenre( a_node.attribute_as_string( GIDI_fissionGenreChars ) ),
         m_QThreshold( 0.0 ),
         m_crossSectionThreshold( 0.0 ),
+        m_twoBodyThreshold( 0.0 ),
+        m_isPairProduction( false ),
+        m_isPhotoAtomicIncoherentScattering( false ),
+        m_RutherfordScatteringPresent( false ),
+        m_onlyRutherfordScatteringPresent( false ),
+        m_decayPositronium( a_construction.decayPositronium( ) ),
         m_doubleDifferentialCrossSection( a_construction, GIDI_doubleDifferentialCrossSectionChars, GIDI_labelChars, a_node, a_setupInfo, a_pops, 
                 a_internalPoPs, parseDoubleDifferentialCrossSectionSuite, a_styles ),
         m_crossSection( a_construction, GIDI_crossSectionChars, GIDI_labelChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseCrossSectionSuite, a_styles ),
@@ -73,6 +91,15 @@ Reaction::Reaction( Construction::Settings const &a_construction, HAPI::Node con
     a_setupInfo.m_outputChannelLevel = 0;
     m_outputChannel = new OutputChannel( a_construction, a_node.child( GIDI_outputChannelChars ), a_setupInfo, a_pops, a_internalPoPs, a_styles, hasFission( ) );
     m_outputChannel->setAncestor( this );
+
+    HAPI::Node const CoulombPlusNuclearElastic = a_node.child( GIDI_doubleDifferentialCrossSectionChars ).first_child( );
+    if( CoulombPlusNuclearElastic.name( ) == GIDI_CoulombPlusNuclearElasticChars ) {    // Check RutherfordScattering.
+        m_RutherfordScatteringPresent = true;
+        m_onlyRutherfordScatteringPresent = true;
+        for( HAPI::Node child = CoulombPlusNuclearElastic.first_child( ); !child.empty( ); child.to_next_sibling( ) ) {
+            if( child.name( ) != GIDI_RutherfordScatteringChars ) m_onlyRutherfordScatteringPresent = false;
+        }
+    }
 
     ENDL_CFromENDF_MT( m_ENDF_MT, &m_ENDL_C, &m_ENDL_S );
     if( a_setupInfo.m_isENDL_C_9 ) m_ENDL_C = 9;
@@ -184,7 +211,7 @@ Vector Reaction::multiGroupMultiplicity( LUPI::StatusMessageReporting &a_smr, Tr
 
     Vector vector( 0 );
 
-    if( m_isPairProduction ) {
+    if( m_isPairProduction && m_decayPositronium ) {
         if( a_productID == PoPI::IDs::photon ) vector += multiGroupCrossSection( a_smr, a_settings, a_temperatureInfo ) * 2; }
     else {
         vector += m_outputChannel->multiGroupMultiplicity( a_smr, a_settings, a_temperatureInfo, a_productID );
@@ -238,14 +265,14 @@ void Reaction::modifiedMultiGroupElasticForTNSL( std::map<std::string,std::size_
 }
 
 /* *********************************************************************************************************//**
- * Used by Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or nullptr if none exists.
+ * Used by GUPI::Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or nullptr if none exists.
  *
  * @param a_item    [in]    The name of the class member whose pointer is to be return.
  *
  * @return                  The pointer to the class member or nullptr if class does not have a member named a_item.
  ***********************************************************************************************************/
 
-Ancestry *Reaction::findInAncestry3( std::string const &a_item ) {
+GUPI::Ancestry *Reaction::findInAncestry3( std::string const &a_item ) {
 
     if( a_item == GIDI_doubleDifferentialCrossSectionChars ) return( &m_doubleDifferentialCrossSection );
     if( a_item == GIDI_crossSectionChars ) return( &m_crossSection );
@@ -257,14 +284,14 @@ Ancestry *Reaction::findInAncestry3( std::string const &a_item ) {
 }
 
 /* *********************************************************************************************************//**
- * Used by Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or nullptr if none exists.
+ * Used by GUPI::Ancestry to tranverse GNDS nodes. This method returns a pointer to a derived class' a_item member or nullptr if none exists.
  *
  * @param a_item    [in]    The name of the class member whose pointer is to be return.
  *
  * @return                  The pointer to the class member or nullptr if class does not have a member named a_item.
  ***********************************************************************************************************/
 
-Ancestry const *Reaction::findInAncestry3( std::string const &a_item ) const {
+GUPI::Ancestry const *Reaction::findInAncestry3( std::string const &a_item ) const {
 
     if( a_item == GIDI_doubleDifferentialCrossSectionChars ) return( &m_doubleDifferentialCrossSection );
     if( a_item == GIDI_crossSectionChars ) return( &m_crossSection );
@@ -273,6 +300,22 @@ Ancestry const *Reaction::findInAncestry3( std::string const &a_item ) const {
     if( a_item == GIDI_outputChannelChars ) return( m_outputChannel );
 
     return( nullptr );
+}
+
+/* *********************************************************************************************************//**
+ * Returns **true** if all outgoing particles (i.e., products) are specifed in *a_particles*. That is, the user
+ * will be tracking all products of *this* reaction.
+ *
+ * @param a_particles           [in]    The list of particles to be transported.
+ *
+ * @return                              bool.
+ ***********************************************************************************************************/
+
+bool Reaction::areAllProductsTracked( Transporting::Particles const &a_particles ) const {
+
+    if( hasFission( ) || m_isPhotoAtomicIncoherentScattering ) return( false );
+
+    return( m_outputChannel->areAllProductsTracked( a_particles ) );
 }
 
 /* *********************************************************************************************************//**
@@ -297,6 +340,26 @@ Vector Reaction::multiGroupCrossSection( LUPI::StatusMessageReporting &a_smr, Tr
 }
 
 /* *********************************************************************************************************//**
+ * Returns the multi-group, total Q for the requested label. This is a cross section weighted Q.
+ *
+ * @param a_smr                 [Out]   If errors are not to be thrown, then the error is reported via this instance.
+ * @param a_settings            [in]    Specifies the requested label.
+ * @param a_temperatureInfo     [in]    Specifies the temperature and labels use to lookup the requested data.
+ * @param a_final               [in]    If false, only the Q for the primary reactions are return, otherwise, the Q for the final reactions.
+ * @param a_reactionsToExclude  [in]    A list of reaction indices that are to be ignored when calculating the Q.
+ *
+ * @return                          The requested multi-group Q as a GIDI::Vector.
+ ***********************************************************************************************************/
+
+Vector Reaction::multiGroupQ( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings,
+                Styles::TemperatureInfo const &a_temperatureInfo, bool a_final ) const {
+
+    if( m_isPairProduction && m_decayPositronium ) return( Vector { 0 } );          // Special case, returns Q with all 0.0s.
+
+    return( m_outputChannel->multiGroupQ( a_smr, a_settings, a_temperatureInfo, a_final ) );
+}
+
+/* *********************************************************************************************************//**
  * Returns the multi-group, product matrix for the requested label for the requested product index for the requested Legendre order.
  * If no data are found, an empty GIDI::Matrix is returned.
  *
@@ -315,7 +378,7 @@ Matrix Reaction::multiGroupProductMatrix( LUPI::StatusMessageReporting &a_smr, T
 
     Matrix matrix( 0, 0 );
 
-    if( m_isPairProduction ) {
+    if( m_isPairProduction && m_decayPositronium ) {
         if( a_productID == PoPI::IDs::photon ) {
             if( a_order == 0 ) {
                 Vector productionCrossSection = multiGroupCrossSection( a_smr, a_settings, a_temperatureInfo ) * 2;
@@ -377,6 +440,9 @@ Vector Reaction::multiGroupAvailableEnergy( LUPI::StatusMessageReporting &a_smr,
     Functions::Gridded1d const *form = dynamic_cast<Functions::Gridded1d const*>( a_settings.form( a_smr, m_availableEnergy, a_temperatureInfo, "available energy" ) );
     if( form != nullptr ) vector = form->data( );
 
+    if( m_isPairProduction && m_decayPositronium ) 
+        vector -= m_outputChannel->multiGroupQ( a_smr, a_settings, a_temperatureInfo, false );
+
     return( vector );
 }
 
@@ -397,7 +463,7 @@ Vector Reaction::multiGroupAverageEnergy( LUPI::StatusMessageReporting &a_smr, T
 
     Vector vector( 0 );
 
-    if( m_isPairProduction ) {
+    if( m_isPairProduction && m_decayPositronium ) {
         if( a_productID == PoPI::IDs::photon ) vector += multiGroupCrossSection( a_smr, a_settings, a_temperatureInfo ) * 2.0 * PoPI_electronMass_MeV_c2; }
     else {
         vector += m_outputChannel->multiGroupAverageEnergy( a_smr, a_settings, a_temperatureInfo, a_productID );
@@ -424,10 +490,19 @@ Vector Reaction::multiGroupDepositionEnergy( LUPI::StatusMessageReporting &a_smr
                 Styles::TemperatureInfo const &a_temperatureInfo, Transporting::Particles const &a_particles ) const {
 
     std::map<std::string, Transporting::Particle> const &products = a_particles.particles( );
-    Vector vector = multiGroupAvailableEnergy( a_smr, a_settings, a_temperatureInfo );
+    Vector vector;
+
+    if( ( a_settings.zeroDepositionIfAllProductsTracked( ) ) && areAllProductsTracked( a_particles ) ) return( vector );
+
+    vector = multiGroupAvailableEnergy( a_smr, a_settings, a_temperatureInfo );
+    Vector availableEnergy( vector );
 
     for( std::map<std::string, Transporting::Particle>::const_iterator iter = products.begin( ); iter != products.end( ); ++iter ) {
         vector -= multiGroupAverageEnergy( a_smr, a_settings, a_temperatureInfo, iter->first );
+    }
+
+    for( std::size_t index = 0; index < availableEnergy.size( ); ++index ) {        // Check for values that should probably be 0.0.
+        if( std::fabs( vector[index] ) < std::fabs( 1e-14 * availableEnergy[index] ) ) vector[index] = 0.0;
     }
 
     return( vector );
@@ -655,9 +730,11 @@ void Reaction::modifiedCrossSection( Functions::XYs1d const *a_offset, Functions
 
     Functions::XYs1d offset = offset1->domainSlice( domainMin, domainMax, true );
     Functions::XYs1d slope  = slope1->domainSlice( domainMin, domainMax, true );
+    if( a_offset == nullptr ) delete offset1;
+    if( a_slope == nullptr ) delete slope1;
 
     for( auto temperatureInfo = temperatureInfos.begin( ); temperatureInfo != temperatureInfos.end( ); ++temperatureInfo ) {
-        Functions::XYs1d *xys1d = crossSectionSuite.get<Functions::XYs1d>( temperatureInfo->heatedCrossSection( ) );
+        xys1d = crossSectionSuite.get<Functions::XYs1d>( temperatureInfo->heatedCrossSection( ) );
         Functions::XYs1d xys1dSliced = xys1d->domainSlice( domainMin, domainMax, true );
         Functions::XYs1d modified = offset + slope * xys1dSliced;
 
@@ -697,7 +774,7 @@ void Reaction::modifiedCrossSection( Functions::XYs1d const *a_offset, Functions
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void Reaction::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void Reaction::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
     
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     std::string attributes;

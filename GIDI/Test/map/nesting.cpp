@@ -20,7 +20,7 @@ void printList( char const *prefix, std::vector<std::string> &list );
 */
 int main( int argc, char **argv ) {
 
-    PoPI::Database pops( "../pops.xml" );
+    PoPI::Database pops( "../../../TestData/PoPs/pops.xml" );
 
     printCodeArguments( __FILE__, argc, argv );
 

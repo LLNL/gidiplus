@@ -106,6 +106,6 @@ void flashReadProtare( std::string const &a_filename ) {
 
     if( verbose > 1 ) std::cout << "        " << a_filename << std::endl;
 
-    HAPI::File *doc = new HAPI::PugiXMLFile( a_filename.c_str( ) );
+    HAPI::File *doc = new HAPI::PugiXMLFile( a_filename.c_str( ), "flashReadProtare" );
     delete doc;
 }

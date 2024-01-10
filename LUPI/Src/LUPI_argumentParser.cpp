@@ -23,7 +23,13 @@ static std::size_t maxPrintLineWidth = 120;
  */
 
 /* *********************************************************************************************************//**
- * ArgumentBase destructor.
+ * ArgumentBase constructor.
+ *
+ * @param a_argumentType        [in]    The type of argument to create.
+ * @param a_name                [in]    The name of the argument.
+ * @param a_descriptor          [in]    The string printed with arugment's help.
+ * @param a_minimumNeeded       [in]    The minimum number of times the argument must be entered.
+ * @param a_maximumNeeded       [in]    The maximum number of times the argument can be entered.
  ***********************************************************************************************************/
 
 ArgumentBase::ArgumentBase( ArgumentType a_argumentType, std::string const &a_name, std::string const &a_descriptor, int a_minimumNeeded, int a_maximumNeeded ) :
@@ -32,7 +38,7 @@ ArgumentBase::ArgumentBase( ArgumentType a_argumentType, std::string const &a_na
         m_descriptor( a_descriptor ),
         m_minimumNeeded( a_minimumNeeded ),
         m_maximumNeeded( a_maximumNeeded ),
-        m_numberEntered( 0 ) {
+        m_counts( 0 ) {
 
     if( m_minimumNeeded < 0 ) throw std::runtime_error( "ERROR 1000 in ArgumentBase::ArgumentBase: m_minimumNeeded must not be negative." );
     if( m_maximumNeeded > -1 ) {
@@ -43,10 +49,9 @@ ArgumentBase::ArgumentBase( ArgumentType a_argumentType, std::string const &a_na
     if( m_argumentType == ArgumentType::Positional ) {
         if( a_name[0] == '-' )
             throw std::runtime_error( "ERROR 1020 in ArgumentBase::ArgumentBase: positional argument name '" + a_name + "' cannot start with a '-'." );
-        m_names.push_back( a_name ); }
-    else {
-        addAlias( a_name );
     }
+
+    addAlias( a_name );
 }
 
 /* *********************************************************************************************************//**
@@ -71,7 +76,24 @@ bool ArgumentBase::hasName( std::string const &a_name ) const {
         if( a_name == *iter ) return( true );
     }
     return( false );
+}
 
+/* *********************************************************************************************************//**
+ * Returns the value at index *a_index*. If *a_index* exceeds the number of values entered, a throw is executed.
+ *
+ * @param a_index               [in]    The 0-based index into the m_values std::vector whose content is returned.
+ *
+ * @return                              Returns the value entered at index *a_index*.
+ ***********************************************************************************************************/
+
+std::string const &ArgumentBase::value( std::size_t a_index ) const {
+
+    if( ( m_argumentType == ArgumentType::True ) || ( m_argumentType == ArgumentType::False ) || ( m_argumentType == ArgumentType::Count ) )
+        throw Exception( "Argument type for " + name( ) + " does not support calling value() method." );
+
+    if( a_index >= m_values.size( ) ) throw Exception( "Index = " + std::to_string( a_index ) + " out-of-bounds for argument \"" + name( ) + "\"." );
+
+    return( m_values[a_index] );
 }
 
 /* *********************************************************************************************************//**
@@ -82,16 +104,19 @@ bool ArgumentBase::hasName( std::string const &a_name ) const {
 
 void ArgumentBase::addAlias( std::string const &a_name ) {
 
-    if( m_argumentType == ArgumentType::Positional )
-        throw std::runtime_error( "ERROR 1100 in ArgumentBase::addAlias: cannot add a name to a positional argument." );
-    if( a_name[0] != '-' ) throw std::runtime_error( "ERROR 1110 in ArgumentBase::addAlias: name '" + a_name + "' not a valid optional name." );
+    if( m_argumentType == ArgumentType::Positional ) {
+        if( m_names.size( ) > 0 ) throw std::runtime_error( "ERROR 1100 in ArgumentBase::addAlias: cannot add a name to a positional argument." ); }
+    else {
+        if( a_name[0] != '-' ) throw std::runtime_error( "ERROR 1110 in ArgumentBase::addAlias: name '" + a_name + "' not a valid optional name." );
+    }
+
     if( hasName( a_name ) ) return;
 
     m_names.push_back( a_name );
 }
 
 /* *********************************************************************************************************//**
- * Counts each time a specific argument/options is found.
+ * Counts each time a specific argument is found.
  *
  * @param a_index           [in]    The index of the current command argument in *a_argv*.
  * @param a_argc            [in]    The number of command arguments.
@@ -102,13 +127,37 @@ void ArgumentBase::addAlias( std::string const &a_name ) {
 
 int ArgumentBase::parse( ArgumentParser const &a_argumentParser, int a_index, int a_argc, char **a_argv ) {
 
-    ++m_numberEntered;
+    ++m_counts;
+    if( m_argumentType != ArgumentType::Positional ) ++a_index;
 
-    return( a_index + 1 );
+    if( ( m_argumentType == ArgumentType::Store ) || ( m_argumentType == ArgumentType::Append ) || ( m_argumentType == ArgumentType::Positional ) ) {
+        int maximumNeeded1 = maximumNeeded( );
+        if( m_argumentType == ArgumentType::Positional ) {
+            if( maximumNeeded1 < 0 ) maximumNeeded1 = a_argc; }
+        else {
+            if( ( maximumNeeded1 < counts( ) ) && ( maximumNeeded1 > -1 ) )
+                throw std::runtime_error( "ERROR 1220 in ArgumentBase::parse: too many values for optional argument " + name( ) + " entered." );
+            maximumNeeded1 = 1;
+        }
+
+        for( int index = 0; index < maximumNeeded1; ++index ) {
+            if( a_index == a_argc ) {
+                if( m_argumentType == ArgumentType::Positional ) break;
+                throw std::runtime_error( "ERROR 1200 in ArgumentBase::parse: missing value for argument " + name( ) + "." );
+            }
+            if( ( m_argumentType == ArgumentType::Positional ) && a_argumentParser.isOptionalArgument( a_argv[a_index] ) ) break;
+
+            m_values.push_back( a_argv[a_index] );
+            if( index > 0 ) ++m_counts;
+            ++a_index;
+        }
+    }
+
+    return( a_index );
 }
 
 /* *********************************************************************************************************//**
- * Returns the usage string for *this* option.
+ * Returns the usage string for *this* argument.
  *
  * @param a_requiredOption      [in]    The index of the current command argument in *a_argv*.
  *
@@ -157,7 +206,7 @@ void ArgumentBase::printStatus( std::string a_indent ) const {
     std::string name1 = name( );
     if( name1.size( ) < 32 ) name1.resize( 32, ' ' );
 
-    std::cout << a_indent << name1 << ": number entered " << std::to_string( m_numberEntered )
+    std::cout << a_indent << name1 << ": number entered " << std::to_string( m_counts )
             << "; number needed (" << std::to_string( m_minimumNeeded ) << "," << std::to_string( m_maximumNeeded ) << ")" 
             << printStatus2( ) << std::endl;
     printStatus3( a_indent + "    " );
@@ -165,6 +214,8 @@ void ArgumentBase::printStatus( std::string a_indent ) const {
 
 /* *********************************************************************************************************//**
  * Called by *printStatus*. This method returns an empty string. Must be overwritten by argument classes that have value.
+ *
+ * @return                          An empty **std::string** instance.
  ***********************************************************************************************************/
 
 std::string ArgumentBase::printStatus2( ) const {
@@ -188,6 +239,22 @@ void ArgumentBase::printStatus3( std::string const &a_indent ) const {
  */
 
 /* *********************************************************************************************************//**
+ * OptionBoolean constructor.
+ *
+ * @param a_argumentType        [in]    The type of argument to create.
+ * @param a_name                [in]    The name of the argument.
+ * @param a_descriptor          [in]    The string printed with arugment's help.
+ * @param a_minimumNeeded       [in]    Not used. Will probably be deprecated.
+ * @param a_maximumNeeded       [in]    Not used. Will probably be deprecated.
+ ***********************************************************************************************************/
+
+OptionBoolean::OptionBoolean( ArgumentType a_argumentType, std::string const &a_name, std::string const &a_descriptor, bool a_default ) :
+        ArgumentBase( a_argumentType, a_name, a_descriptor, 0, -1 ),
+        m_default( a_default ) {
+
+}
+
+/* *********************************************************************************************************//**
  * OptionBoolean destructor.
  ***********************************************************************************************************/
 
@@ -196,39 +263,76 @@ OptionBoolean::~OptionBoolean( ) {
 }
 
 /* *********************************************************************************************************//**
- * Returns the *true* or *false* status of *this*.
- ***********************************************************************************************************/
-
-bool OptionBoolean::value( ) const {
-
-    if( numberEntered( ) == 0 ) return( m_default );
-    return( !m_default );
-}
-
-/* *********************************************************************************************************//**
- * Called by *printStatus*. This method return a string representing *this*'s value.
+ * Called by *printStatus*. This method returns a string representing *this*'s value.
+ *
+ * @return                              Returns a std::string instance representing the value of *this*.
  ***********************************************************************************************************/
 
 std::string OptionBoolean::printStatus2( ) const {
 
-    if( value( ) ) return( ": true" );
+    bool value1 = m_default;
+    if( counts() == 0 ) value1 = !m_default;
+
+    if( value1 ) return( ": true" );
     return( ": false" );
 }
 
 /*! \class OptionTrue
- * An boolean optional argument whose default is false and changes to true if one or more options are entered.
- */
-
-/*! \class OptionFalse
- * An boolean optional argument whose default is true and changes to false if one or more options are entered.
- */
-
-/*! \class OptionCounter
- * An optional argument the count the number of times the option is entered.
+ * An boolean optional argument whose default is *false* and changes to *true* if one or more options are entered.
  */
 
 /* *********************************************************************************************************//**
- * Called by *printStatus*. This method return a string representing *this*'s value.
+ * OptionTrue constructor.
+ *
+ * @param a_name                [in]    The name of the argument.
+ * @param a_descriptor          [in]    The string printed with arugment's help.
+ * @param a_minimumNeeded       [in]    Not used. Will probably be deprecated.
+ * @param a_maximumNeeded       [in]    Not used. Will probably be deprecated.
+ ***********************************************************************************************************/
+
+OptionTrue::OptionTrue( std::string const &a_name, std::string const &a_descriptor, int a_minimumNeeded, int a_maximumNeeded ) :
+        OptionBoolean( ArgumentType::True, a_name, a_descriptor, false ) {
+
+}
+
+/*! \class OptionFalse
+ * An boolean optional argument whose default is *true* and changes to *false* if one or more options are entered.
+ */
+
+/* *********************************************************************************************************//**
+ * OptionFalse constructor.
+ *
+ * @param a_name                [in]    The name of the argument.
+ * @param a_descriptor          [in]    The string printed with arugment's help.
+ * @param a_minimumNeeded       [in]    Not used. Will probably be deprecated.
+ * @param a_maximumNeeded       [in]    Not used. Will probably be deprecated.
+ ***********************************************************************************************************/
+
+OptionFalse::OptionFalse( std::string const &a_name, std::string const &a_descriptor, int a_minimumNeeded, int a_maximumNeeded ) :
+        OptionBoolean( ArgumentType::False, a_name, a_descriptor, true ) {
+
+}
+
+/*! \class OptionCounter
+ * An optional argument that counts the number of times the option is entered.
+ */
+
+/* *********************************************************************************************************//**
+ * OptionCounter constructor.
+ *
+ * @param a_name                [in]    The name of the argument.
+ * @param a_descriptor          [in]    The string printed with arugment's help.
+ * @param a_minimumNeeded       [in]    Not used. Will probably be deprecated.
+ * @param a_maximumNeeded       [in]    Not used. Will probably be deprecated.
+ ***********************************************************************************************************/
+
+OptionCounter::OptionCounter( std::string const &a_name, std::string const &a_descriptor, int a_minimumNeeded, int a_maximumNeeded ) :
+        ArgumentBase( ArgumentType::Count, a_name, a_descriptor, 0, -1 ) {
+
+}
+
+/* *********************************************************************************************************//**
+ * Called by *printStatus*. This method returns a string representing *this*'s value.
  ***********************************************************************************************************/
 
 std::string OptionCounter::printStatus2( ) const {
@@ -237,27 +341,37 @@ std::string OptionCounter::printStatus2( ) const {
 }
 
 /*! \class OptionStore
- * An option with a value. If multiple options with the same name are entered, the *m_value* member will represent the last option entered.
+ * An option with a value. If multiple options with the same name are entered, only the last vluae entered if returned by the value() method.
  */
 
 /* *********************************************************************************************************//**
- * Calls **ArgumentBase::parse** and sets *m_value* to the next argument.
+ * OptionStore constructor.
  *
- * @param a_index           [in]    The index of the current command argument in *a_argv*.
- * @param a_argc            [in]    The total number of command arguments.
- * @param a_argv            [in]    The list of command arguments.
- *
- * @return                          The value of *a_index*.
+ * @param a_name                [in]    The name of the argument.
+ * @param a_descriptor          [in]    The string printed with arugment's help.
+ * @param a_minimumNeeded       [in]    Not used. Will probably be deprecated.
+ * @param a_maximumNeeded       [in]    Not used. Will probably be deprecated.
  ***********************************************************************************************************/
 
-int OptionStore::parse( ArgumentParser const &a_argumentParser, int a_index, int a_argc, char **a_argv ) {
+OptionStore::OptionStore( std::string const &a_name, std::string const &a_descriptor, int a_minimumNeeded, int a_maximumNeeded ) :
+        ArgumentBase( ArgumentType::Store, a_name, a_descriptor, 0, -1 ) {
 
-    a_index = ArgumentBase::parse( a_argumentParser, a_index, a_argc, a_argv );
-    if( a_index == a_argc ) throw std::runtime_error( "ERROR 1200 in OptionStore::parse: missing value for argument " + name( ) + "." );
+}
 
-    m_value = a_argv[a_index];
+/* *********************************************************************************************************//**
+ * Returns the value of 
+ *
+ * @param a_index               [in]    This argument is not used. The last value entered is always returned.
+ *
+ * @return                              Returns the last value entered or executes a **throw** if option not entered.
+ ***********************************************************************************************************/
 
-    return( ++a_index );
+std::string const &OptionStore::value( std::size_t a_index ) const {
+
+    a_index = values( ).size( );
+    if( a_index != 0 ) --a_index;
+
+    return ArgumentBase::value( a_index );
 }
 
 /* *********************************************************************************************************//**
@@ -268,33 +382,25 @@ int OptionStore::parse( ArgumentParser const &a_argumentParser, int a_index, int
 
 void OptionStore::printStatus3( std::string const &a_indent ) const {
 
-    if( numberEntered( ) > 0 ) std::cout << a_indent << m_value << std::endl;
+    if( counts( ) > 0 ) std::cout << a_indent << value( ) << std::endl;
 }
 
 /*! \class OptionAppend
- * An option with a value. If multiple options with the same name are entered, the *m_value* member will represent the last option entered.
+ * An option with a value. If multiple options with the same name are entered, all values will be stored.
  */
 
 /* *********************************************************************************************************//**
- * Calls **ArgumentBase::parse** and appends the next argument to *this*.
+ * OptionAppend constructor.
  *
- * @param a_index           [in]    The index of the current command argument in *a_argv*.
- * @param a_argc            [in]    The total number of command arguments.
- * @param a_argv            [in]    The list of command arguments.
- *
- * @return                          The value of *a_index*.
+ * @param a_name                [in]    The name of the argument.
+ * @param a_descriptor          [in]    The string printed with arugment's help.
+ * @param a_minimumNeeded       [in]    The minimum number of times the argument must be entered.
+ * @param a_maximumNeeded       [in]    The maximum number of times the argument can be entered.
  ***********************************************************************************************************/
 
-int OptionAppend::parse( ArgumentParser const &a_argumentParser, int a_index, int a_argc, char **a_argv ) {
+OptionAppend::OptionAppend( std::string const &a_name, std::string const &a_descriptor, int a_minimumNeeded, int a_maximumNeeded ) :
+        ArgumentBase( ArgumentType::Append, a_name, a_descriptor, a_minimumNeeded, a_maximumNeeded ) {
 
-    a_index = ArgumentBase::parse( a_argumentParser, a_index, a_argc, a_argv );
-
-    if( a_index == a_argc ) throw std::runtime_error( "ERROR 1210 in OptionAppend::parse: missing value for argument " + name( ) + "." );
-    if( static_cast<int>( m_values.size( ) ) == maximumNeeded( ) ) throw std::runtime_error( "ERROR 1220 in OptionAppend::parse: too many values for argument " + name( ) + " entered." );
-
-    m_values.push_back( a_argv[a_index] );
-
-    return( ++a_index );
 }
 
 /* *********************************************************************************************************//**
@@ -305,7 +411,7 @@ int OptionAppend::parse( ArgumentParser const &a_argumentParser, int a_index, in
 
 void OptionAppend::printStatus3( std::string const &a_indent ) const {
 
-    for( auto valueIterator = m_values.begin( ); valueIterator != m_values.end( ); ++valueIterator ) {
+    for( auto valueIterator = values( ).begin( ); valueIterator != values( ).end( ); ++valueIterator ) {
         std::cout << a_indent << *valueIterator << std::endl;
     }
 }
@@ -313,42 +419,18 @@ void OptionAppend::printStatus3( std::string const &a_indent ) const {
 /*! \class Positional
  * An option with a value. If multiple options with the same name are entered, the *m_value* member will represent the last option entered.
  */ 
- 
+
 /* *********************************************************************************************************//**
- * Calls **ArgumentBase::parse** and appends the next arguments to *this* until *m_maximumNeeded* is reached
- * or there are no more positional arguments (i.e., an option is detected or there are no more arguments).
- * 
- * @param a_index           [in]    The index of the current command argument in *a_argv*.
- * @param a_argc            [in]    The total number of command arguments.
- * @param a_argv            [in]    The list of command arguments.
+ * Positional constructor.
  *
- * @return                          The value of *a_index*.
+ * @param a_name                [in]    The name of the argument.
+ * @param a_descriptor          [in]    The string printed with arugment's help.
+ * @param a_minimumNeeded       [in]    The minimum number of times the argument must be entered.
+ * @param a_maximumNeeded       [in]    The maximum number of times the argument can be entered.
  ***********************************************************************************************************/
 
-int Positional::parse( ArgumentParser const &a_argumentParser, int a_index, int a_argc, char **a_argv ) {
-
-            // The following error should never append.
-    if( a_index == a_argc ) throw std::runtime_error( "ERROR 1300 in Positional::parse: missing value for positional argument '" + name( ) + "'." );
-
-    int maximumNeeded1 = maximumNeeded( );
-    if( maximumNeeded1 < 0 ) maximumNeeded1 = a_argc;
-    for( int index = 0; index < maximumNeeded1; ++index ) {
-        if( a_index == a_argc ) break;
-        if( index >= minimumNeeded( ) ) {                // Break if an option detected and minimumNeeded reached. Need to check for negative number.
-            if( a_argumentParser.hasName( a_argv[a_index] ) ) break;
-        }
-
-        m_values.push_back( a_argv[a_index] );
-        a_index = ArgumentBase::parse( a_argumentParser, a_index, a_argc, a_argv );
-    }
-
-    if( static_cast<int>( m_values.size( ) ) < minimumNeeded( ) )
-        throw std::runtime_error( "ERROR 1310 in Positional::parse: too few values for positional argument '" + name( )
-                + "' entered. Got " + std::to_string( m_values.size( ) ) + " expect " + std::to_string( minimumNeeded( ) ) 
-                + " to " + std::to_string( maximumNeeded( ) ) + "." );
-
-
-    return( a_index );
+Positional::Positional( std::string const &a_name, std::string const &a_descriptor, int a_minimumNeeded, int a_maximumNeeded ) :
+            ArgumentBase( ArgumentType::Positional, a_name, a_descriptor, a_minimumNeeded, a_maximumNeeded ) {
 }
 
 /* *********************************************************************************************************//**
@@ -359,7 +441,7 @@ int Positional::parse( ArgumentParser const &a_argumentParser, int a_index, int 
 
 void Positional::printStatus3( std::string const &a_indent ) const {
 
-    for( auto valueIterator = m_values.begin( ); valueIterator != m_values.end( ); ++valueIterator ) {
+    for( auto valueIterator = values( ).begin( ); valueIterator != values( ).end( ); ++valueIterator ) {
         std::cout << a_indent << *valueIterator << std::endl;
     }
 }
@@ -414,6 +496,48 @@ void ArgumentParser::add2( ArgumentBase *a_argumentBase ) {
 }
 
 /* *********************************************************************************************************//**
+ * Creates an argument instance of type specified by *a_argumentType* and adds to *this*.
+ *
+ * @param a_argumentType        [in]    The type of argument to create.
+ * @param a_name                [in]    The name of the argument.
+ * @param a_descriptor          [in]    The string printed with arugment's help.
+ * @param a_minimumNeeded       [in]    The minimum number of times the argument must be entered.
+ * @param a_maximumNeeded       [in]    The maximum number of times the argument can be entered.
+ *
+ * @return                              Returns a pointer to to the created argument instance.
+ ***********************************************************************************************************/
+
+ArgumentBase *ArgumentParser::add( ArgumentType a_argumentType, std::string const &a_name, std::string const &a_descriptor, 
+                int a_minimumNeeded, int a_maximumNeeded ) {
+
+    ArgumentBase *argument = nullptr;
+
+    switch( a_argumentType ) {
+    case ArgumentType::True :
+        argument = new OptionTrue( a_name, a_descriptor );
+        break;
+    case ArgumentType::False :
+        argument = new OptionFalse( a_name, a_descriptor );
+        break;
+    case ArgumentType::Count :
+        argument = new OptionCounter( a_name, a_descriptor );
+        break;
+    case ArgumentType::Store :
+        argument = new OptionStore( a_name, a_descriptor );
+        break;
+    case ArgumentType::Append :
+        argument = new OptionAppend( a_name, a_descriptor, a_minimumNeeded, a_maximumNeeded );
+        break;
+    default :
+        argument = new Positional( a_name, a_descriptor, a_minimumNeeded, a_maximumNeeded );
+    }
+
+    add2( argument );
+
+    return( argument );
+}
+
+/* *********************************************************************************************************//**
  * Adds the alias *a_alias* to the argument named *a_name*.
  *
  * @param a_name            [in]    The name of the argument to add the alias to.
@@ -447,6 +571,23 @@ void ArgumentParser::addAlias( ArgumentBase const * const a_argumentBase, std::s
 }
 
 /* *********************************************************************************************************//**
+ * Returns true if name *a_name* is an optional argument of *this* and false otherwise.
+ *
+ * @param a_name            [in]    The name to see check if it exists in *this*.
+ *
+ * @return                          true if name *a_name* is in *this* and false otherwise.
+ ***********************************************************************************************************/
+
+bool ArgumentParser::isOptionalArgument( std::string const &a_name ) const {
+
+    for( auto argumentIterator = m_arguments.begin( ); argumentIterator != m_arguments.end( ); ++argumentIterator ) {
+        if( (*argumentIterator)->hasName( a_name ) ) return( (*argumentIterator)->argumentType( ) != ArgumentType::Positional );
+    }
+
+    return( false );
+}
+
+/* *********************************************************************************************************//**
  * Returns true if name *a_name* is in *this* and false otherwise.
  *
  * @param a_name            [in]    The name to see check if it exists in *this*.
@@ -470,7 +611,7 @@ bool ArgumentParser::hasName( std::string const &a_name ) const {
  * @param a_argv            [in]    The list of arguments.
  ***********************************************************************************************************/
 
-void ArgumentParser::parse( int a_argc, char **a_argv ) {
+void ArgumentParser::parse( int a_argc, char **a_argv, bool a_printArguments ) {
 
     for( int iargc = 1; iargc < a_argc; ++iargc ) {                                       // Check is help requested.
         std::string arg( a_argv[iargc] );
@@ -507,22 +648,23 @@ void ArgumentParser::parse( int a_argc, char **a_argv ) {
             }
         }
     }
-
-    for( auto argumentIterator = m_arguments.begin( ); argumentIterator != m_arguments.end( ); ++argumentIterator ) {
-        if( (*argumentIterator)->numberEntered( ) < (*argumentIterator)->minimumNeeded( ) ) {
+    for( auto argumentIterator2 = m_arguments.begin( ); argumentIterator2 != m_arguments.end( ); ++argumentIterator2 ) {
+        if( (*argumentIterator2)->counts( ) < (*argumentIterator2)->minimumNeeded( ) ) {
             std::string msg( "arguments for" );
 
-            if( (*argumentIterator)->isOptionalArgument( ) ) msg = "number of option";
-            throw std::runtime_error( "ERROR 1620 in ArgumentParser::parse: insufficient " + msg + " '" + (*argumentIterator)->name( ) 
-                    + "' entered. Range of " + std::to_string( (*argumentIterator)->minimumNeeded( ) ) + " to " 
-                    + std::to_string( (*argumentIterator)->maximumNeeded( ) ) + " required, " 
-                    + std::to_string( (*argumentIterator)->numberEntered( ) ) + " entered." );
+            if( (*argumentIterator2)->isOptionalArgument( ) ) msg = "number of option";
+            throw std::runtime_error( "ERROR 1620 in ArgumentParser::parse: insufficient " + msg + " '" + (*argumentIterator2)->name( ) 
+                    + "' entered. Range of " + std::to_string( (*argumentIterator2)->minimumNeeded( ) ) + " to " 
+                    + std::to_string( (*argumentIterator2)->maximumNeeded( ) ) + " required, " 
+                    + std::to_string( (*argumentIterator2)->counts( ) ) + " entered." );
         }
     }
 
-    std::cerr << "    " << LUPI::FileInfo::basenameWithoutExtension( m_codeName );
-    for( int i1 = 1; i1 < a_argc; i1++ ) std::cerr << " " << a_argv[i1];
-    std::cerr << std::endl;
+    if( a_printArguments ) {
+        std::cerr << "    " << LUPI::FileInfo::basenameWithoutExtension( m_codeName );
+        for( int i1 = 1; i1 < a_argc; i1++ ) std::cerr << " " << a_argv[i1];
+        std::cerr << std::endl;
+    }
 }
 
 /* *********************************************************************************************************//**
@@ -563,7 +705,7 @@ void ArgumentParser::help( ) const {
             sep = ", ";
         }
         if( (*argumentIterator)->requiresAValue( ) ) line += " VALUE";
-        if( (*argumentIterator)->argumentType( ) == LUPI::ArgumentType::Append ) {
+        if( (*argumentIterator)->argumentType( ) == ArgumentType::Append ) {
             if( ( (*argumentIterator)->minimumNeeded( ) != (*argumentIterator)->maximumNeeded( ) ) or ( (*argumentIterator)->maximumNeeded( ) != 1 ) )
                     line += " [" + std::to_string( (*argumentIterator)->minimumNeeded( ) ) + "," + std::to_string( (*argumentIterator)->maximumNeeded( ) ) + "]";
         }

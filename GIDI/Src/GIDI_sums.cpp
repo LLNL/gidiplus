@@ -23,7 +23,7 @@ namespace Sums {
  ***********************************************************************************************************/
 
 Sums::Sums( ) :
-        Ancestry( GIDI_sumsChars ),
+        GUPI::Ancestry( GIDI_sumsChars ),
         m_crossSectionSums( GIDI_sumsCrossSectionsChars, GIDI_labelChars ),
         m_multiplicitySums( GIDI_sumsMultiplicitiesChars, GIDI_labelChars ) {
 
@@ -69,7 +69,7 @@ void Sums::parse( Construction::Settings const &a_construction, HAPI::Node const
  * @return                          Returns the pointer to the member of nullptr if it does not exists.
  ***********************************************************************************************************/
 
-Ancestry *Sums::findInAncestry3( std::string const &a_item ) {
+GUPI::Ancestry *Sums::findInAncestry3( std::string const &a_item ) {
 
     if( a_item == GIDI_crossSectionSumsChars ) return( &m_crossSectionSums );
     if( a_item == GIDI_multiplicitySumsChars ) return( &m_multiplicitySums );
@@ -87,7 +87,7 @@ Ancestry *Sums::findInAncestry3( std::string const &a_item ) {
  * @return                          Returns the pointer to the member of nullptr if it does not exists.
  ***********************************************************************************************************/
 
-Ancestry const *Sums::findInAncestry3( std::string const &a_item ) const {
+GUPI::Ancestry const *Sums::findInAncestry3( std::string const &a_item ) const {
 
     if( a_item == GIDI_crossSectionSumsChars ) return( &m_crossSectionSums );
     if( a_item == GIDI_multiplicitySumsChars ) return( &m_multiplicitySums );
@@ -105,7 +105,7 @@ Ancestry const *Sums::findInAncestry3( std::string const &a_item ) const {
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void Sums::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void Sums::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
 
@@ -168,7 +168,7 @@ CrossSectionSum::CrossSectionSum( Construction::Settings const &a_construction, 
  * @return                          Returns the pointer to the member of nullptr if it does not exists.
  ***********************************************************************************************************/
 
-Ancestry *CrossSectionSum::findInAncestry3( std::string const &a_item ) {
+GUPI::Ancestry *CrossSectionSum::findInAncestry3( std::string const &a_item ) {
 
     if( a_item == GIDI_QChars ) return( &m_Q );
     if( a_item == GIDI_crossSectionChars ) return( &m_crossSection );
@@ -183,7 +183,7 @@ Ancestry *CrossSectionSum::findInAncestry3( std::string const &a_item ) {
  * @return                          Returns the pointer to the member of nullptr if it does not exists.
  ***********************************************************************************************************/
 
-Ancestry const *CrossSectionSum::findInAncestry3( std::string const &a_item ) const {
+GUPI::Ancestry const *CrossSectionSum::findInAncestry3( std::string const &a_item ) const {
 
     if( a_item == GIDI_QChars ) return( &m_Q );
     if( a_item == GIDI_crossSectionChars ) return( &m_crossSection );
@@ -198,7 +198,7 @@ Ancestry const *CrossSectionSum::findInAncestry3( std::string const &a_item ) co
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void CrossSectionSum::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void CrossSectionSum::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     std::string attributes;
@@ -243,7 +243,7 @@ MultiplicitySum::MultiplicitySum( Construction::Settings const &a_construction, 
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void MultiplicitySum::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void MultiplicitySum::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
  
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     std::string attributes;         
@@ -301,7 +301,7 @@ Summands::~Summands( ) {
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void Summands::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void Summands::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
 
@@ -323,7 +323,7 @@ namespace Summand {
  ***********************************************************************************************************/
 
 Base::Base( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo ) :
-        Ancestry( a_node.name( ) ),
+        GUPI::Ancestry( a_node.name( ) ),
         m_href( a_node.attribute_as_string( GIDI_hrefChars ) ) {
 
 }
@@ -343,7 +343,7 @@ Base::~Base( ) {
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void Base::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void Base::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string attributes = a_writeInfo.addAttribute( GIDI_hrefChars, href( ) );
 

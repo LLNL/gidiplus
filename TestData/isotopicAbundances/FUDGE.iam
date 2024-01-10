@@ -1,0 +1,2 @@
+<iam library="Test" format="2.0" checksum="c1ece44a526a41a3456e432726ea22bb416510c9" algorithm="sha1">
+  <isotopicAbundancesByChemicalElement evaluation="FUDGE" path="FUDGE.xml" checksum="b2010cd3291916801bbae3c71a8092a4898389ac"/></iam>

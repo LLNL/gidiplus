@@ -16,8 +16,8 @@ include ../Makefile.check
 check: $(Executables)
 	if [ ! -e Outputs ]; then mkdir Outputs; fi
 	./TNSL --tid HinCH2 > Outputs/HinCH2.out
-	python ../Utilities/diff.py TNSL/TNSL Benchmarks/HinCH2.out Outputs/HinCH2.out
+	$(PYTHON) ../Utilities/diff.py TNSL/TNSL Benchmarks/HinCH2.out Outputs/HinCH2.out
 	./TNSL --tid tnsl-Al27 > Outputs/tnsl-Al27.out
-	python ../Utilities/diff.py TNSL/TNSL Benchmarks/tnsl-Al27.out Outputs/tnsl-Al27.out
+	$(PYTHON) ../Utilities/diff.py TNSL/TNSL Benchmarks/tnsl-Al27.out Outputs/tnsl-Al27.out
 	./nonTNSL > Outputs/nonTNSL.out
-	python ../Utilities/diff.py TNSL/nonTNSL Benchmarks/nonTNSL.out Outputs/nonTNSL.out
+	$(PYTHON) ../Utilities/diff.py TNSL/nonTNSL Benchmarks/nonTNSL.out Outputs/nonTNSL.out

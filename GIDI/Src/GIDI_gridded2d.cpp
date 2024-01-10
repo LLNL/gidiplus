@@ -47,7 +47,7 @@ Gridded2d::~Gridded2d( ) {
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void Gridded2d::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void Gridded2d::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
 

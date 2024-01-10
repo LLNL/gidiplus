@@ -23,7 +23,7 @@ namespace MCGIDI {
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE NuclideGammaBranchInfo::NuclideGammaBranchInfo( ) :
+LUPI_HOST_DEVICE NuclideGammaBranchInfo::NuclideGammaBranchInfo( ) :
         m_probability( 0.0 ),
         m_photonEmissionProbability( 0.0 ),
         m_gammaEnergy( 0.0 ),
@@ -52,14 +52,32 @@ NuclideGammaBranchInfo::NuclideGammaBranchInfo( PoPI::NuclideGammaBranchInfo con
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE void NuclideGammaBranchInfo::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+LUPI_HOST_DEVICE void NuclideGammaBranchInfo::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
-    DataBuffer *workingBuffer = &a_buffer;
+    LUPI::DataBuffer *workingBuffer = &a_buffer;
 
     DATA_MEMBER_FLOAT( m_probability, *workingBuffer, a_mode );
     DATA_MEMBER_FLOAT( m_photonEmissionProbability, *workingBuffer, a_mode );
     DATA_MEMBER_FLOAT( m_gammaEnergy, *workingBuffer, a_mode );
     DATA_MEMBER_INT( m_residualStateIndex, *workingBuffer, a_mode );
+}
+
+/* *********************************************************************************************************//**
+ * Print to *std::cout* the content of *this*. This is mainly meant for debugging.
+ *
+ * @param a_protareSingle       [in]    The ProtareSingle instance *this* resides in.
+ * @param a_indent              [in]    The buffer to read or write data to depending on *a_mode*.
+ * @param a_iFormat             [in]    C printf format specifier for any interger that is printed (e.g., "%3d").
+ * @param a_energyFormat        [in]    C printf format specifier for any interger that is printed (e.g., "%20.12e").
+ * @param a_dFormat             [in]    C printf format specifier for any interger that is printed (e.g., "%14.7e").
+ ***********************************************************************************************************/
+LUPI_HOST void NuclideGammaBranchInfo::print( ProtareSingle const *a_protareSingle, std::string const &a_indent, std::string const &a_iFormat,
+                std::string const &a_energyFormat, std::string const &a_dFormat ) const {
+
+    std::cout << a_indent << std::left << std::setw( 17 ) << LUPI::Misc::argumentsToString( a_dFormat.c_str( ), m_probability )
+            << LUPI::Misc::argumentsToString( a_dFormat.c_str( ), m_photonEmissionProbability )
+            << LUPI::Misc::argumentsToString( a_dFormat.c_str( ), m_gammaEnergy )
+            << LUPI::Misc::argumentsToString( a_iFormat.c_str( ), m_residualStateIndex ) << std::endl;
 }
 
 /*
@@ -71,7 +89,7 @@ MCGIDI_HOST_DEVICE void NuclideGammaBranchInfo::serialize( DataBuffer &a_buffer,
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE NuclideGammaBranchStateInfo::NuclideGammaBranchStateInfo( ) :
+LUPI_HOST_DEVICE NuclideGammaBranchStateInfo::NuclideGammaBranchStateInfo( ) :
         m_multiplicity( 0.0 ),
         m_averageGammaEnergy( 0.0 ) {
 
@@ -106,9 +124,9 @@ NuclideGammaBranchStateInfo::NuclideGammaBranchStateInfo( PoPI::NuclideGammaBran
  * @param a_mode                [in]    Specifies the action of this method.
  ***********************************************************************************************************/
 
-MCGIDI_HOST_DEVICE void NuclideGammaBranchStateInfo::serialize( DataBuffer &a_buffer, DataBuffer::Mode a_mode ) {
+LUPI_HOST_DEVICE void NuclideGammaBranchStateInfo::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
-    DataBuffer *workingBuffer = &a_buffer;
+    LUPI::DataBuffer *workingBuffer = &a_buffer;
 
     DATA_MEMBER_CHAR_ARRAY( m_state, *workingBuffer, a_mode );
     DATA_MEMBER_FLOAT( m_multiplicity, *workingBuffer, a_mode );
@@ -125,13 +143,13 @@ MCGIDI_HOST_DEVICE void NuclideGammaBranchStateInfo::serialize( DataBuffer &a_bu
  * @param a_energyFormat        [in]    C printf format specifier for any interger that is printed (e.g., "%20.12e").
  * @param a_dFormat             [in]    C printf format specifier for any interger that is printed (e.g., "%14.7e").
  ***********************************************************************************************************/
-MCGIDI_HOST void NuclideGammaBranchStateInfo::print( ProtareSingle const *a_protareSingle, std::string const &a_indent, std::string const &a_iFormat,
+LUPI_HOST void NuclideGammaBranchStateInfo::print( ProtareSingle const *a_protareSingle, std::string const &a_indent, std::string const &a_iFormat,
                 std::string const &a_energyFormat, std::string const &a_dFormat ) const {
 
     std::cout << a_indent << std::left << std::setw( 17 ) << m_state << LUPI::Misc::argumentsToString( a_dFormat.c_str( ), m_multiplicity ) <<
             LUPI::Misc::argumentsToString( a_dFormat.c_str( ), m_averageGammaEnergy );
     for( auto branchIter = m_branches.begin( ); branchIter != m_branches.end( ); ++branchIter ) {
-        LUPI::Misc::argumentsToString( a_iFormat.c_str( ), (*branchIter) );
+        std::cout << LUPI::Misc::argumentsToString( a_iFormat.c_str( ), (*branchIter) );
     }
     std::cout << std::endl;
 }

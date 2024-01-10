@@ -7,11 +7,15 @@ SHELL = /bin/ksh
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
-.PHONY: default include lib check clean realclean doDIRS
+.PHONY: default bin all include lib check clean realclean doDIRS
 
 DIRS = Src include lib Test
 
 default: include lib
+
+bin:
+
+all: default
 
 include:
 	cd include; $(MAKE)

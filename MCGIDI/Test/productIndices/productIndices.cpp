@@ -57,7 +57,7 @@ void main2( int argc, char **argv ) {
 
     GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, parseTestOptions.photonMode( ) );
     construction.setLazyParsing( false );               // This code will fail in the threading loop below unless this is false.
-    GIDI::Protare *protare = parseTestOptions.protare( pops, "../../../GIDI/Test/pops.xml", "../../../GIDI/Test/Data/MG_MC/all_maps.map", 
+    GIDI::Protare *protare = parseTestOptions.protare( pops, "../../../TestData/PoPs/pops.xml", "../../../GIDI/Test/Data/MG_MC/all_maps.map", 
         construction, PoPI::IDs::neutron, "O16" );
 
     GIDI::Styles::TemperatureInfos temperatures = protare->temperatures( );

@@ -42,9 +42,9 @@ void main2( int argc, char **argv ) {
 
     std::cerr << "    " << LUPI::FileInfo::basenameWithoutExtension( __FILE__ ) << std::endl;
 
-    std::string fileName( "../pops.xml" );
-    std::string aliasFileName( "../LLNL_alias.xml" );
-    std::string metaStableFileName( "../metastables_alias.xml" );
+    std::string fileName( "../../../TestData/PoPs/pops.xml" );
+    std::string aliasFileName( "../../../TestData/PoPs/LLNL_alias.xml" );
+    std::string metaStableFileName( "../../../TestData/PoPs/metastables_alias.xml" );
 
     PoPI::Database database( fileName );
     database.addFile( aliasFileName, false );

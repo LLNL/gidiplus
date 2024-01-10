@@ -53,7 +53,7 @@ void main2( int argc, char **argv ) {
     GIDI::Construction::PhotoMode photo_mode = parseTestOptions.photonMode( GIDI::Construction::PhotoMode::nuclearAndAtomic );
     GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, photo_mode );
     PoPI::Database pops;
-    GIDI::Protare *protare = parseTestOptions.protare( pops, "../pops.xml", "../all.map", construction, PoPI::IDs::neutron, "O16" );
+    GIDI::Protare *protare = parseTestOptions.protare( pops, "../../../TestData/PoPs/pops.xml", "../all.map", construction, PoPI::IDs::neutron, "O16" );
 
     std::cout << stripDirectoryBase( protare->fileName( ), "/GIDI/Test/" ) << std::endl;
 
@@ -122,7 +122,7 @@ void crossSectionInfo( GIDI::Protare *protare, GIDI::Styles::TemperatureInfo tem
         GIDI::Reaction *reaction = protare->reaction( index );
 
         crossSection = reaction->multiGroupCrossSection( smr1, settings, temperature );
-        std::string prefix( outputChannelPrefix( offset, prefixLength, reaction ) );
+        prefix = outputChannelPrefix( offset, prefixLength, reaction );
         prefix += ":";
         printVector( prefix, crossSection );
 

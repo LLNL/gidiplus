@@ -20,10 +20,10 @@ check: $(Executables)
 	./activeReactions --tracking photon --tracking n --tracking photon --tracking photon               > Outputs/a
 	./activeReactions --tracking photon --tracking n --tracking photon --tracking photon -r 0          > Outputs/b
 	./activeReactions --tracking photon --tracking n --tracking photon --tracking photon -r 0 --invert > Outputs/c
-	./activeReactions.py activeReactions/activeReactions Outputs/a Outputs/c Outputs/b
+	$(PYTHON) ./activeReactions.py activeReactions/activeReactions Outputs/a Outputs/c Outputs/b
 	./activeReactions --tracking photon --tracking n --tracking photon --tracking photon -C 11 -C 40 -C 41 -C 42 -C 45 -C 48 -C 37 -C 46          > Outputs/b
 	./activeReactions --tracking photon --tracking n --tracking photon --tracking photon -C 11 -C 40 -C 41 -C 42 -C 45 -C 48 -C 37 -C 46 --invert > Outputs/c
-	./activeReactions.py activeReactions/activeReactions Outputs/a Outputs/c Outputs/b
+	$(PYTHON) ./activeReactions.py activeReactions/activeReactions Outputs/a Outputs/c Outputs/b
 	./activeCValues -C 11 -C 12 -c 13 -c 40 -c 41 -c 11 -C 42 -c 42 > Outputs/activeCValues.out1
 	../Utilities/diff.com activeReactions/Utilities Benchmarks/activeCValues.out1 Outputs/activeCValues.out1
 	./activeCValues -C 11 -C 12 -c 13 -c 40 -c 41 -c 11 -C 42 -c 42 > Outputs/activeCValues.out2

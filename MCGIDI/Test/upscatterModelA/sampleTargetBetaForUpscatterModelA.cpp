@@ -21,7 +21,7 @@
 int main( int argc, char **argv ) {
 
     std::string mapFilename( "../../../GIDI/Test/all3T.map" );
-    PoPI::Database pops( "../../../GIDI/Test/pops.xml" );
+    PoPI::Database pops( "../../../TestData/PoPs/pops.xml" );
     GIDI::Map::Map map( mapFilename, pops );
     std::string neutronID( PoPI::IDs::neutron );
     std::string targetID( "O16" );
@@ -73,10 +73,9 @@ int main( int argc, char **argv ) {
     }
 
     PoPI::Base const &target = pops.get<PoPI::Base>( targetID );
-    char Str[512];
-    sprintf( Str, "sampleTargetBetaForUpscatterModelA.%s.dat", target.ID( ).c_str( ) );
+    std::string Str = LUPI::Misc::argumentsToString( "sampleTargetBetaForUpscatterModelA.%s.dat", target.ID( ).c_str( ) );
     FILE *fOut;
-    if( ( fOut = fopen( Str, "w" ) ) == nullptr ) throw "error opening output file";
+    if( ( fOut = fopen( Str.c_str( ), "w" ) ) == nullptr ) throw "error opening output file";
 
     MCGIDI::Sampling::Input input( true, MCGIDI::Sampling::Upscatter::Model::B );
     input.m_temperature = temperature_MeV * 1e3;

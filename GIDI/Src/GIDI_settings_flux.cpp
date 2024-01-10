@@ -80,13 +80,12 @@ void Flux_order::print( int a_valuesPerLine ) const {
 
     int nE = (int) m_energies.size( );
     bool printIndent = true;
-    char buffer[2 * 128];
 
     std::cout << "    ORDER: " << m_order << "  (number of points = " << m_energies.size( ) << ")" << std::endl;
     for( int iE = 0; iE < nE; ++iE ) {
         if( printIndent ) std::cout << "    ";
         printIndent = false;
-        sprintf( buffer, "   %15.8e %15.8e", m_energies[iE], m_fluxes[iE] );
+        std::string buffer = LUPI::Misc::argumentsToString( "   %15.8e %15.8e", m_energies[iE], m_fluxes[iE] );
         std::cout << buffer;
         if( ( ( iE + 1 ) % a_valuesPerLine ) == 0 ) {
             std::cout << std::endl;

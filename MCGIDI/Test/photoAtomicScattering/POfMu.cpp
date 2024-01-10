@@ -21,7 +21,7 @@ int main( int argc, char **argv ) {
 
     int numberOfMus = 101;
     std::string mapFilename( "../../../GIDI/Test/all.map" );
-    PoPI::Database pops( "../../../GIDI/Test/pops.xml" );
+    PoPI::Database pops( "../../../TestData/PoPs/pops.xml" );
     GIDI::Map::Map map( mapFilename, pops );
     std::string photonID( PoPI::IDs::photon );
     std::string targetID = "O16";

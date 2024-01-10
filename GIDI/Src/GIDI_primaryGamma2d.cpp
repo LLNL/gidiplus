@@ -67,13 +67,13 @@ double PrimaryGamma2d::evaluate( double a_x2, double a_x1 ) const {
  * @param       a_inRegions         [in]        This is not used in this method.
  ***********************************************************************************************************/
  
-void PrimaryGamma2d::toXMLList_func( WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
+void PrimaryGamma2d::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
  
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
-    std::string attributes = a_writeInfo.addAttribute( GIDI_valueChars, doubleToShortestString( value( ) ) );
+    std::string attributes = a_writeInfo.addAttribute( GIDI_valueChars, LUPI::Misc::doubleToShortestString( value( ) ) );
 
-    attributes += a_writeInfo.addAttribute( GIDI_domainMinChars, doubleToShortestString( domainMin( ) ) );
-    attributes += a_writeInfo.addAttribute( GIDI_domainMaxChars, doubleToShortestString( domainMax( ) ) );
+    attributes += a_writeInfo.addAttribute( GIDI_domainMinChars, LUPI::Misc::doubleToShortestString( domainMin( ) ) );
+    attributes += a_writeInfo.addAttribute( GIDI_domainMaxChars, LUPI::Misc::doubleToShortestString( domainMax( ) ) );
     a_writeInfo.addNodeStarter( a_indent, moniker( ), attributes );
 
     axes( ).toXMLList( a_writeInfo, indent2 );

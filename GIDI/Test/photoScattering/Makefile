@@ -16,4 +16,4 @@ include ../Makefile.check
 check: $(Executables)
 	if [ ! -e Outputs ]; then mkdir Outputs; fi
 	./photoScattering > Outputs/photoScattering.O16.out
-	python ../Utilities/diff.py photoScattering/photoScattering Benchmarks/photoScattering.O16.out Outputs/photoScattering.O16.out
+	$(PYTHON) ../Utilities/diff.py photoScattering/photoScattering Benchmarks/photoScattering.O16.out Outputs/photoScattering.O16.out

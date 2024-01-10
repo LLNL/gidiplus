@@ -25,39 +25,37 @@ double myRNG( void *state ) {
 /*
 =========================================================
 */
-void printTime_reaction( char const *label, long index, clock_t &time0 ) {
+void printTime_reaction( std::string const &label, long index, clock_t &time0 ) {
 
-    char label2[1024] = "";
+    std::string label2;
 
-    if( index == 0 ) strcpy( label2, label );
+    if( index == 0 ) label2 = label;
     printTime( label2, time0, false );
 }
 /*
 =========================================================
 */
-void printTime_energy( char const *label, long index, double value, clock_t &time0 ) {
+void printTime_energy( std::string const &label, long index, double value, clock_t &time0 ) {
 
-    char label2[1024] = "";
-    char label3[1024];
+    std::string label2;
 
-    if( index == 0 ) strcpy( label2, label );
-    sprintf( label3, "%s %.2e: ", label2, value );
+    if( index == 0 ) label2 = label;
+    std::string label3 = LUPI::Misc::argumentsToString( "%s %.2e: ", label2.c_str( ), value );
     printTime( label3, time0, false );
 }
 /*
 =========================================================
 */
-void printTime_double( char const *label, double value, clock_t &time0 ) {
+void printTime_double( std::string const &label, double value, clock_t &time0 ) {
 
-    char label2[1024];
+    std::string label2 = LUPI::Misc::argumentsToString( "%s %.6e: ", label.c_str( ), value );
 
-    sprintf( label2, "%s %.6e: ", label, value );
     printTime( label2, time0 );
 }
 /*
 =========================================================
 */
-void printTime( char const *label, clock_t &time0, bool printEndOfLine ) {
+void printTime( std::string const &label, clock_t &time0, bool printEndOfLine ) {
 
     clock_t time1 = clock( );
     double cpuTime = ( time1 - time0 ) / ( (double) CLOCKS_PER_SEC );
@@ -73,7 +71,7 @@ void printTime( char const *label, clock_t &time0, bool printEndOfLine ) {
 /*
 =========================================================
 */
-void printSpeeds( char const *label, clock_t &time0, long samples ) {
+void printSpeeds( std::string const &label, clock_t &time0, long samples ) {
 
     double cpuTime = ( clock( ) - time0 ) / ( (double) CLOCKS_PER_SEC );
     double speed = samples / cpuTime;

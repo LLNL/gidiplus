@@ -26,6 +26,12 @@ namespace PoPI {
 Unorthodox::Unorthodox( HAPI::Node const &a_node, Database *a_DB, Database *a_parent ) :
         Particle( a_node, Particle_class::unorthodox, PoPI_unorthodoxChars ) {
 
+    if( ID( ) == IDs::FissionProductENDL99120 ) {
+        setIntid( intidHelper( isAnti( ), Particle_class::ENDL_fissionProduct, 99120 ) ); }
+    if( ID( ) == IDs::FissionProductENDL99125 ) {
+        setIntid( intidHelper( isAnti( ), Particle_class::ENDL_fissionProduct, 99125 ) );
+    }
+
     addToDatabase( a_DB );
 }
 

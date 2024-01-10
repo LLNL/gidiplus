@@ -11,10 +11,6 @@
 
 #if defined(__CUDACC__) || defined (__HIP__)
 
-#if defined(__HIP_DEVICE_COMPILE__) || defined(__CUDA_ARCH__)
-    #define MC_ON_GPU 1
-#endif
-
 #if defined(__CUDACC__)
 
     #define GPUTEST_GPU_MALLOC cudaMalloc
@@ -62,7 +58,7 @@
 #define numberOfTalliesMinus2 ( numberOfTallies - 2 )
 
 int main2( int argc, char *argv[] );
-MCGIDI_HOST_DEVICE double myRNG( uint64_t *state );
+LUPI_HOST_DEVICE double myRNG( uint64_t *state );
 
 /*
 =========================================================
@@ -72,20 +68,20 @@ class TallyProductHandler : public MCGIDI::Sampling::ProductHandler {
     public:
         int *m_tally;
 
-        MCGIDI_HOST_DEVICE TallyProductHandler( ) : m_tally( nullptr ) {}
-        MCGIDI_HOST_DEVICE ~TallyProductHandler( ) {}
+        LUPI_HOST_DEVICE TallyProductHandler( ) : m_tally( nullptr ) {}
+        LUPI_HOST_DEVICE ~TallyProductHandler( ) {}
 
-        MCGIDI_HOST_DEVICE std::size_t size( ) { return 0; }
-        MCGIDI_HOST_DEVICE void clear( ) {}
+        LUPI_HOST_DEVICE std::size_t size( ) { return 0; }
+        LUPI_HOST_DEVICE void clear( ) {}
 
-        MCGIDI_HOST_DEVICE void setTally( int *a_tally ) { m_tally = a_tally; }
+        LUPI_HOST_DEVICE void setTally( int *a_tally ) { m_tally = a_tally; }
 
-        MCGIDI_HOST_DEVICE void push_back( MCGIDI::Sampling::Product &a_product ) {
+        LUPI_HOST_DEVICE void push_back( MCGIDI::Sampling::Product &a_product ) {
 
             int index = static_cast<int>( log10( a_product.m_kineticEnergy ) ) + numberOfTalliesMinus2;
             if( index < 0 ) index = 0;
             if( index > numberOfTalliesMinus1 ) index = numberOfTalliesMinus1;
-            #ifdef MC_ON_GPU
+            #ifdef LUPI_ON_GPU
             atomicAdd( &m_tally[index], 1 );
             #else
             m_tally[index]++;
@@ -126,18 +122,18 @@ __global__ void sample( MCGIDI::ProtareSingle *a_MCProtare, int a_numCollisions,
 /*
 =========================================================
 */
-__global__ void setUp( int a_numIsotopes, MCGIDI::DataBuffer **a_buf ) {  // Call this each isotope per block and one warp only (i.e. <<< number_isotopes, MCGIDI_WARP_SIZE>>>)
+__global__ void setUp( int a_numIsotopes, LUPI::DataBuffer **a_buf ) {  // Call this each isotope per block and one warp only (i.e. <<< number_isotopes, MCGIDI_WARP_SIZE>>>)
 
     int isotopeIndex = GPUTEST_BLOCKID;
 
-    MCGIDI::DataBuffer *buf = a_buf[isotopeIndex];
+    LUPI::DataBuffer *buf = a_buf[isotopeIndex];
     MCGIDI::ProtareSingle *MCProtare = new(buf->m_placementStart) MCGIDI::ProtareSingle( );
 
     buf->zeroIndexes( );
     buf->m_placement = buf->m_placementStart + sizeof( MCGIDI::ProtareSingle );
     buf->m_maxPlacementSize = sizeof( *a_buf[isotopeIndex] ) + sizeof( MCGIDI::ProtareSingle );
 
-    MCProtare->serialize( *buf, MCGIDI::DataBuffer::Mode::Unpack );                 // This line causes a "nvlink warning".
+    MCProtare->serialize( *buf, LUPI::DataBuffer::Mode::Unpack );                 // This line causes a "nvlink warning".
     buf->m_placement = buf->m_placementStart + sizeof( MCGIDI::ProtareSingle );
 }
 
@@ -272,33 +268,33 @@ int main2( int argc, char *argv[] ) {                                   // main 
         }
     }
 
-    std::vector<MCGIDI::DataBuffer *>deviceBuffers_h( numIsotopes );
+    std::vector<LUPI::DataBuffer *>deviceBuffers_h( numIsotopes );
     std::vector<char *>deviceProtares( numIsotopes );
     for( int isoIndex = 0; isoIndex < numIsotopes; isoIndex++ ) {
-        MCGIDI::DataBuffer buf_h;
+        LUPI::DataBuffer buf_h;
 
-        protares[isoIndex]->serialize( buf_h, MCGIDI::DataBuffer::Mode::Count );
+        protares[isoIndex]->serialize( buf_h, LUPI::DataBuffer::Mode::Count );
 
         buf_h.allocateBuffers( );
         buf_h.zeroIndexes( );
-        protares[isoIndex]->serialize( buf_h, MCGIDI::DataBuffer::Mode::Pack );
+        protares[isoIndex]->serialize( buf_h, LUPI::DataBuffer::Mode::Pack );
 
         size_t cpuSize = protares[isoIndex]->memorySize( );
         deviceBuffers_h[isoIndex] = buf_h.copyToDevice( cpuSize, deviceProtares[isoIndex] );
     }
 
-    MCGIDI::DataBuffer **deviceBuffers_d = nullptr;
-    GPUTEST_GPU_MALLOC( (void **) &deviceBuffers_d, sizeof( MCGIDI::DataBuffer * ) * numIsotopes );
-    GPUTEST_GPU_MEMCPY( deviceBuffers_d, &deviceBuffers_h[0], sizeof( MCGIDI::DataBuffer * ) * numIsotopes, GPUTEST_GPU_HTOD );
-    setUp<<< numIsotopes, MCGIDI_WARP_SIZE >>>( numIsotopes, deviceBuffers_d );
+    LUPI::DataBuffer **deviceBuffers_d = nullptr;
+    GPUTEST_GPU_MALLOC( (void **) &deviceBuffers_d, sizeof( LUPI::DataBuffer * ) * numIsotopes );
+    GPUTEST_GPU_MEMCPY( deviceBuffers_d, &deviceBuffers_h[0], sizeof( LUPI::DataBuffer * ) * numIsotopes, GPUTEST_GPU_HTOD );
+    setUp<<< numIsotopes, LUPI_WARP_SIZE >>>( numIsotopes, deviceBuffers_d );
 
-    gpuErrchk( GPUTEST_PEEK_LAST_ERROR( ) );
-    gpuErrchk( GPUTEST_DEVICE_SYNCH( ) );
+    gpuErrorCheck( GPUTEST_PEEK_LAST_ERROR( ) );
+    gpuErrorCheck( GPUTEST_DEVICE_SYNCH( ) );
 
     if( doPrint ) {
         printData<<<1, 1>>>( reinterpret_cast<MCGIDI::ProtareSingle *>( deviceProtares[numIsotopes-1] ) );
-        gpuErrchk( GPUTEST_PEEK_LAST_ERROR( ) );
-        gpuErrchk( GPUTEST_DEVICE_SYNCH( ) );
+        gpuErrorCheck( GPUTEST_PEEK_LAST_ERROR( ) );
+        gpuErrorCheck( GPUTEST_DEVICE_SYNCH( ) );
     }
 
     if( doCompare > 0 ) {
@@ -356,12 +352,12 @@ int main2( int argc, char *argv[] ) {                                   // main 
 
     if( doPrint ) {
         int isoIndex = numIsotopes-1;
-        MCGIDI::DataBuffer buf2_h;
-        protares[isoIndex]->serialize( buf2_h, MCGIDI::DataBuffer::Mode::Count );
+        LUPI::DataBuffer buf2_h;
+        protares[isoIndex]->serialize( buf2_h, LUPI::DataBuffer::Mode::Count );
         buf2_h.allocateBuffers( );
         buf2_h.zeroIndexes( );
         size_t cpuSize = protares[isoIndex]->memorySize( );
-        protares[isoIndex]->serialize( buf2_h, MCGIDI::DataBuffer::Mode::Pack );
+        protares[isoIndex]->serialize( buf2_h, LUPI::DataBuffer::Mode::Pack );
         MCGIDI::ProtareSingle *MCProtare_h = nullptr;
         char *bigBuffer = (char *) malloc( cpuSize );
         MCProtare_h = new(bigBuffer) MCGIDI::ProtareSingle( );
@@ -369,7 +365,7 @@ int main2( int argc, char *argv[] ) {                                   // main 
         buf2_h.m_placementStart = bigBuffer;
         buf2_h.m_placement = buf2_h.m_placementStart + sizeof( MCGIDI::ProtareSingle );
         buf2_h.m_maxPlacementSize = cpuSize;
-        MCProtare_h->serialize( buf2_h, MCGIDI::DataBuffer::Mode::Unpack );
+        MCProtare_h->serialize( buf2_h, LUPI::DataBuffer::Mode::Unpack );
         buf2_h.m_placement = buf2_h.m_placementStart + sizeof( MCGIDI::ProtareSingle );
         if( !buf2_h.validate( ) ) printf( "Data went over memory pool size.\n" );
 
@@ -419,7 +415,7 @@ int main2( int argc, char *argv[] ) {                                   // main 
 /*
 =========================================================
 */
-MCGIDI_HOST_DEVICE double myRNG( uint64_t *seed ) {
+LUPI_HOST_DEVICE double myRNG( uint64_t *seed ) {
 
    *seed = 2862933555777941757ULL * ( *seed ) + 3037000493ULL;      // Update state from the previous value.
    

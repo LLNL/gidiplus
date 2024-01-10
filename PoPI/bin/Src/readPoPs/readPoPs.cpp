@@ -34,8 +34,8 @@ int main( int argc, char **argv ) {
 
     LUPI::Timer timer;
     for( auto fileName = fileNames->values( ).begin( ); fileName != fileNames->values( ).end( ); ++fileName ) {
-        std::cout << "   reading " << *fileName << std::endl;
-        if( xmlParseOnly->value( ) ) {
+        std::cout << "      reading " << *fileName << std::endl;
+        if( xmlParseOnly->counts( ) ) {
             pugi::xml_parse_result result = doc.load_file( fileName->c_str( ) );
             if( result.status != pugi::status_ok ) {
                 std::cerr << "    " << *fileName << std::endl;

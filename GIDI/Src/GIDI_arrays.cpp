@@ -192,7 +192,7 @@ FullArray Array::constructArray( ) const {
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void Array::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void Array::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
 }
 
@@ -329,7 +329,7 @@ void FlattenedArrayData::setToValueInFlatRange( int a_start, int a_end, double a
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void FlattenedArrayData::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void FlattenedArrayData::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     std::vector<int> ints;
