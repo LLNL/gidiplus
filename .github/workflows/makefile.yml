@@ -7,7 +7,7 @@ on:
     branches: [ "master" ]
 
 env:
-  cppflags: "-std=c++17 -Wall -Wpedantic -Wshadow -Wstrict-aliasing -Wdelete-non-virtual-dtor -Wfloat-conversion -ffp-contract-off -funroll-loops -finline-functions"
+  cppflags: "-std=c++17 -Wall -Wpedantic -Wshadow -Wstrict-aliasing -Wdelete-non-virtual-dtor -Wfloat-conversion -ffp-contract=off -funroll-loops -finline-functions"
 
 jobs:
   build:
@@ -25,6 +25,7 @@ jobs:
       run: |
         curl -L -o Misc/pugixml-1.13.zip https://github.com/zeux/pugixml/releases/download/v1.13/pugixml-1.13.zip
         make -s -j all CXX=${{ matrix.compiler }} CXXFLAGS="$cppflags"
+      shell: bash
 
     - name: Run check
       run: |
