@@ -24,7 +24,7 @@ jobs:
     - name: Build
       run: |
         curl -L -o Misc/pugixml-1.13.zip https://github.com/zeux/pugixml/releases/download/v1.13/pugixml-1.13.zip
-        make -s -j all CXX=${{ matrix.compiler }} CXXFLAGS="$cppflags"
+        make -s -j all CC=${{ matrix.compiler }} CXX=${{ matrix.compiler }} CXXFLAGS="$cppflags"
       shell: bash
 
     - name: Run check
@@ -33,6 +33,6 @@ jobs:
         curl -L -o Data.tar.gz https://github.com/LLNL/gidiplus/releases/download/v3.25.7/testData_3.25.7.tar.gz
         tar -xf Data.tar.gz
         cd -
-        make -s -j check CXX=${{ matrix.compiler }} CXXFLAGS="$cppflags"
+        make -s -j check CC=${{ matrix.compiler }} CXX=${{ matrix.compiler }} CXXFLAGS="$cppflags"
       shell: bash
 
