@@ -114,7 +114,11 @@ bool createDirectories( std::string const &a_path ) {
 
     std::string dirname1( _dirname( a_path ) );
     if( createDirectories( dirname1 ) ) {
+#ifdef _WIN32
+        int status = mkdir( a_path.c_str( ) );
+#else
         int status = mkdir( a_path.c_str( ), S_IRWXU | S_IRWXG | S_IRWXG );
+#endif
         if( status == 0 ) return( true );
         switch( errno ) {
         case EEXIST :
