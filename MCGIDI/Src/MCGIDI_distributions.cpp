@@ -7,8 +7,6 @@
 # <<END-copyright>>
 */
 
-#include <math.h>
-
 #include "MCGIDI.hpp"
 
 static const double C0 = 1.0410423479, C1 = 3.9626339162e-4, C2 =-1.8654539193e-3, C3 = 1.0264818153e-4;
