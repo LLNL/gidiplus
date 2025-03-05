@@ -15,6 +15,13 @@
 #include "GIDI.hpp"
 #include <HAPI.hpp>
 
+/*
+ * Create a realpath replacement macro for when compiling under mingw
+ */
+#ifdef WIN32
+    #define realpath(N,R) _fullpath((R),(N),PATH_MAX)
+#endif
+
 namespace GIDI {
 
 static std::size_t startIndexAttribute( HAPI::Node const &a_node );

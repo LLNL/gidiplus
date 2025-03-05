@@ -10,6 +10,7 @@
 #ifndef MCGIDI_hpp_included
 #define MCGIDI_hpp_included 1
 
+#define _USE_MATH_DEFINES
 #include "math.h"
 
 #include <LUPI.hpp>
