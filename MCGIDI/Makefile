@@ -18,7 +18,8 @@ default: include lib
 	cd Test; $(MAKE) default
 
 all: default
-	$(MAKE) bin speeds
+	$(MAKE) bin
+	$(MAKE) speeds
 
 include:
 	cd include; $(MAKE)

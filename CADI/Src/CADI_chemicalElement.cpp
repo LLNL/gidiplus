@@ -143,7 +143,7 @@ void ChemicalElement::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-static GUPI::Entry *parseIsotope( GUPI::Suite *a_parent, HAPI::Node const &a_node ) {
+static GUPI::Entry *parseIsotope( LUPI_maybeUnused GUPI::Suite *a_parent, HAPI::Node const &a_node ) {
 
     return new Isotope( a_node );
 }

@@ -14,7 +14,6 @@
 #include <exception>
 #include <stdexcept>
 
-#include "GIDI.hpp"
 #include "GIDI_testUtilities.hpp"
 
 static char const *description = 

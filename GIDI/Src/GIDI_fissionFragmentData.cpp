@@ -222,7 +222,7 @@ Vector FissionFragmentData::multiGroupMultiplicity( LUPI::StatusMessageReporting
  ***********************************************************************************************************/
 
 Vector FissionFragmentData::multiGroupQ( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
-                Styles::TemperatureInfo const &a_temperatureInfo, bool a_final ) const {
+                Styles::TemperatureInfo const &a_temperatureInfo, LUPI_maybeUnused bool a_final ) const {
 
     Vector vector( 0 );
 
@@ -406,6 +406,50 @@ void FissionFragmentData::mapContinuousEnergyProductData( Transporting::Settings
 
         delayedNeutrons1.mapContinuousEnergyProductData( a_settings, a_particleID, a_energies, a_offset, a_productEnergies, a_productMomenta,
                 a_productGains, a_ignoreIncompleteParticles );
+    }
+}
+
+/* *********************************************************************************************************//**
+ * This methods calculates multi-group data for all needed components and adds each component's multi-group with label *a_heatedMultiGroupLabel*.
+ *
+ * @param   a_temperatureInfo                   [in]    Specifies the temperature and labels use to lookup the requested data.
+ * @param   a_heatedMultiGroupLabel             [in]    The label of the style for the multi-group data being added.
+ * @param   a_multiGroupCalulationInformation   [in]    Store multi-group boundary and flux data used for multi-grouping.
+ * @param   a_crossSectionXYs1d                 [in[    The cross section weight.
+ ***********************************************************************************************************/
+
+void FissionFragmentData::calculateMultiGroupData( ProtareSingle const *a_protare, Styles::TemperatureInfo const &a_temperatureInfo, 
+                std::string const &a_heatedMultiGroupLabel, MultiGroupCalulationInformation const &a_multiGroupCalulationInformation, 
+                Functions::XYs1d const &a_crossSectionXYs1d ) {
+
+    for( std::size_t index = 0; index < m_delayedNeutrons.size( ); ++index ) {
+        DelayedNeutron &delayedNeutrons1 = *m_delayedNeutrons.get<DelayedNeutron>( index );
+
+        delayedNeutrons1.calculateMultiGroupData( a_protare, a_temperatureInfo, a_heatedMultiGroupLabel, a_multiGroupCalulationInformation, a_crossSectionXYs1d );
+    }
+
+    if( ( m_fissionEnergyReleases.size( ) > 0 ) && ( m_fissionEnergyReleases.find( a_heatedMultiGroupLabel ) !=  m_fissionEnergyReleases.end( ) ) ) {
+        Functions::FissionEnergyRelease const *fissionEnergyRelease = m_fissionEnergyReleases.get<Functions::FissionEnergyRelease>( 0 );
+        Functions::FissionEnergyRelease *multiGroupFissionEnergyRelease = m_fissionEnergyReleases.get<Functions::FissionEnergyRelease>( a_heatedMultiGroupLabel );
+
+        calculate1dMultiGroupFissionEnergyRelease( a_multiGroupCalulationInformation, a_crossSectionXYs1d, 
+                fissionEnergyRelease->promptProductKE( ), multiGroupFissionEnergyRelease->promptProductKE( ) );
+        calculate1dMultiGroupFissionEnergyRelease( a_multiGroupCalulationInformation, a_crossSectionXYs1d, 
+                fissionEnergyRelease->promptNeutronKE( ), multiGroupFissionEnergyRelease->promptNeutronKE( ) );
+        calculate1dMultiGroupFissionEnergyRelease( a_multiGroupCalulationInformation, a_crossSectionXYs1d, 
+                fissionEnergyRelease->delayedNeutronKE( ), multiGroupFissionEnergyRelease->delayedNeutronKE( ) );
+        calculate1dMultiGroupFissionEnergyRelease( a_multiGroupCalulationInformation, a_crossSectionXYs1d, 
+                fissionEnergyRelease->promptGammaEnergy( ), multiGroupFissionEnergyRelease->promptGammaEnergy( ) );
+        calculate1dMultiGroupFissionEnergyRelease( a_multiGroupCalulationInformation, a_crossSectionXYs1d, 
+                fissionEnergyRelease->delayedGammaEnergy( ), multiGroupFissionEnergyRelease->delayedGammaEnergy( ) );
+        calculate1dMultiGroupFissionEnergyRelease( a_multiGroupCalulationInformation, a_crossSectionXYs1d, 
+                fissionEnergyRelease->delayedBetaEnergy( ), multiGroupFissionEnergyRelease->delayedBetaEnergy( ) );
+        calculate1dMultiGroupFissionEnergyRelease( a_multiGroupCalulationInformation, a_crossSectionXYs1d, 
+                fissionEnergyRelease->neutrinoEnergy( ), multiGroupFissionEnergyRelease->neutrinoEnergy( ) );
+        calculate1dMultiGroupFissionEnergyRelease( a_multiGroupCalulationInformation, a_crossSectionXYs1d, 
+                fissionEnergyRelease->nonNeutrinoEnergy( ), multiGroupFissionEnergyRelease->nonNeutrinoEnergy( ) );
+        calculate1dMultiGroupFissionEnergyRelease( a_multiGroupCalulationInformation, a_crossSectionXYs1d, 
+                fissionEnergyRelease->totalEnergy( ), multiGroupFissionEnergyRelease->totalEnergy( ) );
     }
 }
 

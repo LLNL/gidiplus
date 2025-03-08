@@ -1,0 +1,55 @@
+numberOfSamples = 1000000
+GIDI:
+  Monte Carlo cdf label = 'MonteCarlo_cdf'
+  Number of GIDI reactions 11
+    O + photon [coherent]
+        distribution form moniker = coherentPhotonScattering
+        distribution form moniker = multiGroup3d
+    O + photon [incoherent]
+        distribution form moniker = incoherentPhotonScattering
+        distribution form moniker = multiGroup3d
+    e- + e- + e-_anti + O [pair production: electron field]
+        distribution form moniker = unspecified
+    e- + e-_anti + O [pair production: nuclear field]
+        distribution form moniker = unspecified
+    e- + O{1s1/2}
+        distribution form moniker = unspecified
+    e- + O{2s1/2}
+        distribution form moniker = unspecified
+    e- + O{2p1/2}
+        distribution form moniker = unspecified
+    e- + O{2p3/2}
+        distribution form moniker = unspecified
+    e- + O{1s1/2} + photon
+        distribution form moniker = incoherentBoundToFreePhotonScattering
+        distribution form moniker = incoherentBoundToFreePhotonScattering
+          href = ../../../../../doubleDifferentialCrossSection/incoherentBoundToFreePhotonScattering[@label='MonteCarlo_cdf']
+    e- + O{2s1/2} + photon
+        distribution form moniker = incoherentBoundToFreePhotonScattering
+        distribution form moniker = incoherentBoundToFreePhotonScattering
+          href = ../../../../../doubleDifferentialCrossSection/incoherentBoundToFreePhotonScattering[@label='MonteCarlo_cdf']
+    e- + O{2p1/2} + photon
+        distribution form moniker = incoherentBoundToFreePhotonScattering
+        distribution form moniker = incoherentBoundToFreePhotonScattering
+          href = ../../../../../doubleDifferentialCrossSection/incoherentBoundToFreePhotonScattering[@label='MonteCarlo_cdf']
+
+MCGIDI:
+MCGIDI hasIncoherentDoppler: 1
+ Number of MCGIDI reactions: 10
+        0: O + photon [coherent]                                       :  final Q = 0 threshold = 0  c_num: 71 MT: 502
+        1: e- + e- + e-_anti + O [pair production: electron field]     :  final Q = 0 threshold = 2.044  c_num: 74 MT: 515
+        2: e- + e-_anti + O [pair production: nuclear field]           :  final Q = 0 threshold = 1.022  c_num: 74 MT: 517
+        3: e- + O{1s1/2}                                               :  final Q = -0.000538 threshold = 0.000538  c_num: 73 MT: 534
+        4: e- + O{2s1/2}                                               :  final Q = -2.848e-05 threshold = 2.848e-05  c_num: 73 MT: 535
+        5: e- + O{2p1/2}                                               :  final Q = -1.362e-05 threshold = 1.362e-05  c_num: 73 MT: 536
+        6: e- + O{2p3/2}                                               :  final Q = -1.362e-05 threshold = 1.362e-05  c_num: 73 MT: 537
+        7: e- + O{1s1/2} + photon                                      :  final Q = -0.000543 threshold = 1e-06  c_num: 72 MT: 1534
+        8: e- + O{2s1/2} + photon                                      :  final Q = -2.4e-05 threshold = 1e-06  c_num: 72 MT: 1535
+        9: e- + O{2p1/2} + photon                                      :  final Q = -1.4e-05 threshold = 1e-06  c_num: 72 MT: 1536
+
+Sampling reactions with 1000000 samples:
+energy = 0.1, cross section = 4.13772
+  Reaction index ->                 :           0          1          2          3          4          5          6          7          8          9
+  reactionCrossSection/crossSection :   0.0384369  0.0000000  0.0000000  0.0189056  0.0010736  0.0000011  0.0000020  0.2280723  0.2378599  0.4756487
+  ratio / numberOfSamples           :   0.0382660  0.0000000  0.0000000  0.0188530  0.0011050  0.0000020  0.0000030  0.2284200  0.2376940  0.4756570
+  counts                            :       38266          0          0      18853       1105          2          3     228420     237694     475657

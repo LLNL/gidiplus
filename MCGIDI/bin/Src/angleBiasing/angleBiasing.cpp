@@ -22,9 +22,10 @@
 #include <MCGIDI_testUtilities.hpp>
 #include <bins.hpp>
 
-static char const *description = "Loops over energy at the specified temperature, sampling reactions. If projectile is a photon, see options *-pa* and *-pn*.";
+static char const *description = "For a specified projectile energy (first positional argument) and outgoing product \n" \
+    "(specified via option --oid), this code generates an energy spectrum for the product \n" \
+    "going into the request cosine angle (mu) in the lab frame (second positional argument).";
 
-double myRNG( void *state );
 void main2( int argc, char **argv );
 /*
 =========================================================
@@ -50,7 +51,7 @@ int main( int argc, char **argv ) {
 void main2( int argc, char **argv ) {
 
     PoPI::Database pops;
-    unsigned long long seed = 1;
+    unsigned long long rngState = 1;
     std::set<int> reactionsToExclude;
     GIDI::Transporting::Particles particles;
     double temperature_keV_K = 2.582e-5;
@@ -73,21 +74,19 @@ void main2( int argc, char **argv ) {
     parseTestOptions.m_askGNDS_File = true;
 
     argv_options.add( argvOption( "-r", true, "Specifies the reaction index for sampling angle biasing. If negative, all reactions are listed and then the code exits." ) );
-    argv_options.add( argvOption( "-n", true, "Number of samples. If value is negative, it is multiplied by -1000." ) );
+    argv_options.add( argvOption( "-n", true, "Number of samples. If value is negative, it is multiplied by -1000000." ) );
     argv_options.add( argvOption( "--numberOfBins", true, "Number of sample bins. Default is 1000." ) );
 
     parseTestOptions.parse( );
 
     if( argv_options.m_arguments.size( ) != 2 ) throw "Need projectile energy and outgoing particle angle (in lab frame).";
 
-    MCGIDI_test_rngSetup( seed );
-
     GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, parseTestOptions.photonMode( ) );
     GIDI::Protare *protare = parseTestOptions.protare( pops, "../../../../TestData/PoPs/pops.xml", "../../../../GIDI/Test/Data/MG_MC/all_maps.map", construction, PoPI::IDs::neutron, "O16" );
 
     std::string productID = argv_options.find( "--oid" )->zeroOrOneOption( argv, protare->projectile( ).ID( ) );
-    long numberOfSamples = argv_options.find( "-n" )->asLong( argv, -1000 );
-    if( numberOfSamples < 0 ) numberOfSamples *= -1000;
+    long numberOfSamples = argv_options.find( "-n" )->asLong( argv, -1 );
+    if( numberOfSamples < 0 ) numberOfSamples *= -1000000;
     long numberOfBins = argv_options.find( "--numberOfBins" )->asLong( argv, 1000 );
 
     GIDI::Styles::TemperatureInfos temperatures = protare->temperatures( );
@@ -129,16 +128,21 @@ void main2( int argc, char **argv ) {
     else {
 
         MCGIDI::Reaction const *reaction = MCProtare->reaction( reactionIndex );
-        MCGIDI::Sampling::ClientCodeRNGData clientCodeRNGData( float64RNG64, nullptr );
 
-        double energy_out, weight;
-        weight = reaction->angleBiasing( productIndex, temperature_keV_K, energy_in, mu_lab, energy_out, float64RNG64, nullptr );
+        double energy_out = 1, weight;
+        weight = reaction->angleBiasing( productIndex, temperature_keV_K, energy_in, mu_lab, energy_out, 
+                [&]() -> double { return float64RNG64( &rngState ); } );
         double energyMin = energy_out, energyMax = energy_out;
 
-        for( long sampleIndex = 0; sampleIndex < numberOfSamples; ++sampleIndex ) {
-            weight = reaction->angleBiasing( productIndex, temperature_keV_K, energy_in, mu_lab, energy_out, float64RNG64, nullptr );
-            if( energy_out < energyMin ) energyMin = energy_out;
-            if( energy_out > energyMax ) energyMax = energy_out;
+        long numberOfSamples2 = 1000;
+        if( 100 * numberOfSamples2 < numberOfSamples ) numberOfSamples2 = numberOfSamples / 100;
+        for( long sampleIndex = 0; sampleIndex < numberOfSamples2; ++sampleIndex ) {
+            weight = reaction->angleBiasing( productIndex, temperature_keV_K, energy_in, mu_lab, energy_out,
+                    [&]() -> double { return float64RNG64( &rngState ); } );
+            if( weight != 0.0 ) {
+                if( energy_out < energyMin ) energyMin = energy_out;
+                if( energy_out > energyMax ) energyMax = energy_out;
+            }
         }
 
         energyMin *= 0.5;
@@ -151,8 +155,9 @@ void main2( int argc, char **argv ) {
         Bins bins( numberOfBins, energyMin, energyMax );
 
         for( long sampleIndex = 0; sampleIndex < numberOfSamples; ++sampleIndex ) {
-            weight = reaction->angleBiasing( productIndex, temperature_keV_K, energy_in, mu_lab, energy_out, float64RNG64, nullptr );
-            bins.accrue( energy_out, weight );
+            weight = reaction->angleBiasing( productIndex, temperature_keV_K, energy_in, mu_lab, energy_out,
+                    [&]() -> double { return float64RNG64( &rngState ); } );
+            if( weight != 0.0 ) bins.accrue( energy_out, weight );
         }
 
         bins.print( stdout, "", true );

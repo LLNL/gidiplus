@@ -9,7 +9,8 @@ SHELL = /bin/sh
 
 .PHONY: default check clean realclean
 
-DIRS = Test1 Test2 Test3 Test4 Test5 specialParticleID aliasReferences symbols baseAntiQualifierFromID intid
+DIRS = Test1 Test2 Test3 Test4 Test5 specialParticleID aliasReferences symbols baseAntiQualifierFromID intid \
+		parseIdInfo massValue aliasesUnreferenced
 
 default:
 	$(MAKE) doDirs TARGET=default

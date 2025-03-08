@@ -48,9 +48,17 @@ void main2( int argc, char **argv ) {
     argvOptions argv_options( __FILE__, description );
     ParseTestOptions parseTestOptions( argv_options, argc, argv );
 
+    argv_options.add( argvOption( "--ENDL99120", false, "If present, ENDL two 99120 products are list for a fission reaction." ) );
+    argv_options.add( argvOption( "-d", false, "If present, fission delayed neutrons are included with product sampling." ) );
+
     parseTestOptions.parse( );
 
+    GIDI::Transporting::DelayedNeutrons delayedNeutrons = GIDI::Transporting::DelayedNeutrons::off;
+    if( argv_options.find( "-d" )->present( ) ) delayedNeutrons = GIDI::Transporting::DelayedNeutrons::on;
+
     GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, parseTestOptions.photonMode( ) );
+    if( argv_options.find( "--ENDL99120" )->present( ) )
+        construction.setFissionResiduals( GIDI::Construction::FissionResiduals::ENDL99120 );
     GIDI::Protare *protare = parseTestOptions.protare( pops, "../../../TestData/PoPs/pops.xml", "../../../GIDI/Test/Data/MG_MC/all_maps.map",
         construction, PoPI::IDs::neutron, "O16" );
 
@@ -58,7 +66,7 @@ void main2( int argc, char **argv ) {
 
     GIDI::Styles::TemperatureInfos temperatures = protare->temperatures( );
     std::string label( temperatures[0].heatedCrossSection( ) );
-    MCGIDI::Transporting::MC settings( pops, protare->projectile( ).ID( ), &protare->styles( ), label, GIDI::Transporting::DelayedNeutrons::on, 20.0 );
+    MCGIDI::Transporting::MC settings( pops, protare->projectile( ).ID( ), &protare->styles( ), label, delayedNeutrons, 20.0 );
     settings.setThrowOnError( false );
 
     GIDI::Transporting::Particles particles;
@@ -84,10 +92,15 @@ void main2( int argc, char **argv ) {
             auto indices = reaction->productIndices( );
             for( MCGIDI_VectorSizeType productIndex = 0; productIndex < indices.size( ); ++productIndex ) {
                 int index = indices[productIndex];
-                PoPI::Particle const &particle = pops.get<PoPI::Particle>( index );
+                PoPI::Base const &base= pops.get<PoPI::Base>( index );
+                if( base.isParticle() ) {
+                    double aveIndex = reaction->productAverageMultiplicity( index, energy );
+                    double aveIntid = reaction->productAverageMultiplicityViaIntid( base.intid( ), energy );
 
-                std::cout << "          " << std::left << std::setw( 10 ) << particle.ID( ) << "  " << std::setw( 5 ) << index 
-                        << "  " << doubleToString( "%14.6e", reaction->productAverageMultiplicity( index, energy ) ) << std::endl;
+                    std::cout << "          " << std::left << std::setw( 10 ) << base.ID( ) << "  " << std::setw( 5 ) << base.intid( )
+                            << "  " << doubleToString( "%14.6e", aveIndex ) << std::endl;
+                    if( aveIndex != aveIntid ) std::cout << "ERROR: aveIndex = " << aveIndex << " != aveIntid = " << aveIntid << std::endl;
+                }
             }
         }
     }

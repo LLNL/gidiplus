@@ -13,8 +13,6 @@
 
 namespace MCGIDI {
 
-#define Terrell_BSHIFT -0.43287
-
 namespace Functions {
 
 /*
@@ -186,22 +184,6 @@ LUPI_HOST_DEVICE String Function1d::typeString( ) const {
     }
 
     return( typeStr );
-}
-
-/*
-============================================================
-*/
-LUPI_HOST_DEVICE int Function1d::sampleBoundingInteger( double a_x1, double (*a_rng)( void * ), void *a_rngState ) const {
-
-    if( type( ) == Function1dType::TerrellFissionNeutronMultiplicityModel ) 
-        return( static_cast<TerrellFissionNeutronMultiplicityModel const *>( this )->sampleBoundingInteger( a_x1, a_rng, a_rngState ) );
-
-    double d_value = evaluate( a_x1 );
-    int iValue = (int) d_value;
-    if( iValue == d_value ) return( iValue );
-    if( d_value - iValue > a_rng( a_rngState ) ) ++iValue;
-
-    return( iValue );
 }
 
 /* *********************************************************************************************************//**
@@ -502,7 +484,7 @@ LUPI_HOST_DEVICE double XYs1d::evaluate( double a_x1 ) const {
         return( m_Ys.back( ) );
     }
 
-    double evaluatedValue;
+    double evaluatedValue = 0.0;
     double y1 = m_Ys[lower];
 
     if( interpolation( ) == Interpolation::FLAT ) {
@@ -805,7 +787,7 @@ LUPI_HOST_DEVICE Branching1d::~Branching1d( ) {
 /*
 ============================================================
 */
-LUPI_HOST_DEVICE double Branching1d::evaluate( double a_x1 ) const {
+LUPI_HOST_DEVICE double Branching1d::evaluate( LUPI_maybeUnused double a_x1 ) const {
 
     return( 0.0 );              // Returns 0 as needed by Product::sampleProducts.
 }
@@ -854,36 +836,6 @@ LUPI_HOST TerrellFissionNeutronMultiplicityModel::TerrellFissionNeutronMultiplic
 LUPI_HOST_DEVICE TerrellFissionNeutronMultiplicityModel::~TerrellFissionNeutronMultiplicityModel( ) {
 
     delete m_multiplicity;
-}
-
-/* *********************************************************************************************************//**
- * Sample the number of fission prompt neutrons using Terrell's modified Gaussian distribution.
- * Method uses Red Cullen's algoritm (see UCRL-TR-222526).
- *
- * @param a_energy              [in]        The energy of the projectile.
- * @param a_rng                 [in]        The random number generator function the uses *a_rngState* to generator a double in the range [0, 1.0).
- * @param a_rngState            [in/out]    The random number generator state.
- *
- * @return                                  The sampled number of emitted, prompt neutrons for fission.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE int TerrellFissionNeutronMultiplicityModel::sampleBoundingInteger( double a_energy, double (*a_rng)( void * ), void *a_rngState ) const {
-
-    double width = M_SQRT2 * m_width;
-    double temp1 = m_multiplicity->evaluate( a_energy ) + 0.5;
-    double temp2 = temp1 / width;
-    double expo = exp( -temp2 * temp2 );
-    double cshift = temp1 + Terrell_BSHIFT * m_width * expo / ( 1.0 - expo );
-
-    double multiplicity = 1.0;
-    do {
-      double rw = sqrt( -log( (*a_rng)( a_rngState ) ) );
-      double theta = ( 2.0 * M_PI ) * (*a_rng)( a_rngState );
-
-      multiplicity = width * rw * cos( theta ) + cshift;
-    } while ( multiplicity < 0.0 );
-
-    return( floor( multiplicity ) );
 }
 
 /* *********************************************************************************************************//**
@@ -1049,7 +1001,7 @@ LUPI_HOST_DEVICE XYs2d::~XYs2d( ) {
 LUPI_HOST_DEVICE double XYs2d::evaluate( double a_x2, double a_x1 ) const {
 
     MCGIDI_VectorSizeType lower = binarySearchVector( a_x2, m_Xs );
-    double evaluatedValue;
+    double evaluatedValue = 0.0;
 
     if( lower < 0 ) {
         if( lower == -1 ) {               /* X2 > last value of Xs. */
@@ -1117,7 +1069,7 @@ LUPI_HOST_DEVICE void XYs2d::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBu
 ========================== others ==========================
 ============================================================
 */
-LUPI_HOST Function1d *parseMultiplicityFunction1d( SetupInfo &a_setupInfo, Transporting::MC const &a_settings, GIDI::Suite const &a_suite ) {
+LUPI_HOST Function1d *parseMultiplicityFunction1d( SetupInfo &a_setupInfo, LUPI_maybeUnused Transporting::MC const &a_settings, GIDI::Suite const &a_suite ) {
 
     GIDI::Functions::Function1dForm const *form1d( a_suite.get<GIDI::Functions::Function1dForm>( 0 ) );
 
@@ -1319,21 +1271,6 @@ LUPI_HOST_DEVICE double ProbabilityBase1d::evaluate( double a_x1 ) const {
 }
 
 /* *********************************************************************************************************//**
- * Returns the x-value corresponding cumulative probability *a_rngValue*.
- *
- * @param a_rngValue            [in]    The x-value to evaluate the function at.
- * @param a_userrng             [in]    The random number generator to use.
- * @param a_rngState            [in]    The state to pass to *a_userrng*.
- *
- * @return                              The value of the function at *a_x1*.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE double ProbabilityBase1d::sample( double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const {
-
-    return( static_cast<Xs_pdf_cdf1d const *>( this )->sample( a_rngValue, a_userrng, a_rngState ) );
-}
-
-/* *********************************************************************************************************//**
  * This method serializes *this* for broadcasting as needed for MPI and GPUs. The method can count the number of required
  * bytes, pack *this* or unpack *this* depending on *a_mode*.
  *
@@ -1413,48 +1350,6 @@ LUPI_HOST_DEVICE double Xs_pdf_cdf1d::evaluate( double a_x1 ) const {
 
     double fraction = ( a_x1 - m_Xs[lower] ) / ( m_Xs[lower+1] - m_Xs[lower] );
     return( ( 1. - fraction ) * m_pdf[lower] + fraction * m_pdf[lower+1] );
-}
-/*
-============================================================
-*/
-LUPI_HOST_DEVICE double Xs_pdf_cdf1d::sample( double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const {
-
-    MCGIDI_VectorSizeType lower = binarySearchVector( a_rngValue, m_cdf );
-    double domainValue = 0;
-
-
-    if( lower < 0 ) {                                   // This should never happen.
-        LUPI_THROW( "Xs_pdf_cdf1d::sample: lower < 0." );
-    }
-
-    if( interpolation( ) == Interpolation::FLAT ) {
-        double fraction = ( m_cdf[lower+1] - a_rngValue ) / ( m_cdf[lower+1] - m_cdf[lower] );
-        domainValue = fraction * m_Xs[lower] + ( 1 - fraction ) * m_Xs[lower+1]; }
-    else {                                              // Assumes lin-lin interpolation.
-        double slope = m_pdf[lower+1] - m_pdf[lower];
-
-        if( slope == 0.0 ) {
-            if( m_pdf[lower] == 0.0 ) {
-                domainValue = m_Xs[lower];
-                if( lower == 0 ) domainValue = m_Xs[1]; }
-            else {
-                double fraction = ( m_cdf[lower+1] - a_rngValue ) / ( m_cdf[lower+1] - m_cdf[lower] );
-                domainValue = fraction * m_Xs[lower] + ( 1 - fraction ) * m_Xs[lower+1];
-            } }
-        else {
-            double d1, d2;
-
-            slope = slope / ( m_Xs[lower+1] - m_Xs[lower] );
-            d1 = a_rngValue - m_cdf[lower];
-            d2 = m_cdf[lower+1] - a_rngValue;
-            if( d2 > d1 ) {                         // Closer to lower.
-                domainValue = m_Xs[lower] + ( sqrt( m_pdf[lower] * m_pdf[lower] + 2. * slope * d1 ) - m_pdf[lower] ) / slope; }
-            else {                                  // Closer to lower + 1.
-                domainValue = m_Xs[lower+1] - ( m_pdf[lower+1] - sqrt( m_pdf[lower+1] * m_pdf[lower+1] - 2. * slope * d2 ) ) / slope;
-            }
-        }
-    }
-    return( domainValue );
 }
 
 /* *********************************************************************************************************//**
@@ -1587,33 +1482,6 @@ LUPI_HOST_DEVICE double ProbabilityBase2d::evaluate( double a_x2, double a_x1 ) 
 }
 
 /* *********************************************************************************************************//**
- * This method samples an x1 from a pdf(x1|x2) given x2 and the cumulative value of the pdf as *a_rngValue*.
- *
- * @param a_x2                  [in]        The value of x2.
- * @param a_rngValue            [in]        The value of the cumulative used to determine the x1 value.
- * @param a_userrng             [in]        The random number generator function the uses *a_rngState* to generator a double in the range [0, 1.0).
- * @param a_rngState            [in/out]    The random number generator state.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE double ProbabilityBase2d::sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const {
-
-    double value = 0.0;
-
-    switch( type( ) ) {
-    case ProbabilityBase2dType::none:
-        break;
-    case ProbabilityBase2dType::weightedFunctionals:
-        value = static_cast<WeightedFunctionals2d const *>( this )->sample( a_x2, a_rngValue, a_userrng, a_rngState );
-        break;
-    default:
-        value = static_cast<ProbabilityBase2d_d1 const *>( this )->sample( a_x2, a_rngValue, a_userrng, a_rngState );
-        break;
-    }
-
-    return( value );
-}
-
-/* *********************************************************************************************************//**
  * This method serializes *this* for broadcasting as needed for MPI and GPUs. The method can count the number of required
  * bytes, pack *this* or unpack *this* depending on *a_mode*.
  *
@@ -1658,72 +1526,6 @@ LUPI_HOST_DEVICE double ProbabilityBase2d_d1::evaluate( double a_x2, double a_x1
     case ProbabilityBase2dType::none:
     case ProbabilityBase2dType::weightedFunctionals:
         LUPI_THROW( "ProbabilityBase2d_d1::evaluate: This should never happen." );
-    }
-
-    return( value );
-}
-
-/* *********************************************************************************************************//**
- * Returns the value of x1, given x2 and the cumulative probability *a_rngValue*.
- *
- * @param a_x2                  [in]        Value of the outer most independent variable (i.e., *x2*).
- * @param a_rngValue            [in]        The value of the cumulative probability used to determine the x1 value.
- * @param a_userrng             [in]        The random number generator function the uses *a_rngState* to generator a double in the range [0, 1.0).
- * @param a_rngState            [in/out]    The random number generator state.
- *
- * @return                                  The value *x1* where the cumulative probability is *a_rngValue* for x2 = *a_x2*.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE double ProbabilityBase2d_d1::sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const {
-
-    double value = 0.0;
-
-    switch( type( ) ) {
-    case ProbabilityBase2dType::XYs:
-    case ProbabilityBase2dType::isotropic:
-    case ProbabilityBase2dType::discreteGamma:
-    case ProbabilityBase2dType::primaryGamma:
-    case ProbabilityBase2dType::recoil:
-    case ProbabilityBase2dType::NBodyPhaseSpace:
-    case ProbabilityBase2dType::evaporation:
-    case ProbabilityBase2dType::generalEvaporation:
-    case ProbabilityBase2dType::simpleMaxwellianFission:
-    case ProbabilityBase2dType::Watt:
-        value = static_cast<ProbabilityBase2d_d2 const *>( this )->sample( a_x2, a_rngValue, a_userrng, a_rngState );
-        break;
-    case ProbabilityBase2dType::regions:
-        value = static_cast<Regions2d const *>( this )->sample( a_x2, a_rngValue, a_userrng, a_rngState );
-        break;
-    case ProbabilityBase2dType::none:
-    case ProbabilityBase2dType::weightedFunctionals:
-        LUPI_THROW( "ProbabilityBase2d_d1::sample: This should never happen." );
-    }
-
-    return( value );
-}
-
-/* *********************************************************************************************************//**
- * This method returns two x1 values for use with ProbabilityBase3d functions.
- *
- * @param a_x2                  [in]        The value of x2.
- * @param a_rngValue            [in]        The value of the cumulative value used to determine the x1 value.
- * @param a_userrng             [in]        The random number generator function the uses *a_rngState* to generator a double in the range [0, 1.0).
- * @param a_rngState            [in/out]    The random number generator state.
- * @param a_x1_1                [in]        The lower value of the x1 value.
- * @param a_x1_2                [in]        The upper value of the x1 value.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE double ProbabilityBase2d_d1::sample2dOf3d( double a_x2, double a_rngValue, double (*a_userrng)( void * ), 
-                void *a_rngState, double *a_x1_1, double *a_x1_2 ) const {
-
-    double value = 0.0;
-
-    switch( type( ) ) {
-    case ProbabilityBase2dType::XYs:
-        value = static_cast<XYs2d const *>( this )->sample2dOf3d( a_x2, a_rngValue, a_userrng, a_rngState, a_x1_1, a_x1_2 );
-        break;
-    default:
-        LUPI_THROW( "ProbabilityBase2d_d1::sample2dOf3d: not implemented." );
     }
 
     return( value );
@@ -1782,88 +1584,6 @@ LUPI_HOST_DEVICE double ProbabilityBase2d_d2::evaluate( double a_x2, double a_x1
     return( value );
 }
 
-/* *********************************************************************************************************//**
- * Returns the value of x1, given x2 and the cumulative probability *a_rngValue*.
- *
- * @param a_x2                  [in]        Value of the outer most independent variable (i.e., *x2*).
- * @param a_rngValue            [in]        The value of the cumulative probability used to determine the x1 value.
- * @param a_userrng             [in]        The random number generator function the uses *a_rngState* to generator a double in the range [0, 1.0).
- * @param a_rngState            [in/out]    The random number generator state.
- *
- * @return                                  The value *x1* where the cumulative probability is *a_rngValue* for x2 = *a_x2*.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE double ProbabilityBase2d_d2::sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const {
-
-    double value = 0.0;
-
-    switch( type( ) ) {
-    case ProbabilityBase2dType::XYs:
-        value = static_cast<XYs2d const *>( this )->sample( a_x2, a_rngValue, a_userrng, a_rngState );
-        break;
-    case ProbabilityBase2dType::isotropic:
-        value = static_cast<Isotropic2d const *>( this )->sample( a_x2, a_rngValue, a_userrng, a_rngState );
-        break;
-    case ProbabilityBase2dType::discreteGamma:
-        value = static_cast<DiscreteGamma2d const *>( this )->sample( a_x2, a_rngValue, a_userrng, a_rngState );
-        break;
-    case ProbabilityBase2dType::primaryGamma:
-        value = static_cast<PrimaryGamma2d const *>( this )->sample( a_x2, a_rngValue, a_userrng, a_rngState );
-        break;
-    case ProbabilityBase2dType::recoil:
-        value = static_cast<Recoil2d const *>( this )->sample( a_x2, a_rngValue, a_userrng, a_rngState );
-        break;
-    case ProbabilityBase2dType::NBodyPhaseSpace:
-        value = static_cast<NBodyPhaseSpace2d const *>( this )->sample( a_x2, a_rngValue, a_userrng, a_rngState );
-        break;
-    case ProbabilityBase2dType::evaporation:
-        value = static_cast<Evaporation2d const *>( this )->sample( a_x2, a_rngValue, a_userrng, a_rngState );
-        break;
-    case ProbabilityBase2dType::generalEvaporation:
-        value = static_cast<GeneralEvaporation2d const *>( this )->sample( a_x2, a_rngValue, a_userrng, a_rngState );
-        break;
-    case ProbabilityBase2dType::simpleMaxwellianFission:
-        value = static_cast<SimpleMaxwellianFission2d const *>( this )->sample( a_x2, a_rngValue, a_userrng, a_rngState );
-        break;
-    case ProbabilityBase2dType::Watt:
-        value = static_cast<Watt2d const *>( this )->sample( a_x2, a_rngValue, a_userrng, a_rngState );
-        break;
-    case ProbabilityBase2dType::none:
-    case ProbabilityBase2dType::weightedFunctionals:
-    case ProbabilityBase2dType::regions:
-        LUPI_THROW( "ProbabilityBase2d_d2::sample: This should never happen." );
-    }
-
-    return( value );
-}
-
-/* *********************************************************************************************************//**
- * This method returns two x1 values for use with ProbabilityBase3d functions.
- *
- * @param a_x2                  [in]        The value of x2.
- * @param a_rngValue            [in]        The value of the cumulative value used to determine the x1 value.
- * @param a_userrng             [in]        The random number generator function the uses *a_rngState* to generator a double in the range [0, 1.0).
- * @param a_rngState            [in/out]    The random number generator state.
- * @param a_x1_1                [in]        The lower value of the x1 value.
- * @param a_x1_2                [in]        The upper value of the x1 value.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE double ProbabilityBase2d_d2::sample2dOf3d( double a_x2, double a_rngValue, double (*a_userrng)( void * ),
-                void *a_rngState, double *a_x1_1, double *a_x1_2 ) const {
-
-    double value = 0.0;
-
-    switch( type( ) ) {
-    case ProbabilityBase2dType::XYs:
-        value = static_cast<XYs2d const *>( this )->sample2dOf3d( a_x2, a_rngValue, a_userrng, a_rngState, a_x1_1, a_x1_2 );
-        break;
-    default:
-        LUPI_THROW( "ProbabilityBase2d_d2::sample2dOf3d: not implemented." );
-    }
-
-    return( value );
-}
-
 /*
 ============================================================
 ========================== XYs2d ===========================
@@ -1909,103 +1629,6 @@ LUPI_HOST_DEVICE double XYs2d::evaluate( double a_x2, double a_x1 ) const {
     double fraction = ( a_x2 - m_Xs[lower] ) / ( m_Xs[lower+1] - m_Xs[lower] );
     double d_value = ( 1.0 - fraction ) * m_probabilities[lower]->evaluate( a_x1 ) + fraction * m_probabilities[lower+1]->evaluate( a_x1 );
     return( d_value );
-}
-/*
-============================================================
-*/
-LUPI_HOST_DEVICE double XYs2d::sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const {
-/*
-C    Samples from a pdf(x1|x2). First determine which pdf(s) to sample from given x2.
-C    Then use rngValue to sample from pdf1(x1) and maybe pdf2(x1) and interpolate to
-C    determine x1.
-*/
-    double sampledValue;
-    MCGIDI_VectorSizeType lower = binarySearchVector( a_x2, m_Xs );
-
-    if( lower == -2 ) {
-        sampledValue = m_probabilities[0]->sample( a_rngValue, a_userrng, a_rngState ); }
-    else if( lower == -1 ) {
-        sampledValue = m_probabilities.back( )->sample( a_rngValue, a_userrng, a_rngState ); }
-    else {
-        double sampled1 = m_probabilities[lower]->sample( a_rngValue, a_userrng, a_rngState );
-
-        if( interpolation( ) == Interpolation::FLAT ) {
-            sampledValue = sampled1; }
-        else {
-            double sampled2 = m_probabilities[lower+1]->sample( a_rngValue, a_userrng, a_rngState );
-
-            if( interpolation( ) == Interpolation::LINLIN ) {
-                double fraction = ( m_Xs[lower+1] - a_x2 ) / ( m_Xs[lower+1] - m_Xs[lower] );
-                sampledValue = fraction * sampled1 + ( 1 - fraction ) * sampled2; }
-            else if( interpolation( ) == Interpolation::LOGLIN ) {
-                double fraction = ( m_Xs[lower+1] - a_x2 ) / ( m_Xs[lower+1] - m_Xs[lower] );
-                sampledValue = sampled2 * pow( sampled2 / sampled1, fraction ); }
-            else if( interpolation( ) == Interpolation::LINLOG ) {
-                double fraction = log( m_Xs[lower+1] / a_x2 ) / log( m_Xs[lower+1] / m_Xs[lower] );
-                sampledValue = fraction * sampled1 + ( 1 - fraction ) * sampled2; }
-            else if( interpolation( ) == Interpolation::LOGLOG ) {
-                double fraction = log( m_Xs[lower+1] / a_x2 ) / log( m_Xs[lower+1] / m_Xs[lower] );
-                sampledValue = sampled2 * pow( sampled2 / sampled1, fraction ); }
-            else {                                                              // This should never happen.
-                LUPI_THROW( "XYs2d::sample: unsupported interpolation." );
-            }
-        }
-    }
-    return( sampledValue );
-}
-
-/* *********************************************************************************************************//**
- * This method returns two x1 values for use with ProbabilityBase3d functions.
- *
- * @param a_x2                  [in]        The value of x2.
- * @param a_rngValue            [in]        The value of the cumulative value used to determine the x1 value.
- * @param a_userrng             [in]        The random number generator function the uses *a_rngState* to generator a double in the range [0, 1.0).
- * @param a_rngState            [in/out]    The random number generator state.
- * @param a_x1_1                [in]        The lower value of the x1 value.
- * @param a_x1_2                [in]        The upper value of the x1 value.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE double XYs2d::sample2dOf3d( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState, 
-                double *a_x1_1, double *a_x1_2 ) const {
-/*
-C   Samples from a pdf(x1|x2). First determine which pdf(s) to sample from given x2. Then use rngValue to sample from pdf1(x1) 
-C   and maybe pdf2(x1) and interpolate to determine x1.
-*/
-    double sampledValue;
-    MCGIDI_VectorSizeType lower = binarySearchVector( a_x2, m_Xs );
-
-    if( lower == -2 ) {
-        sampledValue = m_probabilities[0]->sample( a_rngValue, a_userrng, a_rngState );
-        *a_x1_2 = *a_x1_1 = sampledValue; }
-    else if( lower == -1 ) {
-        sampledValue = m_probabilities.back( )->sample( a_rngValue, a_userrng, a_rngState );
-        *a_x1_2 = *a_x1_1 = sampledValue; }
-    else {
-        *a_x1_1 = m_probabilities[lower]->sample( a_rngValue, a_userrng, a_rngState );
-
-        if( interpolation( ) == Interpolation::FLAT ) {
-            sampledValue = *a_x1_2 = *a_x1_1; }
-        else {
-            *a_x1_2 = m_probabilities[lower+1]->sample( a_rngValue, a_userrng, a_rngState );
-
-            if( interpolation( ) == Interpolation::LINLIN ) {
-                double fraction = ( m_Xs[lower+1] - a_x2 ) / ( m_Xs[lower+1] - m_Xs[lower] );
-                sampledValue = fraction * *a_x1_1 + ( 1 - fraction ) * *a_x1_2; }
-            else if( interpolation( ) == Interpolation::LOGLIN ) {
-                double fraction = ( m_Xs[lower+1] - a_x2 ) / ( m_Xs[lower+1] - m_Xs[lower] );
-                sampledValue = *a_x1_2 * pow( *a_x1_2 / *a_x1_1, fraction ); }
-            else if( interpolation( ) == Interpolation::LINLOG ) {
-                double fraction = log( m_Xs[lower+1] / a_x2 ) / log( m_Xs[lower+1] / m_Xs[lower] );
-                sampledValue = fraction * *a_x1_1 + ( 1 - fraction ) * *a_x1_2; }
-            else if( interpolation( ) == Interpolation::LOGLOG ) {
-                double fraction = log( m_Xs[lower+1] / a_x2 ) / log( m_Xs[lower+1] / m_Xs[lower] );
-                sampledValue = *a_x1_2 * pow( *a_x1_2 / *a_x1_1 , fraction ); }
-            else {                                                              // This should never happen.
-                LUPI_THROW( "XYs2d::sample: unsupported interpolation." );
-            }
-        }
-    }
-    return( sampledValue );
 }
 
 /* *********************************************************************************************************//**
@@ -2120,22 +1743,6 @@ LUPI_HOST_DEVICE double Regions2d::evaluate( double a_x2, double a_x1 ) const {
     }
 
     return( m_probabilities[lower]->evaluate( a_x2, a_x1 ) );
-}
-/*
-============================================================
-*/
-LUPI_HOST_DEVICE double Regions2d::sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const {
-
-    MCGIDI_VectorSizeType lower = binarySearchVector( a_x2, m_Xs );
-
-    if( lower < 0 ) {
-        if( lower == -1 ) {                         // a_x2 > last value of m_Xs.
-            return( m_probabilities.back( )->sample( a_x2, a_rngValue, a_userrng, a_rngState ) );
-        }
-        lower = 0;                                  // a_x2 < first value of m_Xs.
-    }
-
-    return( m_probabilities[lower]->sample( a_x2, a_rngValue, a_userrng, a_rngState ) );
 }
 
 /* *********************************************************************************************************//**
@@ -2330,7 +1937,7 @@ LUPI_HOST_DEVICE Recoil2d::~Recoil2d( ) {
 /*
 ============================================================
 */
-LUPI_HOST_DEVICE double Recoil2d::evaluate( double a_x2, double a_x1 ) const {
+LUPI_HOST_DEVICE double Recoil2d::evaluate( LUPI_maybeUnused double a_x2, LUPI_maybeUnused double a_x1 ) const {
 
 #if !defined(__NVCC__) && !defined(__HIP__)
     LUPI_THROW( "Recoil2d::evaluate: not implemented." );
@@ -2338,18 +1945,6 @@ LUPI_HOST_DEVICE double Recoil2d::evaluate( double a_x2, double a_x1 ) const {
 
     return( 0.0 );
 }
-/*
-============================================================
-*/
-LUPI_HOST_DEVICE double Recoil2d::sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const {
-
-#if !defined(__NVCC__) && !defined(__HIP__)
-    LUPI_THROW( "Recoil2d::sample: not implemented." );
-#endif
-
-    return( 0.0 );
-}
-
 
 /* *********************************************************************************************************//**
  * This method serializes *this* for broadcasting as needed for MPI and GPUs. The method can count the number of required
@@ -2413,7 +2008,7 @@ LUPI_HOST_DEVICE NBodyPhaseSpace2d::~NBodyPhaseSpace2d( ) {
 /*
 ============================================================
 */
-LUPI_HOST static nfu_status MCGIDI_NBodyPhaseSpacePDF_callback( statusMessageReporting *smr, double X, double *Y, void *argList ) {
+LUPI_HOST static nfu_status MCGIDI_NBodyPhaseSpacePDF_callback( LUPI_maybeUnused statusMessageReporting *smr, double X, double *Y, void *argList ) {
 
     int numberOfProducts = *((int *) argList);
     double exponent = 0.5 * ( 3 * numberOfProducts - 8 );
@@ -2430,13 +2025,6 @@ LUPI_HOST_DEVICE double NBodyPhaseSpace2d::evaluate( double a_x2, double a_x1 ) 
     double x1 = a_x1 / EMax;
 
     return( m_dist->evaluate( x1 ) );
-}
-/*
-============================================================
-*/
-LUPI_HOST_DEVICE double NBodyPhaseSpace2d::sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const {
-
-    return( ( m_energy_in_COMFactor * a_x2 + m_Q ) * m_massFactor * m_dist->sample( a_rngValue, a_userrng, a_rngState ) );
 }
 
 /* *********************************************************************************************************//**
@@ -2500,36 +2088,6 @@ LUPI_HOST_DEVICE double Evaporation2d::evaluate( double a_x2, double a_x1 ) cons
     if( E_U_theta < 0 ) return( 0.0 );
     return( Ep_theta * exp( -Ep_theta ) / ( theta * ( 1.0 - exp( -E_U_theta ) * ( 1.0 + E_U_theta ) ) ) );
 }
-/*
-============================================================
-*/
-LUPI_HOST_DEVICE static double MCGIDI_sampleEvaporation( double a_xMax, double a_rngValue );
-LUPI_HOST_DEVICE double Evaporation2d::sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const {
-
-    double theta = m_theta->evaluate( a_x2 );
-
-    return( theta * MCGIDI_sampleEvaporation( ( a_x2 - m_U ) / theta, a_rngValue ) );
-}
-/*
-============================================================
-*/
-LUPI_HOST_DEVICE static double MCGIDI_sampleEvaporation( double a_xMax, double a_rngValue ) {
-
-    double b1, c1, xMid, norm, xMin = 0.;
-
-    norm = 1 - ( 1 + a_xMax ) * exp( -a_xMax );
-    b1 = 1. - norm * a_rngValue;
-    for( int i1 = 0; i1 < 16; i1++ ) {
-        xMid = 0.5 * ( xMin + a_xMax );
-        c1 = ( 1 + xMid ) * exp( -xMid );
-        if( b1 > c1 ) {
-            a_xMax = xMid; }
-        else {
-            xMin = xMid;
-        }
-    }
-    return( xMid );
-}
 
 /* *********************************************************************************************************//**
  * This method serializes *this* for broadcasting as needed for MPI and GPUs. The method can count the number of required
@@ -2583,13 +2141,6 @@ LUPI_HOST_DEVICE GeneralEvaporation2d::~GeneralEvaporation2d( ) {
 LUPI_HOST_DEVICE double GeneralEvaporation2d::evaluate( double a_x2, double a_x1 ) const {
 
     return( m_g->evaluate( a_x1 / m_theta->evaluate( a_x2 ) ) );
-}
-/*
-============================================================
-*/
-LUPI_HOST_DEVICE double GeneralEvaporation2d::sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const {
-
-    return( m_theta->evaluate( a_x2 ) * m_g->sample( a_rngValue, a_userrng, a_rngState ) );
 }
 
 /* *********************************************************************************************************//**
@@ -2650,38 +2201,6 @@ LUPI_HOST_DEVICE double SimpleMaxwellianFission2d::evaluate( double a_x2, double
     double sqrt_E_U_theta = sqrt( E_U_theta );
 
     return( sqrt( Ep_theta ) * exp( -Ep_theta ) / ( theta * ( erf( sqrt_E_U_theta ) / M_2_SQRTPI - sqrt_E_U_theta * exp( -E_U_theta ) ) ) );
-}
-/*
-============================================================
-*/
-LUPI_HOST_DEVICE static double MCGIDI_sampleSimpleMaxwellianFission( double a_xMax, double a_rngValue );
-LUPI_HOST_DEVICE double SimpleMaxwellianFission2d::sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const {
-
-    double theta = m_theta->evaluate( a_x2 );
-
-    return( theta * MCGIDI_sampleSimpleMaxwellianFission( ( a_x2 - m_U ) / theta, a_rngValue ) );
-}
-/*
-============================================================
-*/
-LUPI_HOST_DEVICE static double MCGIDI_sampleSimpleMaxwellianFission( double a_xMax, double a_rngValue ) {
-
-    double b1, c1, xMid, norm, xMin = 0., sqrt_xMid, sqrt_pi_2 = 0.5 * sqrt( M_PI );
-
-    sqrt_xMid = sqrt( a_xMax );
-    norm = sqrt_pi_2 * erf( sqrt_xMid ) - sqrt_xMid * exp( -a_xMax );
-    b1 = norm * a_rngValue;
-    for( int i1 = 0; i1 < 16; i1++ ) {
-        xMid = 0.5 * ( xMin + a_xMax );
-        sqrt_xMid = sqrt( xMid );
-        c1 = sqrt_pi_2 * erf( sqrt_xMid ) - sqrt_xMid * exp( -xMid );
-        if( b1 < c1 ) {
-            a_xMax = xMid; }
-        else {
-            xMin = xMid;
-        }
-    }
-    return( xMid );
 }
 
 /* *********************************************************************************************************//**
@@ -2748,29 +2267,6 @@ LUPI_HOST_DEVICE double Watt2d::evaluate( double a_x2, double a_x1 ) const {
                 - Watt_a * exp( -E_U_a ) * sinh( 2.0 * sqrt_E_U_a * sqrt_ab_4 );
     return( exp( -a_x1 / Watt_a ) * sinh( sqrt( Watt_b * a_x1 ) ) / I );
 }
-/*
-============================================================
-*/
-LUPI_HOST_DEVICE double Watt2d::sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const {
-/*
-*   From MCAPM via Sample Watt Spectrum as in TART ( Kalos algorithm ).
-*/
-    double WattMin = 0., WattMax = a_x2 - m_U, x, y, z, energyOut, rand1, rand2;
-    double Watt_a = m_a->evaluate( a_x2 );
-    double Watt_b = m_b->evaluate( a_x2 );
-
-    x = 1. + ( Watt_b / ( 8. * Watt_a ) );
-    y = ( x + sqrt( x * x - 1. ) ) / Watt_a;
-    z = Watt_a * y - 1.;
-    do {
-        rand1 = -log( a_userrng( a_rngState ) );
-        rand2 = -log( a_userrng( a_rngState ) );
-        energyOut = y * rand1;
-    } while( ( ( rand2 - z * ( rand1 + 1. ) ) * ( rand2 - z * ( rand1 + 1. ) ) > Watt_b * y * rand1 ) || 
-             ( energyOut < WattMin ) || ( energyOut > WattMax ) );
-    return( energyOut );
-}
-
 
 /* *********************************************************************************************************//**
  * This method serializes *this* for broadcasting as needed for MPI and GPUs. The method can count the number of required
@@ -2836,23 +2332,6 @@ LUPI_HOST_DEVICE double WeightedFunctionals2d::evaluate( double a_x2, double a_x
         evaluatedValue += m_weight[i1]->evaluate( a_x2 ) * m_energy[i1]->evaluate( a_x2, a_x1 );
     }
     return( evaluatedValue  );
-}
-/*
-============================================================
-*/
-LUPI_HOST_DEVICE double WeightedFunctionals2d::sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const {
-/*
-c   This routine assumes that the weights sum to 1.
-*/
-    MCGIDI_VectorSizeType i1;
-    MCGIDI_VectorSizeType n1 = m_weight.size( ) - 1;      // Take last point if others do not add to randomWeight.
-    double randomWeight = a_userrng( a_rngState ), cumulativeWeight = 0.;
-
-    for( i1 = 0; i1 < n1; ++i1 ) {
-        cumulativeWeight += m_weight[i1]->evaluate( a_x2 );
-        if( cumulativeWeight >= randomWeight ) break;
-    }
-    return( m_energy[i1]->sample( a_x2, a_rngValue, a_userrng, a_rngState) );
 }
 
 /* *********************************************************************************************************//**
@@ -2949,23 +2428,6 @@ LUPI_HOST_DEVICE String ProbabilityBase3d::typeString( ) const {
 LUPI_HOST_DEVICE double ProbabilityBase3d::evaluate( double a_x3, double a_x2, double a_x1 ) const {
 
     return( static_cast<XYs3d const *>( this )->evaluate( a_x3, a_x2, a_x1 ) );
-}
-
-/* *********************************************************************************************************//**
- * This method samples an x1 from a pdf(x1|x2) given x2 and the cumulative value of the pdf as *a_rngValue*.
- *
- * @param a_x3                  [in]        The value of x3.
- * @param a_x2_1                [in]        The value of ?.
- * @param a_x2_2                [in]        The value of ?.
- * @param a_rngValue            [in]        The value of the cumulative used to determine the x1 value.
- * @param a_userrng             [in]        The random number generator function the uses *a_rngState* to generator a double in the range [0, 1.0).
- * @param a_rngState            [in/out]    The random number generator state.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE double ProbabilityBase3d::sample( double a_x3, double a_x2_1, double a_x2_2, double a_rngValue, double (*a_userrng)( void * ), 
-                void *a_rngState ) const {
-
-    return( static_cast<XYs3d const *>( this )->sample( a_x3, a_x2_1, a_x2_2, a_rngValue, a_userrng, a_rngState ) );
 }
 
 /* *********************************************************************************************************//**
@@ -3072,50 +2534,6 @@ LUPI_HOST_DEVICE double XYs3d::evaluate( double a_x3, double a_x2, double a_x1 )
     }
 
     return( evaluatedValue );
-}
-/*
-============================================================
-*/
-LUPI_HOST_DEVICE double XYs3d::sample( double a_x3, double a_x2_1, double a_x2_2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const {
-/*
-C    Samples from a pdf(x1|x3,x2). First determine which pdf(s) to sample from given x3
-C    Then use rngValue to sample from pdf2_1(x2) and maybe pdf2_2(x2) and interpolate to
-C    determine x1.
-*/
-    double sampledValue;
-    MCGIDI_VectorSizeType lower = binarySearchVector( a_x3, m_Xs );
-
-    if( lower == -2 ) {                         // x3 < first value of Xs.
-        sampledValue = m_probabilities[0]->sample( a_x2_1, a_rngValue, a_userrng, a_rngState ); }
-    else if( lower == -1 ) {                    // x3 > last value of Xs.
-        sampledValue = m_probabilities.back( )->sample( a_x2_1, a_rngValue, a_userrng, a_rngState ); }
-    else {
-        double sampled1 = m_probabilities[lower]->sample( a_x2_1, a_rngValue, a_userrng, a_rngState );
-
-        if( interpolation( ) == Interpolation::FLAT ) {
-            sampledValue = sampled1; }
-        else {
-            double sampled2 = m_probabilities[lower+1]->sample( a_x2_2, a_rngValue, a_userrng, a_rngState );
-
-            if( interpolation( ) == Interpolation::LINLIN ) {
-                double fraction = ( m_Xs[lower+1] - a_x3 ) / ( m_Xs[lower+1] - m_Xs[lower] );
-                sampledValue = fraction * sampled1 + ( 1 - fraction ) * sampled2; }
-            else if( interpolation( ) == Interpolation::LOGLIN ) {
-                double fraction = ( m_Xs[lower+1] - a_x3 ) / ( m_Xs[lower+1] - m_Xs[lower] );
-                sampledValue = sampled2 * pow( sampled2 / sampled1, fraction ); }
-            else if( interpolation( ) == Interpolation::LINLOG ) {
-                double fraction = log( m_Xs[lower+1] / a_x3 ) / log( m_Xs[lower+1] / m_Xs[lower] );
-                sampledValue = fraction * sampled1 + ( 1 - fraction ) * sampled2; }
-            else if( interpolation( ) == Interpolation::LOGLOG ) {
-                double fraction = log( m_Xs[lower+1] / a_x3 ) / log( m_Xs[lower+1] / m_Xs[lower] );
-                sampledValue = sampled2 * pow( sampled2 / sampled1, fraction ); }
-            else {                                                              // This should never happen.
-                LUPI_THROW( "XYs3d::sample: unsupported interpolation." );
-            }
-        }
-    }
-
-    return( sampledValue );
 }
 
 /* *********************************************************************************************************//**

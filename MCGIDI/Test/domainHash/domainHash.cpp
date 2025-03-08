@@ -17,7 +17,7 @@ static int check2( int bins, double domainMin, double domainMax, std::vector<dou
 /*
 =========================================================
 */
-int main( int argc, char **argv ) {
+int main( LUPI_maybeUnused int argc, LUPI_maybeUnused char **argv ) {
 
     int errCount = 0;
     std::vector<double> domain1;

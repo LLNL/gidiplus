@@ -10,8 +10,6 @@
 #ifndef LUPI_hpp_included
 #define LUPI_hpp_included 1
 
-#include <time.h>
-#include <sys/time.h>
 #include <sys/stat.h>
 #include <string>
 #include <vector>
@@ -19,10 +17,19 @@
 #include <map>
 #include <stdexcept>
 #include <iostream>
+#ifndef _WIN32
+    #include <time.h>
+    #include <sys/time.h>
+#endif
 
+#include <LUPI_defines.hpp>
 #include <statusMessageReporting.h>
 
 #define LUPI_XML_verionEncoding "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+
+#ifndef LUPI_PATH_MAX
+#define LUPI_PATH_MAX ( 4 * 4096 )
+#endif
 
 namespace LUPI {
 
@@ -55,6 +62,7 @@ class FormatVersion {
         FormatVersion( );
         FormatVersion( std::string const &a_formatVersion );
         FormatVersion( FormatVersion const &a_formatVersion );
+        FormatVersion &operator=( FormatVersion const &a_rhs );
 
         std::string const &format( ) const { return( m_format ); }
         int major( ) const { return( m_major ); }
@@ -323,6 +331,8 @@ class Positional : public ArgumentBase {
 ============================================================
 */
 
+#ifndef _WIN32
+
 #define LUPI_DeltaTime_toStringFormatIncremental "incremental: CPU %8.3fs, wall %8.3fs"
 #define LUPI_DeltaTime_toStringFormatTotal "total: CPU %8.3fs, wall %8.3fs"
 
@@ -371,8 +381,11 @@ class Timer {
         void reset( );
 };
 
+#endif          // End of not _WIN32 defined.
+
 namespace FileInfo {        // Should be using std::filesystem stuff but this requires C++ 17.
 
+std::string realPath( std::string const &a_path );
 std::string _basename( std::string const &a_path );
 std::string basenameWithoutExtension( std::string const &a_path );
 std::string _dirname( std::string const &a_path );

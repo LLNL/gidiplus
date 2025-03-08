@@ -12,6 +12,8 @@ import pathlib
 
 from PoPs import database as databaseModule
 from PoPs import alias as aliasModule
+from PoPs import intId as intIdModule
+from PoPs import specialNuclearParticleID as specialNuclearParticleIDModule
 
 description = '''Loops over each particle in the specified PoPs files, and prints each particles id and intid.'''
 
@@ -27,15 +29,19 @@ for file in args.pops:
     else:
         pops.addFile(file)
 
-if pops is not None:
-    for particle in pops:
-        try:
-            intid = particle.intid()
-        except:
-            intid = -1
-        print(particle.id, intid, end='')
+for particle in pops:
+    try:
+        intid = particle.intid()
+    except:
+        intid = -1
+    print(particle.id, intid, end='')
 
-        particleFinal = pops.final(particle.id)
-        if particle.id != particleFinal.id:
-            print('', particleFinal.id, particleFinal.intid(), end='')
-        print()
+    if intid != -1:
+        pid = intIdModule.idFromIntid(intid)
+        if specialNuclearParticleIDModule.specialNuclearParticleID(pid) != specialNuclearParticleIDModule.specialNuclearParticleID(particle.id):
+            print(': Oops, %s not %s: intid = %s' % (pid, particle.id, intid), end='')
+
+    particleFinal = pops.final(particle.id)
+    if particle.id != particleFinal.id:
+        print('', particleFinal.id, particleFinal.intid(), end='')
+    print()

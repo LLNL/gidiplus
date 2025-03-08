@@ -54,7 +54,8 @@ void main2( int argc, char **argv ) {
     ParseTestOptions parseTestOptions( argv_options, argc, argv );
 
     argv_options.add( argvOption( "--fixedGrid", false, "Set fixed grid data. Only used if protare is only photo-atomic protare." ) );
-    argv_options.add( argvOption( "--multiGroup", false, "Set fixed grid data. Only used if protare is only photo-atomic protare." ) );
+    argv_options.add( argvOption( "--multiGroup", false, "If present, multi-group data are loaded." ) );
+    argv_options.add( argvOption( "--DBRC", false, "If present, calls turn on the DBRC upscatter data loading." ) );
 
     parseTestOptions.parse( );
 
@@ -67,6 +68,8 @@ void main2( int argc, char **argv ) {
 
     std::string label( temperatures[0].griddedCrossSection( ) );
     MCGIDI::Transporting::MC MC( pops, protare->projectile( ).ID( ), &protare->styles( ), label, GIDI::Transporting::DelayedNeutrons::on, 20.0 );
+
+    if( argv_options.find( "--DBRC" )->present( ) ) MC.setUpscatterModelDBRC( );
 
     if( argv_options.find( "--fixedGrid" )->present( ) ) {
         MC.fixedGridPoints( groups.get<GIDI::Group>( "LLNL_gid_80" )->data( ) );

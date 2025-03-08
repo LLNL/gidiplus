@@ -50,8 +50,12 @@ NuclideGammaBranchInfo::NuclideGammaBranchInfo( NuclideGammaBranchInfo const &a_
 ================= NuclideGammaBranchStateInfo ================
 ============================================================
 */
-NuclideGammaBranchStateInfo::NuclideGammaBranchStateInfo( std::string a_state ) :
+NuclideGammaBranchStateInfo::NuclideGammaBranchStateInfo( std::string a_state, int a_intid, std::string const &a_kind, double a_nuclearLevelEnergy ) :
         m_state( a_state ),
+        m_intid( a_intid ),
+        m_kind( a_kind ),
+        m_nuclearLevelEnergy( a_nuclearLevelEnergy ),
+        m_nuclearLevelEnergyWidth( 0.0 ),
         m_derivedCalculated( false ),
         m_multiplicity( 0.0 ),
         m_averageGammaEnergy( 0.0 ) {
@@ -116,10 +120,35 @@ void NuclideGammaBranchStateInfos::add( NuclideGammaBranchStateInfo *a_nuclideGa
 
     m_nuclideGammaBranchStateInfos.push_back( a_nuclideGammaBranchStateInfo );
 }
-/*
-=========================================================
-*/
+
+/* *********************************************************************************************************//**
+ * This method returns a pointer to the NuclideGammaBranchStateInfo instance for *a_state* or nullptr if not match is found.
+ *
+ * @param a_state           [in]    The PoPs id for the requested state (i.e., nuclide).
+ *
+ * @return                          A pointer to the requested NuclideGammaBranchStateInfo instance or nullptr if not match is found.
+ ***********************************************************************************************************/
+
 NuclideGammaBranchStateInfo *NuclideGammaBranchStateInfos::find( std::string const &a_state ) {
+
+    for( std::size_t i1 = 0; i1 < m_nuclideGammaBranchStateInfos.size( ); ++i1 ) {
+        NuclideGammaBranchStateInfo *nuclideGammaBranchStateInfo = m_nuclideGammaBranchStateInfos[i1];
+
+        if( nuclideGammaBranchStateInfo->state( ) == a_state ) return( nuclideGammaBranchStateInfo );
+    }
+
+    return( nullptr );
+}
+
+/* *********************************************************************************************************//**
+ * This method returns a const pointer to the NuclideGammaBranchStateInfo instance for *a_state* or nullptr if not match is found.
+ *
+ * @param a_state           [in]    The PoPs id for the requested state (i.e., nuclide).
+ *
+ * @return                          A const pointer to the requested NuclideGammaBranchStateInfo instance or nullptr if not match is found.
+ ***********************************************************************************************************/
+
+NuclideGammaBranchStateInfo const *NuclideGammaBranchStateInfos::find( std::string const &a_state ) const {
 
     for( std::size_t i1 = 0; i1 < m_nuclideGammaBranchStateInfos.size( ); ++i1 ) {
         NuclideGammaBranchStateInfo *nuclideGammaBranchStateInfo = m_nuclideGammaBranchStateInfos[i1];

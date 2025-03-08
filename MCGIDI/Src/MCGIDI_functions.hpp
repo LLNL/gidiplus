@@ -74,7 +74,8 @@ class Function1d : public FunctionBase {
         LUPI_HOST_DEVICE Function1dType type( ) const { return( m_type ); }
         LUPI_HOST_DEVICE String typeString( ) const ;
 
-        LUPI_HOST_DEVICE MCGIDI_VIRTUAL_FUNCTION int sampleBoundingInteger( double a_x1, double (*a_rng)( void * ), void *a_rngState ) const ;
+        template <typename RNG>
+        LUPI_HOST_DEVICE MCGIDI_VIRTUAL_FUNCTION int sampleBoundingInteger( double a_x1, RNG && a_rng ) const ;
         LUPI_HOST_DEVICE MCGIDI_VIRTUAL_FUNCTION double evaluate( double a_x1 ) const MCGIDI_TRUE_VIRTUAL;
         LUPI_HOST_DEVICE void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode );
 };
@@ -127,7 +128,7 @@ class Constant1d : public Function1d_d2 {
         LUPI_HOST Constant1d( GIDI::Functions::Constant1d const &a_constant1d );
         LUPI_HOST_DEVICE ~Constant1d( );
 
-        LUPI_HOST_DEVICE double evaluate( double a_x1 ) const { return( m_value ); }
+        LUPI_HOST_DEVICE double evaluate( LUPI_maybeUnused double a_x1 ) const { return( m_value ); }
         LUPI_HOST_DEVICE void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode );
 };
 
@@ -252,7 +253,8 @@ class TerrellFissionNeutronMultiplicityModel : public Function1d {
         LUPI_HOST TerrellFissionNeutronMultiplicityModel( double a_width, Function1d_d1 *a_multiplicity );
         LUPI_HOST_DEVICE ~TerrellFissionNeutronMultiplicityModel( );
 
-        LUPI_HOST_DEVICE int sampleBoundingInteger( double a_energy, double (*a_rng)( void * ), void *a_rngState ) const ;
+        template <typename RNG>
+        LUPI_HOST_DEVICE int sampleBoundingInteger( double a_energy, RNG && a_rng ) const ;
         LUPI_HOST_DEVICE double evaluate( double a_energy ) const ;
         LUPI_HOST_DEVICE void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode );
 };
@@ -360,7 +362,8 @@ class ProbabilityBase1d : public ProbabilityBase {
         LUPI_HOST_DEVICE String typeString( ) const ;
 
         LUPI_HOST_DEVICE MCGIDI_VIRTUAL_FUNCTION double evaluate( double a_x1 ) const MCGIDI_TRUE_VIRTUAL;
-        LUPI_HOST_DEVICE MCGIDI_VIRTUAL_FUNCTION double sample( double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const MCGIDI_TRUE_VIRTUAL;
+        template <typename RNG>
+        LUPI_HOST_DEVICE MCGIDI_VIRTUAL_FUNCTION double sample( double a_rngValue, RNG && a_rng ) const MCGIDI_TRUE_VIRTUAL;
         LUPI_HOST_DEVICE void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode );
 };
 
@@ -381,7 +384,8 @@ class Xs_pdf_cdf1d : public ProbabilityBase1d {
         LUPI_HOST_DEVICE ~Xs_pdf_cdf1d( );
 
         LUPI_HOST_DEVICE double evaluate( double a_x1 ) const ;
-        LUPI_HOST_DEVICE double sample( double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const ;
+        template <typename RNG>
+        LUPI_HOST_DEVICE double sample( double a_rngValue, RNG && a_rng ) const ;
         LUPI_HOST_DEVICE void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode );
 };
 
@@ -405,8 +409,8 @@ class ProbabilityBase2d : public ProbabilityBase {
         LUPI_HOST_DEVICE String typeString( ) const ;
 
         LUPI_HOST_DEVICE MCGIDI_VIRTUAL_FUNCTION double evaluate( double a_x2, double a_x1 ) const MCGIDI_TRUE_VIRTUAL;
-        LUPI_HOST_DEVICE MCGIDI_VIRTUAL_FUNCTION double sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), 
-                void *a_rngState ) const MCGIDI_TRUE_VIRTUAL;
+        template <typename RNG>
+        LUPI_HOST_DEVICE MCGIDI_VIRTUAL_FUNCTION double sample( double a_x2, double a_rngValue, RNG && a_rng ) const MCGIDI_TRUE_VIRTUAL;
         LUPI_HOST_DEVICE void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode );
 };
 
@@ -426,10 +430,10 @@ class ProbabilityBase2d_d1 : public ProbabilityBase2d {
                 ProbabilityBase2d( a_probabilty, a_Xs ) { }
 
         LUPI_HOST_DEVICE double evaluate( double a_x2, double a_x1 ) const ;
-        LUPI_HOST_DEVICE double sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ),
-                void *a_rngState ) const ;
-        LUPI_HOST_DEVICE double sample2dOf3d( double a_x2, double a_rngValue, double (*a_userrng)( void * ),
-                void *a_rngState, double *a_x1_1, double *a_x1_2 ) const ;
+        template <typename RNG>
+        LUPI_HOST_DEVICE double sample( double a_x2, double a_rngValue, RNG && a_rng ) const ;
+        template <typename RNG>
+        LUPI_HOST_DEVICE double sample2dOf3d( double a_x2, double a_rngValue, RNG && a_rng, double *a_x1_1, double *a_x1_2 ) const ;
 };
 
 /*
@@ -448,10 +452,10 @@ class ProbabilityBase2d_d2 : public ProbabilityBase2d_d1 {
                 ProbabilityBase2d_d1( a_probabilty, a_Xs ) { }
 
         LUPI_HOST_DEVICE double evaluate( double a_x2, double a_x1 ) const ;
-        LUPI_HOST_DEVICE double sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), 
-                void *a_rngState ) const ;
-        LUPI_HOST_DEVICE double sample2dOf3d( double a_x2, double a_rngValue, double (*a_userrng)( void * ), 
-                void *a_rngState, double *a_x1_1, double *a_x1_2 ) const ;
+        template <typename RNG>
+        LUPI_HOST_DEVICE double sample( double a_x2, double a_rngValue, RNG && a_rng ) const ;
+        template <typename RNG>
+        LUPI_HOST_DEVICE double sample2dOf3d( double a_x2, double a_rngValue, RNG && a_rng, double *a_x1_1, double *a_x1_2 ) const ;
 };
 
 /*
@@ -470,8 +474,10 @@ class XYs2d : public ProbabilityBase2d_d2 {
         LUPI_HOST_DEVICE ~XYs2d( );
 
         LUPI_HOST_DEVICE double evaluate( double a_x2, double a_x1 ) const ;
-        LUPI_HOST_DEVICE double sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const ;
-        LUPI_HOST_DEVICE double sample2dOf3d( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState, double *a_x1_1, double *a_x1_2 ) const ;
+        template <typename RNG>
+        LUPI_HOST_DEVICE double sample( double a_x2, double a_rngValue, RNG && a_rng ) const ;
+        template <typename RNG>
+        LUPI_HOST_DEVICE double sample2dOf3d( double a_x2, double a_rngValue, RNG && a_rng, double *a_x1_1, double *a_x1_2 ) const ;
         LUPI_HOST_DEVICE void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode );
 };
 
@@ -491,7 +497,8 @@ class Regions2d : public ProbabilityBase2d_d1 {
         LUPI_HOST_DEVICE ~Regions2d( );
 
         LUPI_HOST_DEVICE double evaluate( double a_x2, double a_x1 ) const ;
-        LUPI_HOST_DEVICE double sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const ;
+        template <typename RNG>
+        LUPI_HOST_DEVICE double sample( double a_x2, double a_rngValue, RNG && a_rng ) const ;
         LUPI_HOST_DEVICE void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode );
 };
 
@@ -507,8 +514,9 @@ class Isotropic2d : public ProbabilityBase2d_d2 {
         LUPI_HOST Isotropic2d( GIDI::Functions::Isotropic2d const &a_isotropic2d );
         LUPI_HOST_DEVICE ~Isotropic2d( );
 
-        LUPI_HOST_DEVICE double evaluate( double a_x2, double a_x1 ) const { return( 0.5 ); }
-        LUPI_HOST_DEVICE double sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const { return( 1. - 2. * a_rngValue ); }
+        LUPI_HOST_DEVICE double evaluate( LUPI_maybeUnused double a_x2, LUPI_maybeUnused double a_x1 ) const { return( 0.5 ); }
+        template <typename RNG>
+        LUPI_HOST_DEVICE double sample( LUPI_maybeUnused double a_x2, double a_rngValue, LUPI_maybeUnused RNG && a_rng ) const { return( 1. - 2. * a_rngValue ); }
         LUPI_HOST_DEVICE void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) { 
             ProbabilityBase2d::serialize( a_buffer, a_mode ); }
 };
@@ -528,8 +536,9 @@ class DiscreteGamma2d : public ProbabilityBase2d_d2 {
         LUPI_HOST DiscreteGamma2d( GIDI::Functions::DiscreteGamma2d const &a_discreteGamma2d );
         LUPI_HOST_DEVICE ~DiscreteGamma2d( );
 
-        LUPI_HOST_DEVICE double evaluate( double a_x2, double a_x1 ) const { return( m_value ); }        // FIXME This is wrong, should be something like 1 when domainMin <= a_x1 <= domainMax ), I think. I.e., should be a probability.
-        LUPI_HOST_DEVICE double sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const { return( m_value ); }
+        LUPI_HOST_DEVICE double evaluate( LUPI_maybeUnused double a_x2, LUPI_maybeUnused double a_x1 ) const { return( m_value ); }        // FIXME This is wrong, should be something like 1 when domainMin <= a_x1 <= domainMax ), I think. I.e., should be a probability.
+        template <typename RNG>
+        LUPI_HOST_DEVICE double sample( LUPI_maybeUnused double a_x2, LUPI_maybeUnused double a_rngValue, LUPI_maybeUnused RNG && a_rng ) const { return( m_value ); }
         LUPI_HOST_DEVICE void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode );
 };
 
@@ -557,7 +566,8 @@ class PrimaryGamma2d : public ProbabilityBase2d_d2 {
         int initialStateIndex( ) const { return( m_initialStateIndex ); }           /**< Returns the value of the *m_initialStateIndex* member. */
 
         LUPI_HOST_DEVICE double evaluate( double a_x2, double a_x1 ) const ;
-        LUPI_HOST_DEVICE double sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const { return( m_primaryEnergy + a_x2 * m_massFactor ); }
+        template <typename RNG>
+        LUPI_HOST_DEVICE double sample( double a_x2, LUPI_maybeUnused double a_rngValue, LUPI_maybeUnused RNG && a_rng ) const { return( m_primaryEnergy + a_x2 * m_massFactor ); }
         LUPI_HOST_DEVICE void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode );
 };
 
@@ -577,7 +587,8 @@ class Recoil2d: public ProbabilityBase2d_d2 {
         LUPI_HOST_DEVICE ~Recoil2d( );
 
         LUPI_HOST_DEVICE double evaluate( double a_x2, double a_x1 ) const ;
-        LUPI_HOST_DEVICE double sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const ;
+        template <typename RNG>
+        LUPI_HOST_DEVICE double sample( double a_x2, double a_rngValue, RNG && a_rng ) const ;
         LUPI_HOST_DEVICE void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode );
 };
 
@@ -602,7 +613,8 @@ class NBodyPhaseSpace2d : public ProbabilityBase2d_d2 {
         LUPI_HOST_DEVICE ~NBodyPhaseSpace2d( );
 
         LUPI_HOST_DEVICE double evaluate( double a_x2, double a_x1 ) const ;
-        LUPI_HOST_DEVICE double sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const ;
+        template <typename RNG>
+        LUPI_HOST_DEVICE double sample( double a_x2, double a_rngValue, RNG && a_rng ) const ;
         LUPI_HOST_DEVICE void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode );
 };
 
@@ -623,7 +635,8 @@ class Evaporation2d: public ProbabilityBase2d_d2 {
         LUPI_HOST_DEVICE ~Evaporation2d( );
 
         LUPI_HOST_DEVICE double evaluate( double a_x2, double a_x1 ) const ;
-        LUPI_HOST_DEVICE double sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const ;
+        template <typename RNG>
+        LUPI_HOST_DEVICE double sample( double a_x2, double a_rngValue, RNG && a_rng ) const ;
         LUPI_HOST_DEVICE void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode );
 };
 
@@ -644,7 +657,8 @@ class GeneralEvaporation2d: public ProbabilityBase2d_d2 {
         LUPI_HOST_DEVICE ~GeneralEvaporation2d( );
 
         LUPI_HOST_DEVICE double evaluate( double a_x2, double a_x1 ) const ;
-        LUPI_HOST_DEVICE double sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const ;
+        template <typename RNG>
+        LUPI_HOST_DEVICE double sample( double a_x2, double a_rngValue, RNG && a_rng ) const ;
         LUPI_HOST_DEVICE void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode );
 };
 
@@ -665,7 +679,8 @@ class SimpleMaxwellianFission2d: public ProbabilityBase2d_d2 {
         LUPI_HOST_DEVICE ~SimpleMaxwellianFission2d( );
 
         LUPI_HOST_DEVICE double evaluate( double a_x2, double a_x1 ) const ;
-        LUPI_HOST_DEVICE double sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const ;
+        template <typename RNG>
+        LUPI_HOST_DEVICE double sample( double a_x2, double a_rngValue, RNG && a_rng ) const ;
         LUPI_HOST_DEVICE void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode );
 };
 
@@ -687,7 +702,8 @@ class Watt2d : public ProbabilityBase2d_d2 {
         LUPI_HOST_DEVICE ~Watt2d( );
 
         LUPI_HOST_DEVICE double evaluate( double a_x2, double a_x1 ) const ;
-        LUPI_HOST_DEVICE double sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const ;
+        template <typename RNG>
+        LUPI_HOST_DEVICE double sample( double a_x2, double a_rngValue, RNG && a_rng ) const ;
         LUPI_HOST_DEVICE void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode );
 };
 
@@ -708,7 +724,8 @@ class WeightedFunctionals2d: public ProbabilityBase2d {
         LUPI_HOST_DEVICE ~WeightedFunctionals2d( );
 
         LUPI_HOST_DEVICE double evaluate( double a_x2, double a_x1 ) const ;
-        LUPI_HOST_DEVICE double sample( double a_x2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const ;
+        template <typename RNG>
+        LUPI_HOST_DEVICE double sample( double a_x2, double a_rngValue, RNG && a_rng ) const ;
         LUPI_HOST_DEVICE void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode );
 };
 
@@ -731,8 +748,8 @@ class ProbabilityBase3d : public ProbabilityBase {
         LUPI_HOST_DEVICE String typeString( ) const ;
 
         LUPI_HOST_DEVICE MCGIDI_VIRTUAL_FUNCTION double evaluate( double a_x3, double a_x2, double a_x1 ) const MCGIDI_TRUE_VIRTUAL;
-        LUPI_HOST_DEVICE MCGIDI_VIRTUAL_FUNCTION double sample( double a_x3, double a_x2_1, double a_x2_2, double a_rngValue, 
-                double (*a_userrng)( void * ), void *a_rngState ) const MCGIDI_TRUE_VIRTUAL;
+        template <typename RNG>
+        LUPI_HOST_DEVICE MCGIDI_VIRTUAL_FUNCTION double sample( double a_x3, double a_x2_1, double a_x2_2, double a_rngValue, RNG && a_rng ) const MCGIDI_TRUE_VIRTUAL;
         LUPI_HOST_DEVICE void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode );
 };
 
@@ -752,7 +769,8 @@ class XYs3d : public ProbabilityBase3d {
         LUPI_HOST_DEVICE ~XYs3d( );
 
         LUPI_HOST_DEVICE double evaluate( double a_x3, double a_x2, double a_x1 ) const ;
-        LUPI_HOST_DEVICE double sample( double a_x3, double a_x2_1, double a_x2_2, double a_rngValue, double (*a_userrng)( void * ), void *a_rngState ) const ;
+        template <typename RNG>
+        LUPI_HOST_DEVICE double sample( double a_x3, double a_x2_1, double a_x2_2, double a_rngValue, RNG && a_rng ) const ;
         LUPI_HOST_DEVICE void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode );
 };
 

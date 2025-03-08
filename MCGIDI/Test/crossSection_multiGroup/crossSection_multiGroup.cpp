@@ -134,6 +134,24 @@ int main( int argc, char **argv ) {
         }
     }
 
+    std::cout << std::endl;
+    std::cout << "-- boundary --" << std::endl;
+    std::cout << "index   energy" << std::endl;
+    MCGIDI::Vector<double> const projectileMultiGroupBoundaries = MCProtare->projectileMultiGroupBoundaries( );
+    for( int index = 0; index < projectileMultiGroupBoundaries.size( ); ++index ) {
+
+        std::cout << std::setw( 5 ) << index << "   " << projectileMultiGroupBoundaries[index] << std::endl;
+        for( MCGIDI_VectorSizeType i1 = 0; i1 < (MCGIDI_VectorSizeType) MCProtare->numberOfReactions( ); ++i1 ) {
+            MCGIDI::Reaction const &reaction = *MCProtare->reaction( i1 );
+            double crossSectionThreshold = reaction.crossSectionThreshold( );
+
+            if( ( projectileMultiGroupBoundaries[index] < crossSectionThreshold ) && ( crossSectionThreshold < projectileMultiGroupBoundaries[index+1] ) ) {
+                std::cout << "             " << std::setw( 42 ) << reaction.label( ).c_str( ) << " " 
+                        << LUPI::Misc::doubleToString3( "%12.6g", reaction.crossSectionThreshold( ), true ) << std::endl;
+            }
+        }
+    }
+
     delete protare;
 
     delete MCProtare;

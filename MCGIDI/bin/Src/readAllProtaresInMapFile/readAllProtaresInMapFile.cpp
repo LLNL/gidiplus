@@ -28,6 +28,22 @@ static int countDown = 1;
 static bool printTiming = false;
 static bool useSlowerContinuousEnergyConversion = false;
 static long numberOfTemperatures = -1;
+static std::map<std::string, std::string>  symbolToIsotope{
+    {"H", "H1"},     {"He", "He4"},   {"Li", "Li7"},   {"Be", "Be9"},   {"B", "B11"},    {"C", "C13"},    {"N", "N15"},    {"O", "O18"},
+    {"F", "F19"},    {"Ne", "Ne22"},  {"Na", "Na23"},  {"Mg", "Mg26"},  {"Al", "Al27"},  {"Si", "Si30"},  {"P", "P31"},    {"S", "S36"},
+    {"Cl", "Cl37"},  {"Ar", "Ar40"},  {"K", "K41"},    {"Ca", "Ca48"},  {"Sc", "Sc45"},  {"Ti", "Ti50"},  {"V", "V51"},    {"Cr", "Cr54"},
+    {"Mn", "Mn55"},  {"Fe", "Fe58"},  {"Co", "Co59"},  {"Ni", "Ni64"},  {"Cu", "Cu65"},  {"Zn", "Zn70"},  {"Ga", "Ga71"},  {"Ge", "Ge76"},
+    {"As", "As75"},  {"Se", "Se82"},  {"Br", "Br81"},  {"Kr", "Kr86"},  {"Rb", "Rb87"},  {"Sr", "Sr88"},  {"Y", "Y89"},    {"Zr", "Zr96"},
+    {"Nb", "Nb93"},  {"Mo", "Mo100"}, {"Tc", "Tc102"}, {"Ru", "Ru104"}, {"Rh", "Rh103"}, {"Pd", "Pd110"}, {"Ag", "Ag109"}, {"Cd", "Cd116"},
+    {"In", "In115"}, {"Sn", "Sn124"}, {"Sb", "Sb123"}, {"Te", "Te130"}, {"I", "I127"},   {"Xe", "Xe136"}, {"Cs", "Cs133"}, {"Ba", "Ba138"},
+    {"La", "La139"}, {"Ce", "Ce142"}, {"Pr", "Pr141"}, {"Nd", "Nd150"}, {"Pm", "Pm143"}, {"Sm", "Sm154"}, {"Eu", "Eu153"}, {"Gd", "Gd160"},
+    {"Tb", "Tb159"}, {"Dy", "Dy164"}, {"Ho", "Ho165"}, {"Er", "Er170"}, {"Tm", "Tm169"}, {"Yb", "Yb176"}, {"Lu", "Lu176"}, {"Hf", "Hf180"},
+    {"Ta", "Ta181"}, {"W", "W186"},   {"Re", "Re187"}, {"Os", "Os192"}, {"Ir", "Ir193"}, {"Pt", "Pt198"}, {"Au", "Au197"}, {"Hg", "Hg204"},
+    {"Tl", "Tl205"}, {"Pb", "Pb208"}, {"Bi", "Bi209"}, {"Po", "Po205"}, {"At", "At208"}, {"Rn", "Rn211"}, {"Fr", "Fr214"}, {"Ra", "Ra217"},
+    {"Ac", "Ac220"}, {"Th", "Th232"}, {"Pa", "Pa231"}, {"U", "U238"},   {"Np", "Np232"}, {"Pu", "Pu235"}, {"Am", "Am239"}, {"Cm", "Cm243"},
+    {"Bk", "Bk244"}, {"Cf", "Cf246"}, {"Es", "Es247"}, {"Fm", "Fm250"}, {"Md", "Md252"}, {"No", "No256"}, {"Lr", "Lr257"}, {"Rf", "Rf260"},
+    {"Db", "Db262"}, {"Sg", "Sg263"}, {"Bh", "Bh266"}, {"Hs", "Hs270"}, {"Mt", "Mt273"}, {"Ds", "Ds276"}, {"Rg", "Rg279"}, {"Cn", "Cn283"},
+    {"Nh", "Nh284"}, {"Fl", "Fl287"}, {"Mc", "Mc289"}, {"Lv", "Lv292"}, {"Ts", "Ts293"}, {"Og", "Og294"} };
 
 static char const *description = "Reads in all protares in the specified map file. Besides options, there must be one map file followed by \n"
     "one or more pops files. If an error occurs when reading a protare, the C++ 'throw' message is printed. Also,\n"
@@ -37,7 +53,8 @@ static char const *description = "Reads in all protares in the specified map fil
 void subMain( int argc, char **argv );
 void walk( std::string const &a_indent, GIDI::Transporting::Particles const &a_particles, std::string const &mapFilename, 
                 PoPI::Database const &pops, int depth );
-void readProtare( std::string const &a_indent, GIDI::Transporting::Particles const &a_particles, std::string const &protareFilename, 
+void readProtare( std::string const &a_indent, std::string const &a_projectileID, std::string const &a_targetID, 
+                GIDI::Transporting::Particles const &a_particles, std::string const &protareFilename, 
                 PoPI::Database const &pops, std::vector<std::string> const &a_libraries, bool a_targetRequiredInGlobalPoPs );
 /*
 =========================================================
@@ -141,9 +158,12 @@ void walk( std::string const &a_indent, GIDI::Transporting::Particles const &a_p
             walk( indent2, a_particles, path, pops, depth + 1 ); }
         else if( ( entry->name( ) == GIDI_protareChars ) || ( entry->name( ) == GIDI_TNSLChars ) ) {
             std::vector<std::string> libraries;
+            GIDI::Map::ProtareBase const *protareBase = static_cast<GIDI::Map::ProtareBase const *>( entry );
+            std::string projectileID( protareBase->projectileID( ) );;
+            std::string targetID( protareBase->targetID( ) );;
 
             entry->libraries( libraries );
-            readProtare( indent2, a_particles, path, pops, libraries, entry->name( ) == GIDI_protareChars ); }
+            readProtare( indent2, projectileID, targetID, a_particles, path, pops, libraries, entry->name( ) == GIDI_protareChars ); }
         else {
             std::cout << "ERROR: unknown map entry name: " << entry->name( ) << std::endl;
         }
@@ -152,7 +172,8 @@ void walk( std::string const &a_indent, GIDI::Transporting::Particles const &a_p
 /*
 =========================================================
 */
-void readProtare( std::string const &a_indent, GIDI::Transporting::Particles const &a_particles, std::string const &protareFilename, 
+void readProtare( std::string const &a_indent, std::string const &a_projectileID, std::string const &a_targetID, 
+                GIDI::Transporting::Particles const &a_particles, std::string const &protareFilename, 
                 PoPI::Database const &pops, std::vector<std::string> const &a_libraries, bool a_targetRequiredInGlobalPoPs ) {
 
     --countDown;
@@ -170,6 +191,15 @@ void readProtare( std::string const &a_indent, GIDI::Transporting::Particles con
         std::cout << a_indent << protareFilename;
 
         GIDI::ParticleSubstitution particleSubstitution;
+        if( a_projectileID == PoPI::IDs::photon ) {
+            PoPI::ParseIdInfo parseIdInfo( a_targetID );
+            if( parseIdInfo.isChemicalElement( ) ) {
+                if( symbolToIsotope.find( parseIdInfo.symbol( ) ) != symbolToIsotope.end( ) ) {
+                    std::string targetID( symbolToIsotope[parseIdInfo.symbol()] );
+                    particleSubstitution.insert( { a_targetID,  GIDI::ParticleInfo ( targetID, targetID, 0.0, 0.0 ) } );
+                }
+            }
+        }
 
         LUPI::Timer timer;
         protare = new GIDI::ProtareSingle( *constructionPtr, protareFilename, GIDI::FileType::XML, pops, particleSubstitution, a_libraries, 
@@ -213,7 +243,14 @@ void readProtare( std::string const &a_indent, GIDI::Transporting::Particles con
             for( auto iter = transportableIncompleteParticles.begin( ); iter != transportableIncompleteParticles.end( ); ++iter )
                     std::cout << " " << *iter;
             std::cout << std::endl;
-        } }
+        }
+
+        MCGIDI::Vector<int> const &productIntids = MCProtare->productIntids( false );
+        int badProductIntidCounter = 0;
+        for( auto intIter = productIntids.begin( ); intIter != productIntids.end( ); ++intIter ) {
+            if( *intIter == -1 ) ++badProductIntidCounter;
+        }
+        if( badProductIntidCounter > 0 ) std::cout << a_indent << "  -- Bad product intids found." << std::endl; }
     catch (char const *str) {
         throwMessage = str; }
     catch (std::string str) {

@@ -127,7 +127,8 @@ void main2( int argc, char **argv ) {
             string = "#   " + temperatureInfo->heatedCrossSection( ) + ":: ";
             std::cout << string << std::endl;
 
-            GIDI::Functions::XYs1d *xys1d = crossSectionSuite.get<GIDI::Functions::XYs1d>( temperatureInfo->heatedCrossSection( ) );
+            GIDI::Functions::XYs1d *xys1d = static_cast<GIDI::Functions::XYs1d *>( crossSectionSuite.findInstanceOfTypeInLineage( 
+                    styles, temperatureInfo->heatedCrossSection( ), GIDI_XYs1dChars ) );
             xys1d->print( "    %16.8e %16.8e\n" );
 
             std::cout << std::endl << std::endl;

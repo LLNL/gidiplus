@@ -9,10 +9,10 @@ SHELL = /bin/sh
 
 # These must be set by hand when we do a release.
 gidiplus_major = 3
-gidiplus_minor = 28
+gidiplus_minor = 32
 baseTag = GIDI_plus.$(gidiplus_major).$(gidiplus_minor).0
 
-DIRS_GIDI_plus = LUPI HAPI GUPI PoPI CADI RISI GIDI MCGIDI include lib Doc
+DIRS_GIDI_plus = LUPI Python HAPI GUPI PoPI CADI RISI GIDI MCGIDI include lib Doc
 DIRS_default2 = numericalFunctions $(DIRS_GIDI_plus)
 DIRS = pugixml $(DIRS_default2)
 
@@ -23,14 +23,15 @@ include Makefile.paths
 
 PREFIX = `pwd`/install
 
-.PHONY: default pugixml pugixml_dummy install clean realclean tar doDIRS
+.PHONY: default all bin default2 pugixml pugixml_dummy install docs check clean realclean tar doDIRS
 
 default:
 	$(MAKE) _TARGET=default default2
 	echo 'Note, bin executables not built, use target bin or all to build bin executables.'
 
 all:
-	$(MAKE) _TARGET=all default2
+	$(MAKE) _TARGET=default default2
+	$(MAKE) _TARGET=bin _DIRS="$(DIRS_GIDI_plus)" doDIRS
 
 bin:
 	$(MAKE) _TARGET=bin default2

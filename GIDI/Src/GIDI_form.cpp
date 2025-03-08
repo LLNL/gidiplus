@@ -53,7 +53,7 @@ Form::Form( std::string const &a_moniker, FormType a_type, std::string const &a_
  * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-Form::Form( HAPI::Node const &a_node, SetupInfo &a_setupInfo, FormType a_type, Suite *a_parent ) :
+Form::Form( HAPI::Node const &a_node, LUPI_maybeUnused SetupInfo &a_setupInfo, FormType a_type, Suite *a_parent ) :
         GUPI::Ancestry( a_node.name( ) ),
         m_parent( a_parent ),
         m_type( a_type ),
@@ -81,6 +81,28 @@ Form::Form( Form const &a_form ) :
 
 Form::~Form( ) {
 
+}
+
+/* *********************************************************************************************************//**
+ * The assignment operator. This method sets the members of *this* to those of *a_rhs* except for
+ * the member *m_parent* which is set to **nullptr** and those not set by base classes.
+ *
+ * @param a_rhs                [in]    Instance whose member are used to set the members of *this*.
+ ***********************************************************************************************************/
+
+Form &Form::operator=( Form const &a_rhs ) {
+
+    if( this != &a_rhs ) {
+        GUPI::Ancestry::operator=( a_rhs );
+
+        m_parent = nullptr;
+        m_type = a_rhs.type( );
+        m_keyName = a_rhs.keyName( );
+        m_keyValue = a_rhs.keyValue( );
+        m_label = a_rhs.label( );
+    }
+
+    return( *this );
 }
 
 /* *********************************************************************************************************//**
@@ -181,10 +203,11 @@ FunctionForm::FunctionForm( std::string const &a_moniker, FormType a_type, int a
                 int a_index, double a_outerDomainValue ) :
         Form( a_moniker, a_type, "" ),
         m_dimension( a_dimension ),
-        m_interpolation( ptwXY_interpolationLinLin ),
+        m_interpolation( a_interpolation ),
         m_index( a_index ),
         m_outerDomainValue( a_outerDomainValue ) {
 
+    m_interpolationString = ptwXY_interpolationToString( m_interpolation );
 }
 
 /* *********************************************************************************************************//**
@@ -221,7 +244,7 @@ FunctionForm::FunctionForm( std::string const &a_moniker, FormType a_type, int a
  * @param a_suite           [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-FunctionForm::FunctionForm( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+FunctionForm::FunctionForm( LUPI_maybeUnused Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
 		        FormType a_type, int a_dimension, Suite *a_suite ) :
         Form( a_node, a_setupInfo, a_type, a_suite ),
         m_dimension( a_dimension ),
@@ -261,6 +284,42 @@ FunctionForm::~FunctionForm( ) {
 }
 
 /* *********************************************************************************************************//**
+ * The assignment operator. This method sets the members of *this* to those of *a_rhs* except for those
+ * not set by base classes.
+ *
+ * @param a_rhs                     [in]    Instance whose member are used to set the members of *this*.
+ ***********************************************************************************************************/
+
+FunctionForm &FunctionForm::operator=( FunctionForm const &a_rhs ) {
+
+    if( this != &a_rhs ) {
+        Form::operator=( a_rhs );
+
+        m_dimension = a_rhs.dimension( );
+        m_axes = a_rhs.axes( );
+        m_interpolation = a_rhs.interpolation( );
+        m_interpolationString = a_rhs.interpolationString( );
+        m_index = a_rhs.index( );
+        m_outerDomainValue = a_rhs.outerDomainValue( );
+    }
+
+    return( *this );
+}
+
+/* *********************************************************************************************************//**
+ * This method sets the integer (i.e., *ptwXY_interpolation*) interpolation value of **m_interpolation** to
+ * **a_interpolation**. This method also sets the **m_interpolationString** member per **a_interpolation**.
+ *
+ * @param       a_interpolation     [in]        The *ptwXY_interpolation* integer value of the interpolaction.
+ ***********************************************************************************************************/
+
+void FunctionForm::setInterpolation( ptwXY_interpolation a_interpolation ) {
+
+    m_interpolation = a_interpolation;
+    m_interpolationString = ptwXY_interpolationToString( m_interpolation );
+} 
+
+/* *********************************************************************************************************//**
  * Fills the argument *a_writeInfo* with the XML lines that represent *this*. Recursively enters each sub-node.
  *
  * @param       a_writeInfo         [in/out]    Instance containing incremental indentation and other information and stores the appended lines.
@@ -269,7 +328,7 @@ FunctionForm::~FunctionForm( ) {
  * @param       a_inRegions         [in]        If *true*, *this* is in a Regions container.
  ***********************************************************************************************************/
 
-void FunctionForm::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
+void FunctionForm::toXMLList_func( LUPI_maybeUnused GUPI::WriteInfo &a_writeInfo, LUPI_maybeUnused std::string const &a_indent, LUPI_maybeUnused bool a_embedded, LUPI_maybeUnused bool a_inRegions ) const {
 
     std::cout << "Node '" << moniker( ) << "' needs toXMLList methods." << std::endl;
 }
@@ -337,6 +396,22 @@ Function1dForm::~Function1dForm( ) {
 }
 
 /* *********************************************************************************************************//**
+ * The assignment operator. This method sets the members of *this* to those of *a_rhs* except for those
+ * not set by base classes.
+ *
+ * @param a_rhs                 [in]    Instance whose member are used to set the members of *this*.
+ ***********************************************************************************************************/
+
+Function1dForm &Function1dForm::operator=( Function1dForm const &a_rhs ) {
+
+    if( this != &a_rhs ) {
+        FunctionForm::operator=( a_rhs );
+    }
+
+    return( *this );
+}
+
+/* *********************************************************************************************************//**
  * This method executes a throw as the sub-class did not define it. Evaluates *this* at the X-values in *a_Xs*[*a_offset*:]
  * and adds the results to *a_results*[*a_offset*:].
  *
@@ -346,9 +421,48 @@ Function1dForm::~Function1dForm( ) {
  * @param a_scaleFactor     [in]    A factor applied to each evaluation before it is added to *a_results*. 
  ***********************************************************************************************************/
 
-void Function1dForm::mapToXsAndAdd( int a_offset, std::vector<double> const &a_Xs, std::vector<double> &a_results, double a_scaleFactor ) const {
+void Function1dForm::mapToXsAndAdd( LUPI_maybeUnused int a_offset, LUPI_maybeUnused std::vector<double> const &a_Xs, LUPI_maybeUnused std::vector<double> &a_results, LUPI_maybeUnused double a_scaleFactor ) const {
 
     throw Exception( "Function1dForm::mapToXsAndAdd: function " + moniker( ) + " not implemented." );
+}
+/* *********************************************************************************************************//**
+ * This method writes a warning message stating that the write method has not been implemented for *this*.
+ * 
+ * @param       a_file              [in]    The C FILE instance to write the data to.
+ * @param       a_format            [in]    The format string passed to each region's write method.
+ ***********************************************************************************************************/
+
+/* *********************************************************************************************************//**
+ * This method returns a **nullptr** since this methods was not implemented in the the derived class.
+ *
+ * @param   a_asLinlin          [in]    If **true**, the inpolatation of the returned XYs1d instance will always be lin-lin. Otherwise,
+ *                                      the interpolation depends on the child 1d functions. This argument is not needed or used for this class.
+ * @param   a_accuracy          [in]    The accuracy use to convert the data to lin=lin interpolation if needed. This argument is not needed or used for this cl
+ * @param   a_lowerEps          [in]    The relative domain ammount to put a point below a boundary between two regions. This argument is not needed or used for
+ * @param   a_upperEps          [in]    The relative domain ammount to put a point above a boundary between two regions. This argument is not needed or used for
+ *
+ * @return                                  A pointer to an  XYs1d instance that must be freed by the calling function.
+ ***********************************************************************************************************/
+
+XYs1d *Function1dForm::asXYs1d( LUPI_maybeUnused bool a_asLinlin, LUPI_maybeUnused double a_accuracy, LUPI_maybeUnused double a_lowerEps, LUPI_maybeUnused double a_upperEps ) const {
+
+    return( nullptr );
+}
+ 
+void Function1dForm::write( FILE *a_file, LUPI_maybeUnused std::string const &a_format ) const {
+
+    fprintf( a_file, "# Write method not implemented for %s.\n", moniker( ).c_str( ) );
+}
+
+/* *********************************************************************************************************//**
+ * Calls the write method with stdout as the file stream.
+ *
+ * @param       a_format            [in]    The format string passed to the C printf function.
+ ***********************************************************************************************************/
+
+void Function1dForm::print( std::string const &a_format ) const {
+
+    write( stdout, a_format.c_str( ) );
 }
 
 /* *********************************************************************************************************//**

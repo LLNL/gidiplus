@@ -16,7 +16,7 @@
 static char const *description = "The program prints the multi-group average product energy for a protare and its reactions for the particle n, H1, H2, H3, He3, He4 and photon.";
 
 void main2( int argc, char **argv );
-void averageMomentum( GIDI::Protare *a_protare, PoPI::Database &a_pops, GIDI::Transporting::MG &a_settings, GIDI::Styles::TemperatureInfos temperatures, char const *a_productID );
+void averageMomentum( GIDI::Protare *a_protare, LUPI_maybeUnused PoPI::Database &a_pops, GIDI::Transporting::MG &a_settings, GIDI::Styles::TemperatureInfos temperatures, char const *a_productID );
 /*
 =========================================================
 */
@@ -70,7 +70,7 @@ void main2( int argc, char **argv ) {
 /*
 =========================================================
 */
-void averageMomentum( GIDI::Protare *a_protare, PoPI::Database &a_pops, GIDI::Transporting::MG &a_settings, GIDI::Styles::TemperatureInfos temperatures, char const *a_productID ) {
+void averageMomentum( GIDI::Protare *a_protare, LUPI_maybeUnused PoPI::Database &a_pops, GIDI::Transporting::MG &a_settings, GIDI::Styles::TemperatureInfos temperatures, char const *a_productID ) {
 
     LUPI::StatusMessageReporting smr1;
     std::string prefix( "Total average product energy" );

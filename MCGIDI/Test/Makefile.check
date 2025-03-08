@@ -17,7 +17,7 @@ LIBS =  -lGIDI_testUtilities -lMCGIDI_testUtilities -lMCGIDI -lGIDI -lPoPI -lGUP
 
 default: $(Executables)
 
-$(Executables): %: %.cpp
+$(Executables): %: %.cpp ../../../include/*.h* ../../../lib/*.a
 	$(CXX) $(local_CXXFLAGS) $< -o $@ $(LIBS)
 
 clean:

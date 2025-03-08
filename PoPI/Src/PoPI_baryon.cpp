@@ -23,7 +23,7 @@ namespace PoPI {
  * @param a_parent          [in]    The parent suite that will contain *this*.
  ***********************************************************************************************************/
 
-Baryon::Baryon( HAPI::Node const &a_node, Database *a_DB, Database *a_parent ) :
+Baryon::Baryon( HAPI::Node const &a_node, Database *a_DB, LUPI_maybeUnused Database *a_parent ) :
         Particle( a_node, Particle_class::baryon, PoPI_baryonChars ) {
 
     int baryonIndex = -1;

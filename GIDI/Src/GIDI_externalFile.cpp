@@ -31,7 +31,7 @@ ExternalFile::ExternalFile( std::string const &a_label, std::string const &a_pat
  * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-ExternalFile::ExternalFile( HAPI::Node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent ) :
+ExternalFile::ExternalFile( HAPI::Node const &a_node, SetupInfo &a_setupInfo, LUPI_maybeUnused GIDI::Suite *a_parent ) :
         Form( a_node, a_setupInfo, FormType::externalFile ),
         m_path( a_node.attribute_as_string( GIDI_pathChars ) ) {
 

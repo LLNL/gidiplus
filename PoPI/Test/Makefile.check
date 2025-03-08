@@ -11,7 +11,7 @@ LIBS = -lPoPI -lHAPI -lLUPI -lnumericalfunctions -lstatusMessageReporting -lpugi
 
 default: $(Executables)
 
-$(Executables): %: %.cpp
+$(Executables): %: %.cpp ../../../include/*.h* ../../../lib/*.a
 	$(CXX) $(local_CXXFLAGS) $< -o $@ $(LIBS)
 
 clean:

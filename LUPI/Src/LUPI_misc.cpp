@@ -29,7 +29,7 @@ namespace LUPI {
  * @param a_asOf                [in]    Specifies the version of GIDI+ for which the function will no longer be available.
  ***********************************************************************************************************/
 
-void deprecatedFunction( std::string const &a_functionName, std::string const &a_replacementName, std::string const &a_asOf ) {
+void deprecatedFunction( LUPI_maybeUnused std::string const &a_functionName, LUPI_maybeUnused std::string const &a_replacementName, LUPI_maybeUnused std::string const &a_asOf ) {
 
 #ifdef LUPI_printDeprecatedInformation
     std::cerr << "The function '" << a_functionName << "' is decreated";
@@ -147,22 +147,57 @@ std::vector<std::string> splitString( std::string const &a_string, std::string c
 }
 
 /* *********************************************************************************************************//**
- * This function splits that string *a_string* into separate strings using the delimiter character "/".
+ * This function splits that string *a_string* into separate strings using the delimiter character "/" as 
+ * for a XLink. The delimiter character "/"'s in each quoted region of the string is not split.
  *
- * @param a_string      [in]    The string to split.
+ * @param a_string      [in]    The XLink string to split.
  *
  * @return                      The XLink parts as a list of strings.
  ***********************************************************************************************************/
 
-std::vector<std::string> splitXLinkString( std::string const &a_string ) {
+std::vector<std::string> splitXLinkString( std::string const &a_XLink ) {
 
-    std::vector<std::string> elements = splitString( a_string, '/' ), elements2;
+    char quote = ' ';
+    std::vector<std::string> elements;
 
-    for( auto iter = elements.begin( ); iter != elements.end( ); ++iter ) {
-        if( ( iter == elements.begin( ) ) || ( (*iter).size( ) != 0 ) ) elements2.push_back( *iter );
+    std::size_t start = 0;
+
+    while( a_XLink[start] == '/' ) ++start;
+
+    std::size_t end = start;
+    std::size_t size = a_XLink.size( );
+
+    if( start != 0 ) {
+        elements.push_back( "" );
     }
 
-    return( elements2 );
+    for( ; end < size ; ++end ) {
+        char current = a_XLink[end];
+        if( quote != ' ' ) {                                    // Are we inside a quote?
+            if( current == quote ) quote = ' ';
+            continue;
+        }
+
+        if( ( current == '\'' ) || ( current == '"' ) ) {       // Are we starting a quote?
+            quote = current;
+            continue;
+        }
+
+        if( current == '/' ) {
+            std::string element = a_XLink.substr( start, end - start );
+            elements.push_back( element );
+            while( a_XLink[end] == '/' ) ++end;
+            start = end;
+            if( end == size ) break;                            // Happens when XLink ends with '/'.
+        }
+    }
+
+    if( start < end ) {
+        std::string element = a_XLink.substr( start, end - start );
+        elements.push_back( element );
+    }   
+    
+    return( elements );
 }
 
 /* *********************************************************************************************************//**

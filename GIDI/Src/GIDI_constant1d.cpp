@@ -66,7 +66,7 @@ Constant1d::~Constant1d( ) {
  * @return                          The value of the constant.
  ***********************************************************************************************************/
 
-double Constant1d::evaluate( double a_x1 ) const {
+double Constant1d::evaluate( LUPI_maybeUnused double a_x1 ) const {
 
 // FIXME - Do we need to check domain?
     return( m_value );
@@ -90,6 +90,30 @@ void Constant1d::mapToXsAndAdd( int a_offset, std::vector<double> const &a_Xs, s
     for( std::size_t index = a_offset; index < a_Xs.size( ); ++index ) {
         a_results[index] += a_scaleFactor * m_value;
     }
+}
+
+/* *********************************************************************************************************//**
+ * This methods returns an XYs1d representation of *this*. The calling function owns the created instance and is responible
+ * for freeing it.
+ *
+ * @param   a_asLinlin          [in]    This argument is not used but retained to make the methods API at same as other asXYs1d functions.
+ * @param   a_accuracy          [in]    This argument is not used but retained to make the methods API at same as other asXYs1d functions.
+ * @param   a_lowerEps          [in]    This argument is not used but retained to make the methods API at same as other asXYs1d functions.
+ * @param   a_upperEps          [in]    This argument is not used but retained to make the methods API at same as other asXYs1d functions.
+ *
+ * @return                                  A pointer to an  XYs1d instance that must be freed by the calling function.
+ ***********************************************************************************************************/
+
+XYs1d *Constant1d::asXYs1d( LUPI_maybeUnused bool a_asLinlin, LUPI_maybeUnused double a_accuracy, LUPI_maybeUnused double a_lowerEps, LUPI_maybeUnused double a_upperEps ) const {
+
+    std::vector<double> xys( 4 );
+
+    xys[0] = m_domainMin;
+    xys[1] = m_value;
+    xys[2] = m_domainMax;
+    xys[3] = m_value;
+
+    return( new XYs1d( axes( ), ptwXY_interpolationLinLin, xys ) );
 }
 
 /* *********************************************************************************************************//**

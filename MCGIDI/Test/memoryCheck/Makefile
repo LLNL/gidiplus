@@ -15,3 +15,4 @@ include ../Makefile.check
 
 check: memoryCheck
 	./memoryCheck
+	./memoryCheck --DBRC

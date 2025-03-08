@@ -69,7 +69,7 @@ double ThermalNeutronScatteringLaw1d::domainMax( ) const {
  * @return                          The value of the function evaluated at *a_x1*.
  ***********************************************************************************************************/
 
-double ThermalNeutronScatteringLaw1d::evaluate( double a_x1 ) const {
+double ThermalNeutronScatteringLaw1d::evaluate( LUPI_maybeUnused double a_x1 ) const {
 
     throw Exception( "ThermalNeutronScatteringLaw1d::evaluate: not implemented" );
 }

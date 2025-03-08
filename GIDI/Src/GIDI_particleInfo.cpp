@@ -36,13 +36,13 @@ ParticleInfo::ParticleInfo( std::string const &a_ID, std::string const &a_pid, d
 
 /* *********************************************************************************************************//**
  * @param a_ID                      [in]    The particle's PoPs ID.
- * @param a_globalPoPs              [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
+ * @param a_pops                    [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs            [in]    The internal PoPI::Database instance used to get particle indices and possibly other particle information.
  *                                          This is the <**PoPs**> node under the <**reactionSuite**> node.
- * @param a_requiredInGlobalPoPs    [in]    If *true*, the ID must be in *a_globalPoPs*.
+ * @param a_requiredInGlobalPoPs    [in]    If *true*, the ID must be in *a_pops*.
  ***********************************************************************************************************/
 
-ParticleInfo::ParticleInfo( std::string const &a_ID, PoPI::Database const &a_globalPoPs, PoPI::Database const &a_internalPoPs, bool a_requiredInGlobalPoPs ) :
+ParticleInfo::ParticleInfo( std::string const &a_ID, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, bool a_requiredInGlobalPoPs ) :
         m_id( ParticleInfo::IDPortion( a_ID ) ),
         m_qualifier( ParticleInfo::qualifierPortion( a_ID ) ),
         m_pid( "" ),
@@ -52,11 +52,11 @@ ParticleInfo::ParticleInfo( std::string const &a_ID, PoPI::Database const &a_glo
     PoPI::Base const *particleOrAlias = nullptr;       // Need to get the mass and nuclear excitation energy. Favor from internal PoPs if present.
     std::string energyUnit( "MeV" );
 
-    if( a_globalPoPs.exists( m_id ) ) {
-        particleOrAlias = &a_globalPoPs.get<PoPI::Base>( m_id );
+    if( a_pops.exists( m_id ) ) {
+        particleOrAlias = &a_pops.get<PoPI::Base>( m_id );
         if( particleOrAlias->isAlias( ) ) {
             PoPI::Alias const *alias = static_cast<PoPI::Alias const *>( particleOrAlias );
-            particleOrAlias = &a_globalPoPs.get<PoPI::Base>( alias->pid( ) );
+            particleOrAlias = &a_pops.get<PoPI::Base>( alias->pid( ) );
         }
         m_pid = particleOrAlias->ID( ); }
     else {
@@ -67,7 +67,7 @@ ParticleInfo::ParticleInfo( std::string const &a_ID, PoPI::Database const &a_glo
         particleOrAlias = &a_internalPoPs.get<PoPI::Base>( m_id );
         if( particleOrAlias->isAlias( ) ) {
             PoPI::Alias const *alias = static_cast<PoPI::Alias const *>( particleOrAlias );
-            particleOrAlias = &a_globalPoPs.get<PoPI::Base>( alias->pidIndex( ) );
+            particleOrAlias = &a_pops.get<PoPI::Base>( alias->pidIndex( ) );
         }
     }
 
@@ -106,6 +106,26 @@ ParticleInfo::ParticleInfo( ParticleInfo const &a_particleInfo ) :
 }
 
 /* *********************************************************************************************************//**
+ * The assignment operator. This method sets the members of *this* to those of *a_rhs* except for those
+ * not set by base classes.
+ *
+ * @param a_rhs                     [in]    Instance whose member are used to set the members of *this*.
+ ***********************************************************************************************************/
+
+ParticleInfo &ParticleInfo::operator=( ParticleInfo const &a_rhs ) {
+
+    if( this != &a_rhs ) {
+        m_id = a_rhs.ID( );
+        m_qualifier = a_rhs.qualifier( );
+        m_pid = a_rhs.pid( );
+        m_mass = a_rhs.mass( );
+        m_excitationEnergy = a_rhs.excitationEnergy( );
+    }
+
+    return( *this );
+}
+
+/* *********************************************************************************************************//**
  * Returns the particle's actual mass (i.e., its *m_mass* plus *m_excitationEnergy*) in unit of *a_unit*.
  *
  * @param a_unit            [in]    The requested unit for the returned mass.
@@ -113,7 +133,7 @@ ParticleInfo::ParticleInfo( ParticleInfo const &a_particleInfo ) :
  * @return                          The mass in unit of *a_unit*.
  ***********************************************************************************************************/
 
-double ParticleInfo::mass( std::string const &a_unit ) const {
+double ParticleInfo::mass( LUPI_maybeUnused std::string const &a_unit ) const {
 
     return( PoPI_AMU2MeV_c2 * m_mass.value( ) );
 }

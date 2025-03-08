@@ -244,6 +244,22 @@ void DelayedNeutron::mapContinuousEnergyProductData( Transporting::Settings cons
             a_productGains, a_ignoreIncompleteParticles );
 }
 
+/* *********************************************************************************************************//** 
+ * This methods calculates multi-group data for all needed components and adds each component's multi-group with label *a_heatedMultiGroupLabel*.
+ * 
+ * @param   a_temperatureInfo                   [in]    Specifies the temperature and labels use to lookup the requested data.
+ * @param   a_heatedMultiGroupLabel             [in]    The label of the style for the multi-group data being added.
+ * @param   a_multiGroupCalulationInformation   [in]    Store multi-group boundary and flux data used for multi-grouping.
+ * @param   a_crossSectionXYs1d                 [in[    The cross section weight.
+ ***********************************************************************************************************/
+
+void DelayedNeutron::calculateMultiGroupData( ProtareSingle const *a_protare, Styles::TemperatureInfo const &a_temperatureInfo, 
+                std::string const &a_heatedMultiGroupLabel, MultiGroupCalulationInformation const &a_multiGroupCalulationInformation, 
+                Functions::XYs1d const &a_crossSectionXYs1d ) {
+
+    m_product.calculateMultiGroupData( a_protare, a_temperatureInfo, a_heatedMultiGroupLabel, a_multiGroupCalulationInformation, a_crossSectionXYs1d );
+}
+
 /* *********************************************************************************************************//**
  * Fills the argument *a_writeInfo* with the XML lines that represent *this*. Recursively enters each sub-node.
  *

@@ -14,24 +14,6 @@
 #include "GIDI.hpp"
 #include <HAPI.hpp>
 
-#ifndef PATH_MAX
-#define PATH_MAX ( 4 * 4096 )
-#endif
-
-#ifdef WIN32
-#include <windows.h>
-char *realpath( char const *a_path, char *a_resolved ) {
-
-    char resolvedPath[PATH_MAX+1], *p1 = nullptr;
-
-    DWORD length = GetFullPathName( a_path, PATH_MAX, resolvedPath, nullptr );
-    if( ( p1 = malloc( length + 1 ) ) == nullptr ) return( nullptr );
-    strcpy( p1, resolvedPath );
-    if( length == 0 ) return( nullptr );
-    return( p1 );
-}
-#endif
-
 static std::string GIDI_basePath( char const *a_path );
 static std::string GIDI_basePath( std::string const a_path );
 static std::string GIDI_addPaths( std::string const &a_base, std::string const &a_path );
@@ -97,7 +79,7 @@ class MapWalkDirectoryCallbackData {
  * @return                              Always returns true.
  ***********************************************************************************************************/
 
-bool MapWalkDirectoryCallback( ProtareBase const *a_protareEntry, std::string const &a_library, void *a_data, int a_level ) {
+bool MapWalkDirectoryCallback( ProtareBase const *a_protareEntry, std::string const &a_library, void *a_data, LUPI_maybeUnused int a_level ) {
 
     MapWalkDirectoryCallbackData *mapWalkDirectoryCallbackData = static_cast<MapWalkDirectoryCallbackData *>( a_data );
 
@@ -152,7 +134,7 @@ std::string BaseEntry::path( PathForm a_form ) const {
 
     if( a_form == PathForm::entered ) return( m_path );
     if( a_form == PathForm::cumulative ) return( m_cumulativePath );
-    return( realPath( m_cumulativePath ) );
+    return( LUPI::FileInfo::realPath( m_cumulativePath ) );
 }
 
 /* *********************************************************************************************************//**
@@ -470,7 +452,7 @@ void Protare::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_inde
  * @param a_parent      [in]    Pointer to the *Map* containing *this*.
  ***********************************************************************************************************/
 
-TNSL::TNSL( HAPI::Node const &a_node, PoPI::Database const &a_pops, std::string const &a_basePath, Map const *const a_parent ) :
+TNSL::TNSL( HAPI::Node const &a_node, LUPI_maybeUnused PoPI::Database const &a_pops, std::string const &a_basePath, Map const *const a_parent ) :
         ProtareBase( a_node, a_basePath, a_parent ),
         m_standardTarget( a_node.attribute_as_string( GIDI_standardTargetChars ) ),
         m_standardEvaluation( a_node.attribute_as_string( GIDI_standardEvaluationChars ) ) {
@@ -501,7 +483,7 @@ TNSL::~TNSL( ) {
  * @return                          Returns the Protare matching the TNSL protare.
  ***********************************************************************************************************/
 
-GIDI::Protare *TNSL::protare( Construction::Settings const &a_construction, PoPI::Database const &a_pops, ParticleSubstitution const &a_particleSubstitution ) const {
+GIDI::Protare *TNSL::protare( Construction::Settings const &a_construction, PoPI::Database const &a_pops, LUPI_maybeUnused ParticleSubstitution const &a_particleSubstitution ) const {
 
     Map const *map = parent( );
 
@@ -623,7 +605,7 @@ void Map::initialize( HAPI::Node const &a_node, std::string const &a_fileName, P
 
     m_parent = a_parent;
     m_fileName = a_fileName;
-    m_realFileName = realPath( a_fileName );
+    m_realFileName = LUPI::FileInfo::realPath( a_fileName );
     m_projectilesLoaded = false;
 
     std::string basePath = GIDI_basePath( m_realFileName );
@@ -803,7 +785,7 @@ std::vector<std::string> Map::availableEvaluations( std::string const &a_project
  ***********************************************************************************************************/
 
 GIDI::Protare *Map::protare( Construction::Settings const &a_construction, PoPI::Database const &a_pops, std::string const &a_projectileID, 
-                std::string const &a_targetID, std::string const &a_library, std::string const &a_evaluation, bool a_targetRequiredInGlobalPoPs, bool a_ignorePoPs ) const {
+                std::string const &a_targetID, std::string const &a_library, std::string const &a_evaluation, LUPI_maybeUnused bool a_targetRequiredInGlobalPoPs, LUPI_maybeUnused bool a_ignorePoPs ) const {
 
     std::string targetID( a_targetID );
     std::string atomicTargetID;
@@ -820,16 +802,12 @@ GIDI::Protare *Map::protare( Construction::Settings const &a_construction, PoPI:
     }
 
     if( a_projectileID == PoPI::IDs::photon ) {
-        PoPI::Base const *popsBase = &a_pops.get<PoPI::Base>( targetID );
+        PoPI::ParseIdInfo parseIdInfo( targetID );
+
         if( a_construction.photoMode( ) != Construction::PhotoMode::nuclearOnly ) {
             atomicTargetID = targetID;                                          // Kludge for 99120 and similar targets.
 
-            if( popsBase->Class( ) == PoPI::Particle_class::nuclide ) {
-                PoPI::Nuclide const *nuclide = static_cast<PoPI::Nuclide const *>( popsBase );
-                PoPI::Isotope const *isotope = nuclide->isotope( );
-                popsBase = isotope->chemicalElement( );
-                atomicTargetID = popsBase->ID( );
-            }
+            if( parseIdInfo.isNuclear( ) ) atomicTargetID = parseIdInfo.symbol( );
             ProtareBase const *protareEntry = findProtareEntry( a_projectileID, atomicTargetID, a_library, a_evaluation );
             if( protareEntry != nullptr ) {
                 particleSubstitution.insert( { atomicTargetID, ParticleInfo( targetID, a_pops, a_pops, true ) } );
@@ -837,8 +815,8 @@ GIDI::Protare *Map::protare( Construction::Settings const &a_construction, PoPI:
                 particleSubstitution.clear( );
             }
         }
-        if( a_construction.photoMode( ) != Construction::PhotoMode::atomicOnly ) {
-            if( popsBase->Class( ) != PoPI::Particle_class::unorthodox ) {                // Kludge to ignore 99120 and similar targers.
+        if( ( a_construction.photoMode( ) != Construction::PhotoMode::atomicOnly ) && ( targetID != atomicTargetID ) ) {
+            if( parseIdInfo.isSupported( ) ) {                // Kludge to ignore 99120 and similar targers.
                 ProtareBase const *protareEntry = findProtareEntry( a_projectileID, targetID, a_library, a_evaluation );
                 if( protareEntry != nullptr ) nuclear = protareEntry->protare( a_construction, a_pops, particleSubstitution );
             }
@@ -1081,7 +1059,7 @@ std::string Map::replacementTarget( PoPI::Database const &a_pops, std::string co
 
 static std::string GIDI_basePath( char const *a_path ) {
 
-    char *p1, realPath[PATH_MAX+1];
+    char *p1, realPath[LUPI_PATH_MAX+1];
 
     strcpy( realPath, a_path );
     if( ( p1 = strrchr( realPath, '/' ) ) != nullptr ) {

@@ -48,8 +48,7 @@ void main2( int argc, char **argv ) {
     PoPI::Database pops( "../../../TestData/PoPs/pops.xml" );
     GIDI::Protare *protare;
     GIDI::Transporting::Particles particles;
-    void *rngState = nullptr;
-    unsigned long long seed = 1;
+    unsigned long long rngState = 1;
     double energyDomainMax = 20.0;
     std::size_t numberOfFissionSamples = 100 * 1000;
     std::set<int> reactionsToExclude;
@@ -73,12 +72,13 @@ void main2( int argc, char **argv ) {
     argv_options.add( argvOption2( "-p", false, "If present, add photon as transporting particle." ) );
     argv_options.add( argvOption2( "--nonRawTNSL", false, "If present, TNSL double differential data (and not distribution data) are used to sample elastic neutrons." ) );
     argv_options.add( argvOption2( "--electron", false, "If present and the protare is photo-atomic, electrons are transported." ) );
+    argv_options.add( argvOption2( "--ENDL99120", false, "If present, ENDL two 99120 products are list for a fission reaction." ) );
 
     argv_options.parseArgv( argc, argv );
 
     std::string mapFilename = argv_options.find( "--map" )->zeroOrOneOption( argv, "../../../GIDI/Test/all3T.map" );
     std::string projectileID = argv_options.find( "--pid" )->zeroOrOneOption( argv, PoPI::IDs::neutron );
-    int projectileIndex = pops[projectileID];
+    int projectileIntid = pops.intid( projectileID );
     std::string targetID = argv_options.find( "--tid" )->zeroOrOneOption( argv, "O16" );
 
     GIDI::Transporting::DelayedNeutrons delayedNeutrons = GIDI::Transporting::DelayedNeutrons::off;
@@ -93,9 +93,10 @@ void main2( int argc, char **argv ) {
 
     GIDI::Map::Map map( mapFilename, pops );
 
-    MCGIDI_test_rngSetup( seed );
-
     GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, photo_mode );
+    if( argv_options.find( "--ENDL99120" )->present( ) )
+        construction.setFissionResiduals( GIDI::Construction::FissionResiduals::ENDL99120 );
+
     protare = (GIDI::Protare *) map.protare( construction, pops, projectileID, targetID );
 
     GIDI::Styles::TemperatureInfos temperatures = protare->temperatures( );
@@ -140,6 +141,7 @@ void main2( int argc, char **argv ) {
     MCProtare->setUserParticleIndex( pops["H2"], 10 );
     MCProtare->setUserParticleIndex( pops[PoPI::IDs::photon], 11 );
     MCProtare->setUserParticleIndex( pops[PoPI::IDs::electron], 12 );
+    MCProtare->setUserParticleIndex( pops[PoPI::IDs::FissionProductENDL99120], 13 );
 
     MCGIDI::Sampling::Input input( true, MCGIDI::Sampling::Upscatter::Model::none );
     input.m_temperature = 2.58e-5;                                                     // In keV/k;
@@ -157,7 +159,8 @@ void main2( int argc, char **argv ) {
             products.clear( );
 
             std::cout << "    energy = " << energy << std::endl;
-            reaction->sampleProducts( MCProtare, energy, input, float64RNG64, rngState, products );
+            reaction->sampleProducts( MCProtare, energy, input, [&]( ) -> double { return float64RNG64( &rngState ); },
+                    [&]( MCGIDI::Sampling::Product &a_product ) -> void { products.push_back( a_product ); }, products );
             for( std::size_t i2 = 0; i2 < products.size( ); ++i2 ) {
                 MCGIDI::Sampling::Product const &product = products[i2];
 
@@ -187,11 +190,12 @@ void main2( int argc, char **argv ) {
 
                 for( std::size_t i2 = 0; i2 < numberOfFissionSamples; ++i2 ) {
                     products.clear( );
-                    reaction->sampleProducts( MCProtare, energy, input, float64RNG64, rngState, products );
+                    reaction->sampleProducts( MCProtare, energy, input, [&]( ) -> double { return float64RNG64( &rngState ); },
+                            [&]( MCGIDI::Sampling::Product &a_product ) -> void { products.push_back( a_product ); }, products );
                     for( std::size_t i3 = 0; i3 < products.size( ); ++i3 ) {
                         MCGIDI::Sampling::Product const &product = products[i3];
 
-                        if( product.m_productIndex == projectileIndex ) {
+                        if( product.m_productIntid == projectileIntid ) {
                             ++totalFissionNeutrons;
                             if( product.m_delayedNeutronIndex > -1 ) {
                                 ++delayedFissionNeutrons;

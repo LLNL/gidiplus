@@ -15,7 +15,7 @@
 
 namespace CADI {
 
-static GUPI::Entry *parseChemicalElement( GUPI::Suite *a_parent, HAPI::Node const &a_node );
+static GUPI::Entry *parseChemicalElement( LUPI_maybeUnused GUPI::Suite *a_parent, HAPI::Node const &a_node );
 
 /*! \class IsotopicAbundancesByChemicalElement
  * The class that stores the atom fraction and its uncertainty for a chemical element's isotope.
@@ -59,14 +59,14 @@ IsotopicAbundancesByChemicalElement::IsotopicAbundancesByChemicalElement( std::s
 
     m_chemicalElements.setAncestor( this );
 
-    HAPI::File *m_doc = nullptr;
+    HAPI::File *doc = nullptr;
 
-    m_doc = new HAPI::PugiXMLFile( a_fileName.c_str( ), "IsotopicAbundancesByChemicalElement::IsotopicAbundancesByChemicalElement" );
-    if( m_doc == nullptr ) {
+    doc = new HAPI::PugiXMLFile( a_fileName.c_str( ), "IsotopicAbundancesByChemicalElement::IsotopicAbundancesByChemicalElement" );
+    if( doc == nullptr ) {
         throw std::runtime_error( "Only XML/HDF file types supported." );
     }
 
-    HAPI::Node isotopicAbundancesByChemicalElement = m_doc->first_child( );
+    HAPI::Node isotopicAbundancesByChemicalElement = doc->first_child( );
 
     if( isotopicAbundancesByChemicalElement.name( ) != moniker( ) )
         throw LUPI::Exception( "Invalid IsotopicAbundancesByChemicalElement node with moniker (name) " + moniker( ) );
@@ -74,6 +74,8 @@ IsotopicAbundancesByChemicalElement::IsotopicAbundancesByChemicalElement( std::s
     m_format = isotopicAbundancesByChemicalElement.attribute_as_string( CADI_formatChars );
     m_evaluation = isotopicAbundancesByChemicalElement.attribute_as_string( CADI_evaluationChars );
     m_chemicalElements.parse( isotopicAbundancesByChemicalElement.child( CADI_chemicalElementsChars ), parseChemicalElement );
+
+    delete doc;
 }
 
 /* *********************************************************************************************************//**
@@ -174,7 +176,7 @@ void IsotopicAbundancesByChemicalElement::toXMLList( GUPI::WriteInfo &a_writeInf
  * @return                                      Returns a parsed **ChemicalElement** node.
  ***********************************************************************************************************/
 
-static GUPI::Entry *parseChemicalElement( GUPI::Suite *a_parent, HAPI::Node const &a_node ) {
+static GUPI::Entry *parseChemicalElement( LUPI_maybeUnused GUPI::Suite *a_parent, HAPI::Node const &a_node ) {
 
     return new ChemicalElement( a_node );
 }

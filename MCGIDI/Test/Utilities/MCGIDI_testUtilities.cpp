@@ -13,15 +13,9 @@
 #include <iostream>
 #include <iomanip>
 
-#include <LUPI.hpp>
 #include "MCGIDI_testUtilities.hpp"
 
 #define PRINT_NAME_WIDTH 20
-
-static unsigned long long state;
-static unsigned long long a_factor = 0x27bb2ee687b0b0fd;
-static unsigned long long b_addend = 0xb504f32d;
-static double stateToDoubleFactor;
 
 /*
 =========================================================
@@ -64,25 +58,6 @@ std::string longToString2( char const *format, long value ) {
 std::string doubleToString2( char const *format, double value ) {
 
     return( LUPI::Misc::argumentsToString( format, value ) );
-}
-/*
-=========================================================
-*/
-void MCGIDI_test_rngSetup( unsigned long long a_seed ) {
-
-    state = 0;
-    --state;
-    stateToDoubleFactor = 1.0 / state;
-
-    state = a_seed;
-}
-/*
-=========================================================
-*/
-double float64RNG64( void *a_dummy ) {
-
-    state = a_factor * state + b_addend;
-    return( stateToDoubleFactor * state );
 }
 
 /*

@@ -73,7 +73,7 @@ Base::Base( HAPI::Node const &a_node, SetupInfo &a_setupInfo, FormType a_type, S
  ***********************************************************************************************************/
 
 CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering( Construction::Settings const &a_construction, HAPI::Node const &a_node,
-		SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Suite *a_parent ) :
+		SetupInfo &a_setupInfo, LUPI_maybeUnused PoPI::Database const &a_pops, LUPI_maybeUnused PoPI::Database const &a_internalPoPs, Suite *a_parent ) :
         Base( a_node, a_setupInfo, FormType::coherentPhotonScattering, a_parent ),
         m_formFactor( data1dParse( a_construction, a_node.child( GIDI_formFactorChars ).first_child( ), a_setupInfo, nullptr ) ),
         m_realAnomalousFactor( data1dParseAllowEmpty( a_construction, a_node.child( GIDI_realAnomalousFactorChars ).first_child( ), a_setupInfo, nullptr ) ),
@@ -106,7 +106,7 @@ CoherentPhotoAtomicScattering::~CoherentPhotoAtomicScattering( ) {
  ***********************************************************************************************************/
 
 IncoherentPhotoAtomicScattering::IncoherentPhotoAtomicScattering( Construction::Settings const &a_construction, HAPI::Node const &a_node,
-		SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Suite *a_parent ) :
+		SetupInfo &a_setupInfo, LUPI_maybeUnused PoPI::Database const &a_pops, LUPI_maybeUnused PoPI::Database const &a_internalPoPs, Suite *a_parent ) :
         Base( a_node, a_setupInfo, FormType::incoherentPhotonScattering, a_parent ),
         m_scatteringFactor( nullptr ) {
 
@@ -124,6 +124,37 @@ IncoherentPhotoAtomicScattering::IncoherentPhotoAtomicScattering( Construction::
 IncoherentPhotoAtomicScattering::~IncoherentPhotoAtomicScattering( ) {
 
     delete m_scatteringFactor;
+}
+
+/*! \class IncoherentPhotoAtomicScattering
+ * This is the **incoherentPhotonScattering** class.
+ */
+
+/* *********************************************************************************************************//**
+ * @param a_construction    [in]    Used to pass user options for parsing.
+ * @param a_node            [in]    The **HAPI::Node** to be parsed.
+ * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
+ * @param a_pops            [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
+ * @param a_internalPoPs    [in]    The *internal* PoPI::Database instance used to get particle indices and possibly other particle information.
+ *                                  This is the <**PoPs**> node under the <**reactionSuite**> node.
+ * @param a_parent          [in]    The parent GIDI::Suite.
+ ***********************************************************************************************************/
+
+IncoherentBoundToFreePhotoAtomicScattering::IncoherentBoundToFreePhotoAtomicScattering( Construction::Settings const &a_construction, HAPI::Node const &a_node,
+		SetupInfo &a_setupInfo, LUPI_maybeUnused PoPI::Database const &a_pops, LUPI_maybeUnused PoPI::Database const &a_internalPoPs, Suite *a_parent ) :
+        Base( a_node, a_setupInfo, FormType::incoherentBoundToFreePhotonScattering, a_parent ),
+        m_ComptonProfile( nullptr ) {
+
+    HAPI::Node const ComptonProfileChild = a_node.child( GIDI_ComptonProfileChars );
+    m_ComptonProfile = data1dParse( a_construction, ComptonProfileChild.first_child( ), a_setupInfo, nullptr );
+}
+
+/* *********************************************************************************************************//**
+ ***********************************************************************************************************/
+
+IncoherentBoundToFreePhotoAtomicScattering::~IncoherentBoundToFreePhotoAtomicScattering( ) {
+
+    delete m_ComptonProfile;
 }
 
 namespace n_ThermalNeutronScatteringLaw {
@@ -170,7 +201,7 @@ S_table::~S_table( ) {
  ***********************************************************************************************************/
 
 CoherentElastic::CoherentElastic( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
-		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Suite *a_parent ) :
+		LUPI_maybeUnused PoPI::Database const &a_pops, LUPI_maybeUnused PoPI::Database const &a_internalPoPs, Suite *a_parent ) :
         Base( a_node, a_setupInfo, FormType::coherentElastic, a_parent ),
         m_S_table( a_construction, a_node.child( GIDI_S_tableChars ), a_setupInfo ) {
 
@@ -224,7 +255,7 @@ DebyeWallerIntegral::~DebyeWallerIntegral( ) {
  ***********************************************************************************************************/
 
 IncoherentElastic::IncoherentElastic( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
-		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, Suite *a_parent ) :
+		LUPI_maybeUnused PoPI::Database const &a_pops, LUPI_maybeUnused PoPI::Database const &a_internalPoPs, Suite *a_parent ) :
         Base( a_node, a_setupInfo, FormType::incoherentElastic, a_parent ),
         m_boundAtomCrossSection( a_node.child( getBoundAtomCrossSectionName( a_node ) ), a_setupInfo ),
         m_DebyeWallerIntegral( a_construction, a_node.child( getDebyeWallerIntegralName( a_node ) ), a_setupInfo ) {
@@ -250,7 +281,7 @@ IncoherentElastic::~IncoherentElastic( ) {
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  ***********************************************************************************************************/
 
-Options::Options( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo ) :
+Options::Options( LUPI_maybeUnused Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo ) :
         Form( a_node, a_setupInfo, FormType::generic, nullptr ),
         m_calculatedAtThermal( strcmp( a_node.attribute_as_string( GIDI_calculatedAtThermalChars ).c_str( ), GIDI_trueChars ) == 0 ),
         m_asymmetric( strcmp( a_node.attribute_as_string( GIDI_asymmetricChars ).c_str( ), GIDI_trueChars ) == 0 ) {
@@ -274,7 +305,7 @@ Options::~Options( ) {
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  ***********************************************************************************************************/
 
-T_effective::T_effective( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo ) :
+T_effective::T_effective( LUPI_maybeUnused Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo ) :
         Form( a_node, a_setupInfo, FormType::generic, nullptr ),
         m_function1d( data1dParseAllowEmpty( a_construction, a_node.first_child( ), a_setupInfo, nullptr ) ) {
 
@@ -332,7 +363,7 @@ ScatteringAtom::~ScatteringAtom( ) {
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  ***********************************************************************************************************/
 
-S_alpha_beta::S_alpha_beta( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo ) :
+S_alpha_beta::S_alpha_beta( LUPI_maybeUnused Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo ) :
         Form( a_node, a_setupInfo, FormType::generic, nullptr ),
         m_function3d( nullptr ) { // data3dParse( a_construction, a_node.first_child( ), a_setupInfo, nullptr ) )
 

@@ -80,7 +80,7 @@ void DecayData::toXMLList( std::vector<std::string> &a_XMLList, std::string cons
 ======================== DecayMode =========================
 ============================================================
 */
-DecayMode::DecayMode( HAPI::Node const &a_node, DecayData const *a_decayData ) :
+DecayMode::DecayMode( HAPI::Node const &a_node, LUPI_maybeUnused DecayData const *a_decayData ) :
         m_label( a_node.attribute( PoPI_labelChars ).value( ) ),
         m_mode( a_node.attribute( PoPI_modeChars ).value( ) ),
         m_probability( a_node.child( PoPI_probabilityChars ) ),
@@ -95,6 +95,7 @@ DecayMode::DecayMode( HAPI::Node const &a_node, DecayData const *a_decayData ) :
 DecayMode::~DecayMode( ) {
 
 }
+
 /*
 ============================================================
 */
@@ -147,7 +148,7 @@ void DecayMode::toXMLList( std::vector<std::string> &a_XMLList, std::string cons
 ============================================================
 */
 
-Decay::Decay( HAPI::Node const &a_node, DecayMode const *a_decayMode ) :
+Decay::Decay( HAPI::Node const &a_node, LUPI_maybeUnused DecayMode const *a_decayMode ) :
         m_index( a_node.attribute( PoPI_indexChars ).as_int( ) ),
         m_mode( a_node.attribute( PoPI_modeChars ).value( ) ),
         m_complete( a_node.attribute( PoPI_completeChars ).value( ) == "true" ),
@@ -193,7 +194,7 @@ void Decay::toXMLList( std::vector<std::string> &a_XMLList, std::string const &a
 ========================= Product ==========================
 ============================================================
 */
-Product::Product( HAPI::Node const &a_node, Decay *a_DB ) :
+Product::Product( HAPI::Node const &a_node, LUPI_maybeUnused Decay *a_DB ) :
         m_id( -1 ),
         m_pid( a_node.attribute( PoPI_pidChars ).value( ) ),
         m_label( a_node.attribute( PoPI_labelChars ).value( ) ) {
@@ -218,6 +219,70 @@ void Product::toXMLList( std::vector<std::string> &a_XMLList, std::string const 
 
     std::string header = a_indent1 + "<product label=\"" + m_label + "\" pid=\"" + m_pid + "\"/>";
     a_XMLList.push_back( header );
+}
+
+/*! \class GammaDecayData
+ * This class stores, in a crude way, the GRIN, non-GNDS 2.0 compliant, nuclide gamma decay data.
+ */
+
+/* *********************************************************************************************************//**
+ * @param a_node                        [in]    The HAPI node to parse.
+ ***********************************************************************************************************/
+
+GammaDecayData::GammaDecayData( HAPI::Node const &a_node ) :
+        m_kind( a_node.attribute_as_string( "kind" ) ),
+        m_rows( 0 ),
+        m_columns( 0 ) {
+
+    if( m_kind == "" ) m_kind = PoPI_discreteChars;
+
+    if( !a_node.empty( ) ) {
+        HAPI::Node table = a_node.child( "table" );
+        m_rows = table.attribute_as_int( "rows" );
+        m_columns = table.attribute_as_int( "columns" );
+
+        HAPI::Node data = table.child( "data" );
+
+        std::string text = LUPI::Misc::stripString( data.text( ).get( ) );
+        auto cells = LUPI::Misc::splitString( text, ' ', true );
+
+        m_ids.reserve( m_rows );
+        m_probabilities.reserve( m_rows );
+        m_photonEmissionProbabilities.reserve( m_rows );
+        for( std::size_t cellIndex = 0; cellIndex < cells.size( ); cellIndex += 3 ) {
+            m_ids.push_back( cells[cellIndex] );
+            m_probabilities.push_back( std::stod( cells[cellIndex+1] ) );
+            m_photonEmissionProbabilities.push_back( std::stod( cells[cellIndex+2] ) );
+        }
+    }
+}
+
+/* *********************************************************************************************************//**
+ ***********************************************************************************************************/
+
+GammaDecayData::~GammaDecayData( ) {
+
+}
+
+/*
+============================================================
+*/
+void GammaDecayData::calculateNuclideGammaBranchStateInfo( PoPI::Database const &a_pops, NuclideGammaBranchStateInfo &a_nuclideGammaBranchStateInfo ) const {
+
+    Particle const &initialState = a_pops.get<Particle>( a_nuclideGammaBranchStateInfo.state( ) );
+    double initialStateMass = initialState.massValue( "amu" );
+
+    for( int index = 0; index < m_rows; ++index ) {
+        std::string residualState( m_ids[index] );
+        double _probability = m_probabilities[index];
+        double _photonEmissionProbabilities = m_photonEmissionProbabilities[index];
+
+        Particle const &finalState = a_pops.get<Particle>( residualState );
+        double gammaEnergy = PoPI_AMU2MeV_c2 * ( initialStateMass - finalState.massValue( "amu" ) );
+
+        NuclideGammaBranchInfo nuclideGammaBranchInfo( _probability, _photonEmissionProbabilities, gammaEnergy, residualState );
+        a_nuclideGammaBranchStateInfo.add( nuclideGammaBranchInfo );
+    }
 }
 
 }

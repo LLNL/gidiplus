@@ -50,6 +50,23 @@ Matrix::~Matrix( ) {
 }
 
 /* *********************************************************************************************************//**
+ * The assignment operator. This method sets the members of *this* to those of *a_rhs*.
+ *
+ * @param a_rhs                     [in]    Instance whose member are used to set the members of *this*.
+ *
+ * @return                                  A reference to the updated Matrix instance.
+ ***********************************************************************************************************/
+
+Matrix &Matrix::operator=( Matrix const &a_rhs ) {
+
+    if( this != &a_rhs ) {
+        m_matrix = a_rhs.matrix( );
+    }
+
+    return( *this );
+}
+
+/* *********************************************************************************************************//**
  * Returns a new Matrix whose cells are *this* plus *a_value*.
  *
  * @param a_value       [in]    The value to add to each cell.

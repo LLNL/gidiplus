@@ -48,10 +48,33 @@ Isotope::~Isotope( ) {
 
 void Isotope::calculateNuclideGammaBranchStateInfos( PoPI::Database const &a_pops, NuclideGammaBranchStateInfos &a_nuclideGammaBranchStateInfos ) const {
 
+    NuclideGammaBranchStateInfo *info = nullptr, *priorInfo = nullptr;
+    std::string energyUnit = "MeV";                     // FIXME, MeV needs to be a variable.
+    double width = 0.0;
+
     for( std::size_t i1 = 0; i1 <  m_nuclides.size( ); ++i1 ) {
+        std::size_t initialSize = a_nuclideGammaBranchStateInfos.size( );
         Nuclide const &nuclide = m_nuclides[i1];
+        double levelEnergy = nuclide.levelEnergy( energyUnit );
 
         nuclide.calculateNuclideGammaBranchStateInfos( a_pops, a_nuclideGammaBranchStateInfos );
+        if( a_nuclideGammaBranchStateInfos.size( ) > initialSize ) {
+            info = a_nuclideGammaBranchStateInfos[initialSize];
+            if( priorInfo != nullptr ) {
+                if( priorInfo->kind( ) == PoPI_continuumChars ) {
+                    for( std::size_t i2 = i1 + 1; i2 <  m_nuclides.size( ); ++i2 ) {
+                        Nuclide const &nuclide2 = m_nuclides[i2];
+                        if( nuclide2.levelEnergy( energyUnit ) > levelEnergy ) {
+                            width = nuclide2.levelEnergy( energyUnit ) - levelEnergy;
+                            break;
+                        }
+                    }
+                    priorInfo->setNuclearLevelEnergyWidth( width );
+                }
+            }
+        }
+
+        priorInfo = info;
     }
 }
 

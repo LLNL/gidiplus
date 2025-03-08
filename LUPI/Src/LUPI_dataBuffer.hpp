@@ -12,6 +12,7 @@
 
 #include <cstdint>
 
+#include <LUPI_defines.hpp>
 #include <LUPI_declareMacro.hpp>
 
 namespace LUPI {
@@ -79,6 +80,8 @@ class DataBuffer {
                 m_sharedPlacementStart( nullptr ),
                 m_sharedPlacement( nullptr ),
                 m_sharedMaxPlacementSize( 0 ) {
+
+            if( rhs.m_placementStart == nullptr ) m_placementStart = rhs.m_placementStart;  // Only to stop compiler warning of unused variable as cannot get [[maybe_unused]] to work.
 
         }
 
@@ -148,7 +151,7 @@ class DataBuffer {
             nullOutPointers( );
         }
 
-        LUPI_HOST_DEVICE bool compareIndexes( char const *a_file, int a_line, DataBuffer const &a_input ) {
+        LUPI_HOST_DEVICE bool compareIndexes( LUPI_maybeUnused char const *a_file, LUPI_maybeUnused int a_line, DataBuffer const &a_input ) {
 
             return( ( a_input.m_intIndex  == m_intIndex  ) && ( a_input.m_floatIndex == m_floatIndex ) &&
                     ( a_input.m_charIndex == m_charIndex ) && ( a_input.m_longIndex  == m_longIndex  ) );
@@ -275,7 +278,7 @@ class DataBuffer {
          for (std::size_t size_index = 0; size_index < array_size; size_index++) \
              {member[size_index] = (buf).m_charData[ ((buf).m_charIndex)++ ]; }} }
 
-#if LUPI_WARP_SIZE > 1 and defined(LUPI_ON_GPU)
+#if LUPI_WARP_SIZE > 1 && defined(LUPI_ON_GPU)
 #define DATA_MEMBER_VECTOR_DOUBLE(member, buf, mode) \
     { \
         std::size_t vector_size = member.size(); \
@@ -312,7 +315,7 @@ class DataBuffer {
     }
 #endif
 
-#if LUPI_WARP_SIZE > 1 and defined(LUPI_ON_GPU)
+#if LUPI_WARP_SIZE > 1 && defined(LUPI_ON_GPU)
 #define DATA_MEMBER_VECTOR_INT(member, buf, mode) \
     { \
         std::size_t vector_size = member.size(); \
@@ -349,7 +352,44 @@ class DataBuffer {
     }
 #endif
 
-#if LUPI_WARP_SIZE > 1 and defined(LUPI_ON_GPU)
+#if LUPI_WARP_SIZE > 1 && defined(LUPI_ON_GPU)
+#define DATA_MEMBER_VECTOR_BOOL(member, buf, mode) \
+    { \
+        std::size_t vector_size = member.size(); \
+        DATA_MEMBER_INT(vector_size, (buf), mode); \
+        if ( mode == LUPI::DataBuffer::Mode::Unpack ) member.resize(vector_size, &(buf).m_placement); \
+        std::size_t bufferIndex = (buf).m_intIndex; \
+        for ( std::size_t member_index = 0; member_index < vector_size; member_index += LUPI_WARP_SIZE, bufferIndex += LUPI_WARP_SIZE ) \
+        { \
+            std::size_t thrMemberId = member_index + LUPI_THREADID; \
+            if (thrMemberId >= vector_size) continue; \
+            member[thrMemberId] = (buf).m_intData[bufferIndex + LUPI_THREADID]; \
+        } \
+        (buf).m_intIndex += vector_size; \
+    }
+#else
+#define DATA_MEMBER_VECTOR_BOOL(member, buf, mode) \
+    { \
+        std::size_t vector_size = member.size(); \
+        DATA_MEMBER_INT(vector_size, (buf), mode); \
+        if ( mode == LUPI::DataBuffer::Mode::Unpack ) { \
+            if ((buf).m_sharedPlacement == nullptr) { \
+                member.resize(vector_size, &(buf).m_placement); \
+            } else { \
+                member.resize(vector_size, &(buf).m_sharedPlacement); \
+            } \
+        }\
+        if ( mode == LUPI::DataBuffer::Mode::Memory ) { \
+            (buf).incrementSharedPlacement(sizeof(int) * member.capacity()); \
+        } \
+        for ( std::size_t member_index = 0; member_index < vector_size; member_index++ ) \
+        { \
+            DATA_MEMBER_CAST(member[member_index], (buf), mode, bool); \
+        } \
+    }
+#endif
+
+#if LUPI_WARP_SIZE > 1 && defined(LUPI_ON_GPU)
 #define DATA_MEMBER_CHAR_ARRAY( member, buf, mode ) { \
         std::size_t array_size = sizeof( member ); \
         std::size_t bufferIndex = (buf).m_charIndex; \

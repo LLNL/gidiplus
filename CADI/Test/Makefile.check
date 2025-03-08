@@ -10,7 +10,7 @@ LIBS = -lCADI -lPoPI -lGUPI -lHAPI -lRISI -lLUPI -lnumericalfunctions -lstatusMe
 
 default: $(Executables)
 
-$(Executables): %: %.cpp
+$(Executables): %: %.cpp ../../../include/*.h* ../../../lib/*.a
 	$(CXX) $(local_CXXFLAGS) $< -o $@ $(LIBS)
 
 clean:

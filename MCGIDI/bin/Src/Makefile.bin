@@ -4,16 +4,16 @@
 .PHONY: default bin clean realclean
 
 local_CXXFLAGS += $(LIB_PATHS) -I$(GIDI_PATH)/Test/Utilities -L$(GIDI_PATH)/Test/Utilities \
-        -I$(MCGIDI_PATH)/Test/Utilities -L$(MCGIDI_PATH)/Test/Utilities
+        -I$(MCGIDI_PATH)/Test/Utilities -L$(MCGIDI_PATH)/Test/Utilities $(OpenMPFlags)
 
-LIBS = -lGIDI_testUtilities -lMCGIDI_testUtilities -lMCGIDI -lGIDI -lPoPI -lRISI -lGUPI -lHAPI -lLUPI \
+LIBS = $(LIBS_extras) -lGIDI_testUtilities -lMCGIDI_testUtilities -lMCGIDI -lGIDI -lPoPI -lRISI -lGUPI -lHAPI -lLUPI \
 		-lnumericalfunctions -lstatusMessageReporting -lexpat -lpugixml $(HDF5_LIBS)
 
 EXES = $(CppSources:.cpp=)
 
 default: bin
 
-%: %.cpp
+%: %.cpp ../../../../include/*.h* ../../../../lib/*.a ../../../include/*.h* ../../../lib/*.a
 	echo "    "$@
 	$(CXX) $(local_CXXFLAGS) $< -o $@ $(LIBS)
 
@@ -22,7 +22,7 @@ bin: $(EXES)
 
 clean:
 	rm -f $(EXES)
-	rm -f ../../$(EXES)
+	cd ../../; rm -f $(EXES)
 
 realclean: clean
 	rm -rf *.dSYM

@@ -38,7 +38,7 @@ $(Archive): $(CppObjs)
 	$(AR) -cr $@ $(CppObjs)
 
 $(CppSources): MCGIDI.hpp
-MCGIDI.hpp: MCGIDI_sampling.hpp MCGIDI_vector.hpp MCGIDI_string.hpp MCGIDI_functions.hpp MCGIDI_distributions.hpp
+MCGIDI.hpp: MCGIDI_sampling.hpp MCGIDI_vector.hpp MCGIDI_string.hpp MCGIDI_functions.hpp MCGIDI_distributions.hpp MCGIDI_headerSource.hpp
 MCGIDI_string.cpp: MCGIDI_string.hpp
 MCGIDI_sampling.hpp: MCGIDI_vector.hpp
 

@@ -29,10 +29,13 @@ class Reaction {
         std::vector<int> m_multiplicities;                  /**< The multiplicities for each product in *m_products*. */
         std::vector<std::string> m_intermediates;           /**< The list of intermediates products for the reaction. */
         std::string m_process;                              /**< The process for the reaction. */
+        std::string m_reactionLabel;                        /**< The label of the reaction. */
+        std::string m_convarianceFlag;                      /**< A flag indicating if covariance data are present for the reaction. */
 
     public:
         Reaction( double a_effectiveThreshold, std::vector<std::string> const &a_products, std::vector<int> const &a_multiplicities, 
-                std::vector<std::string> const &a_intermediates, std::string const &a_process );
+                std::vector<std::string> const &a_intermediates, std::string const &a_process, std::string const &reactionLabel,
+                std::string const &convarianceFlag );
 
         void products( double a_energyMax, std::set<std::string> &a_products ) const ;
 };

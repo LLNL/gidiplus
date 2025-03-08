@@ -8,7 +8,7 @@
 */
 
 #include <LUPI.hpp>
-#include "GIDI.hpp"
+#include <GIDI.hpp>
 #include <HAPI.hpp>
 #include <sstream>
 
@@ -32,12 +32,11 @@ XYs1d::XYs1d( ) :
 
     double dummy[2];
 
-    m_ptwXY = ptwXY_create2( nullptr, ptwXY_interpolationLinLin, 0, 0, 0, dummy, 0 );
+    m_ptwXY = ptwXY_create2( nullptr, interpolation( ), 0, 0, 0, dummy, 0 );
 }
 
 /* *********************************************************************************************************//**
- * Constructor that uses an existing **ptwXYPoints** instance. The **m_ptwXY** member is set to **ptwXYPoints** (i.e., this
- * XYs1d instance now owns the inputted **ptwXYPoints** instance).
+ * Constructor that creates an empty instance.
  *
  * @param a_axes                [in]    The axes to copy for *this*.
  * @param a_interpolation       [in]    The interpolation along the outer most independent axis and the dependent axis.
@@ -55,8 +54,7 @@ XYs1d::XYs1d( Axes const &a_axes, ptwXY_interpolation a_interpolation, int a_ind
 }
 
 /* *********************************************************************************************************//**
- * Constructor that uses an existing **ptwXYPoints** instance. The **m_ptwXY** member is set to **ptwXYPoints** (i.e., this
- * XYs1d instance now owns the inputted **ptwXYPoints** instance).
+ * Constructor that create an instance from a list of doubles via **a_values** which must have an even number of values.
  *
  * @param a_axes                [in]    The axes to copy for *this*.
  * @param a_interpolation       [in]    The interpolation along the outer most independent axis and the dependent axis.
@@ -75,6 +73,29 @@ XYs1d::XYs1d( Axes const &a_axes, ptwXY_interpolation a_interpolation, std::vect
 }
 
 /* *********************************************************************************************************//**
+ * Constructor that creates an instance from a list of x values and a list of y values. The size of **a_xs**
+ * and **a_ys** must be the same.
+ *
+ * @param a_axes                [in]    The axes to copy for *this*.
+ * @param a_interpolation       [in]    The interpolation along the outer most independent axis and the dependent axis.
+ * @param a_xs                  [in]    The data values as ( x_1, x_2, ..., x_n ).
+ * @param a_ys                  [in]    The data values as ( y_1, y_2, ..., y_n ).
+ * @param a_index               [in]    Currently not used.
+ * @param a_outerDomainValue    [in]    If embedded in a higher dimensional function, the value of the domain of the next higher dimension.
+ * @return
+ ***********************************************************************************************************/
+
+XYs1d::XYs1d( Axes const &a_axes, ptwXY_interpolation a_interpolation, std::vector<double> const &a_xs, std::vector<double> const &a_ys,
+                int a_index, double a_outerDomainValue ) :
+        Function1dForm( GIDI_XYs1dChars, FormType::XYs1d, a_axes, a_interpolation, a_index, a_outerDomainValue ) {
+
+    if( a_xs.size( ) != a_ys.size( ) ) throw Exception( "XYs1d::XYs1d: xs and ys not the same size" );
+    int64_t length = static_cast<int64_t>( a_xs.size( ) );
+
+    m_ptwXY = ptwXY_createFrom_Xs_Ys2( nullptr, a_interpolation, length, 0, length, a_xs.data( ), a_ys.data( ), 0 );
+}
+
+/* *********************************************************************************************************//**
  * Constructor that uses an existing **ptwXYPoints** instance. The **m_ptwXY** member is set to **ptwXYPoints** (i.e., this
  * XYs1d instance now owns the inputted **ptwXYPoints** instance).
  *
@@ -86,7 +107,7 @@ XYs1d::XYs1d( Axes const &a_axes, ptwXY_interpolation a_interpolation, std::vect
  ***********************************************************************************************************/
 
 XYs1d::XYs1d( Axes const &a_axes, ptwXYPoints *a_ptwXY, int a_index, double a_outerDomainValue ) :
-        Function1dForm( GIDI_XYs1dChars, FormType::XYs1d, a_axes, ptwXY_interpolationLinLin, a_index, a_outerDomainValue ),
+        Function1dForm( GIDI_XYs1dChars, FormType::XYs1d, a_axes, ptwXY_getInterpolation( a_ptwXY ), a_index, a_outerDomainValue ),
         m_ptwXY( a_ptwXY ) {
 
 }
@@ -103,7 +124,7 @@ XYs1d::XYs1d( Axes const &a_axes, ptwXYPoints *a_ptwXY, int a_index, double a_ou
 XYs1d::XYs1d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
         Function1dForm( a_construction, a_node, a_setupInfo, FormType::XYs1d, a_parent ) {
 
-    HAPI::Node values = a_node.child("values");
+    HAPI::Node values = a_node.child( GIDI_valuesChars );
     nf_Buffer<double> vals;
     parseValuesOfDoubles( a_construction, values, a_setupInfo, vals );
 
@@ -135,6 +156,26 @@ XYs1d::XYs1d( XYs1d const &a_XYs1d ) :
 XYs1d::~XYs1d( ) {
 
     ptwXY_free( m_ptwXY );
+}
+
+/* *********************************************************************************************************//**
+ * The assignment operator. This method sets the members of *this* to those of *a_rhs* except for those
+ * not set by base classes.
+ *
+ * @param a_rhs                     [in]    Instance whose member are used to set the members of *this*.
+ ***********************************************************************************************************/
+
+XYs1d &XYs1d::operator=( XYs1d const &a_rhs ) {
+
+    if( this != &a_rhs ) {
+        Function1dForm::operator=( a_rhs );
+
+        LUPI::StatusMessageReporting smr;
+        m_ptwXY = ptwXY_clone2( smr.smr( ), a_rhs.ptwXY( ) );
+        if( m_ptwXY == nullptr ) throw Exception( smr.constructMessage( "XYs1d::operator=", -1, true ) );
+    }
+
+    return( *this );
 }
 
 /* *********************************************************************************************************//**
@@ -179,12 +220,14 @@ XYs1d XYs1d::operator+( XYs1d const &a_rhs ) const {
 XYs1d &XYs1d::operator+=( XYs1d const &a_rhs ) {
 
     ptwXYPoints *sum, *ptwXY1, *ptwXY2;
+    LUPI::StatusMessageReporting smr;
 
     mutualifyDomains( m_ptwXY, a_rhs.ptwXY( ), &ptwXY1, &ptwXY2 );
-    sum = ptwXY_add_ptwXY( nullptr, ptwXY1, ptwXY2 );
+    sum = ptwXY_add_ptwXY( smr.smr( ), ptwXY1, ptwXY2 );
     ptwXY_free( ptwXY1 );
     ptwXY_free( ptwXY2 );
-    if( sum == nullptr ) throw Exception( "XYs1d::operator+=: ptwXY_add_ptwXY failed." );
+    if( sum == nullptr ) 
+        throw Exception( smr.constructMessage( "XYs1d::operator+=: ptwXY_add_ptwXY failed. ", -1, true ) );
 
     ptwXY_free( m_ptwXY );
     m_ptwXY = sum;
@@ -217,12 +260,14 @@ XYs1d XYs1d::operator-( XYs1d const &a_rhs ) const {
 XYs1d &XYs1d::operator-=( XYs1d const &a_rhs ) {
 
     ptwXYPoints *sum, *ptwXY1, *ptwXY2;
+    LUPI::StatusMessageReporting smr;
 
     mutualifyDomains( m_ptwXY, a_rhs.ptwXY( ), &ptwXY1, &ptwXY2 );
-    sum = ptwXY_sub_ptwXY( nullptr, ptwXY1, ptwXY2 );
+    sum = ptwXY_sub_ptwXY( smr.smr( ), ptwXY1, ptwXY2 );
     ptwXY_free( ptwXY1 );
     ptwXY_free( ptwXY2 );
-    if( sum == nullptr ) throw Exception( "XYs1d::operator-=: ptwXY_sub_ptwXY failed." );
+    if( sum == nullptr ) 
+        throw Exception( smr.constructMessage( "XYs1d::operator-=: ptwXY_sub_ptwXY failed. ", -1, true ) );
 
     ptwXY_free( m_ptwXY );
     m_ptwXY = sum;
@@ -231,9 +276,26 @@ XYs1d &XYs1d::operator-=( XYs1d const &a_rhs ) {
 }
 
 /* *********************************************************************************************************//**
+ * Multiplies *this* by a double and returns the result.
+ *
+ * @param a_value       [in]    Number with this instance.
+ *
+ * @return                      An **XYs1d** instance that is the product of this and *a_rhs*.
+ ***********************************************************************************************************/
+
+XYs1d XYs1d::operator*( double a_value ) const {
+
+    XYs1d xys1d( *this );
+
+    xys1d *= a_value;
+    return( xys1d );
+}
+
+/* *********************************************************************************************************//**
  * Multiplies *this* with another **XYs1d** instances and returns the result.
  *
  * @param a_rhs         [in]    The **XYs1d** instance to multiply with this instance.
+ *
  * @return                      An **XYs1d** instance that is the product of this and *a_rhs*.
  ***********************************************************************************************************/
 
@@ -246,21 +308,43 @@ XYs1d XYs1d::operator*( XYs1d const &a_rhs ) const {
 }
 
 /* *********************************************************************************************************//**
- * Multiplies an **XYs1d** instance from this.
+ * Multiplies a double with **this**.
  *
  * @param a_rhs         [in]    The **XYs1d** instance to subtract from this instance.
+ *
+ * @return                      This instance.
+ ***********************************************************************************************************/
+
+XYs1d &XYs1d::operator*=( double a_value ) {
+
+    LUPI::StatusMessageReporting smr;
+
+    nfu_status status = ptwXY_mul_double( smr.smr( ), m_ptwXY, a_value );
+    if( status != nfu_Okay ) 
+        throw Exception( smr.constructMessage( "XYs1d::operator*=: ptwXY_mul_double failed. ", -1, true ) );
+
+    return( *this );
+}
+
+/* *********************************************************************************************************//**
+ * Multiplies **this** with an **XYs1d** instance.
+ *
+ * @param a_rhs         [in]    The **XYs1d** instance to subtract from this instance.
+ *
  * @return                      This instance.
  ***********************************************************************************************************/
 
 XYs1d &XYs1d::operator*=( XYs1d const &a_rhs ) {
 
     ptwXYPoints *mul, *ptwXY1, *ptwXY2;
+    LUPI::StatusMessageReporting smr;
 
     mutualifyDomains( m_ptwXY, a_rhs.ptwXY( ), &ptwXY1, &ptwXY2 );
-    mul = ptwXY_mul2_ptwXY( nullptr, ptwXY1, ptwXY2 );
+    mul = ptwXY_mul2_ptwXY( smr.smr( ), ptwXY1, ptwXY2 );
     ptwXY_free( ptwXY1 );
     ptwXY_free( ptwXY2 );
-    if( mul == nullptr ) throw Exception( "XYs1d::operator*=: ptwXY_mul2_ptwXY failed." );
+    if( mul == nullptr )
+        throw Exception( smr.constructMessage( "XYs1d::operator*=: ptwXY_mul2_ptwXY failed. ", -1, true ) );
 
     ptwXY_free( m_ptwXY );
     m_ptwXY = mul;
@@ -438,6 +522,97 @@ void XYs1d::mapToXsAndAdd( int a_offset, std::vector<double> const &a_Xs, std::v
 }
 
 /* *********************************************************************************************************//**
+ * This methods returns an XYs1d representation of *this*. The calling function owns the created instance and is responible
+ * for freeing it.
+ *
+ * @param   a_asLinlin          [in]    If **true**, the inpolatation of the returned XYs1d instance will always be lin-lin. Otherwise,
+ *                                      the interpolation depends on the child 1d functions. This argument is not needed or used for this class.
+ * @param   a_accuracy          [in]    The accuracy use to convert the data to lin=lin interpolation if needed. This argument is not needed or used for this cl
+ * @param   a_lowerEps          [in]    The dulling of the point at the domain minimum.
+ * @param   a_upperEps          [in]    The dulling of the point at the domain maximum.
+ *
+ * @return                                  A pointer to an  XYs1d instance that must be freed by the calling function.
+ ***********************************************************************************************************/
+
+XYs1d *XYs1d::asXYs1d( LUPI_maybeUnused bool a_asLinlin, double a_accuracy, double a_lowerEps, double a_upperEps ) const {
+
+    ptwXYPoints *ptwXY2 = nullptr;
+
+    if( m_ptwXY->interpolation == ptwXY_interpolationFlat ) {
+        ptwXY2 = ptwXY_flatInterpolationToLinear( nullptr, m_ptwXY, a_lowerEps, a_upperEps ); }
+    else {
+        ptwXY2 = ptwXY_toOtherInterpolation( nullptr, const_cast<ptwXYPoints *>( m_ptwXY ), ptwXY_interpolationLinLin, a_accuracy );
+    }
+    
+
+    if( ptwXY2 == nullptr ) return( nullptr );
+
+    return( new XYs1d( axes( ), ptwXY2 ) );
+}
+
+/* *********************************************************************************************************//**
+ * This method returns **this** that is norimalized (i.e., its integral if 1.). The returned value is the integral
+ * of **this** before being normalized.
+ *
+ * @return                          A double.
+ ***********************************************************************************************************/
+
+double XYs1d::integrate( double a_dommainMin, double a_dommainMax ) {
+
+    double value = 0.0;
+    LUPI::StatusMessageReporting smr;
+
+    nfu_status status = ptwXY_integrate( smr.smr( ), m_ptwXY, a_dommainMin, a_dommainMax, &value );
+    if( status != nfu_Okay ) throw Exception( smr.constructMessage( "XYs1d::normalize", -1, true ) );
+
+    return( value );
+}
+
+/* *********************************************************************************************************//**
+ * This method returns **this** that is norimalized (i.e., its integral if 1.). The returned value is the integral
+ * of **this** before being normalized.
+ *
+ * @return                          A double.
+ ***********************************************************************************************************/
+
+double XYs1d::normalize( ) {
+
+    double value = 0.0;
+    LUPI::StatusMessageReporting smr;
+
+    nfu_status status = ptwXY_integrateDomain( smr.smr( ), m_ptwXY, &value );
+    if( status != nfu_Okay ) throw Exception( smr.constructMessage( "XYs1d::normalize", -1, true ) );
+
+    status = ptwXY_normalize( smr.smr( ), m_ptwXY );
+    if( status != nfu_Okay ) throw Exception( smr.constructMessage( "XYs1d::normalize", -1, true ) );
+
+    return( value );
+}
+
+/* *********************************************************************************************************//**
+ * This method returns a *Xs_pdf_cdf1d* representation of *this*.
+ *
+ * @return                          An instance of *Xs_pdf_cdf1d*.
+ ***********************************************************************************************************/
+
+Xs_pdf_cdf1d XYs1d::toXs_pdf_cdf1d( ) {
+// FIXME, need to check that two consecutive cdf values are not the same.
+
+    std::vector<double> xs1 = xs( );
+    std::vector<double> pdf1 = ys( );
+
+    LUPI::StatusMessageReporting smr;
+    ptwXPoints *ptwX_cdf = ptwXY_runningIntegral( smr.smr( ), m_ptwXY );
+    if( ptwX_cdf == nullptr ) throw Exception( smr.constructMessage( "XYs1d::toXs_pdf_cdf1d", -1, true ) );
+
+    std::vector<double> cdf1( ptwX_cdf->length );
+    for( int64_t index = 0; index < ptwX_cdf->length; ++index ) cdf1[index] = ptwX_cdf->points[index];
+    ptwX_free( ptwX_cdf );
+
+    return( Xs_pdf_cdf1d( GIDI::Axes( ), ptwXY_interpolationLinLin, xs1, pdf1, cdf1 ) );
+}
+
+/* *********************************************************************************************************//**
  * Fills the argument *a_writeInfo* with the XML lines that represent *this*. Recursively enters each sub-node.
  *
  * @param       a_writeInfo         [in/out]    Instance containing incremental indentation and other information and stores the appended lines.
@@ -478,35 +653,13 @@ void XYs1d::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const &a_i
 }
 
 /* *********************************************************************************************************//**
- * Prints the (x,y) values to stdout. The format string must have two double conversion specifiers (e.g., "    %12.3e %.6f").
- *
- * @param       a_format            [in]    The format string passed to the C printf function.
- ***********************************************************************************************************/
-
-void XYs1d::print( char const *a_format ) {
-
-    ptwXY_simplePrint( m_ptwXY, a_format );
-}
-
-/* *********************************************************************************************************//**
- * Prints the (x,y) values to stdout. The format string must have two double conversion specifiers (e.g., "    %12.3e %.6f").
- *
- * @param       a_format            [in]    The format string passed to the C printf function.
- ***********************************************************************************************************/
-
-void XYs1d::print( std::string const &a_format ) {
-
-    print( a_format.c_str( ) );
-}
-
-/* *********************************************************************************************************//**
  * Writes the (x,y) values to *a_file*. The format string must have two double conversion specifiers (e.g., "    %12.3e %.6f").
  *
  * @param       a_file              [in]    The C FILE instance to write the data to.
  * @param       a_format            [in]    The format string passed to the C printf function.
  ***********************************************************************************************************/
 
-void XYs1d::write( FILE *a_file, std::string const &a_format ) {
+void XYs1d::write( FILE *a_file, std::string const &a_format ) const {
 
     ptwXY_simpleWrite( m_ptwXY, a_file, a_format.c_str( ) );
 }

@@ -137,7 +137,7 @@ void Database::addDatabase( std::string const &a_string, bool a_warnIfDuplicate 
  * @param a_warnIfDuplicate             [in]    This argument is currently not used.
  ***********************************************************************************************************/
 
-void Database::addDatabase( HAPI::Node const &a_database, bool a_warnIfDuplicate ) {
+void Database::addDatabase( HAPI::Node const &a_database, LUPI_maybeUnused bool a_warnIfDuplicate ) {
 
     if( a_database.name( ) != PoPI_PoPsChars ) throw Exception( "Node '" + a_database.name( ) + "' is not a 'PoPs' node." );
 
@@ -167,16 +167,20 @@ void Database::addDatabase( HAPI::Node const &a_database, bool a_warnIfDuplicate
         }
     }
 
+    std::vector<Alias *> unresolvedAliases2;
     for( std::vector<Alias *>::iterator iter = m_unresolvedAliases.begin( ); iter != m_unresolvedAliases.end( ); ++iter ) {
-        std::map<std::string, int>::const_iterator pidIter = m_map.find( (*iter)->pid( ) );            // Locate pid.
+        std::map<std::string, int>::const_iterator pidIter = m_idsMap.find( (*iter)->pid( ) );            // Locate pid.
 
-        if( pidIter == m_map.end( ) ) {
-            std::string errorMessage( "Alias points to particle " + (*iter)->pid( ) + " that is not present in database -2." );
-            throw Exception( errorMessage );
+        if( pidIter == m_idsMap.end( ) ) {
+            unresolvedAliases2.push_back( *iter ); }
+        else {
+            (*iter)->setPidIndex( pidIter->second );
         }
-        (*iter)->setPidIndex( pidIter->second );
     }
     m_unresolvedAliases.clear( );
+    for( auto iter = unresolvedAliases2.begin( ); iter != unresolvedAliases2.end( ); ++iter ) {
+        m_unresolvedAliases.push_back( *iter );
+    }
 }
 
 /* *********************************************************************************************************//**
@@ -215,6 +219,23 @@ Database::~Database( ) {
 }
 
 /* *********************************************************************************************************//**
+ * This method returns the list of ids for the aliases with unresolved pids.
+ *
+ * @return                                      A std::vector<std::string> of the ids of the aliases with unresolved pids.
+ ***********************************************************************************************************/
+
+std::vector<std::string> Database::unresolvedAliasIds( ) const {
+
+    std::vector<std::string> ids;
+
+    for( std::vector<Alias *>::const_iterator iter = m_unresolvedAliases.begin( ); iter != m_unresolvedAliases.end( ); ++iter ) {
+        ids.push_back( (*iter)->ID( ) );
+    }
+
+    return( ids );
+}
+
+/* *********************************************************************************************************//**
  * Internally, **PoPI::Database** stores a unique integer (called an index) for each particle in *this*. This method returns the
  * the index for the specified particle.
  *
@@ -225,9 +246,9 @@ Database::~Database( ) {
 
 int Database::operator[]( std::string const &a_id ) const {
 
-    std::map<std::string, int>::const_iterator iter = m_map.find( a_id );
-    if( iter == m_map.end( ) ) {
-        std::string errorMessage( "particle " + a_id + " not in database -3." );
+    std::map<std::string, int>::const_iterator iter = m_idsMap.find( a_id );
+    if( iter == m_idsMap.end( ) ) {
+        std::string errorMessage( "particle '" + a_id + "' not in database -3." );
         throw Exception( errorMessage );
     }
 
@@ -245,7 +266,7 @@ int Database::operator[]( std::string const &a_id ) const {
 
 bool Database::exists( int a_index ) const {
 
-    if( ( a_index < 0 ) || ( a_index >= (int) m_map.size( ) ) ) return( false );
+    if( ( a_index < 0 ) || ( a_index >= (int) m_list.size( ) ) ) return( false );
     return( true );
 }
 
@@ -259,8 +280,21 @@ bool Database::exists( int a_index ) const {
 
 bool Database::exists( std::string const &a_id ) const {
 
-    std::map<std::string, int>::const_iterator iter = m_map.find( a_id );
-    return( iter != m_map.end( ) );
+    std::map<std::string, int>::const_iterator iter = m_idsMap.find( a_id );
+    return( iter != m_idsMap.end( ) );
+}
+
+/* *********************************************************************************************************//**
+ * Returns **true** if the specified intid exists within *this* and **false** otherwise.
+ *
+ * @param a_intid                       [in]    A particle's intidd to test.
+ *
+ * @return                                      **true** is the specified intid exists in *this* and **false** otherwise.
+ ***********************************************************************************************************/
+
+bool Database::existsIntid( int a_intid ) const {
+
+    return( m_intidsMap.find( a_intid ) != m_intidsMap.end( ) );
 }
 
 /* *********************************************************************************************************//**
@@ -285,7 +319,7 @@ std::vector<std::string> Database::aliasReferences( std::string const &a_id ) {
 /* *********************************************************************************************************//**
  * This method resolves aliases to return an actual particle specified by *a_id*. That is, if *a_id* is an alias,
  * then its referenced particle is returned. However, if *a_returnAtMetaStableAlias* is **true** and a meta-stable
- * is found while resolving *a_id*, the then meta-stable id will be returned.
+ * is found while resolving *a_id*, then the meta-stable id will be returned.
  *
  * @param a_id                          [in]    A particle's id whose resolved particle id is requested.
  * @param a_returnAtMetaStableAlias     [in]    If **true**, the resolving will stop if a meta-stable is found.
@@ -314,7 +348,7 @@ std::string Database::final( std::string const &a_id, bool a_returnAtMetaStableA
 int Database::final( int a_index, bool a_returnAtMetaStableAlias ) const {
 
     while( isAlias( a_index ) ) {
-        if( a_returnAtMetaStableAlias && isMetaStableAlias( a_index ) ) return( a_index );
+        if( a_returnAtMetaStableAlias && isMetaStableAlias( a_index ) ) break;
         a_index = ((Alias *) m_list[a_index])->pidIndex( );
     }
     return( a_index );
@@ -334,10 +368,10 @@ std::string Database::chemicalElementSymbol( std::string const &a_id ) const {
     std::string symbol1;
     Base const *base = nullptr;
 
-    std::map<std::string, int>::const_iterator iter = m_map.find( a_id );
-    if( iter != m_map.end( ) ) {
+    std::map<std::string, int>::const_iterator iter = m_idsMap.find( a_id );
+    if( iter != m_idsMap.end( ) ) {
         std::string finalId = final( a_id );
-        iter = m_map.find( finalId );
+        iter = m_idsMap.find( finalId );
         base = m_list[iter->second]; }
     else {
         std::map<std::string,int>::const_iterator iter2 = m_symbolMap.find( a_id );
@@ -368,10 +402,10 @@ std::string Database::isotopeSymbol( std::string const &a_id ) const {
     std::string symbol1;
     Base const *base = nullptr;
     
-    std::map<std::string, int>::const_iterator iter = m_map.find( a_id );
-    if( iter != m_map.end( ) ) {
+    std::map<std::string, int>::const_iterator iter = m_idsMap.find( a_id );
+    if( iter != m_idsMap.end( ) ) {
         std::string finalId = final( a_id );
-        iter = m_map.find( finalId );
+        iter = m_idsMap.find( finalId );
         base = m_list[iter->second]; }
     else {
         std::map<std::string,int>::const_iterator iter2 = m_symbolMap.find( a_id );
@@ -388,25 +422,67 @@ std::string Database::isotopeSymbol( std::string const &a_id ) const {
 }
 
 /* *********************************************************************************************************//**
- * Returns the intid for particle *a_id*.
+ * Returns the intid for particle *a_id* or -1 if *a_id* is not in *this*.
  *
- * @param a_id                          [in]    A particle's id whose isotope symbol is requested.
+ * @param a_id                          [in]    A particle's id whose intid is requested.
  *
- * @return                                      The intid for *a_id*.
+ * @return                                      The intid for *a_id* or -1 if *a_id* not in *this*.
  ***********************************************************************************************************/
 
 int Database::intid( std::string const &a_id ) const {
 
     int intid2 = -1;
 
-    Base const &base = get<Base const>( a_id );
-
-    if( base.isParticle( ) ) {
-        IDBase const &idBase = static_cast<IDBase const &>( base );
-        intid2 =  idBase.intid( );
+    if( exists( a_id ) ) {
+        Base const &base = get<Base const>( a_id );
+        intid2 =  base.intid( );
     }
 
     return( intid2 );
+}
+
+/* *********************************************************************************************************//**
+ * Returns the intid for particle with index *a_index* or -1 if *a_index* is not in *this*.
+ *
+ * @param a_index                       [in]    A particle's index whose index is requested.
+ *
+ * @return                                      The intid for *a_index* or -1 if *a_index* not in *this*.
+ ***********************************************************************************************************/
+
+int Database::intid( int a_index ) const {
+
+    int intid2 = -1;
+
+    if( exists( a_index ) ) {
+        Base const &base = get<Base const>( a_index );
+
+        if( base.isParticle( ) ) {
+            IDBase const &idBase = static_cast<IDBase const &>( base );
+            intid2 =  idBase.intid( );
+        }
+    }
+
+    return( intid2 );
+}
+
+/* *********************************************************************************************************//**
+ * Returns the index for particle with intid *a_intid* or -1 if *a_intid* is not in *this*.
+ *
+ * @param a_index                       [in]    A particle's index whose index is requested.
+ *
+ * @return                                      The intid for *a_index* or -1 if *a_index* not in *this*.
+ ***********************************************************************************************************/
+
+int Database::indexFromIntid( int a_intid ) const {
+
+    int index2 = -1;
+
+    auto iter = m_intidsMap.find( a_intid );
+    if( iter != m_intidsMap.end( ) ) {
+        index2 = iter->second;
+    }
+
+    return( index2 );
 }
 
 /* *********************************************************************************************************//**
@@ -421,9 +497,11 @@ int Database::add( Base *a_item ) {
 
     int index = (int) m_list.size( );
 
-    m_map[a_item->ID( )] = index;
+    m_idsMap[a_item->ID( )] = index;
     m_list.push_back( a_item );
     a_item->setIndex( index );
+
+    if( a_item->intid( ) > 0 ) m_intidsMap[a_item->intid( )] = index;
 
     if( a_item->isAlias( ) ) m_unresolvedAliases.push_back( (Alias *) a_item );
     return( index );
@@ -452,17 +530,24 @@ int Database::addSymbol( SymbolBase *a_item ) {
 }
 
 /* *********************************************************************************************************//**
- * This method calculates nuclide gamma branching infomation and added it to *a_nuclideGammaBranchStateInfos*.
+ * This method calculates nuclide gamma branching infomation and adds it to *a_nuclideGammaBranchStateInfos*.
  *
- * @param a_nuclideGammaBranchStateInfos [in]    The **NuclideGammaBranchStateInfos** instance to added nuclide gamma branching infomation to.
+ * @param a_nuclideGammaBranchStateInfos [in]   The **NuclideGammaBranchStateInfos** instance to added nuclide gamma branching infomation to.
+ * @param a_pops2                               A second PoPs used for storing GRIN added particles.
+ * @param a_extraGammaBranchStates              Any additional nuclide needed by GRIN. Currently, one the capture residual.
  ***********************************************************************************************************/
 
-void Database::calculateNuclideGammaBranchStateInfos( NuclideGammaBranchStateInfos &a_nuclideGammaBranchStateInfos ) const {
+void Database::calculateNuclideGammaBranchStateInfos( NuclideGammaBranchStateInfos &a_nuclideGammaBranchStateInfos, Database const *a_pops2,
+                std::vector<std::string> a_extraGammaBranchStates ) const {
 
-    for( std::size_t i1 = 0; i1 <  m_chemicalElements.size( ); ++i1 ) {
-        ChemicalElement const &chemicalElement = m_chemicalElements[i1];
 
-        chemicalElement.calculateNuclideGammaBranchStateInfos( *this, a_nuclideGammaBranchStateInfos );
+    calculateNuclideGammaBranchStateInfos2( a_nuclideGammaBranchStateInfos );
+    if( a_pops2 != nullptr ) {
+        a_pops2->calculateNuclideGammaBranchStateInfos2( a_nuclideGammaBranchStateInfos );
+        for( auto iter = a_extraGammaBranchStates.begin( ); iter != a_extraGammaBranchStates.end( ); ++iter ) {
+            PoPI::Nuclide const &nuclide = a_pops2->get<PoPI::Nuclide>( *iter );
+            nuclide.calculateNuclideGammaBranchStateInfos( *a_pops2, a_nuclideGammaBranchStateInfos, true );
+        }
     }
 
     std::vector<NuclideGammaBranchStateInfo *> &nuclideGammaBranchStateInfos = a_nuclideGammaBranchStateInfos.nuclideGammaBranchStateInfos( );
@@ -471,6 +556,36 @@ void Database::calculateNuclideGammaBranchStateInfos( NuclideGammaBranchStateInf
 
         nuclideGammaBranchStateInfo->calculateDerivedData( a_nuclideGammaBranchStateInfos );
     }
+}
+
+/* *********************************************************************************************************//**
+ * This method calculates nuclide gamma branching infomation and adds it to *a_nuclideGammaBranchStateInfos*.
+ *
+ * @param a_nuclideGammaBranchStateInfos [in]    The **NuclideGammaBranchStateInfos** instance to added nuclide gamma branching infomation to.
+ ***********************************************************************************************************/
+
+void Database::calculateNuclideGammaBranchStateInfos2( NuclideGammaBranchStateInfos &a_nuclideGammaBranchStateInfos ) const {
+
+    for( std::size_t i1 = 0; i1 <  m_chemicalElements.size( ); ++i1 ) {
+        ChemicalElement const &chemicalElement = m_chemicalElements[i1];
+
+        chemicalElement.calculateNuclideGammaBranchStateInfos( *this, a_nuclideGammaBranchStateInfos );
+    }
+}
+
+/* *********************************************************************************************************//**
+ * This method returns the mass of the particle/alias with id *a_id*.
+ * Currently, *a_unit* is ignored and the mass is returned in unit of amu.
+ *
+ * @param a_id                          [in]    The PoPs id of the particle/alias.file to write *this* to.
+ * @param a_unit                        [in]    The unit of the returned mass.
+ ***********************************************************************************************************/
+
+double Database::massValue( std::string const &a_id, std::string const &a_unit ) const {
+
+    Particle const &particle2 = particle( final( a_id ) );
+
+    return( particle2.massValue( a_unit ) );
 }
 
 /* *********************************************************************************************************//**
@@ -534,7 +649,7 @@ void Database::toXMLList( std::vector<std::string> &a_XMLList, std::string const
 
 void Database::print( bool a_printIndices ) {
 
-    for( std::map<std::string,int>::const_iterator iter = m_map.begin( ); iter != m_map.end( ); ++iter ) {
+    for( std::map<std::string,int>::const_iterator iter = m_idsMap.begin( ); iter != m_idsMap.end( ); ++iter ) {
         std::string label( iter->first );
         int index = iter->second;
         Base *item = m_list[index];

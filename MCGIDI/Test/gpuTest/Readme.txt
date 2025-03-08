@@ -7,8 +7,10 @@ For RZAnsel Cuda10 opt:
 gmake CXX=/usr/tce/packages/cuda/cuda-10.1.243/bin/nvcc CXXFLAGS='-x cu --relocatable-device-code=true -lineinfo -g -O2 -std=c++11 -gencode=arch=compute_70,code=sm_70 -I$(CUDA_PATH)/include'
 For RZAnsel Cuda11 opt:
 gmake CXX=/usr/tce/packages/cuda/cuda-11.7.0/bin/nvcc CXXFLAGS='-x cu --relocatable-device-code=true -lineinfo -g -O2 -std=c++11 -gencode=arch=compute_70,code=sm_70 -I$(CUDA_PATH)/include'
-For RZwhamo/HIP:
-gmake CXX=/opt/rocm-4.5.2/hip/bin/hipcc CXXFLAGS='-g -O1 -x hip -fgpu-rdc --offload-arch=gfx908 -Wno-unused-command-line-argument -D __HIP__ -I/opt/cray/pe/mpich/8.1.11/ofi/crayclang/10.0/include' 
+For RZvernal/HIP Rocm 5.7.1:
+gmake CXX=/usr/tce/packages/cray-mpich/cray-mpich-8.1.27-rocmcc-5.7.1-cce-16.0.1d-magic/bin/mpihipcc CXXFLAGS='-g -ggdb -O0 -std=c++14 -finline-functions -ffp-contract=off -x hip -fgpu-rdc --offload-arch=gfx90a,gfx940,gfx942 -w -Wno-unused-command-line-argument -D __HIP__ -I/usr/tce/packages/cray-mpich/cray-mpich-8.1.27-rocmcc-5.7.1-cce-16.0.1d-magic/include' HDF5_LIBS='/usr/gapps/bdivport/toss_4_x86_64_ib_cray/rocm-5.7-mpich-8.1.27/hdf5/1.14.3/lib/libhdf5.a'
+For RZvernal/HIP Rocm 6.0.3:
+gmake CXX=/usr/tce/packages/cray-mpich/cray-mpich-8.1.29-rocmcc-6.0.3-magic/bin/mpiamdclang++ CXXFLAGS='-g -ggdb -O0 -std=c++14 -finline-functions -ffp-contract=off  --hip-link  -x hip -fgpu-rdc --offload-arch=gfx90a,gfx940,gfx942 -w -Wno-unused-command-line-argument -D __HIP__ -I/usr/tce/packages/cray-mpich/cray-mpich-8.1.29-rocmcc-6.0.3-magic/include' HDF5_LIBS='/usr/gapps/bdiv/toss_4_x86_64_ib_cray/rocmcc-6.0.3-cce-17/hdf5/1.14.3/lib/libhdf5.a'
 
 To run it, grab a process like
 RZansel:
@@ -31,7 +33,7 @@ For timing, use nvprof like
 
 /usr/tce/packages/cuda/cuda-11.2.0-beta/bin/nvprof gpuTest 0 0 100 0
 
-/usr/tce/packages/cuda/cuda-11.2.0-beta/bin/nvprof gpuTest 0 1e7 1 0
+/usr/tce/packages/cuda/cuda-11.2.0-beta/bin/nvprof gpuTest 0 10000000 1 0
 
 For cpu timing, try:
-/usr/tce/packages/cuda/cuda-11.2.0-beta/bin/nvprof --cpu-profiling on gpuTest 0 1e7 1 0
+/usr/tce/packages/cuda/cuda-11.2.0-beta/bin/nvprof --cpu-profiling on gpuTest 0 10000000 1 0

@@ -23,7 +23,7 @@ namespace MCGIDI {
  * @return              
  ***********************************************************************************************************/
 
-static LUPI_HOST GIDI::Styles::TemperatureInfos TNSL_temperatureInfos( GIDI::ProtareSingle const &a_protare, Transporting::MC &a_settings ) {
+static LUPI_HOST GIDI::Styles::TemperatureInfos TNSL_temperatureInfos( GIDI::ProtareSingle const &a_protare, LUPI_maybeUnused Transporting::MC &a_settings ) {
 
     return( a_protare.temperatures( ) );
 }
@@ -52,7 +52,7 @@ LUPI_HOST_DEVICE ProtareTNSL::ProtareTNSL( ) :
 /* *********************************************************************************************************//**
  * @param a_smr                         [Out]   If errors are not to be thrown, then the error is reported via this instance.
  * @param a_protare                     [in]    The GIDI::Protare whose data is to be used to construct *this*.
- * @param a_pops                        [in]    A PoPs Database instance used to get particle indices and possibly other particle information.
+ * @param a_pops                        [in]    A PoPs Database instance used to get particle intids and possibly other particle information.
  * @param a_settings                    [in]    Used to pass user options to the *this* to instruct it which data are desired.
  * @param a_particles                   [in]    List of transporting particles and their information (e.g., multi-group boundaries and fluxes).
  * @param a_domainHash                  [in]    The hash data used when looking up a cross section.
@@ -64,8 +64,8 @@ LUPI_HOST_DEVICE ProtareTNSL::ProtareTNSL( ) :
 
 LUPI_HOST ProtareTNSL::ProtareTNSL( LUPI::StatusMessageReporting &a_smr, GIDI::ProtareTNSL const &a_protare, PoPI::Database const &a_pops, Transporting::MC &a_settings, 
                 GIDI::Transporting::Particles const &a_particles, DomainHash const &a_domainHash, GIDI::Styles::TemperatureInfos const &a_temperatureInfos,
-                std::set<int> const &a_reactionsToExclude, int a_reactionsToExcludeOffset, bool a_allowFixedGrid ) :
-        Protare( ProtareType::TNSL, a_protare, a_pops, a_settings ),
+                std::set<int> const &a_reactionsToExclude, int a_reactionsToExcludeOffset, LUPI_maybeUnused bool a_allowFixedGrid ) :
+        Protare( ProtareType::TNSL, a_protare, a_settings, a_pops ),
         m_protareWithElastic( static_cast<ProtareSingle *>( protareFromGIDIProtare( a_smr, *a_protare.protare( ), a_pops, a_settings, a_particles, 
             a_domainHash, a_temperatureInfos, a_reactionsToExclude, a_reactionsToExcludeOffset, false ) ) ),
         m_TNSL( static_cast<ProtareSingle *>( protareFromGIDIProtare( a_smr, *a_protare.TNSL( ), a_pops, a_settings, a_particles, a_domainHash, 
@@ -81,12 +81,16 @@ LUPI_HOST ProtareTNSL::ProtareTNSL( LUPI::StatusMessageReporting &a_smr, GIDI::P
     m_TNSL_maximumEnergy = m_TNSL->maximumEnergy( );
     m_TNSL_maximumTemperature = m_TNSL->temperatures( ).back( );
 
+    std::set<int> product_intids;
+    std::set<int> product_intids_transportable;
     std::set<int> product_indices;
     std::set<int> product_indices_transportable;
 
+    addVectorItemsToSet( m_TNSL->productIntids( false ), product_intids );
+    addVectorItemsToSet( m_protareWithElastic->productIntids( true  ), product_intids_transportable );
     addVectorItemsToSet( m_TNSL->productIndices( false ), product_indices );
     addVectorItemsToSet( m_protareWithElastic->productIndices( true  ), product_indices_transportable );
-    productIndices( product_indices, product_indices_transportable );
+    productIntidsAndIndices( product_intids, product_intids_transportable, product_indices, product_indices_transportable );
 }
 
 /* *********************************************************************************************************//**
@@ -102,8 +106,8 @@ LUPI_HOST_DEVICE ProtareTNSL::~ProtareTNSL( ) {
 /* *********************************************************************************************************//**
  * Updates the m_userParticleIndex to *a_userParticleIndex* for all particles with PoPs index *a_particleIndex*.
  *
- * @param a_particleIndex       [in]    The PoPs id of the particle whose userPid is to be set.
- * @param a_userParticleIndex   [in]    The particle id specified by the user.
+ * @param a_particleIndex       [in]    The PoPs index of the particle whose user index is to be set.
+ * @param a_userParticleIndex   [in]    The particle index specified by the user.
  ***********************************************************************************************************/
  
 LUPI_HOST void ProtareTNSL::setUserParticleIndex2( int a_particleIndex, int a_userParticleIndex ) {
@@ -112,6 +116,21 @@ LUPI_HOST void ProtareTNSL::setUserParticleIndex2( int a_particleIndex, int a_us
     m_TNSL->setUserParticleIndex( a_particleIndex, a_userParticleIndex );
     m_protareWithoutElastic->setUserParticleIndex( a_particleIndex, a_userParticleIndex );
 }
+
+/* *********************************************************************************************************//**
+ * Updates the m_userParticleIndex to *a_userParticleIndex* for all particles with PoPs intid *a_particleIntid*.
+ *
+ * @param a_particleIntid       [in]    The PoPs intid of the particle whose user index is to be set.
+ * @param a_userParticleIndex   [in]    The particle index specified by the user.
+ ***********************************************************************************************************/
+
+LUPI_HOST void ProtareTNSL::setUserParticleIndexViaIntid2( int a_particleIntid, int a_userParticleIndex ) {
+
+    m_protareWithElastic->setUserParticleIndexViaIntid( a_particleIntid, a_userParticleIndex );
+    m_TNSL->setUserParticleIndexViaIntid( a_particleIntid, a_userParticleIndex );
+    m_protareWithoutElastic->setUserParticleIndexViaIntid( a_particleIntid, a_userParticleIndex );
+}
+
 
 /* *********************************************************************************************************//**
  * Returns the pointer representing the (a_index - 1)th **ProtareSingle**.
@@ -337,41 +356,6 @@ LUPI_HOST_DEVICE double ProtareTNSL::reactionCrossSection( int a_reactionIndex, 
 }
 
 /* *********************************************************************************************************//**
- * Returns the total cross section.
- *
- * @param a_URR_protareInfos    [in]    URR information.
- * @param a_hashIndex           [in]    The cross section hash index.
- * @param a_temperature         [in]    The target temperature.
- * @param a_energy              [in]    The projectile energy.
- * @param a_crossSection        [in]    The total cross section at *a_temperature* and *a_energy*.
- * @param a_userrng             [in]    The random number gnerator.
- * @param a_rngState            [in]    The state for the random number gnerator.
- *
- * @return                              The index of the sampled reaction.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE int ProtareTNSL::sampleReaction( URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, double a_crossSection, double (*a_userrng)( void * ), void *a_rngState ) const {
-
-    int reactionIndex = 0;
-
-    if( ( a_energy < m_TNSL_maximumEnergy ) && ( a_temperature <= m_TNSL_maximumTemperature ) ) {
-        double TNSL_crossSection = m_TNSL->crossSection( a_URR_protareInfos, a_hashIndex, a_temperature, a_energy, true );
-
-        if( TNSL_crossSection > a_userrng( a_rngState ) * a_crossSection ) {
-            reactionIndex = m_TNSL->sampleReaction( a_URR_protareInfos, a_hashIndex, a_temperature, a_energy, TNSL_crossSection, a_userrng, a_rngState ); }
-        else { 
-            reactionIndex = m_protareWithoutElastic->sampleReaction( a_URR_protareInfos, a_hashIndex, a_temperature, a_energy, a_crossSection - TNSL_crossSection, a_userrng, a_rngState );
-            if( reactionIndex != MCGIDI_nullReaction ) reactionIndex += m_numberOfTNSLReactions + 1;
-        } }
-    else {
-        reactionIndex = m_protareWithElastic->sampleReaction( a_URR_protareInfos, a_hashIndex, a_temperature, a_energy, a_crossSection, a_userrng, a_rngState );
-        if( reactionIndex != MCGIDI_nullReaction ) reactionIndex += m_numberOfTNSLReactions;
-    }
-
-    return( reactionIndex );
-}
-
-/* *********************************************************************************************************//**
  * Returns the total deposition energy.
  *
  * @param a_hashIndex     [in]    The cross section hash index.
@@ -444,12 +428,12 @@ LUPI_HOST_DEVICE double ProtareTNSL::productionEnergy( int a_hashIndex, double a
 }
 
 /* *********************************************************************************************************//**
- * Returns the multi-group gain for particle with index *a_particleIndex*.
+ * Returns the gain for particle with index *a_particleIndex*.
  *
  * @param a_hashIndex           [in]    The cross section hash index.
  * @param a_temperature         [in]    The temperature of the target.
  * @param a_energy              [in]    The projectile energy.
- * @param a_particleIndex       [in]    The id of the particle whose gain is to be returned.
+ * @param a_particleIndex       [in]    The index of the particle whose gain is to be returned.
  *
  * @return                      [in]    A vector of the length of the number of multi-group groups.
  ***********************************************************************************************************/
@@ -463,6 +447,31 @@ LUPI_HOST_DEVICE double ProtareTNSL::gain( int a_hashIndex, double a_temperature
                         m_protareWithoutElastic->gain( a_hashIndex, a_temperature, a_energy, a_particleIndex ); }
     else {
         gain1 = m_protareWithElastic->gain( a_hashIndex, a_temperature, a_energy, a_particleIndex );
+    }
+
+    return( gain1 );
+}
+
+/* *********************************************************************************************************//**
+ * Returns the gain for particle with intid *a_particleIntid*.
+ *
+ * @param a_hashIndex           [in]    The cross section hash index.
+ * @param a_temperature         [in]    The temperature of the target.
+ * @param a_energy              [in]    The projectile energy.
+ * @param a_particleIntid       [in]    The intid of the particle whose gain is to be returned.
+ *
+ * @return                      [in]    A vector of the length of the number of multi-group groups.
+ ***********************************************************************************************************/
+
+LUPI_HOST_DEVICE double ProtareTNSL::gainViaIntid( int a_hashIndex, double a_temperature, double a_energy, int a_particleIntid ) const {
+
+    double gain1 = 0.0;
+
+    if( ( a_energy < m_TNSL_maximumEnergy ) && ( a_temperature <= m_TNSL_maximumTemperature ) ) {
+        gain1 = m_TNSL->gainViaIntid( a_hashIndex, a_temperature, a_energy, a_particleIntid ) +
+                        m_protareWithoutElastic->gainViaIntid( a_hashIndex, a_temperature, a_energy, a_particleIntid ); }
+    else {
+        gain1 = m_protareWithElastic->gainViaIntid( a_hashIndex, a_temperature, a_energy, a_particleIntid );
     }
 
     return( gain1 );

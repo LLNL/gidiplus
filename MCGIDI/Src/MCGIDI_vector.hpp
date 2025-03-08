@@ -76,7 +76,7 @@ class Vector
                 void *ptr = nullptr;
 #if defined(__CUDACC__) && !defined(__CUDA_ARCH__)
                 cudaMallocManaged(&ptr, _capacity*sizeof(T), cudaMemAttachGlobal);
-#elif defined(__HIP__) and !defined(__HIP_DEVICE_COMPILE__)
+#elif defined(__HIP__) && !defined(__HIP_DEVICE_COMPILE__)
                 hipMallocManaged(&ptr, _capacity*sizeof(T), hipMemAttachGlobal);
 #endif
                 _data = new(ptr) T[_capacity]; 
@@ -99,7 +99,7 @@ class Vector
                 void *ptr = nullptr;
 #if defined(__CUDACC__) && !defined(__CUDA_ARCH__)
                 cudaMallocManaged(&ptr, _capacity*sizeof(T), cudaMemAttachGlobal);
-#elif defined(__HIP__) and !defined(__HIP_DEVICE_COMPILE__)
+#elif defined(__HIP__) && !defined(__HIP_DEVICE_COMPILE__)
                 hipMallocManaged(&ptr, _capacity*sizeof(T), hipMemAttachGlobal);
 #endif
                 _data = new(ptr) T[_capacity];
@@ -127,7 +127,7 @@ class Vector
                 void *ptr = nullptr;
 #if defined(__CUDACC__) && !defined(__CUDA_ARCH__)
                 cudaMallocManaged(&ptr, _capacity*sizeof(T), cudaMemAttachGlobal);
-#elif defined(__HIP__) and !defined(__HIP_DEVICE_COMPILE__)
+#elif defined(__HIP__) && !defined(__HIP_DEVICE_COMPILE__)
                 hipMallocManaged(&ptr, _capacity*sizeof(T), hipMemAttachGlobal);
 #endif
                 _data = new(ptr) T[_capacity];
@@ -156,7 +156,7 @@ class Vector
                 void *ptr = nullptr;
 #if defined(__CUDACC__) && !defined(__CUDA_ARCH__)
                 cudaMallocManaged(&ptr, _capacity*sizeof(T), cudaMemAttachGlobal);
-#elif defined(__HIP__) and !defined(__HIP_DEVICE_COMPILE__)
+#elif defined(__HIP__) && !defined(__HIP_DEVICE_COMPILE__)
                 hipMallocManaged(&ptr, _capacity*sizeof(T), hipMemAttachGlobal);
 #endif
                 _data = new(ptr) T[_capacity];
@@ -181,7 +181,7 @@ class Vector
                    _data[i].~T();
 #if defined(__CUDACC__) && !defined(__CUDA_ARCH__)
                 cudaFree(_data);
-#elif defined(__HIP__) and !defined(__HIP_DEVICE_COMPILE__)
+#elif defined(__HIP__) && !defined(__HIP_DEVICE_COMPILE__)
                 hipFree(_data);
 #endif
                 break;
@@ -292,7 +292,7 @@ class Vector
                 void *ptr = nullptr;
 #if defined(__CUDACC__) && !defined(__CUDA_ARCH__)
                 cudaMallocManaged(&ptr, _capacity*sizeof(T), cudaMemAttachGlobal);
-#elif defined(__HIP__) and !defined(__HIP_DEVICE_COMPILE__)
+#elif defined(__HIP__) && !defined(__HIP_DEVICE_COMPILE__)
                 hipMallocManaged(&ptr, _capacity*sizeof(T), hipMemAttachGlobal);
 #endif
                 _data = new(ptr) T[_capacity];
@@ -338,7 +338,7 @@ class Vector
                 void *ptr = nullptr;
 #if defined(__CUDACC__) && !defined(__CUDA_ARCH__)
                 cudaMallocManaged(&ptr, _capacity*sizeof(T), cudaMemAttachGlobal);
-#elif defined(__HIP__) and !defined(__HIP_DEVICE_COMPILE__)
+#elif defined(__HIP__) && !defined(__HIP_DEVICE_COMPILE__)
                 hipMallocManaged(&ptr, _capacity*sizeof(T), hipMemAttachGlobal);
 #endif
                 _data = new(ptr) T[_capacity];
@@ -380,7 +380,7 @@ class Vector
                 void *ptr = nullptr;
 #if defined(__CUDACC__) && !defined(__CUDA_ARCH__)
                 cudaMallocManaged(&ptr, _capacity*sizeof(T), cudaMemAttachGlobal);
-#elif defined(__HIP__) and !defined(__HIP_DEVICE_COMPILE__)
+#elif defined(__HIP__) && !defined(__HIP_DEVICE_COMPILE__)
                 hipMallocManaged(&ptr, _capacity*sizeof(T), hipMemAttachGlobal);
 #endif
                 _data = new(ptr) T[_capacity];
@@ -439,7 +439,7 @@ class Vector
    LUPI_HOST_DEVICE MCGIDI_VectorSizeType atomic_Index_Inc( MCGIDI_VectorSizeType inc )
    {
        if (_size+inc > _capacity)
-          {printf("inc too much (size %d, inc %d cap %d)\n", _size, inc, _capacity); abort(); }
+          {MCGIDI_PRINTF("inc too much (size %d, inc %d cap %d)\n", _size, inc, _capacity); abort(); }
        assert(_size+inc <= _capacity);
        MCGIDI_VectorSizeType pos;
 

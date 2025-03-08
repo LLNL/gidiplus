@@ -10,17 +10,68 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
-#include <libgen.h>
 #include <sys/stat.h>
-#include <unistd.h>
 #include <iostream>
 #include <iomanip>
 
 #include <LUPI.hpp>
 
+#ifdef WIN32
+#include <windows.h>
+#include <direct.h>
+#include <filesystem>
+char *realpath( char const *a_path, char *a_resolved ) {
+
+    char resolvedPath[LUPI_PATH_MAX+1], *p1 = nullptr;
+
+    DWORD length = GetFullPathName( a_path, LUPI_PATH_MAX, resolvedPath, nullptr );
+    // MSVC requires explicitly casting malloc result
+    if( ( p1 = (char *)malloc( length + 1 ) ) == nullptr ) return( nullptr );
+    strcpy( p1, resolvedPath );
+    if( length == 0 ) return( nullptr );
+    return( p1 );
+}
+
+std::string dirname( char const *a_path ) {
+    std::filesystem::path filePath( a_path );
+    return filePath.parent_path().string();
+}
+
+std::string basename( char const *a_path ) {
+    // don't strip the extension for compatibility with <unistd> version
+    std::filesystem::path filePath( a_path );
+    return filePath.filename().string();
+}
+#else
+// FIXME: once all users are on C++17 or later, switch to using std::filesystem for all systems
+#include <unistd.h>
+#include <libgen.h>
+#endif
+
 namespace LUPI {
 
 namespace FileInfo {
+
+/* *********************************************************************************************************//**
+ * This function takes a file path and returns its real path. On a Unix system, the system function realpath is called.
+ *      
+ * @param a_path        [in]    The path whose real path is to be determined.
+ *      
+ * @return                      The real path.
+ ***********************************************************************************************************/
+        
+std::string realPath( std::string const &a_path ) {    
+        
+    char *p1 = realpath( a_path.c_str( ), nullptr );
+        
+    if( p1 == nullptr ) {
+        std::string errMsg( "realPath: file does not exist: " );
+        throw Exception( errMsg + a_path );
+    } 
+    std::string basePath( p1 );
+    free( p1 );
+    return( basePath );
+}
 
 /* *********************************************************************************************************//**
  * Returns the base name of a path.
@@ -77,7 +128,11 @@ std::string _dirname( std::string const &a_path ) {
 
 bool exists( std::string const &a_path ) {
 
+#ifdef _WIN32
+        return std::filesystem::exists( std::filesystem::path( a_path ) );
+#else
         return( access( a_path.c_str( ), F_OK ) == 0 );
+#endif
 }
 
 /* *********************************************************************************************************//**
@@ -115,7 +170,7 @@ bool createDirectories( std::string const &a_path ) {
     std::string dirname1( _dirname( a_path ) );
     if( createDirectories( dirname1 ) ) {
 #ifdef _WIN32
-        int status = mkdir( a_path.c_str( ) );
+        int status = _mkdir( a_path.c_str( ) );
 #else
         int status = mkdir( a_path.c_str( ), S_IRWXU | S_IRWXG | S_IRWXG );
 #endif

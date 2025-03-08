@@ -65,29 +65,6 @@ LUPI_HOST void URR_protareInfos::setup( Vector<Protare *> &a_protares ) {
 }
 
 /* *********************************************************************************************************//**
- * Updates *this* if *a_protare* has a non-negative *URR_index*.
- *
- * @param a_protare             [in]    The protare whose *URR_index* is used to see if *this* needs updating.
- * @param a_energy              [in]    The energy of the projectile.
- * @param a_userrng             [in]    The random number generator function the uses *a_rngState* to generator a double in the range [0, 1.0).
- * @param a_rngState            [in]    The random number generator state.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE void URR_protareInfos::updateProtare( MCGIDI::Protare const *a_protare, double a_energy, double (*a_userrng)( void * ), void *a_rngState ) {
-
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < a_protare->numberOfProtares( ); ++i1 ) {
-        ProtareSingle *protareSingle = const_cast<ProtareSingle *>( a_protare->protare( i1 ) );
-
-        if( protareSingle->URR_index( ) >= 0 ) {
-            URR_protareInfo &URR_protare_info = m_URR_protareInfos[protareSingle->URR_index( )];
-
-            URR_protare_info.m_inURR = protareSingle->inURR( a_energy );
-            if( URR_protare_info.inURR( ) ) URR_protare_info.m_rng_Value = a_userrng( a_rngState );
-        }
-    }
-}
-
-/* *********************************************************************************************************//**
  * This method serializes *this* for broadcasting as needed for MPI and GPUs. The method can count the number of required
  * bytes, pack *this* or unpack *this* depending on *a_mode*.
  *
@@ -132,7 +109,7 @@ LUPI_HOST ACE_URR_probabilityTable::ACE_URR_probabilityTable( double a_energy, s
                 std::vector<double> const &a_crossSection ) :
         m_energy( a_energy ),
         m_propabilities( a_propabilities ),
-        m_crossSection( a_crossSection ) {
+        m_crossSections( a_crossSection ) {
 
     double sum = 0.0;
     for( int index = 0; index < m_propabilities.size( ); ++index ) {
@@ -162,7 +139,7 @@ LUPI_HOST_DEVICE double ACE_URR_probabilityTable::sample( double a_rng_Value ) {
 
     MCGIDI_VectorSizeType index = binarySearchVector( a_rng_Value, m_propabilities, true );
     if( m_propabilities[index] < a_rng_Value ) ++index;
-    return( m_crossSection[index] );
+    return( m_crossSections[index] );
 }
 
 /* *********************************************************************************************************//**
@@ -177,7 +154,7 @@ LUPI_HOST_DEVICE void ACE_URR_probabilityTable::serialize( LUPI::DataBuffer &a_b
 
     DATA_MEMBER_FLOAT( m_energy, a_buffer, a_mode  );
     DATA_MEMBER_VECTOR_DOUBLE( m_propabilities, a_buffer, a_mode  );
-    DATA_MEMBER_VECTOR_DOUBLE( m_crossSection, a_buffer, a_mode  );
+    DATA_MEMBER_VECTOR_DOUBLE( m_crossSections, a_buffer, a_mode  );
 }
 
 /*! \class ACE_URR_probabilityTables
@@ -282,6 +259,9 @@ LUPI_HOST_DEVICE void ACE_URR_probabilityTables::serialize( LUPI::DataBuffer &a_
             }
             m_ACE_URR_probabilityTables[vectorIndex] = ACE_URR_probabilityTable1;
         }
+        if( a_mode == LUPI::DataBuffer::Mode::Memory ) {
+            a_buffer.incrementPlacement( sizeof( ACE_URR_probabilityTable ) );
+        }
         ACE_URR_probabilityTable1->serialize( a_buffer, a_mode );
     }
 }
@@ -299,7 +279,7 @@ LUPI_HOST_DEVICE void ACE_URR_probabilityTables::serialize( LUPI::DataBuffer &a_
 LUPI_HOST void convertACE_URR_probabilityTablesFromGIDI( GIDI::ProtareSingle const &a_protare, Transporting::MC &a_settings, SetupInfo &a_setupInfo ) {
 
     if( ( a_settings.crossSectionLookupMode( ) == Transporting::LookupMode::Data1d::continuousEnergy ) 
-            && ( a_settings._URR_mode( ) == Transporting::URR_mode::ACE_URR_protabilityTables ) ) {
+            && ( a_settings._URR_mode( ) == Transporting::URR_mode::ACE_URR_probabilityTables ) ) {
 
         int64_t numberConverted;
         char *endCharacter;
@@ -307,7 +287,7 @@ LUPI_HOST void convertACE_URR_probabilityTablesFromGIDI( GIDI::ProtareSingle con
         for( auto iter = a_protare.ACE_URR_probabilityTables( ).begin( ); iter != a_protare.ACE_URR_probabilityTables( ).end( ); ++iter ) {
             bool needToInitialize( true );
             std::map<int, std::string> columnNames;
-            ACE_URR_protabilityTablesFromGIDI *ACE_URR_protabilityTablesFromGIDI1 = new ACE_URR_protabilityTablesFromGIDI( );
+            ACE_URR_probabilityTablesFromGIDI *ACE_URR_probabilityTablesFromGIDI1 = new ACE_URR_probabilityTablesFromGIDI( );
             GIDI::ACE_URR::ProbabilityTable *form = dynamic_cast<GIDI::ACE_URR::ProbabilityTable *>( *iter );
             GIDI::ACE_URR::ProbabilityTable::Forms &incidentEnergies = form->forms( );
 
@@ -320,8 +300,8 @@ LUPI_HOST void convertACE_URR_probabilityTablesFromGIDI( GIDI::ProtareSingle con
                 int columnIndex = 0;
                 for( auto columnHeaderIter = table.columnHeaders( ).begin( ); columnHeaderIter != table.columnHeaders( ).end( ); ++columnHeaderIter ) {
                     GIDI::Table::Column const *columnHeader = dynamic_cast<GIDI::Table::Column *>( *columnHeaderIter );
-                    if( needToInitialize and columnIndex > 0 ) {
-                        ACE_URR_protabilityTablesFromGIDI1->m_ACE_URR_probabilityTables[columnHeader->name( )] = 
+                    if( needToInitialize && columnIndex > 0 ) {
+                        ACE_URR_probabilityTablesFromGIDI1->m_ACE_URR_probabilityTables[columnHeader->name( )] = 
                                 new ACE_URR_probabilityTables( incidentEnergies.size( ) );
                         columnNames[columnIndex] = columnHeader->name( );
                     }
@@ -344,11 +324,11 @@ LUPI_HOST void convertACE_URR_probabilityTablesFromGIDI( GIDI::ProtareSingle con
                 free( dValues );
 
                 for( columnIndex = 1; columnIndex < numberOfColumns; ++columnIndex ) {
-                    ACE_URR_protabilityTablesFromGIDI1->m_ACE_URR_probabilityTables[columnNames[columnIndex]]->push_back( 
+                    ACE_URR_probabilityTablesFromGIDI1->m_ACE_URR_probabilityTables[columnNames[columnIndex]]->push_back( 
                             new ACE_URR_probabilityTable( incidentEnergy->value( ), columns[0], columns[columnIndex] ) );
                 }
             }
-            a_setupInfo.m_ACE_URR_protabilityTablesFromGIDI[form->label()] = ACE_URR_protabilityTablesFromGIDI1;
+            a_setupInfo.m_ACE_URR_probabilityTablesFromGIDI[form->label()] = ACE_URR_probabilityTablesFromGIDI1;
         }
     }
 }
@@ -372,7 +352,7 @@ LUPI_HOST_DEVICE Transporting::URR_mode serializeURR_mode( Transporting::URR_mod
     case Transporting::URR_mode::pdfs :
         type = 1;
         break;
-    case Transporting::URR_mode::ACE_URR_protabilityTables :
+    case Transporting::URR_mode::ACE_URR_probabilityTables :
         type = 2;
         break;
     }
@@ -380,7 +360,7 @@ LUPI_HOST_DEVICE Transporting::URR_mode serializeURR_mode( Transporting::URR_mod
 
     if( type == 0 ) return( Transporting::URR_mode::none );
     if( type == 1 ) return( Transporting::URR_mode::pdfs );
-    return( Transporting::URR_mode::ACE_URR_protabilityTables );
+    return( Transporting::URR_mode::ACE_URR_probabilityTables );
 }
 
 /* *********************************************************************************************************//**
@@ -417,21 +397,21 @@ LUPI_HOST_DEVICE ACE_URR_probabilityTables *serializeACE_URR_probabilityTables( 
     return( a_ACE_URR_probabilityTables );
 }
 
-/*! \class ACE_URR_protabilityTablesFromGIDI
+/*! \class ACE_URR_probabilityTablesFromGIDI
  * Class to store temporary ACE URR probability table data.
  */
 
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-LUPI_HOST ACE_URR_protabilityTablesFromGIDI::ACE_URR_protabilityTablesFromGIDI( ) {
+LUPI_HOST ACE_URR_probabilityTablesFromGIDI::ACE_URR_probabilityTablesFromGIDI( ) {
 
 }
 
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-LUPI_HOST ACE_URR_protabilityTablesFromGIDI::~ACE_URR_protabilityTablesFromGIDI( ) {
+LUPI_HOST ACE_URR_probabilityTablesFromGIDI::~ACE_URR_probabilityTablesFromGIDI( ) {
 
     for( auto iter = m_ACE_URR_probabilityTables.begin( ); iter != m_ACE_URR_probabilityTables.end( ); ++iter ) delete (*iter).second;
 

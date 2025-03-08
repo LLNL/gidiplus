@@ -50,13 +50,12 @@ void main2( int argc, char **argv ) {
     PoPI::Database pops( "../../../TestData/PoPs/pops.xml" );
     GIDI::Protare *protare;
     GIDI::Transporting::Particles particles;
-    void *rngState = nullptr;
-    unsigned long long seed = 1;
+    unsigned long long rngState = 1;
     double energyDomainMax = 20.0;
     std::size_t numberOfSamples = 100 * 1000;
     std::set<int> reactionsToExclude;
     LUPI::StatusMessageReporting smr1;
-    int neutronIndex = pops[PoPI::IDs::neutron];
+    int neutronIntid = pops.intid( PoPI::IDs::neutron );
 
     std::cerr << "    " << __FILE__;
     for( int i1 = 1; i1 < argc; i1++ ) std::cerr << " " << argv[i1];
@@ -80,8 +79,6 @@ void main2( int argc, char **argv ) {
     if( argv_options.find( "-d" )->present( ) ) delayedNeutrons = GIDI::Transporting::DelayedNeutrons::on;
 
     GIDI::Map::Map map( mapFilename, pops );
-
-    MCGIDI_test_rngSetup( seed );
 
     GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, GIDI::Construction::PhotoMode::nuclearAndAtomic );
     protare = (GIDI::Protare *) map.protare( construction, pops, projectileID, targetID );
@@ -124,11 +121,12 @@ void main2( int argc, char **argv ) {
                     long promptFissionNeutronCount = 0;
 
                     products.clear( );
-                    reaction->sampleProducts( MCProtare, energy, input, float64RNG64, rngState, products );
+                    reaction->sampleProducts( MCProtare, energy, input, [&]( ) -> double { return float64RNG64( &rngState ); },
+                            [&]( MCGIDI::Sampling::Product &a_product ) -> void { products.push_back( a_product ); }, products );
                     for( std::size_t i3 = 0; i3 < products.size( ); ++i3 ) {
                         MCGIDI::Sampling::Product const &product = products[i3];
 
-                        if( product.m_productIndex == neutronIndex ) {
+                        if( product.m_productIntid == neutronIntid ) {
                             ++totalFissionNeutrons;
                             if( product.m_delayedNeutronIndex < 0 ) {
                                 ++promptFissionNeutronCount; }

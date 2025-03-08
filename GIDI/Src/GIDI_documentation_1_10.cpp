@@ -56,7 +56,7 @@ void Suite::parse( HAPI::Node const &a_node, SetupInfo &a_setupInfo ) {
  * @return
  ***********************************************************************************************************/
 
-Documentation::Documentation( HAPI::Node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent ) :
+Documentation::Documentation( HAPI::Node const &a_node, LUPI_maybeUnused SetupInfo &a_setupInfo, LUPI_maybeUnused GIDI::Suite *a_parent ) :
         Form( GIDI_documentationChars, FormType::generic, a_node.attribute_as_string( GIDI_nameChars ) ) {
 
     m_label = a_node.attribute_as_string( GIDI_nameChars );

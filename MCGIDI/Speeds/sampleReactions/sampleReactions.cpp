@@ -83,7 +83,8 @@ void main2( int argc, char **argv ) {
             int hashIndex = domainHash.index( energy );
             double crossSection = MCProtare->crossSection( URR_protare_infos, hashIndex, temperature2, energy );
 
-            for( long i1 = 0; i1 <= numberOfSamples; ++i1 ) MCProtare->sampleReaction( URR_protare_infos, hashIndex, temperature2, energy, crossSection, myRNG, nullptr );
+            for( long i1 = 0; i1 <= numberOfSamples; ++i1 ) MCProtare->sampleReaction( URR_protare_infos, hashIndex, temperature2, energy, 
+                    crossSection, [&]() -> double { return myRNG( nullptr ); } );
             printTime_energy( "            energies: ", energyIndex, energy, time2_1 );
         }
         sampleEnergies = energyIndex;

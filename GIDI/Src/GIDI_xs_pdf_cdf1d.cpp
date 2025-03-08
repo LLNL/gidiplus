@@ -23,6 +23,14 @@ namespace Functions {
  */
 
 /* *********************************************************************************************************//**
+ ***********************************************************************************************************/
+
+Xs_pdf_cdf1d::Xs_pdf_cdf1d( ) :
+        Function1dForm( GIDI_xs_pdf_cdf1dChars, FormType::XYs1d, Axes(), ptwXY_interpolationLinLin, 0, 0.0 ) {
+
+}
+
+/* *********************************************************************************************************//**
  *
  * @param a_axes                [in]    The axes to copy for *this*.
  * @param a_interpolation       [in]    The interpolation flag.
@@ -70,6 +78,25 @@ Xs_pdf_cdf1d::~Xs_pdf_cdf1d( ) {
 }
 
 /* *********************************************************************************************************//**
+ * The assignment operator. This method sets the members of *this* to those of *a_rhs* except for those
+ * not set by base classes.
+ *
+ * @param a_rhs                     [in]    Instance whose member are used to set the members of *this*.
+ ***********************************************************************************************************/
+
+Xs_pdf_cdf1d &Xs_pdf_cdf1d::operator=( Xs_pdf_cdf1d const &a_rhs ) {
+
+    if( this != &a_rhs ) {
+        Function1dForm::operator=( a_rhs );
+        m_xs = a_rhs.Xs( );
+        m_pdf = a_rhs.pdf( );
+        m_cdf = a_rhs.cdf( );
+    }
+
+    return( *this );
+}
+
+/* *********************************************************************************************************//**
  * The value of *pdf* at the point *a_x1*.
  * Currently not implemented.
  *
@@ -77,9 +104,26 @@ Xs_pdf_cdf1d::~Xs_pdf_cdf1d( ) {
  * @return                      The value of the function at the point *a_x1*.
  ***********************************************************************************************************/
 
-double Xs_pdf_cdf1d::evaluate( double a_x1 ) const {
+double Xs_pdf_cdf1d::evaluate( LUPI_maybeUnused double a_x1 ) const {
 
     throw Exception( "Xs_pdf_cdf1d::evaluate: not implemented." );
+}
+
+/* *********************************************************************************************************//**
+ * This methods returns an XYs1d representation of the pdf of *this*. The calling function owns the created instance and is responible
+ * for freeing it.
+ *
+ * @param   a_asLinlin          [in]    This argument is not used but retained to make the methods API at same as other asXYs1d functions.
+ * @param   a_accuracy          [in]    This argument is not used but retained to make the methods API at same as other asXYs1d functions.
+ * @param   a_lowerEps          [in]    This argument is not used but retained to make the methods API at same as other asXYs1d functions.
+ * @param   a_upperEps          [in]    This argument is not used but retained to make the methods API at same as other asXYs1d functions.
+ *
+ * @return                                  A pointer to an  XYs1d instance that must be freed by the calling function.
+ ***********************************************************************************************************/
+
+XYs1d *Xs_pdf_cdf1d::asXYs1d( LUPI_maybeUnused bool a_asLinlin, LUPI_maybeUnused double a_accuracy, LUPI_maybeUnused double a_lowerEps, LUPI_maybeUnused double a_upperEps ) const {
+
+    return( new XYs1d( axes( ), ptwXY_interpolationLinLin, m_xs, m_pdf ) );
 }
 
 /* *********************************************************************************************************//**

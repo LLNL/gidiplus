@@ -1,0 +1,28 @@
+
+Printing suite 1
+    Hello
+    world
+    I
+    am
+    going.
+    Good
+    bye
+
+Poping at index 2 with label 'I'.
+
+Poping at index 4 with label 'Good'.
+
+Poping label 'bye
+
+Poping at index 0 with label 'Hello'.
+
+Deleting suite 2 of size 4
+    Deleting form 'I'
+    Deleting form 'Good'
+    Deleting form 'bye'
+    Deleting form 'Hello'
+
+Deleting suite 1 of size 3
+    Deleting form 'world'
+    Deleting form 'am'
+    Deleting form 'going.'

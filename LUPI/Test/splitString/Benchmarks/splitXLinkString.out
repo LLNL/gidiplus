@@ -1,0 +1,340 @@
+
+/
+    ''
+
+./
+    '.'
+
+../
+    '..'
+
+/this///is/an/example//of/a/full/path
+    ''
+    'this'
+    'is'
+    'an'
+    'example'
+    'of'
+    'a'
+    'full'
+    'path'
+
+/this//../..///is/an/example//of/a/full/path/
+    ''
+    'this'
+    '..'
+    '..'
+    'is'
+    'an'
+    'example'
+    'of'
+    'a'
+    'full'
+    'path'
+
+/reactionSuite/styles/griddedCrossSection
+    ''
+    'reactionSuite'
+    'styles'
+    'griddedCrossSection'
+
+./reactionSuite/styles/griddedCrossSection
+    '.'
+    'reactionSuite'
+    'styles'
+    'griddedCrossSection'
+
+../../styles/griddedCrossSection
+    '..'
+    '..'
+    'styles'
+    'griddedCrossSection'
+
+/reactionSuite/reactions/reaction[@label='e- + C{2p1/2}']/outputChannel/products/product[@label='e-']
+    ''
+    'reactionSuite'
+    'reactions'
+    'reaction[@label='e- + C{2p1/2}']'
+    'outputChannel'
+    'products'
+    'product[@label='e-']'
+
+/reactionSuite/styles/griddedCrossSection[@label='MonteCarlo_000']/grid[@index='1']
+    ''
+    'reactionSuite'
+    'styles'
+    'griddedCrossSection[@label='MonteCarlo_000']'
+    'grid[@index='1']'
+
+/reactionSuite/reactions/reaction[@label='C + photon [coherent]']/doubleDifferentialCrossSection/coherentPhotonScattering[@label='eval']
+    ''
+    'reactionSuite'
+    'reactions'
+    'reaction[@label='C + photon [coherent]']'
+    'doubleDifferentialCrossSection'
+    'coherentPhotonScattering[@label='eval']'
+
+/reactionSuite/styles/griddedCrossSection[@label='MonteCarlo_000']/grid[@index='1']
+    ''
+    'reactionSuite'
+    'styles'
+    'griddedCrossSection[@label='MonteCarlo_000']'
+    'grid[@index='1']'
+
+/reactionSuite/reactions/reaction[@label='C + photon [incoherent]']/doubleDifferentialCrossSection/incoherentPhotonScattering[@label='eval']
+    ''
+    'reactionSuite'
+    'reactions'
+    'reaction[@label='C + photon [incoherent]']'
+    'doubleDifferentialCrossSection'
+    'incoherentPhotonScattering[@label='eval']'
+
+/reactionSuite/reactions/reaction[@label='C + photon [coherent]']/crossSection
+    ''
+    'reactionSuite'
+    'reactions'
+    'reaction[@label='C + photon [coherent]']'
+    'crossSection'
+
+/reactionSuite/reactions/reaction[@label='C + photon [incoherent]']/crossSection
+    ''
+    'reactionSuite'
+    'reactions'
+    'reaction[@label='C + photon [incoherent]']'
+    'crossSection'
+
+/reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + C [pair production: electron field]']/crossSection
+    ''
+    'reactionSuite'
+    'reactions'
+    'reaction[@label='e- + e- + e-_anti + C [pair production: electron field]']'
+    'crossSection'
+
+/reactionSuite/reactions/reaction[@label='e- + e-_anti + C [pair production: nuclear field]']/crossSection
+    ''
+    'reactionSuite'
+    'reactions'
+    'reaction[@label='e- + e-_anti + C [pair production: nuclear field]']'
+    'crossSection'
+
+/reactionSuite/reactions/reaction[@label='e- + C{1s1/2}']/crossSection
+    ''
+    'reactionSuite'
+    'reactions'
+    'reaction[@label='e- + C{1s1/2}']'
+    'crossSection'
+
+/reactionSuite/reactions/reaction[@label='e- + C{2s1/2}']/crossSection
+    ''
+    'reactionSuite'
+    'reactions'
+    'reaction[@label='e- + C{2s1/2}']'
+    'crossSection'
+
+/reactionSuite/reactions/reaction[@label='e- + C{2p1/2}']/crossSection
+    ''
+    'reactionSuite'
+    'reactions'
+    'reaction[@label='e- + C{2p1/2}']'
+    'crossSection'
+
+/reactionSuite/reactions/reaction[@label='e- + C{2p3/2}']/crossSection
+    ''
+    'reactionSuite'
+    'reactions'
+    'reaction[@label='e- + C{2p3/2}']'
+    'crossSection'
+
+/reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + C [pair production: electron field]']/crossSection
+    ''
+    'reactionSuite'
+    'reactions'
+    'reaction[@label='e- + e- + e-_anti + C [pair production: electron field]']'
+    'crossSection'
+
+/reactionSuite/reactions/reaction[@label='e- + e-_anti + C [pair production: nuclear field]']/crossSection
+    ''
+    'reactionSuite'
+    'reactions'
+    'reaction[@label='e- + e-_anti + C [pair production: nuclear field]']'
+    'crossSection'
+
+/reactionSuite/reactions/reaction[@label='C + photon [coherent]']/outputChannel/products/product[@label='C']
+    ''
+    'reactionSuite'
+    'reactions'
+    'reaction[@label='C + photon [coherent]']'
+    'outputChannel'
+    'products'
+    'product[@label='C']'
+
+/reactionSuite/reactions/reaction[@label='C + photon [incoherent]']/outputChannel/products/product[@label='C']
+    ''
+    'reactionSuite'
+    'reactions'
+    'reaction[@label='C + photon [incoherent]']'
+    'outputChannel'
+    'products'
+    'product[@label='C']'
+
+/reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + C [pair production: electron field]']/outputChannel/products/product[@label='C']
+    ''
+    'reactionSuite'
+    'reactions'
+    'reaction[@label='e- + e- + e-_anti + C [pair production: electron field]']'
+    'outputChannel'
+    'products'
+    'product[@label='C']'
+
+/reactionSuite/reactions/reaction[@label='e- + e-_anti + C [pair production: nuclear field]']/outputChannel/products/product[@label='C']
+    ''
+    'reactionSuite'
+    'reactions'
+    'reaction[@label='e- + e-_anti + C [pair production: nuclear field]']'
+    'outputChannel'
+    'products'
+    'product[@label='C']'
+
+/reactionSuite/reactions/reaction[@label='e- + C{1s1/2}']/outputChannel/products/product[@label='C{1s1/2}']
+    ''
+    'reactionSuite'
+    'reactions'
+    'reaction[@label='e- + C{1s1/2}']'
+    'outputChannel'
+    'products'
+    'product[@label='C{1s1/2}']'
+
+/reactionSuite/reactions/reaction[@label='e- + C{2s1/2}']/outputChannel/products/product[@label='C{2s1/2}']
+    ''
+    'reactionSuite'
+    'reactions'
+    'reaction[@label='e- + C{2s1/2}']'
+    'outputChannel'
+    'products'
+    'product[@label='C{2s1/2}']'
+
+/reactionSuite/reactions/reaction[@label='e- + C{2p1/2}']/outputChannel/products/product[@label='C{2p1/2}']
+    ''
+    'reactionSuite'
+    'reactions'
+    'reaction[@label='e- + C{2p1/2}']'
+    'outputChannel'
+    'products'
+    'product[@label='C{2p1/2}']'
+
+/reactionSuite/reactions/reaction[@label='e- + C{2p3/2}']/outputChannel/products/product[@label='C{2p3/2}']
+    ''
+    'reactionSuite'
+    'reactions'
+    'reaction[@label='e- + C{2p3/2}']'
+    'outputChannel'
+    'products'
+    'product[@label='C{2p3/2}']'
+
+/reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + C [pair production: electron field]']/outputChannel/products/product[@label='e-']
+    ''
+    'reactionSuite'
+    'reactions'
+    'reaction[@label='e- + e- + e-_anti + C [pair production: electron field]']'
+    'outputChannel'
+    'products'
+    'product[@label='e-']'
+
+/reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + C [pair production: electron field]']/outputChannel/products/product[@label='e-__a']
+    ''
+    'reactionSuite'
+    'reactions'
+    'reaction[@label='e- + e- + e-_anti + C [pair production: electron field]']'
+    'outputChannel'
+    'products'
+    'product[@label='e-__a']'
+
+/reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + C [pair production: electron field]']/outputChannel/products/product[@label='e-_anti']
+    ''
+    'reactionSuite'
+    'reactions'
+    'reaction[@label='e- + e- + e-_anti + C [pair production: electron field]']'
+    'outputChannel'
+    'products'
+    'product[@label='e-_anti']'
+
+/reactionSuite/reactions/reaction[@label='e- + e-_anti + C [pair production: nuclear field]']/outputChannel/products/product[@label='e-']
+    ''
+    'reactionSuite'
+    'reactions'
+    'reaction[@label='e- + e-_anti + C [pair production: nuclear field]']'
+    'outputChannel'
+    'products'
+    'product[@label='e-']'
+
+/reactionSuite/reactions/reaction[@label='e- + e-_anti + C [pair production: nuclear field]']/outputChannel/products/product[@label='e-_anti']
+    ''
+    'reactionSuite'
+    'reactions'
+    'reaction[@label='e- + e-_anti + C [pair production: nuclear field]']'
+    'outputChannel'
+    'products'
+    'product[@label='e-_anti']'
+
+/reactionSuite/reactions/reaction[@label='e- + C{1s1/2}']/outputChannel/products/product[@label='e-']
+    ''
+    'reactionSuite'
+    'reactions'
+    'reaction[@label='e- + C{1s1/2}']'
+    'outputChannel'
+    'products'
+    'product[@label='e-']'
+
+/reactionSuite/reactions/reaction[@label='e- + C{2s1/2}']/outputChannel/products/product[@label='e-']
+    ''
+    'reactionSuite'
+    'reactions'
+    'reaction[@label='e- + C{2s1/2}']'
+    'outputChannel'
+    'products'
+    'product[@label='e-']'
+
+/reactionSuite/reactions/reaction[@label='e- + C{2p1/2}']/outputChannel/products/product[@label='e-']
+    ''
+    'reactionSuite'
+    'reactions'
+    'reaction[@label='e- + C{2p1/2}']'
+    'outputChannel'
+    'products'
+    'product[@label='e-']'
+
+/reactionSuite/reactions/reaction[@label='e- + C{2p3/2}']/outputChannel/products/product[@label='e-']
+    ''
+    'reactionSuite'
+    'reactions'
+    'reaction[@label='e- + C{2p3/2}']'
+    'outputChannel'
+    'products'
+    'product[@label='e-']'
+
+/reactionSuite/styles/griddedCrossSection[@label='MonteCarlo_000']/grid[@index='1']
+    ''
+    'reactionSuite'
+    'styles'
+    'griddedCrossSection[@label='MonteCarlo_000']'
+    'grid[@index='1']'
+
+/reactionSuite/applicationData/institution[@label='LLNL::photoAtomicIncoherentDoppler']/reactions/reaction[@label='e- + C{2p1/2} + photon']/doubleDifferentialCrossSection/incoherentBoundToFreePhotonScattering[@label='eval']
+    ''
+    'reactionSuite'
+    'applicationData'
+    'institution[@label='LLNL::photoAtomicIncoherentDoppler']'
+    'reactions'
+    'reaction[@label='e- + C{2p1/2} + photon']'
+    'doubleDifferentialCrossSection'
+    'incoherentBoundToFreePhotonScattering[@label='eval']'
+
+/reactionSuite/applicationData/institution[@label='LLNL::photoAtomicIncoherentDoppler']/reactions/reaction[@label='e- + C{2p1/2} + photon']/doubleDifferentialCrossSection/incoherentBoundToFreePhotonScattering[@label='MonteCarlo_cdf']
+    ''
+    'reactionSuite'
+    'applicationData'
+    'institution[@label='LLNL::photoAtomicIncoherentDoppler']'
+    'reactions'
+    'reaction[@label='e- + C{2p1/2} + photon']'
+    'doubleDifferentialCrossSection'
+    'incoherentBoundToFreePhotonScattering[@label='MonteCarlo_cdf']'

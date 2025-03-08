@@ -69,7 +69,7 @@ double Unspecified1d::domainMax( ) const {
  * @return                          The value of the function evaluated at *a_x1*.
  ***********************************************************************************************************/
 
-double Unspecified1d::evaluate( double a_x1 ) const {
+double Unspecified1d::evaluate( LUPI_maybeUnused double a_x1 ) const {
 
     throw Exception( "Unspecified1d::evaluate: not implemented." );
 }

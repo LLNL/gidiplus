@@ -62,7 +62,7 @@ void Gridded1d::modifiedMultiGroupElasticForTNSL( int a_maxTNSL_index ) {
  * @return                          The value of the function at the point *a_x1*.
  ***********************************************************************************************************/
 
-double Gridded1d::evaluate( double a_x1 ) const {
+double Gridded1d::evaluate( LUPI_maybeUnused double a_x1 ) const {
 
     throw Exception( "Gridded1d::evaluate: not implement." );
 }
@@ -120,6 +120,24 @@ void Gridded1d::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const 
     doublesToXMLList( a_writeInfo, indent3, doubles );
     a_writeInfo.addNodeEnder( GIDI_arrayChars );
     a_writeInfo.addNodeEnder( moniker( ) );
+}
+
+/* *********************************************************************************************************//**
+ * This method writes *this* to a *a_file*.
+ *
+ * @param   a_file          [in]    The C FILE instance to write the data to.
+ * @param   a_format        [in]    The format string passed to each region's write method.
+ ***********************************************************************************************************/
+
+void Gridded1d::write( FILE *a_file, std::string const &a_format ) const {
+
+    std::size_t index = 0;
+    char const *fmt = a_format.c_str( );
+
+    for( ; index < m_data.size( ); ++index ) {
+        fprintf( a_file, fmt, m_grid[index], m_data[index] );
+    }
+    if( m_data.size( ) > 0 ) printf( fmt, m_grid[index], m_data[index-1] );
 }
 
 }               // End namespace Functions.

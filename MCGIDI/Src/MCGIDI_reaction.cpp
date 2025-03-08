@@ -22,12 +22,13 @@ namespace MCGIDI {
 LUPI_HOST_DEVICE Reaction::Reaction( ) :
         m_protareSingle( nullptr ),
         m_reactionIndex( -1 ),
+        m_GIDI_reactionIndex( -1 ),
         m_label( ),
         m_ENDF_MT( 0 ),
         m_ENDL_C( 0 ),
         m_ENDL_S( 0 ),
-        m_neutronIndex( 0 ),
         m_initialStateIndex( -1 ),
+        m_neutronIndex( -1 ),
         m_hasFission( false ),
         m_projectileMass( 0.0 ),
         m_targetMass( 0.0 ),
@@ -35,11 +36,21 @@ LUPI_HOST_DEVICE Reaction::Reaction( ) :
         m_twoBodyThreshold( 0.0 ),
         m_upscatterModelASupported( false ),
         m_hasFinalStatePhotons( false ),
+        m_fissionResiduaIntid( -1 ),
+        m_fissionResiduaIndex( -1 ),
+        m_fissionResiduaUserIndex( -1 ),
+        m_fissionResiduals( GIDI::Construction::FissionResiduals::none ),
+        m_fissionResidualMass( 0.0 ),
 #ifdef MCGIDI_USE_OUTPUT_CHANNEL
         m_outputChannel( nullptr ),
 #endif
-        m_associatedOrphanProductIndex( -1 ) {
 
+// GRIN extras:
+        m_GRIN_specialSampleProducts( false ),
+        m_GRIN_inelasticThreshold( 0.0 ),
+        m_GRIN_maximumCaptureIncidentEnergy( 0.0 ),
+        m_GRIN_inelastic( nullptr ),
+        m_GRIN_capture( nullptr ) {
 }
 
 /* *********************************************************************************************************//**
@@ -50,25 +61,37 @@ LUPI_HOST_DEVICE Reaction::Reaction( ) :
  * @param a_temperatureInfos    [in]    The list of temperature data to extract from *a_protare*.
  ***********************************************************************************************************/
 
-LUPI_HOST Reaction::Reaction( GIDI::Reaction const &a_reaction, SetupInfo &a_setupInfo, Transporting::MC const &a_settings, GIDI::Transporting::Particles const &a_particles,
-                GIDI::Styles::TemperatureInfos const &a_temperatureInfos ) :
+LUPI_HOST Reaction::Reaction( GIDI::Reaction const &a_reaction, SetupInfo &a_setupInfo, Transporting::MC const &a_settings, 
+                GIDI::Transporting::Particles const &a_particles, LUPI_maybeUnused GIDI::Styles::TemperatureInfos const &a_temperatureInfos ) :
         m_protareSingle( nullptr ),
         m_reactionIndex( -1 ),
+        m_GIDI_reactionIndex( a_reaction.reactionIndex( ) ),
         m_label( a_reaction.label( ).c_str( ) ),
         m_ENDF_MT( a_reaction.ENDF_MT( ) ),
         m_ENDL_C( a_reaction.ENDL_C( ) ),
         m_ENDL_S( a_reaction.ENDL_S( ) ),
-        m_neutronIndex( a_settings.neutronIndex( ) ),
         m_initialStateIndex( -1 ),
+        m_neutronIndex( a_setupInfo.m_neutronIndex ),
         m_hasFission( a_reaction.hasFission( ) ),
         m_projectileMass( a_setupInfo.m_protare.projectileMass( ) ),
         m_targetMass( a_setupInfo.m_protare.targetMass( ) ),
         m_crossSectionThreshold( a_reaction.crossSectionThreshold( ) ),
         m_twoBodyThreshold( a_reaction.twoBodyThreshold( ) ),
-        m_upscatterModelASupported( ( a_setupInfo.m_protare.projectileIndex( ) != a_setupInfo.m_protare.photonIndex( ) ) &&
-                                    ( a_setupInfo.m_protare.projectileIndex( ) != a_setupInfo.m_protare.electronIndex( ) ) &&
+        m_upscatterModelASupported( ( a_setupInfo.m_protare.projectileIntid( ) != PoPI::Intids::photon ) &&
+                                    ( a_setupInfo.m_protare.projectileIntid( ) != PoPI::Intids::electron ) &&
                                     ( a_setupInfo.m_reactionType == Transporting::Reaction::Type::Reactions ) ),
-        m_associatedOrphanProductIndex( -1 ) {
+        m_fissionResiduaIntid( -1 ),
+        m_fissionResiduaIndex( -1 ),
+        m_fissionResiduaUserIndex( -1 ),
+        m_fissionResiduals( GIDI::Construction::FissionResiduals::none ),
+        m_fissionResidualMass( 0.0 ),
+
+// GRIN extras:
+        m_GRIN_specialSampleProducts( false ),
+        m_GRIN_inelasticThreshold( 0.0 ),
+        m_GRIN_maximumCaptureIncidentEnergy( 0.0 ),
+        m_GRIN_inelastic( nullptr ),
+        m_GRIN_capture( nullptr ) {
 
     a_setupInfo.m_hasFinalStatePhotons = false;
 #ifndef MCGIDI_USE_OUTPUT_CHANNEL
@@ -79,20 +102,25 @@ LUPI_HOST Reaction::Reaction( GIDI::Reaction const &a_reaction, SetupInfo &a_set
     std::set<std::string> product_ids;
 
     a_reaction.productIDs( product_ids, a_particles, false );
+    m_productIntids.reserve( product_ids.size( ) );
     m_productIndices.reserve( product_ids.size( ) );
     m_userProductIndices.reserve( product_ids.size( ) );
+    m_productMultiplicities.reserve( product_ids.size( ) );
     for( std::set<std::string>::iterator iter = product_ids.begin( ); iter != product_ids.end( ); ++iter ) {
-        m_productIndices.push_back( a_settings.pops( )[*iter] );
+        m_productIntids.push_back( MCGIDI_popsIntid( a_setupInfo.m_pops, *iter ) );
+        m_productIndices.push_back( a_setupInfo.m_popsUser[*iter] );
         m_userProductIndices.push_back( -1 );
+        m_productMultiplicities.push_back( a_reaction.productMultiplicity( *iter ) );
     }
 
+    product_ids.clear( );
     a_reaction.productIDs( product_ids, a_particles, true );
-    m_productMultiplicities.reserve( product_ids.size( ) );
+    m_productIntidsTransportable.reserve( product_ids.size( ) );
     m_productIndicesTransportable.reserve( product_ids.size( ) );
     m_userProductIndicesTransportable.reserve( product_ids.size( ) );
     for( std::set<std::string>::iterator iter = product_ids.begin( ); iter != product_ids.end( ); ++iter ) {
-        m_productMultiplicities.push_back( a_reaction.productMultiplicity( *iter ) );
-        m_productIndicesTransportable.push_back( a_settings.pops( )[*iter] );
+        m_productIntidsTransportable.push_back( MCGIDI_popsIntid( a_setupInfo.m_pops, *iter ) );
+        m_productIndicesTransportable.push_back( a_setupInfo.m_popsUser[*iter] );
         m_userProductIndicesTransportable.push_back( -1 );
     }
 
@@ -103,6 +131,16 @@ LUPI_HOST Reaction::Reaction( GIDI::Reaction const &a_reaction, SetupInfo &a_set
     }
 
     m_hasFinalStatePhotons = a_setupInfo.m_hasFinalStatePhotons;
+    m_fissionResiduals = a_reaction.outputChannel( )->fissionResiduals( );
+    if(      m_fissionResiduals == GIDI::Construction::FissionResiduals::ENDL99120 ) {
+        m_fissionResiduaIntid = PoPI::Intids::FissionProductENDL99120;
+        m_fissionResiduaIndex = MCGIDI_popsIndex( a_setupInfo.m_popsUser, PoPI::IDs::FissionProductENDL99120 ); }
+    else if( m_fissionResiduals == GIDI::Construction::FissionResiduals::ENDL99125 ) {
+        m_fissionResiduaIntid = PoPI::Intids::FissionProductENDL99125;
+        m_fissionResiduaIndex = MCGIDI_popsIndex( a_setupInfo.m_popsUser, PoPI::IDs::FissionProductENDL99125 );
+    }
+    m_fissionResidualMass = 117.5 * PoPI_AMU2MeV_c2;        // Hardwired for now as MeV. Only used if m_fissionResiduaIntid != -1.
+
 #ifndef MCGIDI_USE_OUTPUT_CHANNEL
     std::vector<Product *> products;
     std::vector<DelayedNeutron *> delayedNeutrons;
@@ -122,6 +160,25 @@ LUPI_HOST Reaction::Reaction( GIDI::Reaction const &a_reaction, SetupInfo &a_set
 
     delete m_outputChannel;
 #endif
+
+    GIDI::GRIN::GRIN_continuumGammas const *GRIN_continuumGammas = a_setupInfo.m_GRIN_continuumGammas;
+    if( GRIN_continuumGammas != nullptr ) {
+        if( m_ENDF_MT == 102 ) {
+            if( GRIN_continuumGammas->captureLevelProbabilities( ).size( ) > 0 ) {
+                m_GRIN_specialSampleProducts = true;
+                m_GRIN_maximumCaptureIncidentEnergy = GRIN_continuumGammas->maximumCaptureIncidentEnergy( ).value( );
+                m_GRIN_capture = new GRIN_capture( a_setupInfo, *GRIN_continuumGammas );
+            } }
+        else if( m_ENDF_MT == 91 ) {
+            GIDI::Suite const &inelasticIncidentEnergies = GRIN_continuumGammas->inelasticIncidentEnergies( );
+            if( inelasticIncidentEnergies.size( ) > 0 ) {
+                m_GRIN_specialSampleProducts = true;
+                GIDI::GRIN::InelasticIncidentEnergy const *inelasticIncidentEnergy = inelasticIncidentEnergies.get<GIDI::GRIN::InelasticIncidentEnergy const>( 0 );
+                m_GRIN_inelasticThreshold = inelasticIncidentEnergy->energy( );
+                m_GRIN_inelastic = new GRIN_inelastic( a_setupInfo, *GRIN_continuumGammas );
+            }
+        }
+    }
 }
 
 /* *********************************************************************************************************//**
@@ -186,32 +243,61 @@ LUPI_HOST_DEVICE double Reaction::crossSection( URR_protareInfos const &a_URR_pr
     return( m_protareSingle->reactionCrossSection( m_reactionIndex, a_URR_protareInfos, a_temperature, a_energy_in ) );
 }
 
+/* *********************************************************************************************************//**
+ * Returns the reaction's cross section as a pointer to a GIDI::Functions::XYs1d instance.
+ *
+ * @returns                 A GIDI::Functions::XYs1d instance.
+ ***********************************************************************************************************/
+
+LUPI_HOST GIDI::Functions::XYs1d Reaction::crossSectionAsGIDI_XYs1d( double a_temperature ) const {
+
+    return( m_protareSingle->heatedCrossSections( ).reactionCrossSectionAsGIDI_XYs1d( m_reactionIndex, a_temperature ) );
+}
 
 /* *********************************************************************************************************//**
- * Returns the multiplicity for outgoing particle with pops id *a_id*. If the multiplicity is energy dependent,
+ * Returns the multiplicity for outgoing particle with pops index *a_index*. If the multiplicity is energy dependent,
  * the returned value is -1. For energy dependent multiplicities it is better to use the method **productAverageMultiplicity**.
  *
- * @param a_id                      [in]    The PoPs id of the requested particle.
+ * @param a_index                   [in]    The PoPs index of the requested particle.
  *
  * @return                                  The multiplicity value for the requested particle.
  ***********************************************************************************************************/
 
-LUPI_HOST int Reaction::productMultiplicity( int a_id ) const {
+LUPI_HOST int Reaction::productMultiplicity( int a_index ) const {
 
     int i1 = 0;
 
     for( Vector<int>::iterator iter = m_productIndices.begin( ); iter != m_productIndices.end( ); ++iter, ++i1 ) {
-        if( *iter == a_id ) return( m_productMultiplicities[i1] );
+        if( *iter == a_index ) return( m_productMultiplicities[i1] );
+    }
+
+    return( 0 );
+}
+/* *********************************************************************************************************//**
+ * Returns the multiplicity for outgoing particle with pops intid *a_intid*. If the multiplicity is energy dependent,
+ * the returned value is -1. For energy dependent multiplicities it is better to use the method **productAverageMultiplicity**.
+ *
+ * @param a_intid                   [in]    The PoPs intid of the requested particle.
+ *
+ * @return                                  The multiplicity value for the requested particle.
+ ***********************************************************************************************************/
+
+LUPI_HOST int Reaction::productMultiplicityViaIntid( int a_intid ) const {
+
+    int i1 = 0;
+
+    for( Vector<int>::iterator iter = m_productIntids.begin( ); iter != m_productIntids.end( ); ++iter, ++i1 ) {
+        if( *iter == a_intid ) return( m_productMultiplicities[i1] );
     }
 
     return( 0 );
 }
 
 /* *********************************************************************************************************//**
- * Returns the energy dependent multiplicity for outgoing particle with pops id *a_id*. The returned value may not
+ * Returns the energy dependent multiplicity for outgoing particle with pops index *a_index*. The returned value may not
  * be an integer. Energy dependent multiplicity mainly occurs for photons and fission neutrons.
  *
- * @param a_index                   [in]    The PoPs id of the requested particle.
+ * @param a_index                   [in]    The PoPs index of the requested particle.
  * @param a_projectileEnergy        [in]    The energy of the projectile.
  *
  * @return                                  The multiplicity value for the requested particle.
@@ -250,10 +336,52 @@ LUPI_HOST_DEVICE double Reaction::productAverageMultiplicity( int a_index, doubl
 }
 
 /* *********************************************************************************************************//**
+ * Returns the energy dependent multiplicity for outgoing particle with pops intid *a_intid*. The returned value may not
+ * be an integer. Energy dependent multiplicity mainly occurs for photons and fission neutrons.
+ *
+ * @param a_intid                   [in]    The PoPs intid of the requested particle.
+ * @param a_projectileEnergy        [in]    The energy of the projectile.
+ *
+ * @return                                  The multiplicity value for the requested particle.
+ ***********************************************************************************************************/
+
+LUPI_HOST_DEVICE double Reaction::productAverageMultiplicityViaIntid( int a_intid, double a_projectileEnergy ) const {
+
+    double multiplicity = 0.0;
+
+    if( m_crossSectionThreshold > a_projectileEnergy ) return( multiplicity );
+
+    int i1 = 0;
+    for( Vector<int>::iterator iter = m_productIntids.begin( ); iter != m_productIntids.end( ); ++iter, ++i1 ) {
+        if( *iter == a_intid ) {
+            multiplicity = m_productMultiplicities[i1];
+            break;
+        }
+    }
+
+    if( multiplicity < 0 ) {
+#ifdef MCGIDI_USE_OUTPUT_CHANNEL
+        multiplicity = m_outputChannel->productAverageMultiplicityViaIntid( a_intid, a_projectileEnergy );
+#else
+        multiplicity = 0.0;
+        for( auto productIter = m_products.begin( ); productIter != m_products.end( ); ++productIter ) {
+            multiplicity += (*productIter)->productAverageMultiplicityViaIntid( a_intid, a_projectileEnergy );
+        }
+
+        if( ( m_totalDelayedNeutronMultiplicity != nullptr ) && ( a_intid == PoPI::Intids::neutron ) ) {
+            multiplicity += m_totalDelayedNeutronMultiplicity->evaluate( a_projectileEnergy );
+        }
+#endif
+    }
+
+    return( multiplicity );
+}
+
+/* *********************************************************************************************************//**
  * Updates the m_userParticleIndex to *a_userParticleIndex* for all particles with PoPs index *a_particleIndex*.
  *
- * @param a_particleIndex       [in]    The PoPs id of the particle whose userPid is to be set.
- * @param a_userParticleIndex   [in]    The particle id specified by the user.
+ * @param a_particleIndex       [in]    The PoPs index of the particle whose user index is to be set.
+ * @param a_userParticleIndex   [in]    The particle index specified by the user.
  ***********************************************************************************************************/
 
 LUPI_HOST void Reaction::setUserParticleIndex( int a_particleIndex, int a_userParticleIndex ) {
@@ -276,34 +404,73 @@ LUPI_HOST void Reaction::setUserParticleIndex( int a_particleIndex, int a_userPa
     for( auto i1 = 0; i1 < m_productIndicesTransportable.size( ); ++i1 ) {
         if( m_productIndicesTransportable[i1] == a_particleIndex ) m_userProductIndicesTransportable[i1] = a_userParticleIndex;
     }
+
+    if( a_particleIndex == m_fissionResiduaIndex ) m_fissionResiduaUserIndex = a_userParticleIndex;
+
+    if( m_GRIN_capture != nullptr ) m_GRIN_capture->setUserParticleIndex( a_particleIndex, a_userParticleIndex );
+    if( m_GRIN_inelastic != nullptr ) m_GRIN_inelastic->setUserParticleIndex( a_particleIndex, a_userParticleIndex );
 }
 
 /* *********************************************************************************************************//**
- * Updates the m_userParticleIndex to *a_userParticleIndex* for all particles with PoPs index *a_particleIndex*.
+ * Updates the m_userParticleIndex to *a_userParticleIndex* for all particles with PoPs index *a_particleIntid*.
  *
- * @param a_particleIndex       [in]    The PoPs id of the particle whose userPid is to be set.
- * @param a_userParticleIndex   [in]    The particle id specified by the user.
+ * @param a_particleIndex       [in]    The PoPs intid of the particle whose user intid is to be set.
+ * @param a_userParticleIndex   [in]    The particle index specified by the user.
  ***********************************************************************************************************/
 
-LUPI_HOST_DEVICE void Reaction::setAssociatedOrphanProduct( Reaction const *a_orphanProduct ) {
-
-    a_orphanProduct->referenceOrphanProductsToReaction( m_associatedOrphanProducts );
-}
-
-/* *********************************************************************************************************//**
- * Updates the m_userParticleIndex to *a_userParticleIndex* for all particles with PoPs index *a_particleIndex*.
- *
- * @param a_particleIndex       [in]    The PoPs id of the particle whose userPid is to be set.
- * @param a_userParticleIndex   [in]    The particle id specified by the user.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE void Reaction::referenceOrphanProductsToReaction( Vector<Product *> &a_associatedOrphanProducts ) const {
+LUPI_HOST void Reaction::setUserParticleIndexViaIntid( int a_particleIntid, int a_userParticleIndex ) {
 
 #ifdef MCGIDI_USE_OUTPUT_CHANNEL
-    a_associatedOrphanProducts.reserve( m_outputChannel->referenceOrphanProductsToReaction( a_associatedOrphanProducts, false ) );
-    m_outputChannel->referenceOrphanProductsToReaction( a_associatedOrphanProducts, true );
+    m_outputChannel->setUserParticleIndexViaIntid( a_particleIntid, a_userParticleIndex );
 #else
-    a_associatedOrphanProducts.reserve( m_products.size( ) );
+    for( auto productIter = m_products.begin( ); productIter != m_products.end( ); ++productIter ) {
+        (*productIter)->setUserParticleIndexViaIntid( a_particleIntid, a_userParticleIndex );
+    }
+
+    for( auto iter = m_delayedNeutrons.begin( ); iter != m_delayedNeutrons.end( ); ++iter )
+        (*iter)->setUserParticleIndexViaIntid( a_particleIntid, a_userParticleIndex );
+#endif
+
+    for( auto i1 = 0; i1 < m_productIntids.size( ); ++i1 ) {
+        if( m_productIntids[i1] == a_particleIntid ) m_userProductIndices[i1] = a_userParticleIndex;
+    }
+
+    for( auto i1 = 0; i1 < m_productIntidsTransportable.size( ); ++i1 ) {
+        if( m_productIntidsTransportable[i1] == a_particleIntid ) m_userProductIndicesTransportable[i1] = a_userParticleIndex;
+    }
+
+    if( a_particleIntid == m_fissionResiduaIntid ) m_fissionResiduaUserIndex = a_userParticleIndex;
+
+    if( m_GRIN_capture != nullptr ) m_GRIN_capture->setUserParticleIndexViaIntid( a_particleIntid, a_userParticleIndex );
+    if( m_GRIN_inelastic != nullptr ) m_GRIN_inelastic->setUserParticleIndexViaIntid( a_particleIntid, a_userParticleIndex );
+}
+
+/* *********************************************************************************************************//**
+ * This method calls the **setModelDBRC_data* method on the first product of *this* with *a_modelDBRC_data*.
+ *
+ * @param a_modelDBRC_data      [in]    The instance storing data needed to treat the DRRC upscatter mode.
+ ***********************************************************************************************************/
+
+LUPI_HOST void Reaction::setModelDBRC_data( Sampling::Upscatter::ModelDBRC_data *a_modelDBRC_data ) {
+
+#ifdef MCGIDI_USE_OUTPUT_CHANNEL
+    m_outputChannel->setModelDBRC_data( a_modelDBRC_data );
+#else
+    m_products[0]->setModelDBRC_data( a_modelDBRC_data );
+#endif
+}
+
+/* *********************************************************************************************************//**
+ * Adds the associated orphan products of an orphan product reaction to *a_associatedOrphanProducts*.
+ *
+ * @param a_associatedOrphanProducts    [in]    A list where the associated orphan products are added to.
+ ***********************************************************************************************************/
+
+LUPI_HOST void Reaction::addOrphanProductToProductList( std::vector<Product *> &a_associatedOrphanProducts ) const {
+
+#ifdef MCGIDI_USE_OUTPUT_CHANNEL
+    m_outputChannel->addOrphanProductToProductList( a_associatedOrphanProducts );
+#else
     for( auto productIter = m_products.begin( ); productIter != m_products.end( ); ++productIter ) {
         a_associatedOrphanProducts.push_back( *productIter );
     }
@@ -311,167 +478,54 @@ LUPI_HOST_DEVICE void Reaction::referenceOrphanProductsToReaction( Vector<Produc
 }
 
 /* *********************************************************************************************************//**
- * This method adds sampled products to *a_products*.
+ * Adds the associated orphan products of an orphan product reaction to *a_associatedOrphanProducts*.
  *
- * @param a_protare                 [in]    The Protare this Reaction belongs to.
- * @param a_projectileEnergy        [in]    The energy of the projectile.
- * @param a_input                   [in]    Sample options requested by user.
- * @param a_userrng                 [in]    A random number generator that takes the state *a_rngState* and returns a double in the range [0.0, 1.0).
- * @param a_rngState                [in]    The current state for the random number generator.
- * @param a_products                [in]    The object to add all sampled products to.
- * @param a_checkOrphanProducts     [in]    If true, associated orphan products are also sampled.
+ * @param a_associatedOrphanProducts    [in]    A list where the associated orphan products are added to.
  ***********************************************************************************************************/
 
-LUPI_HOST_DEVICE void Reaction::sampleProducts( Protare const *a_protare, double a_projectileEnergy, Sampling::Input &a_input, 
-                double (*a_userrng)( void * ), void *a_rngState, Sampling::ProductHandler &a_products, bool a_checkOrphanProducts ) const {
-
-    double projectileEnergy = a_projectileEnergy;
-
-    a_input.m_reaction = this;
-    a_input.m_projectileMass = m_projectileMass;
-    a_input.m_targetMass = m_targetMass;
-
-    a_input.m_dataInTargetFrame = false;
-    if( upscatterModelASupported( ) && ( a_input.m_upscatterModel == Sampling::Upscatter::Model::A ) ) {
-
-        a_input.m_dataInTargetFrame = sampleTargetBetaForUpscatterModelA( a_protare, a_projectileEnergy, a_input, a_userrng, a_rngState );
-        if( a_input.m_dataInTargetFrame ) projectileEnergy = a_input.m_projectileEnergy;
-    }
+LUPI_HOST_DEVICE void Reaction::addOrphanProductToProductList( Vector<Product *> &a_associatedOrphanProducts ) const {
 
 #ifdef MCGIDI_USE_OUTPUT_CHANNEL
-    m_outputChannel->sampleProducts( a_protare, projectileEnergy, a_input, a_userrng, a_rngState, a_products );
+    m_outputChannel->addOrphanProductToProductList( a_associatedOrphanProducts );
 #else
-    if( m_hasFinalStatePhotons ) {
-        double random = a_userrng( a_rngState );
-        double cumulative = 0.0;
-        bool sampled = false;
-        for( auto productIter = m_products.begin( ); productIter != m_products.end( ); ++productIter ) {
-            cumulative += (*productIter)->multiplicity( )->evaluate( projectileEnergy );
-            if( cumulative >= random ) {
-                (*productIter)->sampleFinalState( a_protare, projectileEnergy, a_input, a_userrng, a_rngState, a_products );
-                sampled = true;
-                break;
-            }
-        }
-        if( !sampled ) {     // BRB: FIXME: still need to code for continuum photon.
-        } }
-    else {
-        for( auto productIter = m_products.begin( ); productIter != m_products.end( ); ++productIter ) {
-            (*productIter)->sampleProducts( a_protare, projectileEnergy, a_input, a_userrng, a_rngState, a_products );
-        }
-    }
-
-    if( m_totalDelayedNeutronMultiplicity != nullptr ) {
-        double totalDelayedNeutronMultiplicity = m_totalDelayedNeutronMultiplicity->evaluate( a_projectileEnergy );
-
-        if( a_userrng( a_rngState ) < totalDelayedNeutronMultiplicity ) {       // Assumes that totalDelayedNeutronMultiplicity < 1.0, which it is.
-            double sum = 0.0;
-
-            totalDelayedNeutronMultiplicity *= a_userrng( a_rngState );
-            for( std::size_t i1 = 0; i1 < (std::size_t) m_delayedNeutrons.size( ); ++i1 ) {
-                DelayedNeutron const *delayedNeutron1 = m_delayedNeutrons[i1];
-                Product const &product = delayedNeutron1->product( );
-
-                sum += product.multiplicity( )->evaluate( a_projectileEnergy );
-                if( sum >= totalDelayedNeutronMultiplicity ) {
-                    product.distribution( )->sample( a_projectileEnergy, a_input, a_userrng, a_rngState );
-                    a_input.m_delayedNeutronIndex = delayedNeutron1->delayedNeutronIndex( );
-                    a_input.m_delayedNeutronDecayRate = delayedNeutron1->rate( );
-                    a_products.add( a_projectileEnergy, product.index( ), product.userParticleIndex( ), product.mass( ), a_input, a_userrng, a_rngState, false );
-                    break;
-                }
-            }
-        }
-    }
-
-#endif
-
-    if( a_checkOrphanProducts ) {
-        for( auto productIter = m_associatedOrphanProducts.begin( ); productIter != m_associatedOrphanProducts.end( ); ++productIter ) {
-            (*productIter)->sampleProducts( a_protare, projectileEnergy, a_input, a_userrng, a_rngState, a_products );
-        }
-    }
-}
-
-/* *********************************************************************************************************//**
- * This method adds a null product to *a_products*. When running in multi-group mode, a sampled reaction may be rejected if the threshold 
- * is in the multi-group that the projectile is in. If this happens, only null products should be returned. This type of behavior was need
- * in MCAPM but is probably not needed for MCGIDI.
- *
- * @param a_protare                 [in]    The Protare this Reaction belongs to.
- * @param a_projectileEnergy        [in]    The energy of the projectile.
- * @param a_input                   [in]    Sample options requested by user.
- * @param a_userrng                 [in]    A random number generator that takes the state *a_rngState* and returns a double in the range [0.0, 1.0).
- * @param a_rngState                [in]    The current state for the random number generator.
- * @param a_products                [in]    The object to add all sampled products to.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE void Reaction::sampleNullProducts( Protare const &a_protare, double a_projectileEnergy, Sampling::Input &a_input, 
-        double (*a_userrng)( void * ), void *a_rngState, Sampling::ProductHandler &a_products ) {
-
-    a_input.m_sampledType = Sampling::SampledType::uncorrelatedBody;
-    a_input.m_dataInTargetFrame = false;
-    a_input.m_frame = GIDI::Frame::lab;
-    a_input.m_delayedNeutronIndex = -1;
-    a_input.m_delayedNeutronDecayRate = 0.0;
-
-    a_input.m_energyOut1 = a_projectileEnergy;
-    a_input.m_mu = 1.0;
-    a_input.m_phi = 0.0;
-
-    a_products.add( a_projectileEnergy, a_protare.projectileIndex( ), a_protare.projectileUserIndex( ), a_protare.projectileMass( ), a_input, a_userrng, a_rngState, false );
-}
-
-/* *********************************************************************************************************//**
- * Returns the weight for a project with energy *a_energy_in* to cause this reaction to emitted a particle of index
- * *a_pid* at angle *a_mu_lab* as seen in the lab frame. If a particle is emitted, *a_energy_out* is its sampled outgoing energy. 
- *
- * @param a_pid                     [in]    The index of the particle to emit.
- * @param a_temperature             [in]    Specifies the temperature of the material.
- * @param a_energy_in               [in]    The energy of the incident particle.
- * @param a_mu_lab                  [in]    The desired mu in the lab frame for the emitted particle.
- * @param a_energy_out              [in]    The energy of the emitted outgoing particle.
- * @param a_userrng                 [in]    The random number generator.
- * @param a_rngState                [in]    The state to pass to the random number generator.
- * @param a_cumulative_weight       [in]    The cumulative multiplicity.
- * @param a_checkOrphanProducts     [in]    If true, associated orphan products are also sampled.
- *
- * @return                                  The weight that the particle is emitted into mu *a_mu_lab*.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE double Reaction::angleBiasing( int a_pid, double a_temperature, double a_energy_in, double a_mu_lab, double &a_energy_out, 
-                double (*a_userrng)( void * ), void *a_rngState, double *a_cumulative_weight, bool a_checkOrphanProducts ) const {
-
-    double cumulative_weight1 = 0.0;
-    if( a_cumulative_weight == nullptr ) a_cumulative_weight = &cumulative_weight1;
-    double weight1 = 0.0;
-
-#ifdef MCGIDI_USE_OUTPUT_CHANNEL
-    m_outputChannel->angleBiasing( this, a_pid, a_temperature, a_energy_in, a_mu_lab, weight1, a_energy_out, a_userrng, a_rngState, *a_cumulative_weight );
-#else
-
     for( auto productIter = m_products.begin( ); productIter != m_products.end( ); ++productIter ) {
-        (*productIter)->angleBiasing( this, a_pid, a_temperature, a_energy_in, a_mu_lab, weight1, a_energy_out, a_userrng, a_rngState, *a_cumulative_weight );
-    }
-
-    if( ( m_totalDelayedNeutronMultiplicity != nullptr ) && ( a_pid == neutronIndex( ) ) ) {
-        for( std::size_t i1 = 0; i1 < (std::size_t) m_delayedNeutrons.size( ); ++i1 ) {
-            DelayedNeutron const *delayedNeutron1 = m_delayedNeutrons[i1];
-            Product const &product = delayedNeutron1->product( );
-
-            product.angleBiasing( this, a_pid, a_temperature, a_energy_in, a_mu_lab, weight1, a_energy_out, a_userrng, a_rngState, *a_cumulative_weight );
-        }
+        a_associatedOrphanProducts.push_back( *productIter );
     }
 #endif
+}
 
-    if( a_checkOrphanProducts ) {
-        for( auto productIter = m_associatedOrphanProducts.begin( ); productIter != m_associatedOrphanProducts.end( ); ++productIter ) {
-            (*productIter)->angleBiasing( this, a_pid, a_temperature, a_energy_in, a_mu_lab, weight1, a_energy_out, a_userrng, 
-                    a_rngState, *a_cumulative_weight );
-        }
+/* *********************************************************************************************************//**
+ * Adds the associated orphan products of an orphan product to *a_associatedOrphanProducts*.
+ *
+ * @param a_associatedOrphanProducts    [in]    A list where the associated orphan products are added to.
+ ***********************************************************************************************************/
+
+LUPI_HOST_DEVICE void Reaction::addOrphanProductToProductList( Vector<Reaction *> &a_orphanProducts ) {
+
+    for( auto associatedOrphanProductIndex = m_associatedOrphanProductIndices.begin( );
+            associatedOrphanProductIndex != m_associatedOrphanProductIndices.end( ); ++associatedOrphanProductIndex ) {
+        Reaction *orphanProduct = a_orphanProducts[*associatedOrphanProductIndex];
+        orphanProduct->addOrphanProductToProductList( m_associatedOrphanProducts );
     }
+}
 
-    return( weight1 );
+/* *********************************************************************************************************//**
+ * Adds the contents of **a_associatedOrphanProductIndcies** and **a_associatedOrphanProducts** to this instance.
+ *
+ * @param a_associatedOrphanProductIndcies  [in]    The list of indices of the orphanProduct reaction that make up the product in **a_associatedOrphanProducts**.
+ * @param a_associatedOrphanProducts        [in]    The list of pointers to the associated orphan products.
+ ***********************************************************************************************************/
+
+LUPI_HOST void Reaction::setOrphanProductData( std::vector<int> const &a_associatedOrphanProductIndcies,
+                std::vector<Product *> const &a_associatedOrphanProducts ) {
+
+    m_associatedOrphanProductIndices.reserve( a_associatedOrphanProductIndcies.size( ) );
+    for( auto iter = a_associatedOrphanProductIndcies.begin( ); iter != a_associatedOrphanProductIndcies.end( ); ++iter )
+        m_associatedOrphanProductIndices.push_back( *iter );
+
+    m_associatedOrphanProducts.reserve( a_associatedOrphanProducts.size( ) );
+    for( auto iter = a_associatedOrphanProducts.begin( ); iter != a_associatedOrphanProducts.end( ); ++iter )
+        m_associatedOrphanProducts.push_back( *iter );
 }
 
 /* *********************************************************************************************************//**
@@ -484,12 +538,13 @@ LUPI_HOST_DEVICE double Reaction::angleBiasing( int a_pid, double a_temperature,
 
 LUPI_HOST_DEVICE void Reaction::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
     
+    DATA_MEMBER_INT( m_GIDI_reactionIndex, a_buffer, a_mode );
     DATA_MEMBER_STRING( m_label, a_buffer, a_mode );
     DATA_MEMBER_INT( m_ENDF_MT, a_buffer, a_mode );
     DATA_MEMBER_INT( m_ENDL_C, a_buffer, a_mode );
     DATA_MEMBER_INT( m_ENDL_S, a_buffer, a_mode );
-    DATA_MEMBER_INT( m_neutronIndex, a_buffer, a_mode );
     DATA_MEMBER_INT( m_initialStateIndex, a_buffer, a_mode );
+    DATA_MEMBER_INT( m_neutronIndex, a_buffer, a_mode );
     DATA_MEMBER_CAST( m_hasFission, a_buffer, a_mode, bool );
     DATA_MEMBER_FLOAT( m_projectileMass, a_buffer, a_mode );
     DATA_MEMBER_FLOAT( m_targetMass, a_buffer, a_mode );
@@ -497,12 +552,20 @@ LUPI_HOST_DEVICE void Reaction::serialize( LUPI::DataBuffer &a_buffer, LUPI::Dat
     DATA_MEMBER_FLOAT( m_twoBodyThreshold, a_buffer, a_mode );
     DATA_MEMBER_CAST( m_upscatterModelASupported, a_buffer, a_mode, bool );
     DATA_MEMBER_CAST( m_hasFinalStatePhotons, a_buffer, a_mode, bool );
+    DATA_MEMBER_INT( m_fissionResiduaIntid, a_buffer, a_mode );
+    DATA_MEMBER_INT( m_fissionResiduaIndex, a_buffer, a_mode );
+    DATA_MEMBER_INT( m_fissionResiduaUserIndex, a_buffer, a_mode );
+    serializeFissionResiduals( m_fissionResiduals, a_buffer, a_mode );
+    DATA_MEMBER_FLOAT( m_fissionResidualMass, a_buffer, a_mode );
     DATA_MEMBER_VECTOR_DOUBLE( m_upscatterModelACrossSection, a_buffer, a_mode );
+
+    DATA_MEMBER_VECTOR_INT( m_productIntids, a_buffer, a_mode );
     DATA_MEMBER_VECTOR_INT( m_productIndices, a_buffer, a_mode );
     DATA_MEMBER_VECTOR_INT( m_userProductIndices, a_buffer, a_mode );
+    DATA_MEMBER_VECTOR_INT( m_productMultiplicities, a_buffer, a_mode );
+    DATA_MEMBER_VECTOR_INT( m_productIntidsTransportable, a_buffer, a_mode );
     DATA_MEMBER_VECTOR_INT( m_productIndicesTransportable, a_buffer, a_mode );
     DATA_MEMBER_VECTOR_INT( m_userProductIndicesTransportable, a_buffer, a_mode );
-    DATA_MEMBER_VECTOR_INT( m_productMultiplicities, a_buffer, a_mode );
 
 #ifdef MCGIDI_USE_OUTPUT_CHANNEL
     bool haveChannel = m_outputChannel != nullptr;
@@ -528,12 +591,59 @@ LUPI_HOST_DEVICE void Reaction::serialize( LUPI::DataBuffer &a_buffer, LUPI::Dat
     serializeDelayedNeutrons( a_buffer, a_mode, m_delayedNeutrons );
 #endif
 
-    DATA_MEMBER_INT( m_associatedOrphanProductIndex, a_buffer, a_mode );
-    serializeProducts( a_buffer, a_mode, m_associatedOrphanProducts );
+    DATA_MEMBER_VECTOR_INT( m_associatedOrphanProductIndices, a_buffer, a_mode );
+
+    std::size_t vectorSize = m_associatedOrphanProducts.size( );
+    int vectorSizeInt = (int) vectorSize;
+    DATA_MEMBER_INT( vectorSizeInt, a_buffer, a_mode );
+    vectorSize = (std::size_t) vectorSizeInt;
+    if( a_mode == LUPI::DataBuffer::Mode::Unpack ) {
+        m_associatedOrphanProducts.reserve( vectorSize, &a_buffer.m_placement ); }
+    else if( a_mode == LUPI::DataBuffer::Mode::Memory ) {
+        a_buffer.m_placement += m_associatedOrphanProducts.internalSize( );
+    }
 
     if( a_mode == LUPI::DataBuffer::Mode::Unpack ) {
         m_protareSingle = nullptr;
         m_reactionIndex = -1;
+    }
+
+    DATA_MEMBER_CAST( m_GRIN_specialSampleProducts, a_buffer, a_mode, bool );
+    DATA_MEMBER_FLOAT( m_GRIN_inelasticThreshold, a_buffer, a_mode );
+    DATA_MEMBER_FLOAT( m_GRIN_maximumCaptureIncidentEnergy, a_buffer, a_mode );
+
+    if( m_GRIN_specialSampleProducts ) {
+        if( a_mode == LUPI::DataBuffer::Mode::Unpack ) {
+            if( a_buffer.m_placement != nullptr ) {
+                if( m_ENDF_MT == 91 ) {
+                    m_GRIN_inelastic = new(a_buffer.m_placement) GRIN_inelastic;
+                    a_buffer.incrementPlacement( sizeof( GRIN_inelastic ) ); }
+                else {
+                    m_GRIN_capture = new(a_buffer.m_placement) GRIN_capture;
+                    a_buffer.incrementPlacement( sizeof( GRIN_capture ) );
+                } }
+            else {
+                if( m_ENDF_MT == 91 ) {
+                    m_GRIN_inelastic = new GRIN_inelastic( ); }
+                else {
+                    m_GRIN_capture = new GRIN_capture( );
+                }
+            }
+        }
+
+        if( a_mode == LUPI::DataBuffer::Mode::Memory ) {
+            if( m_ENDF_MT == 91 ) {
+                a_buffer.incrementPlacement( sizeof( GRIN_inelastic ) ); }
+            else {
+                a_buffer.incrementPlacement( sizeof( GRIN_capture ) );
+            }
+        }
+
+        if( m_ENDF_MT == 91 ) {
+            m_GRIN_inelastic->serialize( a_buffer, a_mode ); }
+        else {
+            m_GRIN_capture->serialize( a_buffer, a_mode );
+        }
     }
 }
 

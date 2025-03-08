@@ -31,6 +31,8 @@ Branching1d::Branching1d( Construction::Settings const &a_construction, HAPI::No
         m_initialState( a_setupInfo.m_initialState ),
         m_multiplicity( 0.0 ) {
 
+    PoPI::NuclideGammaBranchStateInfo const *nuclideGammaBranchStateInfo = a_setupInfo.m_protare->nuclideGammaBranchStateInfos( ).find( m_initialState );
+    m_multiplicity = nuclideGammaBranchStateInfo->multiplicity( );
 }
 
 /* *********************************************************************************************************//**
@@ -70,7 +72,7 @@ double Branching1d::domainMax( ) const {
  * @return                          The value of the function evaluated at *a_x1*.
  ***********************************************************************************************************/
 
-double Branching1d::evaluate( double a_x1 ) const {
+double Branching1d::evaluate( LUPI_maybeUnused double a_x1 ) const {
 
     return( m_multiplicity );
 }

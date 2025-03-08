@@ -87,7 +87,8 @@ Product::Product( Construction::Settings const &a_construction, HAPI::Node const
 
     HAPI::Node const _outputChannel = a_node.child( GIDI_outputChannelChars );
     a_setupInfo.m_outputChannelLevel += 1;
-    if( ! _outputChannel.empty( ) ) m_outputChannel = new OutputChannel( a_construction, _outputChannel, a_setupInfo, a_pops, a_internalPoPs, a_styles, false );
+    if( ! _outputChannel.empty( ) ) 
+        m_outputChannel = new OutputChannel( a_construction, _outputChannel, a_setupInfo, a_pops, a_internalPoPs, a_styles, false, false );
     a_setupInfo.m_outputChannelLevel -= 1;
 
     if( m_outputChannel == nullptr ) {
@@ -95,7 +96,7 @@ Product::Product( Construction::Settings const &a_construction, HAPI::Node const
             GIDI::Functions::Function1dForm const *function1d = m_multiplicity.get<GIDI::Functions::Function1dForm>( 0 );
 
             if( function1d->type( ) == FormType::constant1d ) {
-                m_productMultiplicity = function1d->evaluate( 0.0 ); }
+                m_productMultiplicity = int( function1d->evaluate( 0.0 ) ); }
             else if( function1d->type( ) != FormType::unspecified1d ) {
                 m_productMultiplicity = -1;
             }
@@ -536,6 +537,33 @@ void Product::incompleteParticles( Transporting::Settings const &a_settings, std
     else {
         m_outputChannel->incompleteParticles( a_settings, a_incompleteParticles );
     }
+}
+
+/* *********************************************************************************************************//**
+ * This methods calculates multi-group data for all needed components and adds each component's multi-group with label *a_heatedMultiGroupLabel*.
+ *
+ * @param   a_temperatureInfo                   [in]    Specifies the temperature and labels use to lookup the requested data.
+ * @param   a_heatedMultiGroupLabel             [in]    The label of the style for the multi-group data being added.
+ * @param   a_multiGroupCalulationInformation   [in]    Store multi-group boundary and flux data used for multi-grouping.
+ * @param   a_crossSectionXYs1d                 [in[    The cross section weight.
+ ***********************************************************************************************************/
+
+void Product::calculateMultiGroupData( ProtareSingle const *a_protare, Styles::TemperatureInfo const &a_temperatureInfo, 
+                std::string const &a_heatedMultiGroupLabel, MultiGroupCalulationInformation const &a_multiGroupCalulationInformation, 
+                Functions::XYs1d const &a_crossSectionXYs1d ) {
+
+// FIXME, need to calculateMultiGroupData for the distribution.
+
+    if( isCompleteParticle( ) ) {
+        if( m_multiplicity.find( a_heatedMultiGroupLabel ) != m_multiplicity.end( ) ) {
+            calculate1dMultiGroupDataInComponent( a_protare, a_heatedMultiGroupLabel, a_multiGroupCalulationInformation, m_multiplicity, a_crossSectionXYs1d );
+            calculate1dMultiGroupDataInComponent( a_protare, a_heatedMultiGroupLabel, a_multiGroupCalulationInformation, m_averageEnergy, a_crossSectionXYs1d );
+            calculate1dMultiGroupDataInComponent( a_protare, a_heatedMultiGroupLabel, a_multiGroupCalulationInformation, m_averageMomentum, a_crossSectionXYs1d );
+        }
+    }
+
+    if( m_outputChannel != nullptr ) 
+        m_outputChannel->calculateMultiGroupData( a_protare, a_temperatureInfo, a_heatedMultiGroupLabel, a_multiGroupCalulationInformation, a_crossSectionXYs1d );
 }
 
 /* *********************************************************************************************************//**

@@ -1,9 +1,13 @@
 d 500001002 h2
+index != i1 for id = d, intid = 500001002, i1 = 0 and index = 23
 t 500001003 h3
+index != i1 for id = t, intid = 500001003, i1 = 1 and index = 25
 h 500002003 he3
+index != i1 for id = h, intid = 500002003, i1 = 2 and index = 38
 a 500002004 he4
-Na24_m1 481011024 Na24_m1
-Al26_m1 481013026 Al26_m1
+index != i1 for id = a, intid = 500002004, i1 = 3 and index = 40
+Na24_m1 1501011024 Na24_m1
+Al26_m1 1501013026 Al26_m1
 gamma -1 
 photon 1000000000 photon
 e- 1010000000 e-
@@ -14,8 +18,8 @@ p 1020000001 p
 p_anti -1020000001 p_anti
 HinCH2 -1 
 tnsl-Al27 -1 
-FissionProductENDL99120 1980099120 FissionProductENDL99120
-FissionProductENDL99125 1980099125 FissionProductENDL99125
+FissionProductENDL99120 1990099120 FissionProductENDL99120
+FissionProductENDL99125 1990099125 FissionProductENDL99125
 h0 500001000 h0
 H0 1000 H0
 h1 500001001 h1
@@ -6612,3 +6616,5 @@ ts292 500117292 ts292
 Ts292 117292 Ts292
 og293 500118293 og293
 Og293 118293 Og293
+size = 6732
+intidCounter = 6608

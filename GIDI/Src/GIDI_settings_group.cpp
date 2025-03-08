@@ -79,6 +79,24 @@ MultiGroup::~MultiGroup( ) {
 }
 
 /* *********************************************************************************************************//**
+ * The assignment operator. This method sets the members of *this* to those of *a_rhs*.
+ *
+ * @param a_rhs                     [in]    Instance whose member are used to set the members of *this*.
+ *
+ * @return                                  A reference to the updated MultiGroup instance.
+ ***********************************************************************************************************/
+
+MultiGroup &MultiGroup::operator=( MultiGroup const &a_rhs ) {
+
+    if( this != &a_rhs ) {
+        m_label = a_rhs.label( );
+        m_boundaries = a_rhs.boundaries( );
+    }
+
+    return( *this );
+}
+
+/* *********************************************************************************************************//**
  * Returns the multi-group index whose boundaries enclose *a_energy*. If *a_encloseOutOfRange* is true and
  * *a_energy* is below the lowest boundary, 0 is returned, otherwise -2 is returned. If *a_encloseOutOfRange* is true and
  * *a_energy* is above the highest boundary, the last multi-group index is returned, otherwise -1 is returned.

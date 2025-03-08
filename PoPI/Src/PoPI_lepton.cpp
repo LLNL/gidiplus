@@ -25,7 +25,7 @@ namespace PoPI {
  * @param a_parent          [in]    The parent suite that will contain *this*.
  ***********************************************************************************************************/
 
-Lepton::Lepton( HAPI::Node const &a_node, Database *a_DB, Database *a_parent ) :
+Lepton::Lepton( HAPI::Node const &a_node, Database *a_DB, LUPI_maybeUnused Database *a_parent ) :
         Particle( a_node, Particle_class::lepton, PoPI_leptonChars ),
         m_generation( a_node.attribute( PoPI_generationChars ).value( ) ) {
 

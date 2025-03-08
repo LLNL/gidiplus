@@ -26,7 +26,7 @@ namespace GIDI {
  * @param a_TNSL                [in]     The TNSL **ProtareSingle**.
  ***********************************************************************************************************/
 
-ProtareTNSL::ProtareTNSL( Construction::Settings const &a_construction, ProtareSingle *a_protare, ProtareSingle *a_TNSL ) :
+ProtareTNSL::ProtareTNSL( LUPI_maybeUnused Construction::Settings const &a_construction, ProtareSingle *a_protare, ProtareSingle *a_TNSL ) :
         m_protare( a_protare ),
         m_TNSL( a_TNSL ),
         m_elasticReaction( nullptr ) {
@@ -116,7 +116,7 @@ std::size_t ProtareTNSL::maximumTNSL_MultiGroupIndex( Styles::TemperatureInfo co
  * @param a_vectorTNSL          [in]        The vector from the TNSL protare.
  ******************************************************************/
 
-void ProtareTNSL::combineVectors( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, Vector &a_vector, Vector const &a_vectorElastic, Vector const &a_vectorTNSL ) const {
+void ProtareTNSL::combineVectors( LUPI_maybeUnused Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, Vector &a_vector, Vector const &a_vectorElastic, Vector const &a_vectorTNSL ) const {
 
     if( a_vectorTNSL.size( ) == 0 ) return;
 
@@ -135,7 +135,7 @@ void ProtareTNSL::combineVectors( Transporting::MG const &a_settings, Styles::Te
  * @param a_matrixTNSL          [in]        The matrix from the TNSL protare.
  ******************************************************************/
 
-void ProtareTNSL::combineMatrices( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, Matrix &a_matrix, Matrix const &a_matrixElastic, Matrix const &a_matrixTNSL ) const {
+void ProtareTNSL::combineMatrices( LUPI_maybeUnused Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, Matrix &a_matrix, Matrix const &a_matrixElastic, Matrix const &a_matrixTNSL ) const {
 
     if( a_matrixTNSL.size( ) == 0 ) return;
 
@@ -349,6 +349,19 @@ Styles::Suite const &ProtareTNSL::styles( ) const {
 }
 
 /* *********************************************************************************************************//**
+ * Returns the intid for the requested particle or -1 if the particle is not in *m_protare* PoPs database.
+ *
+ * @param a_id                 [in]    The GNDS PoPs id for particle whose intd is requested.
+ *
+ * @return                             C++ int for the requested particle or -1 if particle is not in PoPs. 
+ ******************************************************************/
+
+int ProtareTNSL::intid( std::string const &a_id ) const {
+
+    return( m_protare->intid( a_id ) );
+}
+
+/* *********************************************************************************************************//**
  * Calls productIDs for each Protare contained in *this*.
  *
  * @param   a_ids                   [in]        Contains the list of particle ids.
@@ -497,6 +510,17 @@ Reaction *ProtareTNSL::orphanProduct( std::size_t a_index ) {
 Reaction const *ProtareTNSL::orphanProduct( std::size_t a_index ) const {
 
     return( m_protare->orphanProduct( a_index ) );
+}
+
+/* *********************************************************************************************************//**
+ * Re-indexs the reactions in the reactions, orphanProducts and fissionComponents suites.
+ *
+ ***********************************************************************************************************/
+    
+void ProtareTNSL::updateReactionIndices( LUPI_maybeUnused int a_offset ) const {
+
+    m_TNSL->updateReactionIndices( 0 );
+    m_protare->updateReactionIndices( m_TNSL->numberOfReactions( ) );
 }
 
 /* *********************************************************************************************************//**

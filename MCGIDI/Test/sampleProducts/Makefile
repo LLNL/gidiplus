@@ -28,6 +28,8 @@ check: sampleProducts
 	$(PYTHON) diffKE.py sampleProducts/sampleProducts Benchmarks/sampleProducts.Th227.np.Delayed.out Outputs/sampleProducts.Th227.np.Delayed.out
 	./sampleProducts --tid Th227 -p > Outputs/sampleProducts.Th227.np.noDelayed.out
 	$(PYTHON) diffKE.py sampleProducts/sampleProducts Benchmarks/sampleProducts.Th227.np.noDelayed.out Outputs/sampleProducts.Th227.np.noDelayed.out
+	./sampleProducts --tid Th227 --all --ENDL99120 > Outputs/sampleProducts.Th227.noDelayed.ENDL99120.out
+	$(PYTHON) diffKE.py sampleProducts/sampleProducts Benchmarks/sampleProducts.Th227.noDelayed.ENDL99120.out Outputs/sampleProducts.Th227.noDelayed.ENDL99120.out
 
 	./sampleProducts --pid photon --tid O16 --map ../../../GIDI/Test/Data/MG_MC/all.map --pa > Outputs/sampleProducts.photon.pa.out
 	$(PYTHON) diffKE.py sampleProducts/sampleProducts Benchmarks/sampleProducts.photon.pa.out Outputs/sampleProducts.photon.pa.out

@@ -53,9 +53,13 @@ void main2( int argc, char **argv ) {
     argvOptions argv_options( __FILE__, description );
     ParseTestOptions parseTestOptions( argv_options, argc, argv );
 
+    argv_options.add( argvOption( "--ENDL99120", false, "If present, ENDL two 99120 products are list for a fission reaction." ) );
+
     parseTestOptions.parse( );
 
     GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, parseTestOptions.photonMode( ) );
+    if( argv_options.find( "--ENDL99120" )->present( ) )
+        construction.setFissionResiduals( GIDI::Construction::FissionResiduals::ENDL99120 );
     construction.setLazyParsing( false );               // This code will fail in the threading loop below unless this is false.
     GIDI::Protare *protare = parseTestOptions.protare( pops, "../../../TestData/PoPs/pops.xml", "../../../GIDI/Test/Data/MG_MC/all_maps.map", 
         construction, PoPI::IDs::neutron, "O16" );
@@ -123,9 +127,9 @@ void read_MCGIDI_protare( PoPI::Database const &a_pops, GIDI::Protare *a_protare
     MCGIDI::Protare *MCProtare;
     MCProtare = MCGIDI::protareFromGIDIProtare( smr1, *a_protare, a_pops, a_settings, particles, domainHash, a_temperatures, reactionsToExclude );
 
-    MCProtare->setUserParticleIndex( a_pops[PoPI::IDs::neutron], 0 );
-    MCProtare->setUserParticleIndex( a_pops["H2"], 10 );
-    MCProtare->setUserParticleIndex( a_pops[PoPI::IDs::photon], 11 );
+    MCProtare->setUserParticleIndexViaIntid( a_pops.intid( PoPI::IDs::neutron ), 0 );
+    MCProtare->setUserParticleIndexViaIntid( a_pops.intid( "H2" ), 10 );
+    MCProtare->setUserParticleIndexViaIntid( a_pops.intid( PoPI::IDs::photon ), 11 );
 
     printProductList( a_pops, MCProtare, true, a_outputLines );
     printProductList( a_pops, MCProtare, false, a_outputLines );
@@ -137,7 +141,7 @@ void read_MCGIDI_protare( PoPI::Database const &a_pops, GIDI::Protare *a_protare
 */
 void printProductList( PoPI::Database const &a_pops, MCGIDI::Protare * a_protare, bool a_transportablesOnly, std::string &a_outputLines ) {
 
-    MCGIDI::Vector<int> indices = a_protare->productIndices( a_transportablesOnly );
+    MCGIDI::Vector<int> intids = a_protare->productIntids( a_transportablesOnly );
     MCGIDI::Vector<int> userIndices = a_protare->userProductIndices( a_transportablesOnly );
     std::string aSpace( " " );
 
@@ -148,9 +152,11 @@ void printProductList( PoPI::Database const &a_pops, MCGIDI::Protare * a_protare
         a_outputLines += "0";
     }
     a_outputLines += '\n';
-    for( auto i1 = 0; i1 < indices.size( ); ++i1 ) {
-        PoPI::Base const &particle = a_pops.get<PoPI::Base>( indices[i1] );
-        std::string index = std::to_string( indices[i1] );
+    for( auto i1 = 0; i1 < intids.size( ); ++i1 ) {
+        PoPI::ParseIntidInfo parseIntidInfo( intids[i1] );
+        std::string pid = parseIntidInfo.id( );
+        PoPI::Base const &particle = a_pops.get<PoPI::Base>( pid );
+        std::string index = std::to_string( intids[i1] );
 
         a_outputLines += "        ";
         a_outputLines +=  index;

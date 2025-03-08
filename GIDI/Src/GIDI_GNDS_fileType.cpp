@@ -8,7 +8,9 @@
 */
 
 #include <fcntl.h>
-#include <unistd.h>
+#include <stdio.h>
+
+#include <GIDI.hpp>
 
 #ifdef GIDI_PLUS_INCLUDE_EXPAT
     #include <expat.h>
@@ -22,16 +24,14 @@
     enum XML_Status { XML_STATUS_ERROR = 0, XML_STATUS_OK = 1 };
     #define XML_TRUE 1
 
-    XML_Parser XML_ParserCreate( void *a_dummy ) { return( nullptr ); }
-    void XML_ParserFree( XML_Parser a_XML_Parser ) {}
-    void XML_SetElementHandler( XML_Parser a_xmlParser, XML_StartElementHandler a_startElementHandler, XML_EndElementHandler a_endElementHandler ) { }
-    void XML_SetUserData( XML_Parser a_xmlParser, void *a_userData ) {}
-    enum XML_Status XML_Parse( XML_Parser a_xmlParser, char const *a_buffer, int a_count, int a_isFinal ) { return( XML_STATUS_ERROR ); }
+    XML_Parser XML_ParserCreate( LUPI_maybeUnused void *a_dummy ) { return( nullptr ); }
+    void XML_ParserFree( LUPI_maybeUnused XML_Parser a_XML_Parser ) {}
+    void XML_SetElementHandler( LUPI_maybeUnused XML_Parser a_xmlParser, LUPI_maybeUnused XML_StartElementHandler a_startElementHandler, LUPI_maybeUnused XML_EndElementHandler a_endElementHandler ) { }
+    void XML_SetUserData( LUPI_maybeUnused XML_Parser a_xmlParser, LUPI_maybeUnused void *a_userData ) {}
+    enum XML_Status XML_Parse( LUPI_maybeUnused XML_Parser a_xmlParser, LUPI_maybeUnused char const *a_buffer, LUPI_maybeUnused int a_count, LUPI_maybeUnused int a_isFinal ) { return( XML_STATUS_ERROR ); }
 //    XML_GetErrorCode
-    void XML_StopParser( XML_Parser a_xmlParser, XML_Bool a_resumable ) {}
+    void XML_StopParser( LUPI_maybeUnused XML_Parser a_xmlParser, LUPI_maybeUnused XML_Bool a_resumable ) {}
 #endif
-
-#include "GIDI.hpp"
 
 namespace GIDI {
 
@@ -96,6 +96,26 @@ GNDS_FileTypeInfo::GNDS_FileTypeInfo( GNDS_FileTypeInfo const &a_GNDS_fileTypeIn
 }
 
 /* *********************************************************************************************************//**
+ * The assignment operator. This method sets the members of *this* to those of *a_rhs* except for those
+ * not set by base classes.
+ *
+ * @param a_rhs                     [in]    Instance whose member are used to set the members of *this*.
+ ***********************************************************************************************************/
+
+GNDS_FileTypeInfo &GNDS_FileTypeInfo::operator=( GNDS_FileTypeInfo const &a_rhs ) {
+
+    if( this != &a_rhs ) {
+        m_GNDS_fileType = a_rhs.GNDS_fileType( );
+        m_projectileID = a_rhs.projectileID( );
+        m_targetID = a_rhs.targetID( );
+        m_evaluation = a_rhs.evaluation( );
+        m_interaction = a_rhs.interaction( );
+    }
+
+    return( *this );
+}
+
+/* *********************************************************************************************************//**
  * Opens the specified file and parses the first line to determine its GNDS type (i.e., protare (reactionSuite), map or PoPs file).
  * Returns the GNDS type via the GNDS_FileType enum. If the return value and the value of *a_GNDS_fileTypeInfo.GNDS_fileType( )* is 
  * *uninitialized* an error was detected opening the file or by the XML parser (expat). If it is *unknown* the parsed file is an 
@@ -112,19 +132,19 @@ GNDS_FileType GNDS_fileType( std::string const &a_fileName, GNDS_FileTypeInfo &a
     a_GNDS_fileTypeInfo.setGNDS_fileType( GNDS_FileType::uninitialized );
 
     char buffer[10 * 1024 + 1];
-    ssize_t bufferSize = sizeof( buffer ) - 1;
-    int fileDescriptor;
+    size_t bufferSize = sizeof( buffer ) - 1;
+    FILE *fileDescriptor;
 
 #ifdef GIDI_PLUS_NOEXPAT
     throw Exception( "\nGIDI::fileType failed as expat not included." );
 #endif
 
-    fileDescriptor = open( a_fileName.c_str( ), O_RDONLY );
-    if( fileDescriptor < 0 ) throw Exception( "GIDI::fileType failed to open file '" + a_fileName + "'." );
+    fileDescriptor = fopen( a_fileName.c_str( ), "r" );
+    if( fileDescriptor == nullptr ) throw Exception( "GIDI::fileType failed to open file '" + a_fileName + "'." );
 
     XML_Parser xmlParser = XML_ParserCreate( nullptr );
     if( xmlParser == nullptr ) {
-        close( fileDescriptor );
+        fclose( fileDescriptor );
         throw Exception( "XML_ParserCreate failed." );
     }
 
@@ -134,15 +154,15 @@ GNDS_FileType GNDS_fileType( std::string const &a_fileName, GNDS_FileTypeInfo &a
     XML_SetUserData( xmlParser, &userData );
 
     enum XML_Status status;
-    ssize_t count = 0;
-    while( ( count = read( fileDescriptor, buffer, bufferSize ) ) > 0 ) {
+    size_t count = 0;
+    while( ( count = fread( buffer, bufferSize, 1, fileDescriptor ) ) > 0 ) {
         status = XML_Parse( xmlParser, buffer, count, 0 );
         if( status != XML_STATUS_OK ) break;
     }
 
 //    enum XML_Error error = XML_GetErrorCode( xmlParser );
     XML_ParserFree( xmlParser );
-    close( fileDescriptor );
+    fclose( fileDescriptor );
 
     if( status == XML_STATUS_ERROR ) throw Exception( "GIDI::fileType expat parsing error." );
 //      What about other status values like XML_STATUS_SUSPENDED.
@@ -208,7 +228,7 @@ static void xml_startElementHandler( void *a_userData, XML_Char const *a_name, X
  * @return                          enum indicating the GNDS type of file referened by *a_fileName*.
  ***********************************************************************************************************/
 
-static void xml_endElementHandler( void *a_userData, XML_Char const *a_name ) {
+static void xml_endElementHandler( LUPI_maybeUnused void *a_userData, LUPI_maybeUnused XML_Char const *a_name ) {
 
 }
 

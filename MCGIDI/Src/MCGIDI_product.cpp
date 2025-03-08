@@ -21,12 +21,12 @@ namespace MCGIDI {
 
 LUPI_HOST_DEVICE Product::Product( ) :
         m_ID( ),
-        m_index( 0 ),
+        m_intid( -1 ),
+        m_index( -1 ),
         m_userParticleIndex( -1 ),
         m_mass( 0.0 ),
         m_excitationEnergy( 0.0 ),
         m_twoBodyOrder( TwoBodyOrder::notApplicable ),
-        m_neutronIndex( 0 ),
         m_initialStateIndex( -1 ),
         m_multiplicity( nullptr ),
         m_distribution( nullptr ),
@@ -45,14 +45,14 @@ LUPI_HOST_DEVICE Product::Product( ) :
 LUPI_HOST Product::Product( GIDI::Product const *a_product, SetupInfo &a_setupInfo, Transporting::MC const &a_settings, 
                 GIDI::Transporting::Particles const &a_particles, bool a_isFission ) :
         m_ID( a_product->particle( ).ID( ).c_str( ) ),
-        m_index( MCGIDI_popsIndex( a_settings.pops( ), a_product->particle( ).ID( ) ) ),
+        m_intid( MCGIDI_popsIntid( a_setupInfo.m_pops, a_product->particle( ).ID( ) ) ),
+        m_index( MCGIDI_popsIndex( a_setupInfo.m_popsUser, a_product->particle( ).ID( ) ) ),
         m_userParticleIndex( -1 ),
         m_label( a_product->label( ).c_str( ) ),
         m_isCompleteParticle( a_product->isCompleteParticle( ) ),
         m_mass( a_product->particle( ).mass( "MeV/c**2" ) ),         // Includes nuclear excitation energy.
         m_excitationEnergy( a_product->particle( ).excitationEnergy( ).value( ) ),
         m_twoBodyOrder( a_setupInfo.m_twoBodyOrder ),
-        m_neutronIndex( a_settings.neutronIndex( ) ),
         m_initialStateIndex( -1 ),
         m_multiplicity( Functions::parseMultiplicityFunction1d( a_setupInfo, a_settings, a_product->multiplicity( ) ) ),
         m_distribution( nullptr ),
@@ -66,7 +66,7 @@ LUPI_HOST Product::Product( GIDI::Product const *a_product, SetupInfo &a_setupIn
     GIDI::OutputChannel const *output_channel = a_product->outputChannel( );
     if( output_channel != nullptr ) m_outputChannel = new OutputChannel( output_channel, a_setupInfo, a_settings, a_particles );
 
-    if( a_isFission && ( m_index == a_settings.neutronIndex( ) ) && a_settings.wantTerrellPromptNeutronDistribution( ) ) {
+    if( a_isFission && ( m_intid == PoPI::Intids::neutron ) && a_settings.wantTerrellPromptNeutronDistribution( ) ) {
         Functions::Function1d_d1 *multiplicity1 = static_cast<Functions::Function1d_d1 *>( m_multiplicity );
 
         m_multiplicity = new Functions::TerrellFissionNeutronMultiplicityModel( -1.0, multiplicity1 );
@@ -74,20 +74,20 @@ LUPI_HOST Product::Product( GIDI::Product const *a_product, SetupInfo &a_setupIn
 }
 
 /* *********************************************************************************************************//**
- * @param a_pops                [in]    A PoPs Database instance used to get particle indices and possibly other particle information.
+ * @param a_pops                [in]    A PoPs Database instance used to get particle intids and possibly other particle information.
  * @param a_ID                  [in]    The PoPs id for the product.
  * @param a_label               [in]    The **GNDS** label for the product.
  ***********************************************************************************************************/
 
 LUPI_HOST Product::Product( PoPI::Database const &a_pops, std::string const &a_ID, std::string const &a_label ) :
         m_ID( a_ID.c_str( ) ),
+        m_intid( MCGIDI_popsIntid( a_pops, a_ID ) ),
         m_index( MCGIDI_popsIndex( a_pops, a_ID ) ),
         m_userParticleIndex( -1 ),
         m_label( a_label.c_str( ) ),
         m_mass( 0.0 ),                                  // FIXME, good for photon but nothing else. Still need to implement.
         m_excitationEnergy( 0.0 ),
         m_twoBodyOrder( TwoBodyOrder::notApplicable ),
-        m_neutronIndex( a_pops[PoPI::IDs::neutron] ),
         m_initialStateIndex( -1 ),
         m_multiplicity( nullptr ),
         m_distribution( nullptr ),
@@ -134,6 +134,9 @@ LUPI_HOST_DEVICE Product::~Product( ) {
     case Distributions::Type::incoherentPhotoAtomicScattering:
         delete static_cast<Distributions::IncoherentPhotoAtomicScattering *>( m_distribution );
         break;
+    case Distributions::Type::incoherentBoundToFreePhotoAtomicScattering:
+        delete static_cast<Distributions::IncoherentBoundToFreePhotoAtomicScattering *>( m_distribution );
+        break;
     case Distributions::Type::incoherentPhotoAtomicScatteringElectron:
         delete static_cast<Distributions::IncoherentPhotoAtomicScatteringElectron *>( m_distribution );
         break;
@@ -154,8 +157,8 @@ LUPI_HOST_DEVICE Product::~Product( ) {
 /* *********************************************************************************************************//**
  * Updates the m_userParticleIndex to *a_userParticleIndex* for all particles with PoPs index *a_particleIndex*.
  *  
- * @param a_particleIndex       [in]    The PoPs id of the particle whose userPid is to be set.
- * @param a_userParticleIndex   [in]    The particle id specified by the user.
+ * @param a_particleIndex       [in]    The PoPs index of the particle whose user index is to be set.
+ * @param a_userParticleIndex   [in]    The particle index specified by the user.
  ***********************************************************************************************************/
 
 LUPI_HOST void Product::setUserParticleIndex( int a_particleIndex, int a_userParticleIndex ) {
@@ -167,6 +170,32 @@ LUPI_HOST void Product::setUserParticleIndex( int a_particleIndex, int a_userPar
 }
 
 /* *********************************************************************************************************//**
+ * Updates the m_userParticleIndex to *a_userParticleIndex* for all particles with PoPs intid *a_particleIntid*.
+ *
+ * @param a_particleIntid       [in]    The PoPs intid of the particle whose user index is to be set.
+ * @param a_userParticleIndex   [in]    The particle index specified by the user.
+ ***********************************************************************************************************/
+
+LUPI_HOST void Product::setUserParticleIndexViaIntid( int a_particleIntid, int a_userParticleIndex ) {
+
+    if( m_intid == a_particleIntid ) m_userParticleIndex = a_userParticleIndex;
+#ifdef MCGIDI_USE_OUTPUT_CHANNEL
+    if( m_outputChannel != nullptr ) m_outputChannel->setUserParticleIndexViaIntid( a_particleIntid, a_userParticleIndex );
+#endif
+}
+
+/* *********************************************************************************************************//**
+ * This method calls the **setModelDBRC_data* method on the distribution of *this* with *a_modelDBRC_data*.
+ *
+ * @param a_modelDBRC_data      [in]    The instance storing data needed to treat the DRRC upscatter mode.
+ ***********************************************************************************************************/
+
+LUPI_HOST void Product::setModelDBRC_data( Sampling::Upscatter::ModelDBRC_data *a_modelDBRC_data ) {
+
+    m_distribution->setModelDBRC_data( a_modelDBRC_data );
+}
+
+/* *********************************************************************************************************//**
  * This method returns the final Q for *this* by getting its output channel's finalQ.
  *
  * @param a_x1                  [in]    The energy of the projectile.
@@ -174,7 +203,7 @@ LUPI_HOST void Product::setUserParticleIndex( int a_particleIndex, int a_userPar
  * @return                              The Q-value at product energy *a_x1*.
  ***********************************************************************************************************/
 
-LUPI_HOST_DEVICE double Product::finalQ( double a_x1 ) const {
+LUPI_HOST_DEVICE double Product::finalQ( LUPI_maybeUnused double a_x1 ) const {
 
 #ifdef MCGIDI_USE_OUTPUT_CHANNEL
     if( m_outputChannel != nullptr ) return( m_outputChannel->finalQ( a_x1 ) );
@@ -197,146 +226,53 @@ LUPI_HOST_DEVICE bool Product::hasFission( ) const {
 }
 
 /* *********************************************************************************************************//**
- * Returns the energy dependent multiplicity for outgoing particle with pops id *a_id*. The returned value may not
+ * Returns the energy dependent multiplicity for outgoing particle with pops index *a_index*. The returned value may not
  * be an integer. Energy dependent multiplicities mainly occurs for photons and fission neutrons.
  *
- * @param a_id                      [in]    The PoPs id of the requested particle.
+ * @param a_index                   [in]    The PoPs index of the requested particle.
  * @param a_projectileEnergy        [in]    The energy of the projectile.
  *
  * @return                                  The multiplicity value for the requested particle.
  ***********************************************************************************************************/
 
-LUPI_HOST_DEVICE double Product::productAverageMultiplicity( int a_id, double a_projectileEnergy ) const {
+LUPI_HOST_DEVICE double Product::productAverageMultiplicity( int a_index, double a_projectileEnergy ) const {
 
     double multiplicity1 = 0.0;
 
-    if( a_id == m_index ) {
+    if( a_index == m_index ) {
         if( ( m_multiplicity->domainMin( ) <= a_projectileEnergy ) && ( m_multiplicity->domainMax( ) >= a_projectileEnergy ) )
             multiplicity1 += m_multiplicity->evaluate( a_projectileEnergy );
     }
 #ifdef MCGIDI_USE_OUTPUT_CHANNEL
-    if( m_outputChannel != nullptr ) multiplicity1 += m_outputChannel->productAverageMultiplicity( a_id, a_projectileEnergy );
+    if( m_outputChannel != nullptr ) multiplicity1 += m_outputChannel->productAverageMultiplicity( a_index, a_projectileEnergy );
 #endif
 
     return( multiplicity1 );
 }
 
 /* *********************************************************************************************************//**
- * This method adds sampled products to *a_products*.
+ * Returns the energy dependent multiplicity for outgoing particle with pops intid *a_intid*. The returned value may not
+ * be an integer. Energy dependent multiplicities mainly occurs for photons and fission neutrons.
  *
- * @param a_protare                 [in]    The Protare this Reaction belongs to.
+ * @param a_intid                   [in]    The PoPs intid of the requested particle.
  * @param a_projectileEnergy        [in]    The energy of the projectile.
- * @param a_input                   [in]    Sample options requested by user.
- * @param a_userrng                 [in]    The random number gnerator.
- * @param a_rngState                [in]    The state for the random number gnerator.
- * @param a_products                [in]    The object to add all sampled products to.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE void Product::sampleProducts( Protare const *a_protare, double a_projectileEnergy, Sampling::Input &a_input, 
-                double (*a_userrng)( void * ), void *a_rngState, Sampling::ProductHandler &a_products ) const {
-
-#ifdef MCGIDI_USE_OUTPUT_CHANNEL
-    if( m_outputChannel != nullptr ) {
-        m_outputChannel->sampleProducts( a_protare, a_projectileEnergy, a_input, a_userrng, a_rngState, a_products ); }
-    else {
-#endif
-        if( m_twoBodyOrder == TwoBodyOrder::secondParticle ) {
-            a_products.add( a_projectileEnergy, index( ), userParticleIndex( ), mass( ), a_input, a_userrng, a_rngState, index( ) == a_protare->photonIndex( ) ); }
-        else {
-            int _multiplicity = m_multiplicity->sampleBoundingInteger( a_projectileEnergy, a_userrng, a_rngState );
-            int __multiplicity = _multiplicity;
-
-            for( ; _multiplicity > 0; --_multiplicity ) {
-                m_distribution->sample( a_projectileEnergy, a_input, a_userrng, a_rngState );
-                a_input.m_delayedNeutronIndex = -1;
-                a_input.m_delayedNeutronDecayRate = 0.0;
-                a_products.add( a_projectileEnergy, index( ), userParticleIndex( ), mass( ), a_input, a_userrng, a_rngState, index( ) == a_protare->photonIndex( ) );
-            }
-            if( m_initialStateIndex >= 0 ) {
-                if( __multiplicity == 0 ) {
-                    ProtareSingle const *protare( static_cast<ProtareSingle const *>( a_protare ) );
-                    protare->sampleBranchingGammas( a_input, a_projectileEnergy, m_initialStateIndex, a_userrng, a_rngState, a_products );
-                }
-            }
-        }
-#ifdef MCGIDI_USE_OUTPUT_CHANNEL
-    }
-#endif
-}
-
-/* *********************************************************************************************************//**
- * This method adds sampled products to *a_products*. In particular, the product is a capture reaction 
- * primary gamma what has a finalState attribute. This gamma is added as well as the gammas from the
- * gamma cascade.
  *
- * @param a_protare                 [in]    The Protare this Reaction belongs to.
- * @param a_projectileEnergy        [in]    The energy of the projectile.
- * @param a_input                   [in]    Sample options requested by user.
- * @param a_userrng                 [in]    The random number gnerator.
- * @param a_rngState                [in]    The state for the random number gnerator.
- * @param a_products                [in]    The object to add all sampled products to.
+ * @return                                  The multiplicity value for the requested particle.
  ***********************************************************************************************************/
 
-LUPI_HOST_DEVICE void Product::sampleFinalState( Protare const *a_protare, double a_projectileEnergy, Sampling::Input &a_input, 
-                double (*a_userrng)( void * ), void *a_rngState, Sampling::ProductHandler &a_products ) const {
+LUPI_HOST_DEVICE double Product::productAverageMultiplicityViaIntid( int a_intid, double a_projectileEnergy ) const {
 
-    m_distribution->sample( a_projectileEnergy, a_input, a_userrng, a_rngState );
-    a_input.m_delayedNeutronIndex = -1;
-    a_input.m_delayedNeutronDecayRate = 0.0;
-    a_products.add( a_projectileEnergy, index( ), userParticleIndex( ), mass( ), a_input, a_userrng, a_rngState, index( ) == a_protare->photonIndex( ) );
+    double multiplicity1 = 0.0;
 
-    if( m_initialStateIndex >= 0 ) {
-        ProtareSingle const *protare( static_cast<ProtareSingle const *>( a_protare ) );
-        protare->sampleBranchingGammas( a_input, a_projectileEnergy, m_initialStateIndex, a_userrng, a_rngState, a_products );
+    if( a_intid == m_intid ) {
+        if( ( m_multiplicity->domainMin( ) <= a_projectileEnergy ) && ( m_multiplicity->domainMax( ) >= a_projectileEnergy ) )
+            multiplicity1 += m_multiplicity->evaluate( a_projectileEnergy );
     }
-}
-
-/* *********************************************************************************************************//**
- * Returns the weight for a projectile with energy *a_energy_in* to cause this channel to emitted a particle of index
- * *a_pid* at angle *a_mu_lab* as seen in the lab frame. If a particle is emitted, *a_energy_out* is its sampled outgoing energy.
- *
- * @param a_reaction                [in]    The reaction containing the particle which this distribution describes.
- * @param a_pid                     [in]    The index of the particle to emit.
- * @param a_temperature             [in]    Specifies the temperature of the material.
- * @param a_energy_in               [in]    The energy of the incident particle.
- * @param a_mu_lab                  [in]    The desired mu in the lab frame for the emitted particle.
- * @param a_weight                  [in]    The weight of emitting outgoing particle into lab angle *a_mu_lab*.
- * @param a_energy_out              [in]    The energy of the emitted outgoing particle.
- * @param a_userrng                 [in]    The random number generator.
- * @param a_rngState                [in]    The state to pass to the random number generator.
- * @param a_cumulative_weight       [in]    The sum of the multiplicity for other outgoing particles with index *a_pid*.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE void Product::angleBiasing( Reaction const *a_reaction, int a_pid, double a_temperature, double a_energy_in, double a_mu_lab, 
-                double &a_weight, double &a_energy_out, double (*a_userrng)( void * ), void *a_rngState, double &a_cumulative_weight ) const {
-
 #ifdef MCGIDI_USE_OUTPUT_CHANNEL
-    if( m_outputChannel != nullptr ) {
-        m_outputChannel->angleBiasing( a_reaction, a_pid, a_temperature, a_energy_in, a_mu_lab, a_weight, a_energy_out, a_userrng, a_rngState, a_cumulative_weight ); }
-    else {
+    if( m_outputChannel != nullptr ) multiplicity1 += m_outputChannel->productAverageMultiplicityViaIntid( a_intid, a_projectileEnergy );
 #endif
-        if( index( ) != a_pid ) return;
 
-        double probability = 0.0;
-        double energy_out = 0.0;
-
-        if( a_cumulative_weight == 0.0 ) a_energy_out = 0.0;
-
-        if( m_multiplicity->type( ) == Function1dType::branching ) { // Needs to handle F1_Branching.
-            }
-        else {
-            probability = m_distribution->angleBiasing( a_reaction, a_temperature, a_energy_in, a_mu_lab, a_userrng, a_rngState, energy_out );
-        }
-
-        double weight = m_multiplicity->evaluate( a_energy_in ) * probability;
-        a_cumulative_weight += weight;
-        if( weight > a_userrng( a_rngState ) * a_cumulative_weight ) {
-            a_weight = weight;
-            a_energy_out = energy_out;
-        }
-#ifdef MCGIDI_USE_OUTPUT_CHANNEL
-    }
-#endif
+    return( multiplicity1 );
 }
 
 /* *********************************************************************************************************//**
@@ -350,6 +286,7 @@ LUPI_HOST_DEVICE void Product::angleBiasing( Reaction const *a_reaction, int a_p
 LUPI_HOST_DEVICE void Product::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
     DATA_MEMBER_STRING( m_ID, a_buffer, a_mode );
+    DATA_MEMBER_INT( m_intid, a_buffer, a_mode );
     DATA_MEMBER_INT( m_index, a_buffer, a_mode );
     DATA_MEMBER_INT( m_userParticleIndex, a_buffer, a_mode );
     DATA_MEMBER_STRING( m_label, a_buffer, a_mode );
@@ -383,7 +320,6 @@ LUPI_HOST_DEVICE void Product::serialize( LUPI::DataBuffer &a_buffer, LUPI::Data
         }
     }
 
-    DATA_MEMBER_INT( m_neutronIndex, a_buffer, a_mode );
     DATA_MEMBER_INT( m_initialStateIndex, a_buffer, a_mode );
 
     m_multiplicity = serializeFunction1d( a_buffer, a_mode, m_multiplicity );
@@ -392,19 +328,21 @@ LUPI_HOST_DEVICE void Product::serialize( LUPI::DataBuffer &a_buffer, LUPI::Data
 #ifdef MCGIDI_USE_OUTPUT_CHANNEL
     bool haveChannel = m_outputChannel != nullptr;
     DATA_MEMBER_CAST( haveChannel, a_buffer, a_mode, bool );
-    if( haveChannel && a_mode == LUPI::DataBuffer::Mode::Unpack ) {
-        if (a_buffer.m_placement != nullptr) {
-            m_outputChannel = new(a_buffer.m_placement) OutputChannel();
+    if( haveChannel ) {
+        if( a_mode == LUPI::DataBuffer::Mode::Unpack ) {
+            if (a_buffer.m_placement != nullptr) {
+                m_outputChannel = new(a_buffer.m_placement) OutputChannel();
+                a_buffer.incrementPlacement( sizeof(OutputChannel));
+            }
+            else {
+                m_outputChannel = new OutputChannel();
+            }
+        }
+        if( a_mode == LUPI::DataBuffer::Mode::Memory ) {
             a_buffer.incrementPlacement( sizeof(OutputChannel));
         }
-        else {
-            m_outputChannel = new OutputChannel();
-        }
+        m_outputChannel->serialize( a_buffer, a_mode );
     }
-    if( haveChannel && a_mode == LUPI::DataBuffer::Mode::Memory ) {
-        a_buffer.incrementPlacement( sizeof(OutputChannel));
-    }
-    if( haveChannel ) m_outputChannel->serialize( a_buffer, a_mode );
 #endif
 }
 

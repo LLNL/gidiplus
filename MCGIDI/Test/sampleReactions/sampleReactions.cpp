@@ -42,18 +42,16 @@ void main2( int argc, char **argv ) {
     PoPI::Database pops( "../../../TestData/PoPs/pops.xml" );
     GIDI::Transporting::Particles particles;
     char *endChar;
-    std::size_t numberOfSamples = 1000 * 1000;
-    void *rngState = nullptr;
-    unsigned long long seed = 1;
+    long numberOfSamples = -1;
+    unsigned long long rngState = 1;
     std::set<int> reactionsToExclude;
     LUPI::StatusMessageReporting smr1;
     GIDI::Construction::PhotoMode photo_mode = GIDI::Construction::PhotoMode::nuclearOnly;
+    argvOption2 *option;
 
     std::cerr << "    " << __FILE__;
     for( int i1 = 1; i1 < argc; i1++ ) std::cerr << " " << argv[i1];
     std::cerr << std::endl;
-
-    MCGIDI_test_rngSetup( seed );
 
     argvOptions2 argv_options( "sampleReactions", description );
 
@@ -63,7 +61,12 @@ void main2( int argc, char **argv ) {
     argv_options.add( argvOption2( "-pa", false, "Include photo-atomic protare if relevant. If present, disables photo-nuclear unless *-pn* present." ) );
     argv_options.add( argvOption2( "-pn", false, "Include photo-nuclear protare if relevant. This is the default unless *-pa* present." ) );
     argv_options.add( argvOption2( "--fixedGrid", false, "Set fixed grid data. Only used if protare is only photo-atomic protare." ) );
-    argv_options.add( argvOption2( "--temperature", true, "The temperature of the target material." ) );
+    argv_options.add( argvOption2( "--temperature", true, "The temperature of the target material. Default is 2.58522e-8." ) );
+    argv_options.add( argvOption2( "--energyMin", true, "The minimum energy for the energy loop. Default is 1e-12." ) );
+    argv_options.add( argvOption2( "--energyMax", true, "The maximum energy for the energy loop. Default is 25." ) );
+    argv_options.add( argvOption2( "-n", true, "The number of calls to sampleReaction. If negative, multiplied by -1000,000. Default is -1." ) );
+    argv_options.add( argvOption2( "--quiet", false, "If present, some information is not printed." ) );
+    argv_options.add( argvOption2( "--showReactions", false, "If present, the list of reactions is printed." ) );
 
     argv_options.parseArgv( argc, argv );
 
@@ -86,8 +89,10 @@ void main2( int argc, char **argv ) {
     GIDI::Protare *protare = map.protare( construction, pops, projectileID, targetID );
 
     GIDI::Styles::TemperatureInfos temperatures = protare->temperatures( );
-    for( GIDI::Styles::TemperatureInfos::const_iterator iter = temperatures.begin( ); iter != temperatures.end( ); ++iter ) {
-        std::cout << "label = " << iter->heatedCrossSection( ) << "  temperature = " << iter->temperature( ).value( ) << std::endl;
+    if( !argv_options.find( "--quiet" )->present( ) ) {
+        for( GIDI::Styles::TemperatureInfos::const_iterator iter = temperatures.begin( ); iter != temperatures.end( ); ++iter ) {
+            std::cout << "label = " << iter->heatedCrossSection( ) << "  temperature = " << iter->temperature( ).value( ) << std::endl;
+        }
     }
 
     std::string label( temperatures[0].griddedCrossSection( ) );
@@ -107,17 +112,36 @@ void main2( int argc, char **argv ) {
 
     int numberOfReactions = (int) MCProtare->numberOfReactions( );
 
-    if( argv_options.find( "--fixedGrid" )->present( ) ) {
+    if( argv_options.find( "--showReactions" )->present( ) ) {
+        std::cout << "List of reactions:" << std::endl;
         for( std::size_t reactionIndex = 0; reactionIndex < MCProtare->numberOfReactions( ); ++reactionIndex ) {
             MCGIDI::Reaction const *reaction = MCProtare->reaction( reactionIndex );
 
-            std::cout << reaction->label( ).c_str( ) << std::endl;
+            std::cout << LUPI::Misc::argumentsToString( "    %5d ", reactionIndex ) << reaction->label( ).c_str( ) << std::endl;
         }
     }
 
     std::cout << "temperature = " << temperature << std::endl;
+
+    option = argv_options.find( "-n" );
+    numberOfSamples = option->asLong( argv, numberOfSamples );
+    if( numberOfSamples < 0 ) numberOfSamples *= -1000000;
     std::cout << "numberOfSamples = " << numberOfSamples << std::endl;
-    for( double energy = 1e-12; energy < 25.0; energy *= 1.2 ) {
+
+    option = argv_options.find( "--energyMin" );
+    double energyMin = option->asDouble( argv, 1e-12 );
+    option = argv_options.find( "--energyMax" );
+    double energyMax = option->asDouble( argv, 25.0 );
+
+    if( argv_options.find( "--showReactions" )->present( ) ) {
+        std::cout << "       ";
+        for( std::size_t reactionIndex = 0; reactionIndex < MCProtare->numberOfReactions( ); ++reactionIndex ) {
+            std::cout << LUPI::Misc::argumentsToString( " %8d ", reactionIndex );
+        }
+        std::cout << std::endl;
+    }
+
+    for( double energy = energyMin; energy <= energyMax; energy *= 1.2 ) {
         int hashIndex = domainHash.index( energy );
 
         double crossSection = MCProtare->crossSection( URR_protare_infos, hashIndex, temperature, energy );
@@ -133,8 +157,9 @@ void main2( int argc, char **argv ) {
         std::cout << std::endl;
 
         std::vector<long> counts( numberOfReactions + 1, 0 );
-        for( std::size_t i1 = 0; i1 < numberOfSamples; ++i1 ) {
-            int reactionIndex = MCProtare->sampleReaction( URR_protare_infos, hashIndex, temperature, energy, crossSection, float64RNG64, rngState );
+        for( long i1 = 0; i1 < numberOfSamples; ++i1 ) {
+            int reactionIndex = MCProtare->sampleReaction( URR_protare_infos, hashIndex, temperature, energy, crossSection, 
+                    [&]() -> double { return float64RNG64( &rngState ); } );
             if( reactionIndex > numberOfReactions ) reactionIndex = numberOfReactions;
             ++counts[reactionIndex];
         }

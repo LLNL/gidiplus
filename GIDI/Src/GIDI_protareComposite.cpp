@@ -24,7 +24,7 @@ namespace GIDI {
  * @param a_construction        [in]     Used to pass user options to the constructor.
  ***********************************************************************************************************/
 
-ProtareComposite::ProtareComposite( Construction::Settings const &a_construction ) {
+ProtareComposite::ProtareComposite( LUPI_maybeUnused Construction::Settings const &a_construction ) {
 
 }
 
@@ -267,6 +267,26 @@ Styles::Suite const &ProtareComposite::styles( ) const {
 }
 
 /* *********************************************************************************************************//**
+ * Returns the intid for the requested particle or -1 if the particle is not in *m_protare* PoPs database.
+ *
+ * @param a_id                 [in]    The GNDS PoPs id for particle whose intd is requested.
+ *
+ * @return                             C++ int for the requested particle or -1 if particle is not in PoPs. 
+ ******************************************************************/
+
+int ProtareComposite::intid( std::string const &a_id ) const {
+
+    int intid1 = -1;
+
+    for( std::size_t i1 = 0; i1 < m_protares.size( ); ++i1 ) {
+        intid1 = m_protares[i1]->intid( a_id );
+        if( intid1 > -1 ) break;
+    }
+
+    return( intid1 );
+}
+
+/* *********************************************************************************************************//**
  * Calls productIDs for each Protare contained in *this*.
  *
  * @param a_ids                 [in]    The unique list of product indices.
@@ -452,6 +472,21 @@ Reaction const *ProtareComposite::orphanProduct( std::size_t a_index ) const {
     }
 
     throw Exception( "ProtareComposite::orphanProduct: index out of range" );
+}
+
+/* *********************************************************************************************************//**
+ * Re-indexs the reactions in the reactions, orphanProducts and fissionComponents suites.
+ *
+ ***********************************************************************************************************/
+    
+void ProtareComposite::updateReactionIndices( LUPI_maybeUnused int a_offset ) const {
+
+    std::size_t reactionOffset = 0;
+
+    for( std::size_t i1 = 0; i1 < m_protares.size( ); ++i1 ) {
+        m_protares[i1]->updateReactionIndices( reactionOffset );
+        reactionOffset += m_protares[i1]->numberOfReactions( );
+    }
 }
 
 /* *********************************************************************************************************//**
@@ -951,7 +986,7 @@ stringAndDoublePairs ProtareComposite::muCutoffForCoulombPlusNuclearElastic( ) c
 /* *********************************************************************************************************//**
  * Returns the list of DelayedNeutronProduct instances.
  * 
- * @return      a_delayedNeutronProducts        The list of delayed neutrons.
+ * @return                      The list of delayed neutrons.
  ***********************************************************************************************************/
  
 DelayedNeutronProducts ProtareComposite::delayedNeutronProducts( ) const {

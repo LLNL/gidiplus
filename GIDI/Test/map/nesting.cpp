@@ -13,7 +13,7 @@
 #include "GIDI_testUtilities.hpp"
 
 void walk( PoPI::Database &pops, char const *fileName );
-bool mapWalkCallBack( GIDI::Map::ProtareBase const *a_protareEntry, std::string const &a_library, void *a_data, int a_level );
+bool mapWalkCallBack( GIDI::Map::ProtareBase const *a_protareEntry, LUPI_maybeUnused std::string const &a_library, LUPI_maybeUnused void *a_data, int a_level );
 void printList( char const *prefix, std::vector<std::string> &list );
 /*
 =========================================================
@@ -59,7 +59,7 @@ void walk( PoPI::Database &pops, char const *fileName ) {
 /*
 =========================================================
 */
-bool mapWalkCallBack( GIDI::Map::ProtareBase const *a_protareEntry, std::string const &a_library, void *a_data, int a_level ) {
+bool mapWalkCallBack( GIDI::Map::ProtareBase const *a_protareEntry, LUPI_maybeUnused std::string const &a_library, LUPI_maybeUnused void *a_data, int a_level ) {
 
     std::string path( stripDirectoryBase( a_protareEntry->path( ) ) );
 

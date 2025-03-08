@@ -54,6 +54,25 @@ FormatVersion::FormatVersion( FormatVersion const &a_formatVersion ) :
 }
 
 /* *********************************************************************************************************//**
+ * The assignment operator. This method sets the members of *this* to those of *a_rhs* except for those
+ * not set by base classes.
+ *
+ * @param a_rhs                     [in]    Instance whose member are used to set the members of *this*.
+ ***********************************************************************************************************/
+
+FormatVersion &FormatVersion::operator=( FormatVersion const &a_rhs ) {
+
+    if( this != &a_rhs ) {
+        m_format = a_rhs.format( );
+        m_major = a_rhs.major( );
+        m_minor = a_rhs.minor( );
+        m_patch = a_rhs.patch( );
+    }
+
+    return( *this );
+}
+
+/* *********************************************************************************************************//**
  * Set the format to *a_formatVersion* and parse its components.
  *
  * @param   a_formatVersion       [in]      The GNDS format.

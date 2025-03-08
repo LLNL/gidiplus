@@ -47,18 +47,19 @@ namespace PoPI {
  * This enum represents the various type of allowed particle types.
  */
 
-enum class Particle_class { gaugeBoson,             /**< Specifies that the particle is a gauge boson. */
+enum class Particle_class { nuclide,                /**< Specifies that the particle is a nuclide. */
+                            nucleus,                /**< Specifies that the particle is a nucleus. */
+                            gaugeBoson,             /**< Specifies that the particle is a gauge boson. */
                             lepton,                 /**< Specifies that the particle is a lepton. */
                             baryon,                 /**< Specifies that the particle is a baryon. */
-                            unorthodox,             /**< Specifies that the particle is an unorthodox. */
-                            nuclide,                /**< Specifies that the particle is a nuclide. */
-                            nucleus,                /**< Specifies that the particle is a nucleus. */
+                            nuclideMetaStable,      /**< Specifies that the particle is a nuclide meta-stable alias. */
+                            nucleusMetaStable,      /**< Specifies that the particle is a nucleus meta-stable alias. */
+                            TNSL,                   /**< Specifies that the particle is a TNSL target. Currently not used. */
                             ENDL_fissionProduct,    /**< Specifies that the particle is an ENDL fissiont product (e.g., 99120, 99125). */
+                            unorthodox,             /**< Specifies that the particle is an unorthodox. */
+                            alias,                  /**< Specifies that the particle is a alias. */
                             chemicalElement,        /**< Specifies that the particle is a chemicalElement. */
                             isotope,                /**< Specifies that the particle is a isotope. */
-                            alias,                  /**< Specifies that the particle is a alias. */
-                            metaStable,             /**< Specifies that the particle is a metaStable. */
-                            TNSL,                   /**< Specifies that the particle is a TNSL target. Currently not used. */
                             unknown                 /**< Specifies that the particle is a unknown. */ };
 
 #define PoPI_massChars "mass"
@@ -73,6 +74,7 @@ enum class Particle_class { gaugeBoson,             /**< Specifies that the part
 #define PoPI_stringChars "string"
 #define PoPI_shellChars "shell"
 #define PoPI_decayDataChars "decayData"
+#define PoPI_gammaDecayDataChars "gammaDecayData"
 
 #define PoPI_decayModeElectroMagnetic "electroMagnetic"
 
@@ -85,6 +87,8 @@ enum class Particle_class { gaugeBoson,             /**< Specifies that the part
 #define PoPI_aliasChars "alias"
 #define PoPI_metaStableChars "metaStable"
 #define PoPI_particleChars "particle"
+#define PoPI_discreteChars "discrete"
+#define PoPI_continuumChars "continuum"
 
 /*! \enum PQ_class
  * This enum represents the various type of allowed physcial quantity types.
@@ -112,7 +116,15 @@ class Decay;
 class DecayMode;
 class DecayData;
 class Particle;
+class MetaStable;
+class Alias;
+class Baryon;
+class GaugeBoson;
+class Lepton;
 class Nuclide;
+class Nucleus;
+class Unorthodox;
+
 class Isotope;
 class ChemicalElement;
 class Database;
@@ -153,7 +165,15 @@ struct IDs {
     static std::string const anti;
 };
 
-extern std::map<std::string, std::string> supportedNucluesAliases;
+struct Intids {
+    static int constexpr neutron = 1020000000;
+    static int constexpr photon = 1000000000;
+    static int constexpr electron = 1010000000;
+    static int constexpr FissionProductENDL99120 = 1990099120;
+    static int constexpr FissionProductENDL99125 = 1990099125;
+};
+
+extern std::map<std::string, std::string> supportedNucleusAliases;
 
 typedef std::vector<Base *> ParticleList;
 typedef std::vector<SymbolBase *> SymbolList;
@@ -200,7 +220,7 @@ class ParseIntidInfo {
         int m_familyId;                     /**< For non-nuclear particles, the particle's indentifier within its family. */
 
     public:
-        ParseIntidInfo( int a_intid );
+        ParseIntidInfo( int a_intid, bool a_GRIN_mode = false );
 
         int intid( ) { return( m_intid ); }                     /**< Returns the value of the *m_intid* member. */
         Particle_class family( ) { return( m_family ); }        /**< Returns the value of the *m_family* member. */
@@ -210,6 +230,8 @@ class ParseIntidInfo {
         int AAA( ) { return( m_AAA ); }                         /**< Returns the value of the *m_AAA* member. */
         int ZZZ( ) { return( m_ZZZ ); }                         /**< Returns the value of the *m_ZZZ* member. */
         int III( ) { return( m_III ); }                         /**< Returns the value of the *m_III* member. */
+        bool isNuclearMetaStable( ) { return( ( m_family == Particle_class::nuclideMetaStable ) || ( m_family == Particle_class::nucleusMetaStable ) ); }
+                                                                /**< Returns **true** if particle is a nuclear meta-stable alias. */
         int metaStableIndex( ) { return( m_metaStableIndex ); } /**< Returns the value of the *m_metaStableIndex* member. */
 
         int generation( ) { return( m_generation ); }           /**< Returns the value of the *m_generation* member. */
@@ -232,9 +254,11 @@ class ParseIntidInfo {
 class ParseIdInfo{
 
     private:
+        bool m_isSupported;                                 /**< If **true** the particle's id was parsed and the other member of *this* are valid. Otherwise, parsing of the particle's id is currently not supported. */
         std::string m_id;                                   /**< The id for the particles. */
         bool m_isNuclear;                                   /**< **true** if particle is a valid nuclear name (i.e., nuclide, nucleus of meta-stable) and **false** otherwise. */
         bool m_isNucleus;                                   /**< **true** if particle is a nucleus and **false** otherwise. */
+        bool m_isChemicalElement;                           /**< **true** if id is only a chemical element symbol. */
         bool m_isAnti;                                      /**< **true** if particle is an anti-particle and **false** otherwise. */
         bool m_isMetaStable;                                /**< **true** if particle is a meta-stable alias and **false** otherwise. */
         std::string m_symbol;                               /**< The chemical element symbol part of *m_id*. This will always be the nuclide symbol even if *m_id* is for a nucleus. */
@@ -243,18 +267,24 @@ class ParseIdInfo{
         int m_index;                                        /**< The nuclear level index of *m_id*. */
         std::string m_qualifier;
 
+        std::string boolToString( bool a_value, std::string const &a_prefix ) const;
+
     public:
         ParseIdInfo( std::string const &a_id );
 
+        bool isSupported( ) { return( m_isSupported ); }                /**< Returns the value of the *m_isSupported. */
         std::string const &Id( ) { return( m_id ); }                    /**< Returns a reference to the *m_id* member. */
         bool isNuclear( ) { return( m_isNuclear ); }                    /**< Returns the value of the *m_isNuclear* member. */
         bool isNucleus( ) { return( m_isNucleus ); }                    /**< Returns the value of the *m_isNucleus* member. */
+        bool isChemicalElement( ) { return( m_isChemicalElement ); }    /**< Returns the value of the *m_isChemicalElement* member. */
         bool isAnti( ) { return( m_isAnti ); }                          /**< Returns the value of the *m_isAnti* member. */
         std::string const &symbol( ) { return( m_symbol); }             /**< Returns a reference to the *m_symbol* member. */
         int Z( ) { return( m_Z ); }                                     /**< Returns the value of the *m_Z* member. */
         int A( ) { return( m_A ); }                                     /**< Returns the value of the *m_A* member. */
         int index( ) { return( m_index ); }                             /**< Returns the value of the *m_index* member. */
         std::string const &qualifier( ) { return( m_qualifier ); }      /**< Returns a reference to the *m_qualifier* member. */
+
+        void print( bool a_terse, std::string const &a_indent = "" ) const ;
 };
 
 /*! \class Suite
@@ -535,20 +565,32 @@ class NuclideGammaBranchInfo {
 class NuclideGammaBranchStateInfo {
 
     private:
-        std::string m_state;
-        bool m_derivedCalculated;
-        double m_multiplicity;                                  /* Data derived from m_branches data. */
-        double m_averageGammaEnergy;                            /* Data derived from m_branches data. */
+        std::string m_state;                                    /**< The inital state the decay starts from. */
+        int m_intid;                                            /**< The intid for the inital state. */
+        std::string m_kind;                                     /**< The kind of the particle. Currently can be 'discrete' or 'continuum'. */
+        double m_nuclearLevelEnergy;                            /**< The nuclear level excitation energy of the level (state). */
+        double m_nuclearLevelEnergyWidth;                       /**< This is 0.0 except for GRIN realized continuum levels where this is the energy width from this level to the next higher level. */
+        bool m_derivedCalculated;                               /**< For internal use to determine if other members have been set or not. */
+        double m_multiplicity;                                  /**< The average number of photons emitted when transitioning from the initial to the final state. Data derived from m_branches data. */
+        double m_averageGammaEnergy;                            /**< The average energy per decay from the initial to the final state. Data derived from m_branches data. */
         std::vector<NuclideGammaBranchInfo> m_branches;
 
     public:
-        NuclideGammaBranchStateInfo( std::string a_state );
+        NuclideGammaBranchStateInfo( std::string a_state, int a_intid, std::string const &a_kind, double a_nuclearLevelEnergy );
 
-        std::string const &state( ) const { return( m_state ); }
-        bool derivedCalculated( ) const { return( m_derivedCalculated ); }
-        double multiplicity( ) const { return( m_multiplicity ); }
-        double averageGammaEnergy( ) const { return( m_averageGammaEnergy ); }
+        std::string const &state( ) const { return( m_state ); }                /**< Returns the value of the *m_state* member. */
+        int intid( ) const { return( m_intid ); }                               /**< Returns the value of the *m_intid* member. */
+        std::string const &kind( ) const { return( m_kind ); }                  /**< Returns the value of the *m_kind* member. */
+        double nuclearLevelEnergy( ) const { return( m_nuclearLevelEnergy ); }  /**< Returns the value of the *m_nuclearLevelEnergy* member. */
+        double nuclearLevelEnergyWidth( ) const { return( m_nuclearLevelEnergyWidth ); }
+                                                                                /**< Returns the value of the *m_nuclearLevelEnergyWidth* member. */
+        void setNuclearLevelEnergyWidth( double a_nuclearLevelEnergyWidth ) { m_nuclearLevelEnergyWidth = a_nuclearLevelEnergyWidth; }
+                                                                                /**< Set the value of the *m_nuclearLevelEnergyWidth* member to *a_nuclearLevelEnergyWidth*. */
+        bool derivedCalculated( ) const { return( m_derivedCalculated ); }      /**< Returns the value of the *m_derivedCalculated* member. */
+        double multiplicity( ) const { return( m_multiplicity ); }              /**< Returns the value of the *m_multiplicity* member. */
+        double averageGammaEnergy( ) const { return( m_averageGammaEnergy ); }  /**< Returns the value of the *m_averageGammaEnergy* member. */
         std::vector<NuclideGammaBranchInfo> const &branches( ) const { return( m_branches ); }
+                                                                                /**< Returns a reference to the *m_branches* member. */
 
         void add( NuclideGammaBranchInfo const &a_nuclideGammaBranchInfo );
         void calculateDerivedData( NuclideGammaBranchStateInfos &a_nuclideGammaBranchStateInfos );
@@ -570,10 +612,12 @@ class NuclideGammaBranchStateInfos {
         ~NuclideGammaBranchStateInfos( );
 
         std::size_t size( ) const { return( m_nuclideGammaBranchStateInfos.size( ) ); }
+        NuclideGammaBranchStateInfo *operator[]( std::size_t a_index ) { return( m_nuclideGammaBranchStateInfos[a_index] ); }
         NuclideGammaBranchStateInfo const *operator[]( std::size_t a_index ) const { return( m_nuclideGammaBranchStateInfos[a_index] ); }
         std::vector<NuclideGammaBranchStateInfo *> &nuclideGammaBranchStateInfos( ) { return( m_nuclideGammaBranchStateInfos ); }
         void add( NuclideGammaBranchStateInfo *a_nuclideGammaBranchStateInfo );
         NuclideGammaBranchStateInfo *find( std::string const &a_state );
+        NuclideGammaBranchStateInfo const *find( std::string const &a_state ) const ;
 };
 
 /*
@@ -588,6 +632,9 @@ class Base {
         std::string m_id;                               /**< The **PoPs** id for the particle or **PoPs** symbol for a chemicalElement or isotope. */
         Particle_class m_class;                         /**< The **Particle_class** for the particle, chemicalElement or isotope. */
         int m_index;                                    /**< The for the particle, chemicalElement or isotope. */
+        int m_intid;                                    /**< The unique integer id for a particle or a meta-stable alias. For a non meta-stable alias, an isotope or chemical element, this is -1. */
+
+        void setIntid( int a_intid ) { m_intid = a_intid; }                                 /**< Sets the value of the *m_intid* member to *a_intid*. */
 
     public:
         Base( std::string const &a_id, Particle_class a_class );
@@ -597,11 +644,12 @@ class Base {
         std::string const &ID( void ) const { return( m_id ); }                             /**< Returns a *const* reference to the *m_id* member of *this*. */
         int index( void ) const { return( m_index ); }                                      /**< Returns the value of the *m_index* member of *this*. */
         void setIndex( int a_index ) { m_index = a_index; }                                 /**< Sets the value of the *m_index* member of *this* to *a_index*. */
+        int intid( ) const { return( m_intid ); }                                           /**< Returns the value of the *m_intid* member. */
         Particle_class Class( void ) const { return( m_class ); }                           /**< Returns the value of the *m_class* member of *this*. */
         virtual bool isParticle( ) const { return( true ); }                                /**< Returns **true** if *this* is a **Particle** and **false** it *this* is a **ChemicalElement** or **Isotope** instance. */
         bool isAlias( void ) const { return( ( m_class == Particle_class::alias ) || isMetaStableAlias( ) ); }
                                                                                             /**< Returns **true** if *this* is an **Alias** or **MetaStable** instance and **false** otherwise. */
-        bool isMetaStableAlias( void ) const { return( m_class == Particle_class::metaStable ); }
+        bool isMetaStableAlias( void ) const { return( ( m_class == Particle_class::nuclideMetaStable ) || ( m_class ==  Particle_class::nucleusMetaStable ) ); }
                                                                                             /**< Returns **true** if *this* is a **MetaStable** instance and **false** otherwise. */
 
         bool isGaugeBoson( ) const { return( m_class == Particle_class::gaugeBoson ); }     /**< Returns **true** if *this* is a **GaugeBoson** instance and **false** otherwise. */
@@ -613,6 +661,15 @@ class Base {
         bool isIsotope( ) const { return( m_class == Particle_class::isotope ); }           /**< Returns **true** if *this* is a **Isotope** instance and **false** otherwise. */
         bool isChemicalElement( ) const { return( m_class == Particle_class::chemicalElement ); }
                                                                                             /**< Returns **true** if *this* is a **ChemicalElement** instance and **false** otherwise. */
+
+        friend MetaStable;
+        friend Alias;
+        friend Baryon;
+        friend GaugeBoson;
+        friend Lepton;
+        friend Nucleus;
+        friend Nuclide;
+        friend Unorthodox;
 };
 
 /*
@@ -623,18 +680,13 @@ class Base {
 
 class IDBase : public Base {
 
-    private:
-        int m_intid;                                    /**< The unique integer intid for the particle. */
-
     public:
         IDBase( std::string const &a_id, Particle_class a_class );
         IDBase( HAPI::Node const &a_node, Particle_class a_class );
         virtual ~IDBase( );       // BRB This should be virtual but I cannot get it to work without crashing.
 
-        int intid( ) const { return( m_intid ); }                                           /**< Returns the value of the *m_intid* member. */
-        void setIntid( int a_intid ) { m_intid = a_intid; }                                 /**< Sets the value of the *m_intid* member to *a_intid*. */
         int addToDatabase( Database *a_DB );
-        virtual double massValue2( Database const &a_DB, std::string const &a_unit ) const = 0;
+        double massValue2( Database const &a_DB, std::string const &a_unit ) const ;
 };
 
 /*
@@ -756,6 +808,36 @@ class DecayData {
 
 /*
 ============================================================
+====================== GammaDecayData ======================
+============================================================
+*/
+
+class GammaDecayData {
+
+    private:
+        std::string m_kind;                                     /**< The kind of the particle. Currently can be 'discrete' or 'continuum' but may be 'experimental', 'evaluated' or 'modelled' in the future. */
+        int m_rows;                                             /**< The number of nuclides listed. */
+        int m_columns;                                          /**< The number of items in a row. */
+        std::vector<std::string> m_ids;                         /**< The list of nulcides. */
+        std::vector<double> m_probabilities;                    /**< The list of probabilities for each nuclide. This must sum to 1. */
+        std::vector<double> m_photonEmissionProbabilities;      /**< The list of photon emission probabilities for each nuclide. */
+
+    public:
+        GammaDecayData( HAPI::Node const &a_node );
+        ~GammaDecayData( );
+
+        std::string const &kind( ) const { return( m_kind ); }              /**< Returns a const reference to the *m_kind* member. */
+        int rows( ) const { return( m_rows ); }
+        int colunms( ) const { return( m_columns ); }
+        std::vector<std::string> const &ids( ) const { return( m_ids ); }
+        std::vector<double> const &probabilities( ) const { return( m_probabilities ); }
+        std::vector<double> const &photonEmissionProbabilities( ) const { return( m_photonEmissionProbabilities ); }
+
+        void calculateNuclideGammaBranchStateInfo( PoPI::Database const &a_pops, NuclideGammaBranchStateInfo &nuclideGammaBranchStateInfo ) const ;
+};
+
+/*
+============================================================
 ========================= Particle =========================
 ============================================================
 */
@@ -774,6 +856,8 @@ class Particle : public IDBase {
         PQ_suite m_halflife;                            /**< A suite storing the halflife physical quantities for the particle. */
         DecayData m_decayData;                          /**< Stores the decay data for the particle. */
 
+        void setHasNucleus( bool a_hasNucleus ) { m_hasNucleus = a_hasNucleus; }
+
     public:
         Particle( HAPI::Node const &a_node, Particle_class a_class, std::string const &a_family, int a_hasNucleus = 0 );
         virtual ~Particle( );
@@ -787,8 +871,6 @@ class Particle : public IDBase {
         virtual double massValue( char const *a_unit ) const ;
         double massValue( std::string const &a_unit ) const { return( massValue( a_unit.c_str( ) ) ); }
                                                                                 /**< Returns the value of massValue( a_unit.c_str( ) ). */
-        double massValue2( Database const &a_DB, std::string const &a_unit ) const { return( massValue( a_unit ) ); }
-                                                                                /**< Returns the value of massValue( a_unit.c_str( ) ). */
 
         PQ_suite const &spin( ) const { return( m_spin ); }                     /**< Returns a *const* reference to the *m_spin* member. */
         PQ_suite const &parity( ) const { return( m_parity ); }                 /**< Returns a *const* reference to the *m_parity* member. */
@@ -799,6 +881,8 @@ class Particle : public IDBase {
         void toXMLList( std::vector<std::string> &a_XMLList, std::string const &a_indent1 ) const ;
         virtual std::string toXMLListExtraAttributes( void ) const ;
         virtual void toXMLListExtraElements( std::vector<std::string> &a_XMLList, std::string const &a_indent1 ) const ;
+
+        friend class Unorthodox;
 };
 
 /*
@@ -904,6 +988,7 @@ class Nuclide : public Particle {
     private:
         Isotope *m_isotope;                                 /**< A pointer to the parent isotope. */
         Nucleus m_nucleus;                                  /**< The nucleus for *this* nuclide. */
+        GammaDecayData m_gammaDecayData;                    /**< . */
 
     public:
         Nuclide( HAPI::Node const &a_node, Database *a_DB, Isotope *a_parent );
@@ -914,7 +999,9 @@ class Nuclide : public Particle {
         std::string const &levelName( void ) const { return( m_nucleus.levelName( ) ); }
                                                                                 /**< Returns the result of calling m_nucleus.levelName( ). */
         int levelIndex( void ) const { return( m_nucleus.levelIndex( ) ); }     /**< Returns the result of calling m_nucleus.levelIndex( ). */
-        std::string const &atomsID( void ) const ;
+        std::string const &atomsID( ) const ;
+        std::string const &kind( ) const { return( m_gammaDecayData.kind( ) ); }
+        GammaDecayData const &gammaDecayData( ) const { return( m_gammaDecayData ); }
 
         Isotope const *isotope( ) const { return( m_isotope ); }                /**< Returns a *const* reference to the *m_isotope* member. */
         Nucleus const &nucleus( ) const { return( m_nucleus ); }                /**< Returns a *const* reference to the *m_nucleus* member. */
@@ -924,7 +1011,8 @@ class Nuclide : public Particle {
         double levelEnergy( std::string const &a_unit ) const { return( m_nucleus.energy( a_unit ) ); }
                                                                                 /**< Returns the result of calling m_nucleus.energy( a_unit ). */
 
-        void calculateNuclideGammaBranchStateInfos( PoPI::Database const &a_pops, NuclideGammaBranchStateInfos &a_nuclideGammaBranchStateInfos ) const ;
+        void calculateNuclideGammaBranchStateInfos( PoPI::Database const &a_pops, NuclideGammaBranchStateInfos &a_nuclideGammaBranchStateInfos,
+                bool a_alwaysAdd = false ) const ;
         virtual void toXMLListExtraElements( std::vector<std::string> &a_XMLList, std::string const &a_indent1 ) const ;
 };
 
@@ -1001,8 +1089,6 @@ class Alias : public IDBase {
         int pidIndex( void ) const { return( m_pidIndex ); }            /**< Returns a *const* reference to the *m_pidIndex* member of *this*. */
         void setPidIndex( int a_index ) { m_pidIndex = a_index; }       /**< Set the member *m_pidIndex* to *a_index*. */
 
-        double massValue2( Database const &a_DB, std::string const &a_unit ) const ;
-
         void toXMLList( std::vector<std::string> &a_XMLList, std::string const &a_indent1 ) const ;
 };
 
@@ -1038,10 +1124,11 @@ class Database {
         std::string m_name;                                             /**< The **GNDS** **name** of the first file read in. */
         std::string m_version;                                          /**< The **GNDS** **version** of the first file read in. */
         ParticleList m_list;                                            /**< The internal list of the particles. */
-        std::map<std::string,int> m_map;               // Be careful with this as a map[key] will add key if it is not in the map.
+        std::map<std::string, int> m_idsMap;            // Be careful with this as a map[key] will add key if it is not in the map.
+        std::map<int, int> m_intidsMap;                 // Be careful with this as a map[key] will add key if it is not in the map.
                                                                         /**< This maps each particle id to a unique index. */
         SymbolList m_symbolList;                                        /**< The internal list of the symbols. */
-        std::map<std::string,int> m_symbolMap;         // Be careful with this as a map[key] will add key if it is not in the map.
+        std::map<std::string, int> m_symbolMap;         // Be careful with this as a map[key] will add key if it is not in the map.
                                                                         /**< This maps each symbol to a unique index. */
 
         std::vector<Alias *> m_unresolvedAliases;                       /**< This is used internally to store aliases when a **PoPs** node is being parsed as the aliases onde is parsed before the particles are parsed. */
@@ -1063,7 +1150,10 @@ class Database {
         std::string const &name( void ) const { return( m_name ); }                         /**< Returns a *const* *reference* to the *m_name* variable of *this*. */
         std::string const &version( void ) const { return( m_version ); }                   /**< Returns a *const* *reference* to the *m_version* variable of *this*. */
 
-        std::vector<Alias *> aliases( ) { return( m_aliases ); }                            /**< Returns a *const* *reference* to the *m_aliases* variable of *this*. */
+        std::vector<Alias *> unresolvedAliases( ) { return( m_unresolvedAliases ); }      /**< Returns a *reference* to the *m_unresolvedAliases* member of *this*. */
+        std::size_t numberOfUnresolvedAliases( ) { return( m_unresolvedAliases.size( ) ); }     /**< Returns the number of unresolved aliases. */
+        std::vector<std::string> unresolvedAliasIds( ) const ;
+        std::vector<Alias *> &aliases( ) { return( m_aliases ); }                            /**< Returns a *const* *reference* to the *m_aliases* variable of *this*. */
 
         void addFile( char const *a_fileName, bool a_warnIfDuplicate );
         void addFile( std::string const &a_fileName, bool a_warnIfDuplicate );
@@ -1086,6 +1176,7 @@ class Database {
 
         bool exists( std::string const &a_id ) const ;
         bool exists( int a_index ) const ;
+        bool existsIntid( int a_intid ) const ;
 
         Suite<ChemicalElement, Database> const &chemicalElements( ) const { return( m_chemicalElements ); }
                                                                                             /**< Returns a *const* *reference* to the *m_chemicalElements* variable of *this*. */
@@ -1106,11 +1197,17 @@ class Database {
         std::string chemicalElementSymbol( std::string const &a_id ) const ;
         std::string isotopeSymbol( std::string const &a_id ) const ;
         int intid( std::string const &a_id ) const ;
+        int intid( int a_index ) const ;
+        int indexFromIntid( int a_intid ) const ;
 
         int add( Base *a_item );
         int addSymbol( SymbolBase *a_item );
 
-        void calculateNuclideGammaBranchStateInfos( NuclideGammaBranchStateInfos &a_nuclideGammaBranchStateInfos ) const ;
+        void calculateNuclideGammaBranchStateInfos( NuclideGammaBranchStateInfos &a_nuclideGammaBranchStateInfos, Database const *a_pops2,
+                std::vector<std::string> a_extraGammaBranchStates ) const ;
+        void calculateNuclideGammaBranchStateInfos2( NuclideGammaBranchStateInfos &a_nuclideGammaBranchStateInfos ) const ;
+
+        double massValue( std::string const &a_id, std::string const &a_unit ) const ;
 
         void saveAs( std::string const &a_fileName ) const ;
         void toXMLList( std::vector<std::string> &a_XMLList, std::string const &a_indent1 ) const ;

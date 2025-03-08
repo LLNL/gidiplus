@@ -60,8 +60,8 @@ class Isotope : public GUPI::Entry {
         double atomFraction( ) const { return( m_atomFraction ); }      /**< Returns the value of the *m_atomFraction* member. */
         double uncertainty( ) const { return( m_uncertainty ); }        /**< Returns the value of the *m_uncertainty* member. */
 
-        GUPI::Ancestry *findInAncestry3( std::string const &a_item ) { return( nullptr ); }
-        GUPI::Ancestry const *findInAncestry3( std::string const &a_item ) const { return( nullptr ); }
+        GUPI::Ancestry *findInAncestry3( LUPI_maybeUnused std::string const &a_item ) { return( nullptr ); }
+        GUPI::Ancestry const *findInAncestry3( LUPI_maybeUnused std::string const &a_item ) const { return( nullptr ); }
 
         LUPI_HOST void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode );
         void toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent = "" ) const ;
@@ -88,8 +88,8 @@ class ChemicalElement : public GUPI::Entry {
         GUPI::Suite const &isotopes( ) const { return( m_isotopes ); }
 
         Isotope const *operator[]( std::string const &a_id ) const ;
-        GUPI::Ancestry *findInAncestry3( std::string const &a_item ) { return( nullptr ); }
-        GUPI::Ancestry const *findInAncestry3( std::string const &a_item ) const { return( nullptr ); }
+        GUPI::Ancestry *findInAncestry3( LUPI_maybeUnused std::string const &a_item ) { return( nullptr ); }
+        GUPI::Ancestry const *findInAncestry3( LUPI_maybeUnused std::string const &a_item ) const { return( nullptr ); }
 
         double mass( PoPI::Database const &a_pops, std::string const &a_unit = "amu" ) const ;
 
@@ -123,8 +123,8 @@ class IsotopicAbundancesByChemicalElement : public GUPI::Ancestry {
         ChemicalElement const *operator[]( std::string const &a_symbol ) const ;
         ChemicalElement const *find( std::string const &a_symbol, std::string const &a_evaluation = "" ) const ;
 
-        GUPI::Ancestry *findInAncestry3( std::string const &a_item ) { return( nullptr ); }
-        GUPI::Ancestry const *findInAncestry3( std::string const &a_item ) const { return( nullptr ); }
+        GUPI::Ancestry *findInAncestry3( LUPI_maybeUnused std::string const &a_item ) { return( nullptr ); }
+        GUPI::Ancestry const *findInAncestry3( LUPI_maybeUnused std::string const &a_item ) const { return( nullptr ); }
 
         LUPI_HOST void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode );
         void toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent = "" ) const ;
@@ -157,8 +157,8 @@ class Base : public GUPI::Ancestry {
         std::string const algorithm( ) const ;
         void setAlgorithm( std::string const &a_algorithm ) { m_algorithm = a_algorithm; }      /**< Sets member *m_algorithm* to *a_algorithm*. */
 
-        GUPI::Ancestry *findInAncestry3( std::string const &a_item ) { return( nullptr ); }
-        GUPI::Ancestry const *findInAncestry3( std::string const &a_item ) const { return( nullptr ); }
+        GUPI::Ancestry *findInAncestry3( LUPI_maybeUnused std::string const &a_item ) { return( nullptr ); }
+        GUPI::Ancestry const *findInAncestry3( LUPI_maybeUnused std::string const &a_item ) const { return( nullptr ); }
 
         LUPI_HOST void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode );
         virtual std::string standardXML_attributes( bool a_checkAncestor = true ) const ;

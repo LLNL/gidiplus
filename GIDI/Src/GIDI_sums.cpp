@@ -129,8 +129,8 @@ void Sums::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent 
  * @param a_type            [in]    Type for the node.
  ***********************************************************************************************************/
 
-Base::Base( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops,
-		        PoPI::Database const &a_internalPoPs, FormType a_type ) :
+Base::Base( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, LUPI_maybeUnused PoPI::Database const &a_pops,
+		        LUPI_maybeUnused PoPI::Database const &a_internalPoPs, FormType a_type ) :
         Form( a_node, a_setupInfo, a_type ),
         m_ENDF_MT( a_node.attribute_as_int( GIDI_ENDF_MT_Chars ) ),
         m_summands( a_construction, a_node.child( GIDI_sumsSummandsChars ), a_setupInfo ) {
@@ -322,7 +322,7 @@ namespace Summand {
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  ***********************************************************************************************************/
 
-Base::Base( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo ) :
+Base::Base( LUPI_maybeUnused Construction::Settings const &a_construction, HAPI::Node const &a_node, LUPI_maybeUnused SetupInfo &a_setupInfo ) :
         GUPI::Ancestry( a_node.name( ) ),
         m_href( a_node.attribute_as_string( GIDI_hrefChars ) ) {
 

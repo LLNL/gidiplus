@@ -1,0 +1,51 @@
+/.../GIDI/Test/Data/MG_MC/neutrons/n-090_Th_227.xml
+
+All particle IDs in protare:  n photon Th224 Th225 Th226 Th227 Th228
+
+Transportable particle IDs in protare:  n photon
+
+All particle IDs by reaction:
+    n + Th227:  n Th227
+    n + (Th227_e1 -> Th227 + photon):  n photon Th227
+    n + (Th227_e2 -> Th227 + photon):  n photon Th227
+    n + (Th227_e3 -> Th227 + photon):  n photon Th227
+    n + (Th227_e4 -> Th227 + photon):  n photon Th227
+    n + (Th227_e5 -> Th227 + photon):  n photon Th227
+    n + (Th227_e6 -> Th227 + photon):  n photon Th227
+    n + (Th227_e7 -> Th227 + photon):  n photon Th227
+    n + (Th227_e8 -> Th227 + photon):  n photon Th227
+    n + (Th227_e9 -> Th227 + photon):  n photon Th227
+    n + (Th227_e10 -> Th227 + photon):  n photon Th227
+    n + (Th227_e11 -> Th227 + photon):  n photon Th227
+    n + (Th227_e12 -> Th227 + photon):  n photon Th227
+    n + (Th227_e13 -> Th227 + photon):  n photon Th227
+    n + (Th227_e14 -> Th227 + photon):  n photon Th227
+    n + (Th227 -> Th227 + photon) [continuum]:  n photon Th227
+    2n + Th226 + photon:  n photon Th226
+    3n + Th225 + photon:  n photon Th225
+    4n + Th224 + photon:  n photon Th224
+    m(E)*n + photon [total fission]:  n photon
+    Th228 + photon:  photon Th228
+
+Transportable particle IDs by reaction:
+    n + Th227:  n
+    n + (Th227_e1 -> Th227 + photon):  n photon
+    n + (Th227_e2 -> Th227 + photon):  n photon
+    n + (Th227_e3 -> Th227 + photon):  n photon
+    n + (Th227_e4 -> Th227 + photon):  n photon
+    n + (Th227_e5 -> Th227 + photon):  n photon
+    n + (Th227_e6 -> Th227 + photon):  n photon
+    n + (Th227_e7 -> Th227 + photon):  n photon
+    n + (Th227_e8 -> Th227 + photon):  n photon
+    n + (Th227_e9 -> Th227 + photon):  n photon
+    n + (Th227_e10 -> Th227 + photon):  n photon
+    n + (Th227_e11 -> Th227 + photon):  n photon
+    n + (Th227_e12 -> Th227 + photon):  n photon
+    n + (Th227_e13 -> Th227 + photon):  n photon
+    n + (Th227_e14 -> Th227 + photon):  n photon
+    n + (Th227 -> Th227 + photon) [continuum]:  n photon
+    2n + Th226 + photon:  n photon
+    3n + Th225 + photon:  n photon
+    4n + Th224 + photon:  n photon
+    m(E)*n + photon [total fission]:  n photon
+    Th228 + photon:  photon

@@ -41,16 +41,13 @@ int main2( int argc, char **argv ) {
     std::string projectileID( PoPI::IDs::photon );
     GIDI::Protare *protare;
     GIDI::Transporting::Particles particles;
-    void *rngState = nullptr;
-    unsigned long long seed = 1;
+    unsigned long long rngState = 1;
     std::set<int> reactionsToExclude;
     LUPI::StatusMessageReporting smr1;
 
     std::cerr << "    " << __FILE__;
     for( int i1 = 1; i1 < argc; i1++ ) std::cerr << " " << argv[i1];
     std::cerr << std::endl;
-
-    MCGIDI_test_rngSetup( seed );
 
     argvOptions2 argv_options( "sampleProducts", description );
 
@@ -103,11 +100,13 @@ int main2( int argc, char **argv ) {
             products.clear( );
 
             std::cout << "    energy = " << energy << std::endl;
-            reaction->sampleProducts( MCProtare, energy, input, float64RNG64, rngState, products );
+            reaction->sampleProducts( MCProtare, energy, input, [&]( ) -> double { return float64RNG64( &rngState ); },
+                    [&]( MCGIDI::Sampling::Product &a_product ) -> void { products.push_back( a_product ); }, products );
 
             for( std::size_t i2 = 0; i2 < products.size( ); ++i2 ) {
                 MCGIDI::Sampling::Product const &product = products[i2];
-                PoPI::Particle const &particle = pops.particle( product.m_productIndex );
+                PoPI::ParseIntidInfo parseIntidInfo( product.m_productIntid );
+                PoPI::Particle const &particle = pops.particle( parseIntidInfo.id( ) );
                 std::cout << "        productIndex " << std::setw( 12 ) << particle.ID( );
                 if( product.m_sampledType == MCGIDI::Sampling::SampledType::unspecified ) {
                     std::cout << " unspecified distribution" << std::endl; }

@@ -18,7 +18,7 @@ namespace MCGIDI {
  *
  * @param a_smr                         [Out]   If errors are not to be thrown, then the error is reported via this instance.
  * @param a_protare                     [in]    The GIDI::Protare whose data is to be used to construct *this*.
- * @param a_pops                        [in]    A PoPs Database instance used to get particle indices and possibly other particle information.
+ * @param a_pops                        [in]    A PoPs Database instance used to get particle intids and possibly other particle information.
  * @param a_settings                    [in]    Used to pass user options to the *this* to instruct it which data are desired.
  * @param a_particles                   [in]    List of transporting particles and their information (e.g., multi-group boundaries and fluxes).
  * @param a_domainHash                  [in]    The hash data used when looking up a cross section.
@@ -61,12 +61,16 @@ LUPI_HOST Protare *protareFromGIDIProtare( LUPI::StatusMessageReporting &a_smr, 
 LUPI_HOST_DEVICE Protare::Protare( ProtareType a_protareType ) :
         m_protareType( a_protareType ),
         m_projectileID( ),
+        m_projectileIntid( -1 ),
         m_projectileIndex( -1 ),
+        m_projectileUserIndex( -1 ),
         m_projectileMass( 0.0 ),
         m_projectileExcitationEnergy( 0.0 ),
 
         m_targetID( ),
+        m_targetIntid( -1 ),
         m_targetIndex( -1 ),
+        m_targetUserIndex( -1 ),
         m_targetMass( 0.0 ),
         m_targetExcitationEnergy( 0.0 ),
 
@@ -74,8 +78,7 @@ LUPI_HOST_DEVICE Protare::Protare( ProtareType a_protareType ) :
         m_userNeutronIndex( -1 ),
         m_photonIndex( -1 ),
         m_userPhotonIndex( -1 ),
-        m_electronIndex( -1 ),
-        m_userElectronIndex( -1 ),
+
         m_evaluation( ),
         m_projectileFrame( GIDI::Frame::lab ),
 
@@ -88,40 +91,45 @@ LUPI_HOST_DEVICE Protare::Protare( ProtareType a_protareType ) :
  *
  * @param a_protareType         [in]    The enum for the type of Protare (i.e., single, composite or TNSL).
  * @param a_protare             [in]    The GIDI::Protare whose data is to be used to construct *this*.
- * @param a_pops                [in]    A PoPs Database instance used to get particle indices and possibly other particle information.
  * @param a_settings            [in]    Used to pass user options to the *this* to instruct it which data are desired.
  ***********************************************************************************************************/
 
-LUPI_HOST Protare::Protare( ProtareType a_protareType, GIDI::Protare const &a_protare, PoPI::Database const &a_pops, Transporting::MC const &a_settings ) :
+LUPI_HOST Protare::Protare( ProtareType a_protareType, GIDI::Protare const &a_protare, LUPI_maybeUnused Transporting::MC const &a_settings, PoPI::Database const &a_pops ) :
         m_protareType( a_protareType ),
         m_projectileID( a_protare.projectile( ).ID( ).c_str( ) ),
-        m_projectileIndex( 0 ),
-        m_projectileUserIndex( 0 ),
+        m_projectileIntid( -1 ),
+        m_projectileIndex( MCGIDI_popsIndex( a_pops, m_projectileID.c_str( ) ) ),
+        m_projectileUserIndex( -1 ),
         m_projectileMass( a_protare.projectile( ).mass( "MeV/c**2" ) ),          // Includes nuclear excitation energy.
         m_projectileExcitationEnergy( a_protare.projectile( ).excitationEnergy( ).value( ) ),
 
         m_targetID( a_protare.target( ).ID( ).c_str( ) ),
-        m_targetIndex( 0 ),
-        m_targetUserIndex( 0 ),
+        m_targetIntid( -1 ),
+        m_targetIndex( -1 ),
+        m_targetUserIndex( -1 ),
         m_targetMass( a_protare.target( ).mass( "MeV/c**2" ) ),                  // Includes nuclear excitation energy.
         m_targetExcitationEnergy( a_protare.target( ).excitationEnergy( ).value( ) ),
 
-        m_neutronIndex( a_settings.neutronIndex( ) ),
-        m_userNeutronIndex( 0 ),
-        m_photonIndex( a_settings.photonIndex( ) ),
-        m_userPhotonIndex( 0 ),
-        m_electronIndex( a_settings.electronIndex( ) ),
-        m_userElectronIndex( 0 ),
+        m_neutronIndex( MCGIDI_popsIndex( a_pops, PoPI::IDs::neutron ) ),
+        m_userNeutronIndex( -1 ),
+        m_photonIndex( MCGIDI_popsIndex( a_pops, PoPI::IDs::photon ) ),
+        m_userPhotonIndex( -1 ),
+
         m_evaluation( a_protare.evaluation( ).c_str( ) ),
         m_projectileFrame( a_protare.projectileFrame( ) ),
-        m_productIndices( 0 ),
+        m_productIntids( 0 ),
         m_userProductIndices( 0 ),
-        m_productIndicesTransportable( 0 ),
+        m_productIntidsTransportable( 0 ),
         m_userProductIndicesTransportable( 0 ),
         m_isTNSL_ProtareSingle( a_protare.isTNSL_ProtareSingle( ) ) {
 
-    m_projectileIndex = a_pops[a_protare.projectile( ).ID( )];
-    m_targetIndex = a_pops[a_protare.target( ).ID( )];
+    PoPI::Database const &pops = a_protare.protare( 0 )->internalPoPs( );
+    m_projectileIntid = MCGIDI_popsIntid( pops, m_projectileID.c_str( ) );
+
+    if( a_protare.protare( 0 )->interaction( ) != GIDI_MapInteractionTNSLChars ) {
+        m_targetIntid = MCGIDI_popsIntid( pops, m_targetID.c_str( ) );
+        m_targetIndex = MCGIDI_popsIndex( a_pops,  m_targetID.c_str( ) );
+    }
 }
 
 /* *********************************************************************************************************//**
@@ -132,9 +140,55 @@ LUPI_HOST_DEVICE Protare::~Protare( ) {
 }
 
 /* *********************************************************************************************************//**
+ * Sets *this* members *m_productIntids* and *m_productIntidsTransportable* to *a_intids* and *a_transportableIntids* respectively.
+ * And, sets *this* members *m_productIndices* and *m_productIndicesTransportable* to *a_indices* and *a_transportableIndices* respectively.
+ *
+ * @param a_intids                  [out]   The list of intids for the outgoing particles (i.e., products).
+ * @param a_transportableIntids     [in]    The list of transportable intids for the outgoing particles (i.e., products).
+ * @param a_indices                 [in]    The list of indices for the outgoing particles (i.e., products).
+ * @param a_transportableIndices    [in]    The list of transportable indices for the outgoing particles (i.e., products).
+ ***********************************************************************************************************/
+
+LUPI_HOST void Protare::productIntidsAndIndices( std::set<int> const &a_intids, std::set<int> const &a_transportableIntids,
+                std::set<int> const &a_indices, std::set<int> const &a_transportableIndices ) {
+
+    m_productIntids.reserve( a_intids.size( ) );
+    m_userProductIndices.reserve( a_intids.size( ) );
+    for( std::set<int>::const_iterator iter = a_intids.begin( ); iter != a_intids.end( ); ++iter ) {
+        m_productIntids.push_back( *iter );
+        m_userProductIndices.push_back( -1 );
+    }
+
+    m_productIndices.reserve( a_indices.size( ) );
+    for( auto iter = a_indices.begin( ); iter != a_indices.end( ); ++iter ) m_productIndices.push_back( *iter );
+
+    m_productIntidsTransportable.reserve( a_transportableIntids.size( ) );
+    m_userProductIndicesTransportable.reserve( a_transportableIntids.size( ) );
+    for( std::set<int>::const_iterator iter = a_transportableIntids.begin( ); iter != a_transportableIntids.end( ); ++iter ) {
+        m_productIntidsTransportable.push_back( *iter );
+        m_userProductIndicesTransportable.push_back( -1 );
+    }
+
+    m_productIndicesTransportable.reserve( a_transportableIndices.size( ) );
+    for( auto iter = a_transportableIndices.begin( ); iter != a_transportableIndices.end( ); ++iter ) m_productIndicesTransportable.push_back( *iter );
+}
+
+/* *********************************************************************************************************//**
+ * Returns the list product intids. If *a_transportablesOnly* is true, the list only includes transportable particle.
+ *
+ * @param a_transportablesOnly  [in]    If **true**, a reference to *m_productIntidsTransportable* is returned; otherwise a reference to *m_productIntids* is returned.
+ ***********************************************************************************************************/
+
+LUPI_HOST Vector<int> const &Protare::productIntids( bool a_transportablesOnly ) const {
+
+    if( a_transportablesOnly ) return( m_productIntidsTransportable );
+    return( m_productIntids );
+}
+
+/* *********************************************************************************************************//**
  * Returns the list product indices. If *a_transportablesOnly* is true, the list only includes transportable particle.
  *
- * @param a_transportablesOnly  [in]    If true, only transportable particle indices are added to *a_indices*, otherwise, all particle indices are added.
+ * @param a_transportablesOnly  [in]    If **true**, a reference to *m_productIndicesTransportable* is returned; otherwise a reference to *m_productIndices* is returned.
  ***********************************************************************************************************/
 
 LUPI_HOST Vector<int> const &Protare::productIndices( bool a_transportablesOnly ) const {
@@ -144,33 +198,9 @@ LUPI_HOST Vector<int> const &Protare::productIndices( bool a_transportablesOnly 
 }
 
 /* *********************************************************************************************************//**
- * Sets *this* members *m_productIndices* and *m_productIndicesTransportable* to *a_indices* and *a_transportableIndices* respectively.
+ * Returns the list user product indices. If *a_transportablesOnly* is true, the list only includes transportable particle.
  *
- * @param a_indices                 [out]   The list of indices for the outgoing particles (i.e., products).
- * @param a_transportableIndices    [in]    The list of transportable indices for the outgoing particles (i.e., products).
- ***********************************************************************************************************/
-
-LUPI_HOST void Protare::productIndices( std::set<int> const &a_indices, std::set<int> const &a_transportableIndices ) {
-
-    m_productIndices.reserve( a_indices.size( ) );
-    m_userProductIndices.reserve( a_indices.size( ) );
-    for( std::set<int>::const_iterator iter = a_indices.begin( ); iter != a_indices.end( ); ++iter ) {
-        m_productIndices.push_back( *iter );
-        m_userProductIndices.push_back( -1 );
-    }
-
-    m_productIndicesTransportable.reserve( a_transportableIndices.size( ) );
-    m_userProductIndicesTransportable.reserve( a_transportableIndices.size( ) );
-    for( std::set<int>::const_iterator iter = a_transportableIndices.begin( ); iter != a_transportableIndices.end( ); ++iter ) {
-        m_productIndicesTransportable.push_back( *iter );
-        m_userProductIndicesTransportable.push_back( -1 );
-    }
-}
-
-/* *********************************************************************************************************//**
- * Returns the list product indices. If *a_transportablesOnly* is true, the list only includes transportable particle.
- *
- * @param a_transportablesOnly  [in]    If true, only transportable particle indices are added to *a_indices*, otherwise, all particle indices are added.
+ * @param a_transportablesOnly  [in]    If **true**, a reference to *m_userProductIndicesTransportable* is returned; otherwise a reference to *m_userProductIndices* is returned.
  ***********************************************************************************************************/
 
 LUPI_HOST Vector<int> const &Protare::userProductIndices( bool a_transportablesOnly ) const {
@@ -182,17 +212,16 @@ LUPI_HOST Vector<int> const &Protare::userProductIndices( bool a_transportablesO
 /* *********************************************************************************************************//**
  * Updates the m_userParticleIndex to *a_userParticleIndex* for all particles with PoPs index *a_particleIndex*.
  *
- * @param a_particleIndex       [in]    The PoPs id of the particle whose userPid is to be set.
- * @param a_userParticleIndex   [in]    The particle id specified by the user.
+ * @param a_particleIndex       [in]    The PoPs index of the particle whose user index is to be set.
+ * @param a_userParticleIndex   [in]    The particle index specified by the user.
  ***********************************************************************************************************/
 
 LUPI_HOST void Protare::setUserParticleIndex( int a_particleIndex, int a_userParticleIndex ) {
 
     if( m_projectileIndex == a_particleIndex ) m_projectileUserIndex = a_userParticleIndex;
     if( m_targetIndex == a_particleIndex ) m_targetUserIndex = a_userParticleIndex;
-    if( m_neutronIndex == a_particleIndex ) m_userNeutronIndex = a_userParticleIndex;
+
     if( m_photonIndex == a_particleIndex ) m_userPhotonIndex = a_userParticleIndex;
-    if( m_electronIndex == a_particleIndex ) m_userElectronIndex = a_userParticleIndex;
 
     for( auto i1 = 0; i1 < m_productIndices.size( ); ++i1 ) {
         if( m_productIndices[i1] == a_particleIndex ) m_userProductIndices[i1] = a_userParticleIndex;
@@ -211,6 +240,41 @@ LUPI_HOST void Protare::setUserParticleIndex( int a_particleIndex, int a_userPar
         break;
     case ProtareType::TNSL:
         static_cast<ProtareTNSL *>( this )->setUserParticleIndex2( a_particleIndex, a_userParticleIndex );
+        break;
+    }
+}
+
+/* *********************************************************************************************************//**
+ * Updates the m_userParticleIndex to *a_userParticleIndex* for all particles with PoPs intid *a_particleIntid*.
+ *
+ * @param a_particleIntid       [in]    The PoPs intid of the particle whose user index is to be set.
+ * @param a_userParticleIndex   [in]    The particle index specified by the user.
+ ***********************************************************************************************************/
+
+LUPI_HOST void Protare::setUserParticleIndexViaIntid( int a_particleIntid, int a_userParticleIndex ) {
+
+    if( m_projectileIntid == a_particleIntid ) m_projectileUserIndex = a_userParticleIndex;
+    if( m_targetIntid == a_particleIntid ) m_targetUserIndex = a_userParticleIndex;
+
+    if( PoPI::Intids::photon == a_particleIntid ) m_userPhotonIndex = a_userParticleIndex;
+
+    for( auto i1 = 0; i1 < m_productIntids.size( ); ++i1 ) {
+        if( m_productIntids[i1] == a_particleIntid ) m_userProductIndices[i1] = a_userParticleIndex;
+    }
+
+    for( auto i1 = 0; i1 < m_productIntidsTransportable.size( ); ++i1 ) {
+        if( m_productIntidsTransportable[i1] == a_particleIntid ) m_userProductIndicesTransportable[i1] = a_userParticleIndex;
+    }
+
+    switch( m_protareType ) {
+    case ProtareType::single:
+        static_cast<ProtareSingle *>( this )->setUserParticleIndexViaIntid2( a_particleIntid, a_userParticleIndex );
+        break;
+    case ProtareType::composite:
+        static_cast<ProtareComposite *>( this )->setUserParticleIndexViaIntid2( a_particleIntid, a_userParticleIndex );
+        break;
+    case ProtareType::TNSL:
+        static_cast<ProtareTNSL *>( this )->setUserParticleIndexViaIntid2( a_particleIntid, a_userParticleIndex );
         break;
     }
 }
@@ -304,23 +368,22 @@ LUPI_HOST_DEVICE void Protare::serializeCommon( LUPI::DataBuffer &a_buffer, LUPI
     }
 
     DATA_MEMBER_STRING( m_projectileID, a_buffer, a_mode );
+    DATA_MEMBER_INT( m_projectileIntid, a_buffer, a_mode );
     DATA_MEMBER_INT( m_projectileIndex, a_buffer, a_mode );
     DATA_MEMBER_INT( m_projectileUserIndex, a_buffer, a_mode );
     DATA_MEMBER_FLOAT( m_projectileMass, a_buffer, a_mode );
     DATA_MEMBER_FLOAT( m_projectileExcitationEnergy, a_buffer, a_mode );
 
     DATA_MEMBER_STRING( m_targetID, a_buffer, a_mode );
+    DATA_MEMBER_INT( m_targetIntid, a_buffer, a_mode );
     DATA_MEMBER_INT( m_targetIndex, a_buffer, a_mode );
     DATA_MEMBER_INT( m_targetUserIndex, a_buffer, a_mode );
     DATA_MEMBER_FLOAT( m_targetMass, a_buffer, a_mode );
     DATA_MEMBER_FLOAT( m_targetExcitationEnergy, a_buffer, a_mode );
 
-    DATA_MEMBER_INT( m_neutronIndex, a_buffer, a_mode );
-    DATA_MEMBER_INT( m_userNeutronIndex, a_buffer, a_mode );
     DATA_MEMBER_INT( m_photonIndex, a_buffer, a_mode );
     DATA_MEMBER_INT( m_userPhotonIndex, a_buffer, a_mode );
-    DATA_MEMBER_INT( m_electronIndex, a_buffer, a_mode );
-    DATA_MEMBER_INT( m_userElectronIndex, a_buffer, a_mode );
+
     DATA_MEMBER_STRING( m_evaluation, a_buffer, a_mode );
 
     int frame = 0;
@@ -329,10 +392,14 @@ LUPI_HOST_DEVICE void Protare::serializeCommon( LUPI::DataBuffer &a_buffer, LUPI
     m_projectileFrame = GIDI::Frame::lab;
     if( frame == 1 ) m_projectileFrame = GIDI::Frame::centerOfMass;
 
+    DATA_MEMBER_VECTOR_INT( m_productIntids, a_buffer, a_mode );
     DATA_MEMBER_VECTOR_INT( m_productIndices, a_buffer, a_mode );
     DATA_MEMBER_VECTOR_INT( m_userProductIndices, a_buffer, a_mode );
+
+    DATA_MEMBER_VECTOR_INT( m_productIntidsTransportable, a_buffer, a_mode );
     DATA_MEMBER_VECTOR_INT( m_productIndicesTransportable, a_buffer, a_mode );
     DATA_MEMBER_VECTOR_INT( m_userProductIndicesTransportable, a_buffer, a_mode );
+
     DATA_MEMBER_CAST( m_isTNSL_ProtareSingle, a_buffer, a_mode, bool );
 }
 
@@ -718,6 +785,31 @@ LUPI_HOST_DEVICE bool Protare::hasFission( ) const {
 }
 
 /* *********************************************************************************************************//**
+ * Returns true if *this* has a photoatomic incoherent doppler broadened reaction and false otherwise.
+ *
+ * @return                              true is if *this* has a specified reaction and false otherwise.
+ ***********************************************************************************************************/
+
+LUPI_HOST_DEVICE bool Protare::hasIncoherentDoppler( ) const {
+
+    bool hasIncoherentDoppler1 = false;
+
+    switch( protareType( ) ) {
+    case ProtareType::single:
+        hasIncoherentDoppler1 = static_cast<ProtareSingle const *>( this )->hasIncoherentDoppler( );
+        break;
+    case ProtareType::composite:
+        hasIncoherentDoppler1 = static_cast<ProtareComposite const *>( this )->hasIncoherentDoppler( );
+        break;
+    case ProtareType::TNSL:
+        hasIncoherentDoppler1 = static_cast<ProtareTNSL const *>( this )->hasIncoherentDoppler( );
+        break;
+    }
+
+    return( hasIncoherentDoppler1 );
+}
+
+/* *********************************************************************************************************//**
  * Returns URR index of *this*.
  *
  * @return                              Integer URR index of *this*.
@@ -996,43 +1088,6 @@ LUPI_HOST_DEVICE double Protare::reactionCrossSection( int a_reactionIndex, URR_
 }
 
 /* *********************************************************************************************************//**
- * Samples a reaction of *this* and returns its index.
- *
- * @param   a_URR_protareInfos  [in]    URR information.
- * @param   a_hashIndex         [in]    The cross section hash index.
- * @param   a_temperature       [in]    The target temperature.
- * @param   a_energy            [in]    The projectile energy.
- * @param   a_crossSection      [in]    The total cross section at *a_temperature* and *a_energy*.
- * @param   a_userrng           [in]    The random number gnerator.
- * @param   a_rngState          [in]    The state for the random number gnerator.
- *
- * @return                          The index of the sampled reaction.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE int Protare::sampleReaction( URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, 
-                double a_energy, double a_crossSection, double (*a_userrng)( void * ), void *a_rngState ) const {
-
-    int reactionIndex = -1;
-
-    switch( protareType( ) ) {
-    case ProtareType::single: 
-        reactionIndex = static_cast<ProtareSingle const *>( this )->sampleReaction( a_URR_protareInfos, a_hashIndex, a_temperature, a_energy, 
-                a_crossSection, a_userrng, a_rngState );
-        break;
-    case ProtareType::composite:
-        reactionIndex = static_cast<ProtareComposite const *>( this )->sampleReaction( a_URR_protareInfos, a_hashIndex, a_temperature, a_energy, 
-                a_crossSection, a_userrng, a_rngState );
-        break;
-    case ProtareType::TNSL:
-        reactionIndex = static_cast<ProtareTNSL const *>( this )->sampleReaction( a_URR_protareInfos, a_hashIndex, a_temperature, a_energy, 
-                a_crossSection, a_userrng, a_rngState );
-        break;
-    }
-
-    return( reactionIndex );
-}
-
-/* *********************************************************************************************************//**
  * Returns the total deposition energy.
  *
  * @param   a_hashIndex     [in]    The cross section hash index.
@@ -1120,12 +1175,12 @@ LUPI_HOST_DEVICE double Protare::productionEnergy( int a_hashIndex, double a_tem
 }
 
 /* *********************************************************************************************************//**
- * Returns the multi-group gain for particle with index *a_particleIndex*.
+ * Returns the gain for particle with index *a_particleIndex*.
  *
- * @param a_hashIndex           [in]    The multi-group index.
+ * @param a_hashIndex           [in]    The continuous energy hash or multi-group index.
  * @param a_temperature         [in]    The temperature of the target.
- * @param   a_energy            [in]    The projectile energy.
- * @param a_particleIndex       [in]    The id of the particle whose gain is to be returned.
+ * @param a_energy              [in]    The projectile energy.
+ * @param a_particleIndex       [in]    The index of the particle whose gain is to be returned.
  *
  * @return                              A vector of the length of the number of multi-group groups.
  ***********************************************************************************************************/
@@ -1143,6 +1198,36 @@ LUPI_HOST_DEVICE double Protare::gain( int a_hashIndex, double a_temperature, do
         break;
     case ProtareType::TNSL:
         gain1 = static_cast<ProtareTNSL const *>( this )->gain( a_hashIndex, a_temperature, a_energy, a_particleIndex );
+        break;
+    }
+
+    return( gain1 );
+}
+
+/* *********************************************************************************************************//**
+ * Returns the gain for particle with intid *a_particleIntid*.
+ *
+ * @param a_hashIndex           [in]    The continuous energy hash or multi-group index.
+ * @param a_temperature         [in]    The temperature of the target.
+ * @param a_energy              [in]    The projectile energy.
+ * @param a_particleIntid       [in]    The intid of the particle whose gain is to be returned.
+ *
+ * @return                              A vector of the length of the number of multi-group groups.
+ ***********************************************************************************************************/
+
+LUPI_HOST_DEVICE double Protare::gainViaIntid( int a_hashIndex, double a_temperature, double a_energy, int a_particleIntid ) const {
+
+    double gain1 = 0.0;
+
+    switch( protareType( ) ) {
+    case ProtareType::single:
+        gain1 = static_cast<ProtareSingle const *>( this )->gainViaIntid( a_hashIndex, a_temperature, a_energy, a_particleIntid );
+        break;
+    case ProtareType::composite:
+        gain1 = static_cast<ProtareComposite const *>( this )->gainViaIntid( a_hashIndex, a_temperature, a_energy, a_particleIntid );
+        break;
+    case ProtareType::TNSL:
+        gain1 = static_cast<ProtareTNSL const *>( this )->gainViaIntid( a_hashIndex, a_temperature, a_energy, a_particleIntid );
         break;
     }
 
@@ -1199,7 +1284,7 @@ LUPI_HOST_DEVICE ProtareSingle::ProtareSingle( ) :
 /* *********************************************************************************************************//**
  * @param a_smr                         [Out]   If errors are not to be thrown, then the error is reported via this instance.
  * @param a_protare                     [in]    The GIDI::Protare whose data is to be used to construct *this*.
- * @param a_pops                        [in]    A PoPs Database instance used to get particle indices and possibly other particle information.
+ * @param a_pops                        [in]    A PoPs Database instance used to get particle intids and possibly other particle information.
  * @param a_settings                    [in]    Used to pass user options to the *this* to instruct it which data are desired.
  * @param a_particles                   [in]    List of transporting particles and their information (e.g., multi-group boundaries and fluxes).
  * @param a_domainHash                  [in]    The hash data used when looking up a cross section.
@@ -1213,7 +1298,7 @@ LUPI_HOST ProtareSingle::ProtareSingle( LUPI::StatusMessageReporting &a_smr, GID
                 Transporting::MC &a_settings, GIDI::Transporting::Particles const &a_particles, DomainHash const &a_domainHash, 
                 GIDI::Styles::TemperatureInfos const &a_temperatureInfos, std::set<int> const &a_reactionsToExclude, int a_reactionsToExcludeOffset, 
                 bool a_allowFixedGrid ) :
-        Protare( ProtareType::single, a_protare, a_pops, a_settings ),
+        Protare( ProtareType::single, a_protare, a_settings, a_pops ),
         m_interaction( a_protare.interaction( ).c_str( ) ),
         m_URR_index( -1 ),
         m_hasURR_probabilityTables( false ),
@@ -1226,6 +1311,9 @@ LUPI_HOST ProtareSingle::ProtareSingle( LUPI::StatusMessageReporting &a_smr, GID
         m_isPhotoAtomic( a_protare.isPhotoAtomic( ) ),
         m_heatedCrossSections( ),
         m_heatedMultigroupCrossSections( ) {
+
+    a_protare.updateReactionIndices( 0 );           // This is not correct as the offset should be passed as an arguent.
+    PoPI::Database const &pops = a_protare.protare( 0 )->internalPoPs( );
 
     if( !a_protare.isPhotoAtomic( ) ) {
         std::set<std::string> incompleteParticles;
@@ -1242,12 +1330,14 @@ LUPI_HOST ProtareSingle::ProtareSingle( LUPI::StatusMessageReporting &a_smr, GID
         }
     }
 
-    SetupInfo setupInfo( *this );
+    SetupInfo setupInfo( *this, a_protare, a_pops, pops );
     setupInfo.m_formatVersion = a_protare.formatVersion( );
+    setupInfo.m_GRIN_continuumGammas = a_protare.GRIN_continuumGammas2( );
 
     GIDI::Transporting::Particles particles;
     for( std::map<std::string, GIDI::Transporting::Particle>::const_iterator particle = a_particles.particles( ).begin( ); particle != a_particles.particles( ).end( ); ++particle ) {
-        setupInfo.m_particleIndices[particle->first] = a_pops[particle->first];
+        setupInfo.m_particleIntids[particle->first] = MCGIDI_popsIntid( pops, particle->first );
+        setupInfo.m_particleIndices[particle->first] = MCGIDI_popsIndex( a_pops, particle->first );
 
         if( ( m_interaction == GIDI_MapInteractionAtomicChars ) && 
                 !( ( particle->first == PoPI::IDs::photon ) || ( particle->first == PoPI::IDs::electron ) ) ) continue;
@@ -1278,7 +1368,8 @@ LUPI_HOST ProtareSingle::ProtareSingle( LUPI::StatusMessageReporting &a_smr, GID
     }
     m_fixedGrid = a_allowFixedGrid && ( a_protare.projectile( ).ID( ) == PoPI::IDs::photon ) && ( a_settings.fixedGridPoints( ).size( ) > 0 );
 
-    setupNuclideGammaBranchStateInfos( setupInfo, a_protare );
+    setupNuclideGammaBranchStateInfos( setupInfo, a_protare, a_settings.makePhotonEmissionProbabilitiesOne( ),
+            a_settings.zeroNuclearLevelEnergyWidth( ) );
     convertACE_URR_probabilityTablesFromGIDI( a_protare, a_settings,  setupInfo );
 
     if( ( a_settings.crossSectionLookupMode( ) == Transporting::LookupMode::Data1d::multiGroup ) || 
@@ -1330,9 +1421,8 @@ LUPI_HOST ProtareSingle::ProtareSingle( LUPI::StatusMessageReporting &a_smr, GID
         GIDI_reaction->productIDs( product_ids, particles, false );
         GIDI_reaction->productIDs( product_ids_transportable, particles, true );
 
-        if( a_settings.nuclearPlusCoulombInterferenceOnly( ) && a_protare.onlyRutherfordScatteringPresent( ) ) continue;
-        if( GIDI_reaction->RutherfordScatteringPresent( ) && ( nuclearPlusCoulombInterferenceReaction != nullptr ) ) {
-            GIDI_reactions.push_back( nuclearPlusCoulombInterferenceReaction ); }
+        if( a_settings.nuclearPlusCoulombInterferenceOnly( ) && GIDI_reaction->RutherfordScatteringPresent( ) ) {
+            if( nuclearPlusCoulombInterferenceReaction != nullptr ) GIDI_reactions.push_back( nuclearPlusCoulombInterferenceReaction ); }
         else {
             GIDI_reactions.push_back( GIDI_reaction );
         }
@@ -1354,18 +1444,25 @@ LUPI_HOST ProtareSingle::ProtareSingle( LUPI::StatusMessageReporting &a_smr, GID
         m_reactions.push_back( reaction );
     }
 
+    std::set<int> product_intids;
     std::set<int> product_indices;
-    for( std::set<std::string>::iterator iter = product_ids.begin( ); iter != product_ids.end( ); ++iter ) product_indices.insert( a_pops[*iter] );
+    for( std::set<std::string>::iterator iter = product_ids.begin( ); iter != product_ids.end( ); ++iter ) {
+        product_intids.insert( MCGIDI_popsIntid( pops, *iter ) );
+        product_indices.insert( MCGIDI_popsIndex( a_pops, *iter ) );
+    }
+    std::set<int> product_intids_transportable;
     std::set<int> product_indices_transportable;
-    for( std::set<std::string>::iterator iter = product_ids_transportable.begin( ); iter != product_ids_transportable.end( ); ++iter ) product_indices_transportable.insert( a_pops[*iter] );
-    productIndices( product_indices, product_indices_transportable );
+    for( std::set<std::string>::iterator iter = product_ids_transportable.begin( ); iter != product_ids_transportable.end( ); ++iter ) {
+        product_intids_transportable.insert( MCGIDI_popsIntid( pops, *iter ) );
+        product_indices_transportable.insert( MCGIDI_popsIndex( a_pops, *iter ) );
+    }
+    productIntidsAndIndices( product_intids, product_intids_transportable, product_indices, product_indices_transportable );
 
     if( a_settings.sampleNonTransportingParticles( ) || particles.hasParticle( PoPI::IDs::photon ) ) {
         setupInfo.m_reactionType = Transporting::Reaction::Type::OrphanProducts;
         m_orphanProducts.reserve( a_protare.orphanProducts( ).size( ) );
-        std::vector<int> numberOfSummands( m_reactions.size( ), -1 );               // More than one summand my point to a reaction (e.g., (n,n') may
-        std::vector<int> associatedOrphanProductIndices( m_reactions.size( ) );     // in MT 3 and 4. So find the one with the least number of 
-        std::vector<Reaction *> orphanProductReactions( m_reactions.size( ) );      // summands for each reaction.
+        std::vector< std::vector<int> > associatedOrphanProductIndices( m_reactions.size( ) );
+
         for( std::size_t orphanProductIndex = 0; orphanProductIndex < a_protare.orphanProducts( ).size( ); ++orphanProductIndex ) {
             GIDI::Reaction const *GIDI_reaction = a_protare.orphanProduct( orphanProductIndex );
 
@@ -1401,12 +1498,7 @@ LUPI_HOST ProtareSingle::ProtareSingle( LUPI::StatusMessageReporting &a_smr, GID
                     std::string label( m_reactions[reactionIndex]->label( ).c_str( ) );
 
                     if( label == GIDI_reaction2->label( ) ) {
-                        if( numberOfSummands[reactionIndex] < 0 ) numberOfSummands[reactionIndex] = static_cast<int>( summands.size( ) + 1 );
-                        if( static_cast<int>( summands.size( ) ) < numberOfSummands[reactionIndex] ) {
-                            numberOfSummands[reactionIndex] = static_cast<int>( summands.size( ) );
-                            associatedOrphanProductIndices[reactionIndex] = static_cast<int>( m_orphanProducts.size( ) ) - 1;
-                            orphanProductReactions[reactionIndex] = orphanProductReaction;
-                        }
+                        associatedOrphanProductIndices[reactionIndex].push_back( static_cast<int>( m_orphanProducts.size( ) ) - 1 );
                         break;
                     }
                 }
@@ -1414,9 +1506,15 @@ LUPI_HOST ProtareSingle::ProtareSingle( LUPI::StatusMessageReporting &a_smr, GID
         }
 
         for( MCGIDI_VectorSizeType reactionIndex = 0; reactionIndex < m_reactions.size( ); ++reactionIndex ) {
-            if( numberOfSummands[reactionIndex] > 0 ) {
-                m_reactions[reactionIndex]->setAssociatedOrphanProductIndex( associatedOrphanProductIndices[reactionIndex] );
-                m_reactions[reactionIndex]->setAssociatedOrphanProduct( orphanProductReactions[reactionIndex] );
+            Reaction *reaction = m_reactions[reactionIndex];
+            std::size_t size = associatedOrphanProductIndices[reactionIndex].size( );
+            if( size > 0 ) {
+                std::vector<Product *> associatedOrphanProducts;
+                for( std::size_t index1 = 0; index1 < size; ++index1 ) {
+                    int associatedOrphanProductIndex = associatedOrphanProductIndices[reactionIndex][index1];
+                    m_orphanProducts[associatedOrphanProductIndex]->addOrphanProductToProductList( associatedOrphanProducts );
+                }
+                reaction->setOrphanProductData( associatedOrphanProductIndices[reactionIndex], associatedOrphanProducts );
             }
         }
     }
@@ -1440,7 +1538,7 @@ LUPI_HOST ProtareSingle::ProtareSingle( LUPI::StatusMessageReporting &a_smr, GID
                 GIDI_orphanProducts, zeroReactions, a_reactionsToExclude );
     }
 
-    if( ( photonIndex( ) != projectileIndex( ) ) && ( electronIndex( ) != projectileIndex( ) ) && ( a_settings.upscatterModel( ) == Sampling::Upscatter::Model::A ) ) {
+    if( ( PoPI::Intids::photon != projectileIntid( ) ) && ( PoPI::Intids::electron != projectileIntid( ) ) && ( a_settings.upscatterModel( ) == Sampling::Upscatter::Model::A ) ) {
         GIDI::Styles::Base const *style = a_protare.styles( ).get<GIDI::Styles::Base>( a_settings.upscatterModelALabel( ) );
 
         if( style->moniker( ) == GIDI_SnElasticUpScatterStyleChars ) style = a_protare.styles( ).get<GIDI::Styles::Base>( style->derivedStyle( ) );
@@ -1451,6 +1549,27 @@ LUPI_HOST ProtareSingle::ProtareSingle( LUPI::StatusMessageReporting &a_smr, GID
 
         m_upscatterModelAGroupVelocities.resize( boundaries.size( ) );
         for( std::size_t i1 = 0; i1 < boundaries.size( ); ++i1 ) m_upscatterModelAGroupVelocities[i1] = MCGIDI_particleBeta( projectileMass( ), boundaries[i1] );
+    }
+
+    if( m_continuousEnergy && ( PoPI::Intids::neutron  == projectileIntid( ) ) && ( a_settings.upscatterModel( ) == Sampling::Upscatter::Model::DBRC ) ) {
+        int reactionIndex = 0;
+        for( auto reactionIter = m_reactions.begin( ); reactionIter != m_reactions.end( ); ++reactionIter, ++reactionIndex ) {
+            if( (*reactionIter)->ENDF_MT( ) == 2 ) {
+                Reaction *reaction = *reactionIter;
+
+                HeatedCrossSectionContinuousEnergy const *heatedCrossSectionContinuousEnergy = m_heatedCrossSections.heatedCrossSections( )[0];
+                HeatedReactionCrossSectionContinuousEnergy const *heatedReactionCrossSectionContinuousEnergy 
+                        = heatedCrossSectionContinuousEnergy->reactionCrossSection( reactionIndex );
+
+                Vector<double> const &energies = heatedCrossSectionContinuousEnergy->energies( );
+                Vector<double> const &crossSections = heatedReactionCrossSectionContinuousEnergy->crossSections( );
+
+                Sampling::Upscatter::ModelDBRC_data *modelDBRC_data = 
+                        new Sampling::Upscatter::ModelDBRC_data( projectileMass( ), targetMass( ), energies, crossSections, a_domainHash );
+                reaction->setModelDBRC_data( modelDBRC_data );
+                break;
+            }
+        }
     }
 }
 
@@ -1468,8 +1587,8 @@ LUPI_HOST_DEVICE ProtareSingle::~ProtareSingle( ) {
 /* *********************************************************************************************************//**
  * Updates the m_userParticleIndex to *a_userParticleIndex* for all particles with PoPs index *a_particleIndex*.
  *
- * @param a_particleIndex       [in]    The PoPs id of the particle whose userPid is to be set.
- * @param a_userParticleIndex   [in]    The particle id specified by the user.
+ * @param a_particleIndex       [in]    The PoPs index of the particle whose user index is to be set.
+ * @param a_userParticleIndex   [in]    The particle index specified by the user.
  ***********************************************************************************************************/
 
 LUPI_HOST void ProtareSingle::setUserParticleIndex2( int a_particleIndex, int a_userParticleIndex ) {
@@ -1478,6 +1597,21 @@ LUPI_HOST void ProtareSingle::setUserParticleIndex2( int a_particleIndex, int a_
     m_heatedMultigroupCrossSections.setUserParticleIndex( a_particleIndex, a_userParticleIndex );
     for( auto iter = m_reactions.begin( ); iter < m_reactions.end( ); ++iter ) (*iter)->setUserParticleIndex( a_particleIndex, a_userParticleIndex );
     for( auto iter = m_orphanProducts.begin( ); iter < m_orphanProducts.end( ); ++iter ) (*iter)->setUserParticleIndex( a_particleIndex, a_userParticleIndex );
+}
+
+/* *********************************************************************************************************//**
+ * Updates the m_userParticleIndex to *a_userParticleIndex* for all particles with PoPs intid *a_particleIntid*.
+ *  
+ * @param a_particleIndex       [in]    The PoPs index of the particle whose user index is to be set.
+ * @param a_userParticleIndex   [in]    The particle index specified by the user.
+ ***********************************************************************************************************/
+ 
+LUPI_HOST void ProtareSingle::setUserParticleIndexViaIntid2( int a_particleIntid, int a_userParticleIndex ) {
+ 
+    m_heatedCrossSections.setUserParticleIndexViaIntid( a_particleIntid, a_userParticleIndex );
+    m_heatedMultigroupCrossSections.setUserParticleIndexViaIntid( a_particleIntid, a_userParticleIndex );
+    for( auto iter = m_reactions.begin( ); iter < m_reactions.end( ); ++iter ) (*iter)->setUserParticleIndexViaIntid( a_particleIntid, a_userParticleIndex );
+    for( auto iter = m_orphanProducts.begin( ); iter < m_orphanProducts.end( ); ++iter ) (*iter)->setUserParticleIndexViaIntid( a_particleIntid, a_userParticleIndex );
 }
 
 /* *********************************************************************************************************//**
@@ -1541,22 +1675,27 @@ LUPI_HOST_DEVICE Vector<double> ProtareSingle::temperatures( MCGIDI_VectorSizeTy
 /* *********************************************************************************************************//**
  * Sets up the nuclear gamma branching data needed to sample gamma decays.
  *
- * @param a_setupInfo           [in]    Used internally when constructing a Protare to pass information to other constructors.
- * @param a_protare             [in]    The GIDI::Protare** whose data is to be used to construct gamma branching data.
+ * @param a_setupInfo                           [in]    Used internally when constructing a Protare to pass information to other constructors.
+ * @param a_protare                             [in]    The **GIDI::Protare** whose data are to be used to construct gamma branching data.
+ * @param a_makePhotonEmissionProbabilitiesOne  [in]    If true, all photon emission probabilities are set to 1.0 (i.e., all ICCs are set to 0.0).
  ***********************************************************************************************************/
 
-LUPI_HOST void ProtareSingle::setupNuclideGammaBranchStateInfos( SetupInfo &a_setupInfo, GIDI::ProtareSingle const &a_protare ) {
+LUPI_HOST void ProtareSingle::setupNuclideGammaBranchStateInfos( SetupInfo &a_setupInfo, GIDI::ProtareSingle const &a_protare, 
+                bool a_makePhotonEmissionProbabilitiesOne, bool a_zeroNuclearLevelEnergyWidth ) {
 
     PoPI::NuclideGammaBranchStateInfos const &nuclideGammaBranchStateInfos = a_protare.nuclideGammaBranchStateInfos( );
     std::vector<NuclideGammaBranchInfo *> nuclideGammaBranchInfos;
 
-    for( std::size_t i1 = 0; i1 < nuclideGammaBranchStateInfos.size( ); ++i1 )
-            a_setupInfo.m_stateNamesToIndices[nuclideGammaBranchStateInfos[i1]->state( )] = (int) i1;
+    for( std::size_t i1 = 0; i1 < nuclideGammaBranchStateInfos.size( ); ++i1 ) {
+        a_setupInfo.m_stateNamesToIndices[nuclideGammaBranchStateInfos[i1]->state( )] = (int) i1;
+        PoPI::NuclideGammaBranchStateInfo const *nuclideGammaBranchStateInfo = nuclideGammaBranchStateInfos.find( nuclideGammaBranchStateInfos[i1]->state( ) );
+        a_setupInfo.m_nuclearLevelEnergies[nuclideGammaBranchStateInfos[i1]->state( )] = nuclideGammaBranchStateInfo->nuclearLevelEnergy( );
+    }
 
     m_nuclideGammaBranchStateInfos.reserve( nuclideGammaBranchStateInfos.size( ) );
     for( std::size_t i1 = 0; i1 < nuclideGammaBranchStateInfos.size( ); ++i1 ) {
         m_nuclideGammaBranchStateInfos.push_back( new NuclideGammaBranchStateInfo( *nuclideGammaBranchStateInfos[i1], nuclideGammaBranchInfos,
-                a_setupInfo.m_stateNamesToIndices ) );
+                a_setupInfo.m_stateNamesToIndices, a_makePhotonEmissionProbabilitiesOne, a_zeroNuclearLevelEnergyWidth ) );
     }
 
     m_branches.reserve( nuclideGammaBranchInfos.size( ) );
@@ -1578,6 +1717,20 @@ LUPI_HOST_DEVICE bool ProtareSingle::hasFission( ) const {
 }
 
 /* *********************************************************************************************************//**
+ * Returns true if *this* has an incoherent photoatomic doppler broadened reaction and false otherwise.
+ *
+ * @return                              true is if *this* has a specified reaction and false otherwise.
+ ***********************************************************************************************************/
+
+LUPI_HOST_DEVICE bool ProtareSingle::hasIncoherentDoppler( ) const {
+
+    for( Vector<Reaction *>::const_iterator iter = m_reactions.begin( ); iter < m_reactions.end( ); ++iter ) {
+        if( (*iter)->ENDF_MT( ) == 1534 ) return( true );
+    }
+    return( false );
+}
+
+/* *********************************************************************************************************//**
  * Returns true if *a_energy* with unresolved resonance region (URR) of *this* and false otherwise.
  *
  * @return                              true is if *this* has a URR data.
@@ -1589,53 +1742,6 @@ LUPI_HOST_DEVICE bool ProtareSingle::inURR( double a_energy ) const {
     if( a_energy > m_URR_domainMax ) return( false );
 
     return( true );
-}
-
-/* *********************************************************************************************************//**
- * Samples gammas from a nuclide electro-magnetic decay.
- *
- * @param a_input               [in]    Sample options requested by user.
- * @param a_projectileEnergy    [in]    The energy of the projectile.
- * @param a_initialStateIndex   [in]    The index in *m_nuclideGammaBranchStateInfos* whose nuclide data are used for sampling.
- * @param a_userrng             [in]    A random number generator that takes the state *a_rngState* and returns a double in the range [0.0, 1.0).
- * @param a_rngState            [in]    The current state for the random number generator.
- * @param a_products            [in]    The object to add all sampled gammas to.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE void ProtareSingle::sampleBranchingGammas( Sampling::Input &a_input, double a_projectileEnergy, int a_initialStateIndex, 
-                double (*a_userrng)( void * ), void *a_rngState, Sampling::ProductHandler &a_products ) const {
-
-    int initialStateIndex = a_initialStateIndex;
-
-    while( initialStateIndex >= 0 ) {
-        NuclideGammaBranchStateInfo *nuclideGammaBranchStateInfo = m_nuclideGammaBranchStateInfos[initialStateIndex];
-        Vector<int> const &branches = nuclideGammaBranchStateInfo->branches( );
-
-        double random = a_userrng( a_rngState );
-        double sum = 0.0;
-        initialStateIndex = -1;             // Just in case the for loop never has "sum >= random".
-        for( MCGIDI_VectorSizeType i1 = 0; i1 < branches.size( ); ++i1 ) {
-            NuclideGammaBranchInfo *NuclideGammaBranchInfo = m_branches[branches[i1]];
-
-            sum += NuclideGammaBranchInfo->probability( );
-            if( sum >= random ) {
-                if( NuclideGammaBranchInfo->photonEmissionProbability( ) > a_userrng( a_rngState ) ) {
-                    a_input.m_sampledType = Sampling::SampledType::photon;
-                    a_input.m_dataInTargetFrame = false;
-                    a_input.m_frame = GIDI::Frame::lab;
-
-                    a_input.m_energyOut1 = NuclideGammaBranchInfo->gammaEnergy( );
-                    a_input.m_mu = 1.0 - a_userrng( a_rngState );
-                    a_input.m_phi = 2.0 * M_PI * a_userrng( a_rngState );
-
-                    a_products.add( a_projectileEnergy, photonIndex( ), userPhotonIndex( ), 0.0, a_input, a_userrng, a_rngState, true );
-                }
-
-                initialStateIndex = NuclideGammaBranchInfo->residualStateIndex( );
-                break;
-            }
-        }
-    }
 }
 
 /* *********************************************************************************************************//**
@@ -1713,28 +1819,6 @@ LUPI_HOST_DEVICE double ProtareSingle::reactionCrossSection( int a_reactionIndex
 }
 
 /* *********************************************************************************************************//**
- * Returns the index of a sampled reaction for a target with termpature *a_temperature*, a projectile with energy *a_energy* and total cross section 
- * *a_crossSection*. Random numbers are obtained via *a_userrng* and *a_rngState*.
- *
- * @param a_URR_protareInfos    [in]    URR information.
- * @param a_hashIndex           [in]    Specifies the continuous energy or multi-group index.
- * @param a_temperature         [in]    The temperature of the target.
- * @param a_energy              [in]    The energy of the projectile.
- * @param a_crossSection        [in]    The total cross section.
- * @param a_userrng             [in]    A random number generator that takes the state *a_rngState* and returns a double in the range [0.0, 1.0).
- * @param a_rngState            [in]    The current state for the random number generator.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE int ProtareSingle::sampleReaction( URR_protareInfos const &a_URR_protareInfos, int a_hashIndex, double a_temperature, double a_energy, 
-                double a_crossSection, double (*a_userrng)( void * ), void *a_rngState ) const {
-
-    if( m_continuousEnergy ) return( m_heatedCrossSections.sampleReaction( a_URR_protareInfos, m_URR_index, a_hashIndex, a_temperature, a_energy, 
-            a_crossSection, a_userrng, a_rngState ) );
-
-    return( m_heatedMultigroupCrossSections.sampleReaction( a_hashIndex, a_temperature, a_energy, a_crossSection, a_userrng, a_rngState ) );
-}
-
-/* *********************************************************************************************************//**
  * Returns the index of a sampled reaction for a target with termpature *a_temperature*, a projectile with energy *a_energy* and total cross section
  * *a_crossSection*. Random numbers are obtained via *a_userrng* and *a_rngState*.
  *
@@ -1797,6 +1881,23 @@ LUPI_HOST_DEVICE double ProtareSingle::gain( int a_hashIndex, double a_temperatu
     if( m_continuousEnergy ) return( m_heatedCrossSections.gain( a_hashIndex, a_temperature, a_energy, a_particleIndex ) );
 
     return( m_heatedMultigroupCrossSections.gain( a_hashIndex, a_temperature, a_particleIndex ) );
+}
+
+/* *********************************************************************************************************//**
+ * Returns the intid of a sampled reaction for a target with termpature *a_temperature*, a projectile with energy *a_energy* and total cross section
+ * *a_crossSection*. Random numbers are obtained via *a_userrng* and *a_rngState*.
+ *
+ * @param a_hashIndex           [in]    Specifies the continuous energy or multi-group index.
+ * @param a_temperature         [in]    The temperature of the target.
+ * @param a_energy              [in]    The energy of the projectile.
+ * @param a_particleIntid       [in]    The intid of the particle whose gain is to be returned.
+ ***********************************************************************************************************/
+
+LUPI_HOST_DEVICE double ProtareSingle::gainViaIntid( int a_hashIndex, double a_temperature, double a_energy, int a_particleIntid ) const {
+
+    if( m_continuousEnergy ) return( m_heatedCrossSections.gainViaIntid( a_hashIndex, a_temperature, a_energy, a_particleIntid ) );
+
+    return( m_heatedMultigroupCrossSections.gainViaIntid( a_hashIndex, a_temperature, a_particleIntid ) );
 }
 
 /* *********************************************************************************************************//**
@@ -1923,6 +2024,12 @@ LUPI_HOST_DEVICE void ProtareSingle::serialize2( LUPI::DataBuffer &a_buffer, LUP
     for( MCGIDI_VectorSizeType vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
         m_orphanProducts[vectorIndex]->serialize( *workingBuffer, a_mode );
         m_orphanProducts[vectorIndex]->updateProtareSingleInfo( this, static_cast<int>( vectorIndex ) );
+    }
+
+    if( a_mode == LUPI::DataBuffer::Mode::Unpack ) {
+        for( auto reactionIter = m_reactions.begin( ); reactionIter != m_reactions.end( ); ++reactionIter ) {
+            (*reactionIter)->addOrphanProductToProductList( m_orphanProducts );
+        }
     }
 
     DATA_MEMBER_CAST( m_isPhotoAtomic, *workingBuffer, a_mode, bool );

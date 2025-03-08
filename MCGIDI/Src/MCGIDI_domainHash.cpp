@@ -86,7 +86,7 @@ LUPI_HOST_DEVICE int DomainHash::index( double a_domain ) const {
  * @return                              The hash indices.
  ***********************************************************************************************************/
 
-LUPI_HOST_DEVICE Vector<int> DomainHash::map( Vector<double> &a_domainValues ) const {
+LUPI_HOST_DEVICE Vector<int> DomainHash::map( Vector<double> const &a_domainValues ) const {
 
     std::size_t i1, size( a_domainValues.size( ) );
     Vector<int> indices( m_bins + 2, 0 );

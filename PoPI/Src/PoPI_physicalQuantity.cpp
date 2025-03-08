@@ -113,7 +113,7 @@ PQ_double::~PQ_double( ) {
  * @return                                  The value of *this* in units of *a_unit*.
  ***********************************************************************************************************/
 
-double PQ_double::value( char const *a_unit ) const {
+double PQ_double::value( LUPI_maybeUnused char const *a_unit ) const {
 
     return( m_value );
 }
@@ -162,7 +162,7 @@ PQ_integer::~PQ_integer( ) {
  * @return                                  The value of *this* in units of *a_unit*.
  ***********************************************************************************************************/
 
-int PQ_integer::value( char const *a_unit ) const {
+int PQ_integer::value( LUPI_maybeUnused char const *a_unit ) const {
 
     return( m_value );
 }
@@ -206,7 +206,7 @@ PQ_fraction::~PQ_fraction( ) {
  * @return                                  The value of *this* in units of *a_unit*.
  ***********************************************************************************************************/
 
-std::string PQ_fraction::value( char const *a_unit ) const {
+std::string PQ_fraction::value( LUPI_maybeUnused char const *a_unit ) const {
 
     return( valueString( ) );
 }
@@ -250,7 +250,7 @@ PQ_string::~PQ_string( ) {
  * @return                                  The value of *this* in units of *a_unit*.
  ***********************************************************************************************************/
 
-std::string PQ_string::value( char const *a_unit ) const {
+std::string PQ_string::value( LUPI_maybeUnused char const *a_unit ) const {
 
     return( valueString( ) );
 }

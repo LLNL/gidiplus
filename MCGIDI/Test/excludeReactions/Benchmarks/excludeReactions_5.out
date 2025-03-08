@@ -2,19 +2,27 @@
     projectile = photon
     target = O16
 
-    GIDI::Protare number of reaction = 7
+    GIDI::Protare number of reaction = 11
           0) n + O15
           1) H1 + N15
           2) sumOfRemainingOutputChannels
           3) O + photon [coherent]
           4) O + photon [incoherent]
-          5) e- + O [photo-electric]
-          6) O + photon [pair production: electron field]
+          5) e- + e- + e-_anti + O [pair production: electron field]
+          6) e- + e-_anti + O [pair production: nuclear field]
+          7) e- + O{1s1/2}
+          8) e- + O{2s1/2}
+          9) e- + O{2p1/2}
+         10) e- + O{2p3/2}
 
-    MCGIDI::Protare number of reaction = 6
+    MCGIDI::Protare number of reaction = 10
           0) n + O15
           1) H1 + N15
           2) sumOfRemainingOutputChannels
           3) O + photon [coherent]
           4) O + photon [incoherent]
-          6) O + photon [pair production: electron field]
+          6) e- + e-_anti + O [pair production: nuclear field]
+          7) e- + O{1s1/2}
+          8) e- + O{2s1/2}
+          9) e- + O{2p1/2}
+         10) e- + O{2p3/2}

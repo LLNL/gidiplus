@@ -27,19 +27,23 @@ LUPI_HOST_DEVICE NuclideGammaBranchInfo::NuclideGammaBranchInfo( ) :
         m_probability( 0.0 ),
         m_photonEmissionProbability( 0.0 ),
         m_gammaEnergy( 0.0 ),
-        m_residualStateIndex( -1 ) {
+        m_residualStateIndex( -1 ),
+        m_residualStateKindIsContinuum( false ) {
 
 }
 
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-NuclideGammaBranchInfo::NuclideGammaBranchInfo( PoPI::NuclideGammaBranchInfo const &a_nuclideGammaBranchInfo, std::map<std::string, int> &a_stateNamesToIndices ) :
+NuclideGammaBranchInfo::NuclideGammaBranchInfo( PoPI::NuclideGammaBranchInfo const &a_nuclideGammaBranchInfo, 
+                std::map<std::string, int> &a_stateNamesToIndices, bool a_makePhotonEmissionProbabilitiesOne ) :
         m_probability( a_nuclideGammaBranchInfo.probability( ) ),
         m_photonEmissionProbability( a_nuclideGammaBranchInfo.photonEmissionProbability( ) ),
         m_gammaEnergy( a_nuclideGammaBranchInfo.gammaEnergy( ) ),
-        m_residualStateIndex( -1 ) {
+        m_residualStateIndex( -1 ),
+        m_residualStateKindIsContinuum( false ) {
 
+        if( a_makePhotonEmissionProbabilitiesOne ) m_photonEmissionProbability = 1.0;
         std::map<std::string,int>::iterator iter = a_stateNamesToIndices.find( a_nuclideGammaBranchInfo.residualState( ) );
         if( iter != a_stateNamesToIndices.end( ) ) m_residualStateIndex = iter->second;
 }
@@ -54,12 +58,11 @@ NuclideGammaBranchInfo::NuclideGammaBranchInfo( PoPI::NuclideGammaBranchInfo con
 
 LUPI_HOST_DEVICE void NuclideGammaBranchInfo::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
-    LUPI::DataBuffer *workingBuffer = &a_buffer;
-
-    DATA_MEMBER_FLOAT( m_probability, *workingBuffer, a_mode );
-    DATA_MEMBER_FLOAT( m_photonEmissionProbability, *workingBuffer, a_mode );
-    DATA_MEMBER_FLOAT( m_gammaEnergy, *workingBuffer, a_mode );
-    DATA_MEMBER_INT( m_residualStateIndex, *workingBuffer, a_mode );
+    DATA_MEMBER_FLOAT( m_probability, a_buffer, a_mode );
+    DATA_MEMBER_FLOAT( m_photonEmissionProbability, a_buffer, a_mode );
+    DATA_MEMBER_FLOAT( m_gammaEnergy, a_buffer, a_mode );
+    DATA_MEMBER_INT( m_residualStateIndex, a_buffer, a_mode );
+    DATA_MEMBER_CAST( m_residualStateKindIsContinuum, a_buffer, a_mode, bool );
 }
 
 /* *********************************************************************************************************//**
@@ -71,8 +74,8 @@ LUPI_HOST_DEVICE void NuclideGammaBranchInfo::serialize( LUPI::DataBuffer &a_buf
  * @param a_energyFormat        [in]    C printf format specifier for any interger that is printed (e.g., "%20.12e").
  * @param a_dFormat             [in]    C printf format specifier for any interger that is printed (e.g., "%14.7e").
  ***********************************************************************************************************/
-LUPI_HOST void NuclideGammaBranchInfo::print( ProtareSingle const *a_protareSingle, std::string const &a_indent, std::string const &a_iFormat,
-                std::string const &a_energyFormat, std::string const &a_dFormat ) const {
+LUPI_HOST void NuclideGammaBranchInfo::print( LUPI_maybeUnused ProtareSingle const *a_protareSingle, std::string const &a_indent, std::string const &a_iFormat,
+                LUPI_maybeUnused std::string const &a_energyFormat, std::string const &a_dFormat ) const {
 
     std::cout << a_indent << std::left << std::setw( 17 ) << LUPI::Misc::argumentsToString( a_dFormat.c_str( ), m_probability )
             << LUPI::Misc::argumentsToString( a_dFormat.c_str( ), m_photonEmissionProbability )
@@ -90,6 +93,9 @@ LUPI_HOST void NuclideGammaBranchInfo::print( ProtareSingle const *a_protareSing
  ***********************************************************************************************************/
 
 LUPI_HOST_DEVICE NuclideGammaBranchStateInfo::NuclideGammaBranchStateInfo( ) :
+        m_intid( -1 ),
+        m_nuclearLevelEnergy( 0.0 ),
+        m_nuclearLevelEnergyWidth( 0.0 ),
         m_multiplicity( 0.0 ),
         m_averageGammaEnergy( 0.0 ) {
 
@@ -100,19 +106,26 @@ LUPI_HOST_DEVICE NuclideGammaBranchStateInfo::NuclideGammaBranchStateInfo( ) :
  ***********************************************************************************************************/
 
 NuclideGammaBranchStateInfo::NuclideGammaBranchStateInfo( PoPI::NuclideGammaBranchStateInfo const &a_nuclideGammaBranchingInfo,
-                std::vector<NuclideGammaBranchInfo *> &a_nuclideGammaBranchInfos, std::map<std::string, int> &a_stateNamesToIndices ) :
+                std::vector<NuclideGammaBranchInfo *> &a_nuclideGammaBranchInfos, 
+                std::map<std::string, int> &a_stateNamesToIndices, bool a_makePhotonEmissionProbabilitiesOne,
+                bool a_zeroNuclearLevelEnergyWidth ) :
+        m_intid( a_nuclideGammaBranchingInfo.intid( ) ),
+        m_nuclearLevelEnergy( a_nuclideGammaBranchingInfo.nuclearLevelEnergy( ) ),
+        m_nuclearLevelEnergyWidth( a_nuclideGammaBranchingInfo.nuclearLevelEnergyWidth( ) ),
         m_multiplicity( a_nuclideGammaBranchingInfo.multiplicity( ) ),
         m_averageGammaEnergy( a_nuclideGammaBranchingInfo.averageGammaEnergy( ) ) {
+
+    if( a_zeroNuclearLevelEnergyWidth ) m_nuclearLevelEnergyWidth = 0.0;
 
     strncpy( m_state, a_nuclideGammaBranchingInfo.state( ).c_str( ), sizeof( m_state ) );
     m_state[sizeof( m_state )-1] = 0;
 
     std::vector<PoPI::NuclideGammaBranchInfo> const &branches = a_nuclideGammaBranchingInfo.branches( );
-    m_branches.reserve( branches.size( ) );
+    m_branchIndices.reserve( branches.size( ) );
 
     for( std::size_t i1 = 0; i1 < branches.size( ); ++i1 ) {
-        m_branches.push_back( a_nuclideGammaBranchInfos.size( ) );
-        a_nuclideGammaBranchInfos.push_back( new NuclideGammaBranchInfo( branches[i1], a_stateNamesToIndices ) );
+        m_branchIndices.push_back( a_nuclideGammaBranchInfos.size( ) );
+        a_nuclideGammaBranchInfos.push_back( new NuclideGammaBranchInfo( branches[i1], a_stateNamesToIndices, a_makePhotonEmissionProbabilitiesOne ) );
     }
 }
 
@@ -126,12 +139,13 @@ NuclideGammaBranchStateInfo::NuclideGammaBranchStateInfo( PoPI::NuclideGammaBran
 
 LUPI_HOST_DEVICE void NuclideGammaBranchStateInfo::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
-    LUPI::DataBuffer *workingBuffer = &a_buffer;
-
-    DATA_MEMBER_CHAR_ARRAY( m_state, *workingBuffer, a_mode );
-    DATA_MEMBER_FLOAT( m_multiplicity, *workingBuffer, a_mode );
-    DATA_MEMBER_FLOAT( m_averageGammaEnergy, *workingBuffer, a_mode );
-    DATA_MEMBER_VECTOR_INT( m_branches, a_buffer, a_mode );
+    DATA_MEMBER_CHAR_ARRAY( m_state, a_buffer, a_mode );
+    DATA_MEMBER_INT( m_intid, a_buffer, a_mode );
+    DATA_MEMBER_FLOAT( m_nuclearLevelEnergy, a_buffer, a_mode );
+    DATA_MEMBER_FLOAT( m_nuclearLevelEnergyWidth, a_buffer, a_mode );
+    DATA_MEMBER_FLOAT( m_multiplicity, a_buffer, a_mode );
+    DATA_MEMBER_FLOAT( m_averageGammaEnergy, a_buffer, a_mode );
+    DATA_MEMBER_VECTOR_INT( m_branchIndices, a_buffer, a_mode );
 }
 
 /* *********************************************************************************************************//**
@@ -143,12 +157,12 @@ LUPI_HOST_DEVICE void NuclideGammaBranchStateInfo::serialize( LUPI::DataBuffer &
  * @param a_energyFormat        [in]    C printf format specifier for any interger that is printed (e.g., "%20.12e").
  * @param a_dFormat             [in]    C printf format specifier for any interger that is printed (e.g., "%14.7e").
  ***********************************************************************************************************/
-LUPI_HOST void NuclideGammaBranchStateInfo::print( ProtareSingle const *a_protareSingle, std::string const &a_indent, std::string const &a_iFormat,
-                std::string const &a_energyFormat, std::string const &a_dFormat ) const {
+LUPI_HOST void NuclideGammaBranchStateInfo::print( LUPI_maybeUnused ProtareSingle const *a_protareSingle, std::string const &a_indent, std::string const &a_iFormat,
+                LUPI_maybeUnused std::string const &a_energyFormat, std::string const &a_dFormat ) const {
 
     std::cout << a_indent << std::left << std::setw( 17 ) << m_state << LUPI::Misc::argumentsToString( a_dFormat.c_str( ), m_multiplicity ) <<
             LUPI::Misc::argumentsToString( a_dFormat.c_str( ), m_averageGammaEnergy );
-    for( auto branchIter = m_branches.begin( ); branchIter != m_branches.end( ); ++branchIter ) {
+    for( auto branchIter = m_branchIndices.begin( ); branchIter != m_branchIndices.end( ); ++branchIter ) {
         std::cout << LUPI::Misc::argumentsToString( a_iFormat.c_str( ), (*branchIter) );
     }
     std::cout << std::endl;

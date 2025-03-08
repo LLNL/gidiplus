@@ -12,12 +12,14 @@ directory, download it from https://pugixml.org/2022/11/02/pugixml-1.13-release.
 
 # Installation
 
-To clone the **GIDI+** Git repository one of the following commands is recommended:
+To clone the **GIDI+** Git repository the following command is recommended:
 ```
-git clone https://github.com/LLNL/gidiplus.git
-# or using SSH (requires creating a github account and registering an ssh key):
-git clone git@github.com:LLNL/gidiplus.git
+git clone --recurse-submodules ssh://git@czgitlab.llnl.gov:7999/nuclear/gidiplus/gidiplus.git
 ```
+
+**NOTE:**
+If you have an older version of git (2.2 or lower), use `git lfs clone` instead of `git clone`.
+This is unnecessary on newer versions of git since they handle lfs (Large File Storage) automatically.
 
 Currently, **GIDI+** uses the **unix make** command to build and puts needed header and library files into the *include* and
 *lib* directories, respecitively. Important targets in the Makefile are:
@@ -30,16 +32,19 @@ Currently, **GIDI+** uses the **unix make** command to build and puts needed hea
 | check:     | Runs the tests in all the sub-libraries. This target requires that the test data have been installed.
 | realclean: | Returns **GIDI+** back to its initial state (i.e., removes all files created by the other targets).
 
-**GIDI+** uses features from the 2011 C++ standard, so it must be compiled with *-std=c++11* or newer.
+**GIDI+** uses features from the 2011 C++ standard, so it must be compiled with *-std=c++11* or newer. The Makefile selects c++11 by default,
+or if desired a newer version of the standard can be selected by setting the CXXFLAGS when calling make.
 **GIDI+** supports parallel compilation using the '-j' flag:
 ```
-make -s -j CXXFLAGS="-std=c++11"
+make -s -j   # compile with default C++ 2011
+# or
+make -s -j CXXFLAGS="-std=c++17"
 ```
 
 For building executables and running the tests, this would look like:
 ```
-make -s -j CXXFLAGS="-std=c++11" bin
-make -s -j CXXFLAGS="-std=c++11" check
+make -s -j bin
+make -s -j check
 ```
 
 One may specify the CC and CXX compilers and their flags when building. For example,
@@ -68,6 +73,53 @@ Comments for compiling on LLNL LC systems:
 
 A set of bash scripts for building on LC systems can be found in the *Scripts* directory.
 These scripts first define some environment varibles before executing **make**.
+
+# Working with Git submodules
+
+**GIDI+** is composed of submodules that are hosted in their own repositories and Git keeps a record of this in the following files:
+
+- .gitmodules which contains the local, relative path to the submodules and the URL to the corresponding 
+        remote repositories; and
+
+- files, containing the commit hash for the version used in **GIDI+**, for each submodule.
+
+Consequently, **GIDI+** points to a specific version of each submodule while code updates in the individual submodules continue independently. 
+The submodules may also be in a state called *detached HEAD* which indicates that **GIDI+** is not associated with a submodule's local branch name. 
+This may be observed via the output from the following command:
+```
+git submodule foreach 'git status'
+```
+
+The output for a given submodule may contain the string *HEAD detached* (indicating a submodule in the *detached HEAD* state) or 
+*Your branch is up to date with 'origin/master'*. If no code updates are to be done in a submodule in the *HEAD detached* state, no further 
+action is required. If a submodule is to be updated, it will need to be associated with a branch that contains the commit to which **GIDI+**
+points. For example, to associate **GIDI** with the master branch use the command:
+```
+cd GIDI; git checkout master
+```
+
+or to associated all submodules with master, use
+```
+git submodule foreach 'git checkout master'
+```
+
+These commands will associate the submodule(s) with the latest commit in that branch and this may not correspond to the submodule commit to which 
+**GIDI+** is pointing. The following command provides the commit hash identifier that **GIDI+** points at for each of the submodules:
+```
+git ls-tree -r HEAD | grep commit
+```
+
+To list the commit identifiers for the currently checked-out submodules, the following command may be used:
+```
+git submodule foreach 'git rev-parse HEAD'
+```
+
+A difference in commit hash identifiers will indicate a difference between the currently checked-out version of the submodule and the version to 
+which **GIDI+** is pointing. The command `git status` in the **GIDI+** folder will also indicate if the file associated with the submodule is in 
+the modified state.
+
+It is obviously important that any code updates to the submodule be `git push` before the corresponding **GIDI+** `git push` command. This prevents 
+future **GIDI+** repository checkouts that point to a non-existent submodule commit hash identifier.
 
 # License
 

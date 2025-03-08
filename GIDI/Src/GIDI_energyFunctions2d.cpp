@@ -74,7 +74,7 @@ double GeneralEvaporation2d::domainMax( ) const {
  * @return                          The value of the function evaluated at *a_x2*, and *a_x1*.
  ***********************************************************************************************************/
  
-double GeneralEvaporation2d::evaluate( double a_x2, double a_x1 ) const {
+double GeneralEvaporation2d::evaluate( LUPI_maybeUnused double a_x2, LUPI_maybeUnused double a_x1 ) const {
 
     throw Exception( "GeneralEvaporation2d::evaluate: not implemented." );
 }
@@ -88,7 +88,7 @@ double GeneralEvaporation2d::evaluate( double a_x2, double a_x1 ) const {
  * @param       a_inRegions         [in]        This is not used in this method.
  ***********************************************************************************************************/
 
-void GeneralEvaporation2d::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
+void GeneralEvaporation2d::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent, LUPI_maybeUnused bool a_embedded, LUPI_maybeUnused bool a_inRegions ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     std::string attributes;
@@ -160,7 +160,7 @@ double SimpleMaxwellianFission2d::domainMax( ) const {
  * @return                          The value of the function evaluated at *a_x2*, and *a_x1*.
  ***********************************************************************************************************/
 
-double SimpleMaxwellianFission2d::evaluate( double a_x2, double a_x1 ) const {
+double SimpleMaxwellianFission2d::evaluate( LUPI_maybeUnused double a_x2, LUPI_maybeUnused double a_x1 ) const {
 
     throw Exception( "SimpleMaxwellianFission2d::evaluate: not implemented." );
 }
@@ -174,7 +174,7 @@ double SimpleMaxwellianFission2d::evaluate( double a_x2, double a_x1 ) const {
  * @param       a_inRegions         [in]        This is not used in this method.
  ***********************************************************************************************************/
 
-void SimpleMaxwellianFission2d::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
+void SimpleMaxwellianFission2d::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent, LUPI_maybeUnused bool a_embedded, LUPI_maybeUnused bool a_inRegions ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     std::string attributes;
@@ -244,7 +244,7 @@ double Evaporation2d::domainMax( ) const {
  * @return                          The value of the function evaluated at *a_x2*, and *a_x1*.
  ***********************************************************************************************************/
 
-double Evaporation2d::evaluate( double a_x2, double a_x1 ) const {
+double Evaporation2d::evaluate( LUPI_maybeUnused double a_x2, LUPI_maybeUnused double a_x1 ) const {
 
     throw Exception( "Evaporation2d::evaluate: not implemented." );
 }
@@ -258,7 +258,7 @@ double Evaporation2d::evaluate( double a_x2, double a_x1 ) const {
  * @param       a_inRegions         [in]        This is not used in this method.
  ***********************************************************************************************************/
 
-void Evaporation2d::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
+void Evaporation2d::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent, LUPI_maybeUnused bool a_embedded, LUPI_maybeUnused bool a_inRegions ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     std::string attributes;
@@ -330,7 +330,7 @@ double Watt2d::domainMax( ) const {
  * @return                          The value of the function evaluated at *a_x2*, and *a_x1*.
  ***********************************************************************************************************/
 
-double Watt2d::evaluate( double a_x2, double a_x1 ) const {
+double Watt2d::evaluate( LUPI_maybeUnused double a_x2, LUPI_maybeUnused double a_x1 ) const {
 
     throw Exception( "Watt2d::evaluate: not implemented." );
 }
@@ -344,7 +344,7 @@ double Watt2d::evaluate( double a_x2, double a_x1 ) const {
  * @param       a_inRegions         [in]        This is not used in this method.
  ***********************************************************************************************************/
 
-void Watt2d::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
+void Watt2d::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent, LUPI_maybeUnused bool a_embedded, LUPI_maybeUnused bool a_inRegions ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     std::string attributes;
@@ -416,7 +416,7 @@ double MadlandNix2d::domainMax( ) const {
  * @return                          The value of the function evaluated at *a_x2*, and *a_x1*.
  ***********************************************************************************************************/
 
-double MadlandNix2d::evaluate( double a_x2, double a_x1 ) const {
+double MadlandNix2d::evaluate( LUPI_maybeUnused double a_x2, LUPI_maybeUnused double a_x1 ) const {
 
     throw Exception( "MadlandNix2d::evaluate: not implemented." );
 }
@@ -430,7 +430,7 @@ double MadlandNix2d::evaluate( double a_x2, double a_x1 ) const {
  * @param       a_inRegions         [in]        This is not used in this method.
  ***********************************************************************************************************/
 
-void MadlandNix2d::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
+void MadlandNix2d::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent, LUPI_maybeUnused bool a_embedded, LUPI_maybeUnused bool a_inRegions ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     std::string attributes;
@@ -505,7 +505,7 @@ double Weighted_function2d::domainMax( ) const {
  * @return                          The value of the function evaluated at *a_x2*, and *a_x1*.
  ***********************************************************************************************************/
 
-double Weighted_function2d::evaluate( double a_x2, double a_x1 ) const {
+double Weighted_function2d::evaluate( LUPI_maybeUnused double a_x2, LUPI_maybeUnused double a_x1 ) const {
 
     throw Exception( "Weighted_function2d::evaluate: not implemented." );
 }
@@ -588,7 +588,7 @@ double WeightedFunctionals2d::domainMax( ) const {
  * @return                          The value of the function evaluated at *a_x2*, and *a_x1*.
  ***********************************************************************************************************/
 
-double WeightedFunctionals2d::evaluate( double a_x2, double a_x1 ) const {
+double WeightedFunctionals2d::evaluate( LUPI_maybeUnused double a_x2, LUPI_maybeUnused double a_x1 ) const {
 
     throw Exception( "WeightedFunctionals2d::evaluate: not implemented." );
 }
@@ -650,7 +650,7 @@ double NBodyPhaseSpace2d::domainMax( ) const {
  * @return                          The value of the function evaluated at *a_x2*, and *a_x1*.
  ***********************************************************************************************************/
 
-double NBodyPhaseSpace2d::evaluate( double a_x2, double a_x1 ) const {
+double NBodyPhaseSpace2d::evaluate( LUPI_maybeUnused double a_x2, LUPI_maybeUnused double a_x1 ) const {
 
     throw Exception( "NBodyPhaseSpace2d::evaluate: not implemented." );
 }
