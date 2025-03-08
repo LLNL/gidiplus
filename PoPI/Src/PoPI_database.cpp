@@ -19,7 +19,7 @@
 #define PoPI_chemicalElementsChars "chemicalElements"
 
 #define MsgSize (8 * 1024)
-#ifdef WIN32
+#ifdef _WIN32
 #define __func__ __FUNCTION__
 #endif
 

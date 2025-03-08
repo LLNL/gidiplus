@@ -12,7 +12,7 @@
 #include <string.h>
 #include <stdarg.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #define va_copy(dst, src) ((dst) = (src))
 #endif
 

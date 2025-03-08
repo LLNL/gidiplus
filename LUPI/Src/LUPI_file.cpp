@@ -16,7 +16,7 @@
 
 #include <LUPI.hpp>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 #include <direct.h>
 #include <filesystem>
