@@ -10,8 +10,6 @@
 #ifndef MCGIDI_functions_hpp_included
 #define MCGIDI_functions_hpp_included 1
 
-#include <math.h>
-
 #include <nf_utilities.h>
 #include <ptwXY.h>
 #include <LUPI_dataBuffer.hpp>

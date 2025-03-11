@@ -7,8 +7,6 @@
 # <<END-copyright>>
 */
 
-#include "math.h"
-
 #include "MCGIDI.hpp"
 
 namespace MCGIDI {

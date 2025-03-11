@@ -10,8 +10,6 @@
 #ifndef MCGIDI_headerSource_hpp_included
 #define MCGIDI_headerSource_hpp_included 1
 
-#define _USE_MATH_DEFINES
-#include <math.h>
 #include <climits>
 
 // From file: MCGIDI_URR.cpp
