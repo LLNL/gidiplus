@@ -12,10 +12,6 @@
 #include <string.h>
 #include <stdarg.h>
 
-#ifdef _WIN32
-#define va_copy(dst, src) ((dst) = (src))
-#endif
-
 #include "statusMessageReporting.h"
 
 #define SMR_InitialMessageSize 1024
