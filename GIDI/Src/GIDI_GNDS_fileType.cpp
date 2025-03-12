@@ -153,7 +153,7 @@ GNDS_FileType GNDS_fileType( std::string const &a_fileName, GNDS_FileTypeInfo &a
     GNDS_FileTypeInfoUserData userData( xmlParser, a_GNDS_fileTypeInfo );
     XML_SetUserData( xmlParser, &userData );
 
-    enum XML_Status status;
+    enum XML_Status status = XML_STATUS_ERROR;
     size_t count = 0;
     while( ( count = fread( buffer, bufferSize, 1, fileDescriptor ) ) > 0 ) {
         status = XML_Parse( xmlParser, buffer, count, 0 );

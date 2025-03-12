@@ -1111,10 +1111,11 @@ LUPI_HOST_DEVICE void MCGIDI::Distributions::IncoherentPhotoAtomicScattering::sa
 template <typename RNG>
 LUPI_HOST_DEVICE void MCGIDI::Distributions::IncoherentBoundToFreePhotoAtomicScattering::sample( double a_X, Sampling::Input &a_input, RNG && a_rng ) const {
 
-    double energyOut, mu, occupationNumber, pz;
+    double energyOut, mu, occupationNumber;
     // Convert incident photon energy [MeV] to units of rest mass energy of the electron
     const double alpha_in = a_X / PoPI_electronMass_MeV_c2;
-    double quad_a, quad_b, quad_c, alpha_ratio, occupation_pz, occupationNumberMax;
+    double alpha_ratio, occupation_pz, occupationNumberMax;
+    double quad_a = 0, quad_b = 0, quad_c = 0, pz = 0;  // Initialize with dummy values to silence compiler warnings
 
     bool energetically_possible = false;
     int ep_it = 0;
