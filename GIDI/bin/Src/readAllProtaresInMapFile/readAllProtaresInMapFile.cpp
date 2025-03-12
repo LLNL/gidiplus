@@ -117,10 +117,14 @@ void main2( int argc, char **argv ) {
 
     for( std::size_t index = 1; index < argv_options.m_arguments.size( ); ++index ) pops.addFile( argv[argv_options.m_arguments[index]], false );
 
+#ifndef _WIN32
     LUPI::Timer timer;
+#endif
     walk( "    ", mapFilename, pops, 0 );
+#ifndef _WIN32
     if( printTiming ) std::cout << std::endl << LUPI::Misc::doubleToString3( "Total CPU %7.3f s", timer.deltaTime( ).CPU_time( ) )
             << LUPI::Misc::doubleToString3( " wall %6.3f s", timer.deltaTime( ).wallTime( ) ) << std::endl;
+#endif
 }
 /*
 =========================================================
@@ -167,11 +171,15 @@ void readProtare( std::string const &a_indent, std::string const &protareFilenam
     try {
         std::cout << a_indent << protareFilename;
 
+#ifndef _WIN32
         LUPI::Timer timer;
+#endif
         protare = new GIDI::ProtareSingle( *constructionPtr, protareFilename, GIDI::FileType::XML, pops, particleSubstitution, a_libraries, 
                 GIDI_MapInteractionNuclearChars, a_targetRequiredInGlobalPoPs );
+#ifndef _WIN32
         if( printTiming ) std::cout << LUPI::Misc::doubleToString3( " CPU %6.3f s", timer.deltaTime( ).CPU_time( ) )
                 << LUPI::Misc::doubleToString3( " wall %6.3f s", timer.deltaTime( ).wallTime( ) );
+#endif
 
         if( printLibraries ) {
             std::cout << ": libraries =";

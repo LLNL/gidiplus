@@ -23,6 +23,10 @@ static char const *description = "Times how long it takes to load a map file.";
 */
 int main( int argc, char **argv ) {
 
+#ifdef _WIN32
+    std::cout << "Timing not yet implemented on Windows" << std::endl;
+    exit( EXIT_FAILURE );
+#else
     PoPI::Database pops;
     LUPI::ArgumentParser argumentParser( __FILE__, description );
 
@@ -56,4 +60,5 @@ int main( int argc, char **argv ) {
     std::cout << "Wall time per instantiation = " << wallTimePerLoad << std::endl;
 
     exit( EXIT_SUCCESS );
+#endif
 }
