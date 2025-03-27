@@ -12,6 +12,13 @@
 
 #include <climits>
 
+
+#ifdef MCGIDI_USE_DOUBLES
+    #define crossSectionSumError 1e-8
+#else
+    #define crossSectionSumError 1e-6
+#endif
+
 // From file: MCGIDI_URR.cpp
 
 /* *********************************************************************************************************//**
@@ -25,7 +32,7 @@
 template <typename RNG>
 LUPI_HOST_DEVICE void MCGIDI::URR_protareInfos::updateProtare( MCGIDI::Protare const *a_protare, double a_energy, RNG && a_rng ) {
 
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < a_protare->numberOfProtares( ); ++i1 ) {
+    for( std::size_t i1 = 0; i1 < a_protare->numberOfProtares( ); ++i1 ) {
         ProtareSingle *protareSingle = const_cast<ProtareSingle *>( a_protare->protare( i1 ) );
 
         if( protareSingle->URR_index( ) >= 0 ) {
@@ -966,7 +973,7 @@ LUPI_HOST_DEVICE void MCGIDI::Distributions::CoherentPhotoAtomicScattering::samp
 
     a_input.m_energyOut1 = a_X;
 
-    MCGIDI_VectorSizeType lowerIndex = binarySearchVector( a_X, m_energies );
+    int lowerIndex = binarySearchVector( a_X, m_energies );
 
     if( lowerIndex < 1 ) {
         do {
@@ -1133,7 +1140,7 @@ LUPI_HOST_DEVICE void MCGIDI::Distributions::IncoherentBoundToFreePhotoAtomicSca
 
         // Sample electron momentum projection, pz
         occupation_pz = occupationNumberMax*a_rng();
-        MCGIDI_VectorSizeType lowerIndex = binarySearchVector( occupation_pz, m_occupationNumber );
+        int lowerIndex = binarySearchVector( occupation_pz, m_occupationNumber );
         if( lowerIndex == -1 ){
             pz = m_pz.back();
         }
@@ -1253,7 +1260,7 @@ LUPI_HOST_DEVICE double MCGIDI::Distributions::IncoherentBoundToFreePhotoAtomicS
         // Sample electron momentum projection, pz
         occupationNumberMax = evaluateOccupationNumber( a_energy_in, -1.0 );
         occupation_pz = occupationNumberMax*a_rng();
-        MCGIDI_VectorSizeType lowerIndex = binarySearchVector( occupation_pz, m_occupationNumber );
+        int lowerIndex = binarySearchVector( occupation_pz, m_occupationNumber );
         pz = 0;
         if( lowerIndex == -1 ){
             pz = m_pz.back();
@@ -1416,7 +1423,7 @@ LUPI_HOST_DEVICE void MCGIDI::Distributions::CoherentElasticTNSL::sample( double
         double temperature = 1e-3 * a_input.m_temperature;                  // Assumes m_temperature is in keV/K.
         if( temperature < m_temperatures[0] ) temperature = m_temperatures[0];
         if( temperature > m_temperatures.back( ) ) temperature = m_temperatures.back( );
-        MCGIDI_VectorSizeType temperatureIndex = MCGIDI::binarySearchVector( temperature, m_temperatures, true );
+        std::size_t temperatureIndex = (std::size_t) MCGIDI::binarySearchVector( temperature, m_temperatures, true );
         double const *pointer1 = &m_S_table[temperatureIndex * m_energies.size( )];
 
         double const *pointer2 = pointer1;
@@ -1427,11 +1434,11 @@ LUPI_HOST_DEVICE void MCGIDI::Distributions::CoherentElasticTNSL::sample( double
         }
         double fractionSecondTemperature = 1.0 - fractionFirstTemperature;
 
-        MCGIDI_VectorSizeType energyIndexMax = MCGIDI::binarySearchVector( a_energy, m_energies, true );
+        int energyIndexMax = MCGIDI::binarySearchVector( a_energy, m_energies, true );
         if( a_energy == m_energies[energyIndexMax] ) --energyIndexMax;
 
         double randomTotal = a_rng( ) * ( fractionFirstTemperature * pointer1[energyIndexMax] + fractionSecondTemperature * pointer2[energyIndexMax] );
-        MCGIDI_VectorSizeType energyIndex = 0;
+        int energyIndex = 0;
         for( ; energyIndex < energyIndexMax; ++energyIndex ) {
             if( randomTotal <= fractionFirstTemperature * pointer1[energyIndex] + fractionSecondTemperature * pointer2[energyIndex] ) break;
         }
@@ -1618,7 +1625,7 @@ LUPI_HOST_DEVICE int MCGIDI::Functions::TerrellFissionNeutronMultiplicityModel::
       multiplicity = width * rw * cos( theta ) + cshift;
     } while ( multiplicity < 0.0 );
 
-    return( int( floor( multiplicity ) ) );
+    return( static_cast<int>( floor( multiplicity ) ) );
 }
 
 /* *********************************************************************************************************//**
@@ -1639,7 +1646,7 @@ LUPI_HOST_DEVICE double MCGIDI::Probabilities::ProbabilityBase1d::sample( double
 template <typename RNG>
 LUPI_HOST_DEVICE double MCGIDI::Probabilities::Xs_pdf_cdf1d::sample( double a_rngValue, LUPI_maybeUnused RNG && a_rng ) const {
 
-    MCGIDI_VectorSizeType lower = binarySearchVector( a_rngValue, m_cdf );
+    int lower = binarySearchVector( a_rngValue, m_cdf );
     double domainValue = 0;
 
 
@@ -1860,7 +1867,7 @@ C    Then use rngValue to sample from pdf1(x1) and maybe pdf2(x1) and interpolat
 C    determine x1.
 */
     double sampledValue = 0;
-    MCGIDI_VectorSizeType lower = binarySearchVector( a_x2, m_Xs );
+    int lower = binarySearchVector( a_x2, m_Xs );
 
     if( lower == -2 ) {
         sampledValue = m_probabilities[0]->sample( a_rngValue, a_rng ); }
@@ -1912,7 +1919,7 @@ C   Samples from a pdf(x1|x2). First determine which pdf(s) to sample from given
 C   and maybe pdf2(x1) and interpolate to determine x1.
 */
     double sampledValue = 0;
-    MCGIDI_VectorSizeType lower = binarySearchVector( a_x2, m_Xs );
+    int lower = binarySearchVector( a_x2, m_Xs );
 
     if( lower == -2 ) {
         sampledValue = m_probabilities[0]->sample( a_rngValue, a_rng );
@@ -1951,7 +1958,7 @@ C   and maybe pdf2(x1) and interpolate to determine x1.
 template <typename RNG>
 LUPI_HOST_DEVICE double MCGIDI::Probabilities::Regions2d::sample( double a_x2, double a_rngValue, RNG && a_rng ) const {
 
-    MCGIDI_VectorSizeType lower = binarySearchVector( a_x2, m_Xs );
+    int lower = binarySearchVector( a_x2, m_Xs );
 
     if( lower < 0 ) {
         if( lower == -1 ) {                         // a_x2 > last value of m_Xs.
@@ -2067,8 +2074,8 @@ LUPI_HOST_DEVICE double MCGIDI::Probabilities::WeightedFunctionals2d::sample( do
 /*
 c   This routine assumes that the weights sum to 1.
 */
-    MCGIDI_VectorSizeType i1;
-    MCGIDI_VectorSizeType n1 = m_weight.size( ) - 1;      // Take last point if others do not add to randomWeight.
+    std::size_t i1;
+    std::size_t n1 = m_weight.size( ) - 1;      // Take last point if others do not add to randomWeight.
     double randomWeight = a_rng( ), cumulativeWeight = 0.;
 
     for( i1 = 0; i1 < n1; ++i1 ) {
@@ -2102,7 +2109,7 @@ C    Then use rngValue to sample from pdf2_1(x2) and maybe pdf2_2(x2) and interp
 C    determine x1.
 */
     double sampledValue = 0;
-    MCGIDI_VectorSizeType lower = binarySearchVector( a_x3, m_Xs );
+    int lower = binarySearchVector( a_x3, m_Xs );
 
     if( lower == -2 ) {                         // x3 < first value of Xs.
         sampledValue = m_probabilities[0]->sample( a_x2_1, a_rngValue, a_rng ); }
@@ -2190,7 +2197,7 @@ LUPI_HOST_DEVICE int MCGIDI::HeatedCrossSectionsContinuousEnergy::sampleReaction
     }
 
     if( sampled_reaction_index == numberOfReactions ) {
-        if( crossSectionSum < ( 1.0 - 1e-8 ) * a_crossSection ) {
+        if( crossSectionSum < ( 1.0 - crossSectionSumError ) * a_crossSection ) {
 #if LUPI_ON_GPU
             MCGIDI_PRINTF( "HeatedCrossSectionsContinuousEnergy::sampleReaction: crossSectionSum %.17e less than a_crossSection =  %.17e.", 
                     crossSectionSum, a_crossSection );
@@ -2326,9 +2333,9 @@ inline LUPI_HOST_DEVICE bool sampleTargetBetaForUpscatterModelA( Protare const *
     double relativeBetaMax = projectileBeta + 2.0 * targetThermalBeta;
 
     Vector<double> const &upscatterModelAGroupVelocities = a_protare->upscatterModelAGroupVelocities( );
-    MCGIDI_VectorSizeType maxIndex = upscatterModelAGroupVelocities.size( ) - 2;
-    MCGIDI_VectorSizeType relativeBetaMinIndex = binarySearchVector( relativeBetaMin, upscatterModelAGroupVelocities, true );
-    MCGIDI_VectorSizeType relativeBetaMaxIndex = binarySearchVector( relativeBetaMax, upscatterModelAGroupVelocities, true );
+    int maxIndex = (int) upscatterModelAGroupVelocities.size( ) - 2;
+    int relativeBetaMinIndex = binarySearchVector( relativeBetaMin, upscatterModelAGroupVelocities, true );
+    int relativeBetaMaxIndex = binarySearchVector( relativeBetaMax, upscatterModelAGroupVelocities, true );
     double targetBeta, relativeBeta, mu;
 
     if( relativeBetaMinIndex >= maxIndex ) relativeBetaMinIndex = maxIndex;
@@ -2343,7 +2350,7 @@ inline LUPI_HOST_DEVICE bool sampleTargetBetaForUpscatterModelA( Protare const *
         Vector<double> const &upscatterModelACrossSection = a_input.m_reaction->upscatterModelACrossSection( );
         double reactionRate;
         double reactionRateMax = 0;
-        for( MCGIDI_VectorSizeType i1 = relativeBetaMinIndex; i1 <= relativeBetaMaxIndex; ++i1 ) {
+        for( int i1 = relativeBetaMinIndex; i1 <= relativeBetaMaxIndex; ++i1 ) {
             reactionRate = upscatterModelACrossSection[i1] * upscatterModelAGroupVelocities[i1+1];
             if( reactionRate > reactionRateMax ) reactionRateMax = reactionRate;
         }
@@ -2353,7 +2360,7 @@ inline LUPI_HOST_DEVICE bool sampleTargetBetaForUpscatterModelA( Protare const *
             mu = 1.0 - 2.0 * a_rng( );
             relativeBeta = sqrt( targetBeta * targetBeta + projectileBeta * projectileBeta - 2.0 * mu * targetBeta * projectileBeta );
 
-            MCGIDI_VectorSizeType index = binarySearchVector( relativeBeta, upscatterModelAGroupVelocities, true );
+            int index = binarySearchVector( relativeBeta, upscatterModelAGroupVelocities, true );
             if( index > maxIndex ) index = maxIndex;
             reactionRate = upscatterModelACrossSection[index] * relativeBeta;
         } while( reactionRate <  a_rng( ) * reactionRateMax );
@@ -2752,7 +2759,7 @@ LUPI_HOST_DEVICE void MCGIDI::ProtareSingle::sampleBranchingGammas( Sampling::In
         double random = a_rng( );
         double sum = 0.0;
         initialStateIndex = -1;             // Just in case the for loop never has "sum >= random".
-        for( MCGIDI_VectorSizeType i1 = 0; i1 < branchIndices.size( ); ++i1 ) {
+        for( std::size_t i1 = 0; i1 < branchIndices.size( ); ++i1 ) {
             NuclideGammaBranchInfo *nuclideGammaBranchInfo = m_branches[branchIndices[i1]];
 
             sum += nuclideGammaBranchInfo->probability( );
@@ -3010,7 +3017,7 @@ template <typename RNG, typename PUSHBACK>
 LUPI_HOST_DEVICE bool MCGIDI::GRIN_capture::sampleProducts( ProtareSingle const *a_protare, double a_projectileEnergy, Sampling::Input &a_input,
                 RNG && a_rng, PUSHBACK && a_push_back, Sampling::ProductHandler &a_products ) const {
 
-    MCGIDI_VectorSizeType index = 0;
+    std::size_t index = 0;
     double random = a_rng( );
     for( ; index < m_summedProbabilities.size( ) - 1; ++index ) {
         if( random < m_summedProbabilities[index] ) break;
@@ -3060,7 +3067,7 @@ template <typename RNG, typename PUSHBACK>
 LUPI_HOST_DEVICE bool MCGIDI::GRIN_inelastic::sampleProducts( ProtareSingle const *a_protare, double a_projectileEnergy, Sampling::Input &a_input,
                 RNG && a_rng, PUSHBACK && a_push_back, Sampling::ProductHandler &a_products ) const {
 
-    MCGIDI_VectorSizeType index = 1;
+    std::size_t index = 1;
     for( ; index < m_energies.size( ); ++index ) {
         if( m_energies[index] > a_projectileEnergy ) break;
     }
@@ -3127,7 +3134,7 @@ LUPI_HOST_DEVICE int MCGIDI::GRIN_captureToCompound::sampleCaptureLevel( Protare
     }
 
     double random = a_rng( );
-    int index = 0;
+    std::size_t index = 0;
     for( ; index < m_continuumIndices.m_levels.size( ) - 1; ++index ) {
         if( m_continuumIndices.m_summedProbabilities[index] >= random ) break;
     }
@@ -3149,13 +3156,13 @@ template <typename RNG>
 LUPI_HOST_DEVICE int MCGIDI::GRIN_captureLevelProbability::sampleCaptureLevel( ProtareSingle const *a_protare, double a_energy, RNG && a_rng ) {
 
     double random = a_rng( );
-    for( auto index = 0; index < m_knownLevelsAndProbabilities.m_levels.size( ); ++index ) {
+    for( std::size_t index = 0; index < m_knownLevelsAndProbabilities.m_levels.size( ); ++index ) {
         if( m_knownLevelsAndProbabilities.m_summedProbabilities[index] >= random ) {
             return( m_knownLevelsAndProbabilities.m_levels[index] );
         }
     }
 
-    for( auto i1 = 0; i1 < m_captureToCompounds.size( ) - 1; ++i1 ) {
+    for( std::size_t i1 = 0; i1 < m_captureToCompounds.size( ) - 1; ++i1 ) {
         GRIN_captureToCompound const *GRIN_captureToCompound1 = m_captureToCompounds[i1];
 
         int index = GRIN_captureToCompound1->sampleCaptureLevel( a_protare, a_energy, a_rng, true );

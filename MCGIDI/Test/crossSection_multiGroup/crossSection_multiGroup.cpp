@@ -108,7 +108,7 @@ int main( int argc, char **argv ) {
 
     MCGIDI::MultiGroupHash multiGroupHash( *protare, temperatures[0] );
 
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < (MCGIDI_VectorSizeType) MCProtare->numberOfReactions( ); ++i1 ) {
+    for( std::size_t i1 = 0; i1 < MCProtare->numberOfReactions( ); ++i1 ) {
         MCGIDI::Reaction const &reaction = *MCProtare->reaction( i1 );
 
         std::cout << std::setw( 40 ) << reaction.label( ).c_str( ) << "  threshold = " 
@@ -117,7 +117,7 @@ int main( int argc, char **argv ) {
     std::cout << std::endl;
 
     std::cout << "List of reactions" << std::endl;
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < (MCGIDI_VectorSizeType) MCProtare->numberOfReactions( ); ++i1 ) {
+    for( std::size_t i1 = 0; i1 < MCProtare->numberOfReactions( ); ++i1 ) {
         MCGIDI::Reaction const &reaction = *MCProtare->reaction( i1 );
 
         std::cout << "    reaction: " << reaction.label( ).c_str( ) << std::endl;
@@ -138,10 +138,10 @@ int main( int argc, char **argv ) {
     std::cout << "-- boundary --" << std::endl;
     std::cout << "index   energy" << std::endl;
     MCGIDI::Vector<double> const projectileMultiGroupBoundaries = MCProtare->projectileMultiGroupBoundaries( );
-    for( int index = 0; index < projectileMultiGroupBoundaries.size( ); ++index ) {
+    for( std::size_t index = 0; index < projectileMultiGroupBoundaries.size( ); ++index ) {
 
         std::cout << std::setw( 5 ) << index << "   " << projectileMultiGroupBoundaries[index] << std::endl;
-        for( MCGIDI_VectorSizeType i1 = 0; i1 < (MCGIDI_VectorSizeType) MCProtare->numberOfReactions( ); ++i1 ) {
+        for( std::size_t i1 = 0; i1 < MCProtare->numberOfReactions( ); ++i1 ) {
             MCGIDI::Reaction const &reaction = *MCProtare->reaction( i1 );
             double crossSectionThreshold = reaction.crossSectionThreshold( );
 

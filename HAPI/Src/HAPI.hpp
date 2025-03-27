@@ -18,6 +18,7 @@
 #include <nf_buffer.h>
 #include <nf_utilities.h>
 
+// Uncomment the next line for G4GIDI/GEANT4.
 // #define HAPI_USE_PUGIXML 1
 
 #ifdef HAPI_USE_PUGIXML

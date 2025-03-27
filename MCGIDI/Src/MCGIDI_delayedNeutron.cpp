@@ -86,7 +86,7 @@ LUPI_HOST void DelayedNeutron::setUserParticleIndexViaIntid( int a_particleIntid
 LUPI_HOST_DEVICE void DelayedNeutron::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
     DATA_MEMBER_INT( m_delayedNeutronIndex, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_rate, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_rate, a_buffer, a_mode );
     m_product.serialize( a_buffer, a_mode );
 }
 

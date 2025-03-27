@@ -184,10 +184,10 @@ LUPI_HOST OutputChannel::OutputChannel( GIDI::OutputChannel const *a_outputChann
 LUPI_HOST_DEVICE OutputChannel::~OutputChannel( ) {
 
     delete m_Q;
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < m_products.size( ); ++i1 ) delete m_products[i1];
+    for( std::size_t i1 = 0; i1 < m_products.size( ); ++i1 ) delete m_products[i1];
 
     delete m_totalDelayedNeutronMultiplicity;
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < m_delayedNeutrons.size( ); ++i1 ) delete m_delayedNeutrons[i1];
+    for( std::size_t i1 = 0; i1 < m_delayedNeutrons.size( ); ++i1 ) delete m_delayedNeutrons[i1];
 }
 
 /* *********************************************************************************************************//**
@@ -202,7 +202,7 @@ LUPI_HOST_DEVICE double OutputChannel::finalQ( double a_x1 ) const {
 
     double final_Q = m_Q->evaluate( a_x1 );
 
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < m_products.size( ); ++i1 ) final_Q += m_products[i1]->finalQ( a_x1 );
+    for( std::size_t i1 = 0; i1 < m_products.size( ); ++i1 ) final_Q += m_products[i1]->finalQ( a_x1 );
     return( final_Q );
 }
 
@@ -215,7 +215,7 @@ LUPI_HOST_DEVICE double OutputChannel::finalQ( double a_x1 ) const {
 LUPI_HOST_DEVICE bool OutputChannel::hasFission( ) const {
 
     if( m_isFission ) return( true );
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < m_products.size( ); ++i1 ) {
+    for( std::size_t i1 = 0; i1 < m_products.size( ); ++i1 ) {
         if( m_products[i1]->hasFission( ) ) return( true );
     }
     return( false );
@@ -274,7 +274,7 @@ LUPI_HOST void OutputChannel::moveProductsEtAlToReaction( std::vector<Product *>
     if( a_totalDelayedNeutronMultiplicity != nullptr ) {    /* This will not work if fission is a nested channel. Ergo "n + (R -> fission)". */
         *a_totalDelayedNeutronMultiplicity = m_totalDelayedNeutronMultiplicity;
         m_totalDelayedNeutronMultiplicity = nullptr;
-        for( int index = 0; index < m_delayedNeutrons.size( ); ++index ) {
+        for( std::size_t index = 0; index < m_delayedNeutrons.size( ); ++index ) {
             a_delayedNeutrons.push_back( m_delayedNeutrons[index] );
             m_delayedNeutrons[index] = nullptr;
         }
@@ -282,7 +282,7 @@ LUPI_HOST void OutputChannel::moveProductsEtAlToReaction( std::vector<Product *>
 
     a_Qs.push_back( m_Q );
     m_Q = nullptr;
-    for( int productIndex = 0; productIndex < m_products.size( ); ++productIndex ) {
+    for( std::size_t productIndex = 0; productIndex < m_products.size( ); ++productIndex ) {
         Product *product = m_products[productIndex];
 
         if( product->outputChannel( ) != nullptr ) {

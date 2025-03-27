@@ -152,7 +152,7 @@ void printProductList( PoPI::Database const &a_pops, MCGIDI::Protare * a_protare
         a_outputLines += "0";
     }
     a_outputLines += '\n';
-    for( auto i1 = 0; i1 < intids.size( ); ++i1 ) {
+    for( std::size_t i1 = 0; i1 < intids.size( ); ++i1 ) {
         PoPI::ParseIntidInfo parseIntidInfo( intids[i1] );
         std::string pid = parseIntidInfo.id( );
         PoPI::Base const &particle = a_pops.get<PoPI::Base>( pid );

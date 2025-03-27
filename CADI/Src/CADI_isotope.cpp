@@ -65,8 +65,8 @@ Isotope::~Isotope( ) {
 LUPI_HOST void Isotope::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
     GUPI::Entry::serialize( a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_atomFraction, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_uncertainty, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_atomFraction, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_uncertainty, a_buffer, a_mode );
 }
 
 /* *********************************************************************************************************//**

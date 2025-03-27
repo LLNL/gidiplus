@@ -165,7 +165,7 @@ void main2( int argc, char **argv ) {
 
     std::cout <<" Number of MCGIDI reactions: " << numberOfReactions << std::endl;
 
-    for( MCGIDI_VectorSizeType reactionIndex = 0; reactionIndex < (MCGIDI_VectorSizeType) MCProtare->numberOfReactions( ); ++reactionIndex ) {
+    for( std::size_t reactionIndex = 0; reactionIndex < MCProtare->numberOfReactions( ); ++reactionIndex ) {
         MCGIDI::Reaction const *reaction = MCProtare->reaction( reactionIndex );
         int MT = reaction->ENDF_MT( );
 
@@ -249,7 +249,7 @@ void main2( int argc, char **argv ) {
     std::cout << std::endl << "Sampling reactions with " << LUPI::Misc::argumentsToString( "%ld", numberOfSamples ) << " samples:" << std::endl;
     std::cout << "energy = " << energy << ", " << "cross section = " << LUPI::Misc::argumentsToString( "%.6g", crossSection ) << std::endl;
     std::cout << "  Reaction index ->                 : ";
-    for( MCGIDI_VectorSizeType reactionIndex = 0; reactionIndex < (MCGIDI_VectorSizeType) MCProtare->numberOfReactions( ); ++reactionIndex ) {
+    for( std::size_t reactionIndex = 0; reactionIndex < MCProtare->numberOfReactions( ); ++reactionIndex ) {
         std::cout << LUPI::Misc::argumentsToString( " %10d", reactionIndex );
     }
     std::cout << std::endl;

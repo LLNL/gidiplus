@@ -114,11 +114,11 @@ LUPI_HOST_DEVICE Vector<int> DomainHash::map( Vector<double> const &a_domainValu
 LUPI_HOST_DEVICE void DomainHash::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
     DATA_MEMBER_INT( m_bins, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_domainMin, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_domainMax, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_u_domainMin, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_u_domainMax, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_inverse_du, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_domainMin, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_domainMax, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_u_domainMin, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_u_domainMax, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_inverse_du, a_buffer, a_mode );
 }
 
 /* *********************************************************************************************************//**

@@ -223,11 +223,11 @@ LUPI_HOST void Protare::setUserParticleIndex( int a_particleIndex, int a_userPar
 
     if( m_photonIndex == a_particleIndex ) m_userPhotonIndex = a_userParticleIndex;
 
-    for( auto i1 = 0; i1 < m_productIndices.size( ); ++i1 ) {
+    for( std::size_t i1 = 0; i1 < m_productIndices.size( ); ++i1 ) {
         if( m_productIndices[i1] == a_particleIndex ) m_userProductIndices[i1] = a_userParticleIndex;
     }
 
-    for( auto i1 = 0; i1 < m_productIndicesTransportable.size( ); ++i1 ) {
+    for( std::size_t i1 = 0; i1 < m_productIndicesTransportable.size( ); ++i1 ) {
         if( m_productIndicesTransportable[i1] == a_particleIndex ) m_userProductIndicesTransportable[i1] = a_userParticleIndex;
     }
 
@@ -258,11 +258,11 @@ LUPI_HOST void Protare::setUserParticleIndexViaIntid( int a_particleIntid, int a
 
     if( PoPI::Intids::photon == a_particleIntid ) m_userPhotonIndex = a_userParticleIndex;
 
-    for( auto i1 = 0; i1 < m_productIntids.size( ); ++i1 ) {
+    for( std::size_t i1 = 0; i1 < m_productIntids.size( ); ++i1 ) {
         if( m_productIntids[i1] == a_particleIntid ) m_userProductIndices[i1] = a_userParticleIndex;
     }
 
-    for( auto i1 = 0; i1 < m_productIntidsTransportable.size( ); ++i1 ) {
+    for( std::size_t i1 = 0; i1 < m_productIntidsTransportable.size( ); ++i1 ) {
         if( m_productIntidsTransportable[i1] == a_particleIntid ) m_userProductIndicesTransportable[i1] = a_userParticleIndex;
     }
 
@@ -371,15 +371,15 @@ LUPI_HOST_DEVICE void Protare::serializeCommon( LUPI::DataBuffer &a_buffer, LUPI
     DATA_MEMBER_INT( m_projectileIntid, a_buffer, a_mode );
     DATA_MEMBER_INT( m_projectileIndex, a_buffer, a_mode );
     DATA_MEMBER_INT( m_projectileUserIndex, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_projectileMass, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_projectileExcitationEnergy, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_projectileMass, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_projectileExcitationEnergy, a_buffer, a_mode );
 
     DATA_MEMBER_STRING( m_targetID, a_buffer, a_mode );
     DATA_MEMBER_INT( m_targetIntid, a_buffer, a_mode );
     DATA_MEMBER_INT( m_targetIndex, a_buffer, a_mode );
     DATA_MEMBER_INT( m_targetUserIndex, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_targetMass, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_targetExcitationEnergy, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_targetMass, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_targetExcitationEnergy, a_buffer, a_mode );
 
     DATA_MEMBER_INT( m_photonIndex, a_buffer, a_mode );
     DATA_MEMBER_INT( m_userPhotonIndex, a_buffer, a_mode );
@@ -462,9 +462,9 @@ LUPI_HOST_DEVICE void Protare::incrementMemorySize( long &a_totalMemory, long &a
  * @return                              Integer number of protares.
  ***********************************************************************************************************/
 
-LUPI_HOST_DEVICE MCGIDI_VectorSizeType Protare::numberOfProtares( ) const {
+LUPI_HOST_DEVICE std::size_t Protare::numberOfProtares( ) const {
 
-    MCGIDI_VectorSizeType numberOfProtares2 = 0;
+    std::size_t numberOfProtares2 = 0;
 
     switch( protareType( ) ) {
     case ProtareType::single:
@@ -489,7 +489,7 @@ LUPI_HOST_DEVICE MCGIDI_VectorSizeType Protare::numberOfProtares( ) const {
  * @return                              Returns the const pointer representing the protare.
  ***********************************************************************************************************/
 
-LUPI_HOST_DEVICE ProtareSingle const *Protare::protare( MCGIDI_VectorSizeType a_index ) const {
+LUPI_HOST_DEVICE ProtareSingle const *Protare::protare( std::size_t a_index ) const {
 
     ProtareSingle const *protare1 = nullptr;
 
@@ -516,7 +516,7 @@ LUPI_HOST_DEVICE ProtareSingle const *Protare::protare( MCGIDI_VectorSizeType a_
  * @return                              Returns the pointer representing the protare.
  ***********************************************************************************************************/
 
-LUPI_HOST_DEVICE ProtareSingle *Protare::protare( MCGIDI_VectorSizeType a_index ) {
+LUPI_HOST_DEVICE ProtareSingle *Protare::protare( std::size_t a_index ) {
 
     ProtareSingle *protare1 = nullptr;
 
@@ -620,7 +620,7 @@ LUPI_HOST_DEVICE double Protare::maximumEnergy( ) const {
  * @return                              Vector of doubles.
  ***********************************************************************************************************/
 
-LUPI_HOST_DEVICE Vector<double> Protare::temperatures( MCGIDI_VectorSizeType a_index ) const {
+LUPI_HOST_DEVICE Vector<double> Protare::temperatures( std::size_t a_index ) const {
 
     ProtareSingle const *protareSingle = protare( a_index );
     return( protareSingle->temperatures( ) );
@@ -945,7 +945,7 @@ LUPI_HOST_DEVICE bool Protare::reactionHasURR_probabilityTables( int a_index ) c
  * @return                          The threshold for reaction at index *a_index*.
  ***********************************************************************************************************/
 
-LUPI_HOST_DEVICE double Protare::threshold( MCGIDI_VectorSizeType a_index ) const {
+LUPI_HOST_DEVICE double Protare::threshold( std::size_t a_index ) const {
 
     double threshold1 = 0.0;
 
@@ -1494,7 +1494,7 @@ LUPI_HOST ProtareSingle::ProtareSingle( LUPI::StatusMessageReporting &a_smr, GID
                 if( ancestry == nullptr ) throw std::runtime_error( "Could not find href for summand - 2." );
 
                 GIDI::Reaction const *GIDI_reaction2 = static_cast<GIDI::Reaction const *>( ancestry );
-                for( MCGIDI_VectorSizeType reactionIndex = 0; reactionIndex < m_reactions.size( ); ++reactionIndex ) {
+                for( std::size_t reactionIndex = 0; reactionIndex < m_reactions.size( ); ++reactionIndex ) {
                     std::string label( m_reactions[reactionIndex]->label( ).c_str( ) );
 
                     if( label == GIDI_reaction2->label( ) ) {
@@ -1505,7 +1505,7 @@ LUPI_HOST ProtareSingle::ProtareSingle( LUPI::StatusMessageReporting &a_smr, GID
             }
         }
 
-        for( MCGIDI_VectorSizeType reactionIndex = 0; reactionIndex < m_reactions.size( ); ++reactionIndex ) {
+        for( std::size_t reactionIndex = 0; reactionIndex < m_reactions.size( ); ++reactionIndex ) {
             Reaction *reaction = m_reactions[reactionIndex];
             std::size_t size = associatedOrphanProductIndices[reactionIndex].size( );
             if( size > 0 ) {
@@ -1562,7 +1562,11 @@ LUPI_HOST ProtareSingle::ProtareSingle( LUPI::StatusMessageReporting &a_smr, GID
                         = heatedCrossSectionContinuousEnergy->reactionCrossSection( reactionIndex );
 
                 Vector<double> const &energies = heatedCrossSectionContinuousEnergy->energies( );
-                Vector<double> const &crossSections = heatedReactionCrossSectionContinuousEnergy->crossSections( );
+                Vector<MCGIDI_FLOAT> const &crossSectionsFloat = heatedReactionCrossSectionContinuousEnergy->crossSections( );
+                Vector<double> crossSections( crossSectionsFloat.size( ) );
+                int index = 0;
+                for( auto iter = crossSectionsFloat.begin( ); iter != crossSectionsFloat.end( ); ++iter )
+                    crossSections[index] = *iter;
 
                 Sampling::Upscatter::ModelDBRC_data *modelDBRC_data = 
                         new Sampling::Upscatter::ModelDBRC_data( projectileMass( ), targetMass( ), energies, crossSections, a_domainHash );
@@ -1622,7 +1626,7 @@ LUPI_HOST void ProtareSingle::setUserParticleIndexViaIntid2( int a_particleIntid
  * @return                              Returns the pointer representing *this*.
  ***********************************************************************************************************/
 
-LUPI_HOST_DEVICE ProtareSingle const *ProtareSingle::protare( MCGIDI_VectorSizeType a_index ) const {
+LUPI_HOST_DEVICE ProtareSingle const *ProtareSingle::protare( std::size_t a_index ) const {
 
     if( a_index != 0 ) return( nullptr );
     return( this );
@@ -1636,7 +1640,7 @@ LUPI_HOST_DEVICE ProtareSingle const *ProtareSingle::protare( MCGIDI_VectorSizeT
  * @return                              Returns the pointer representing *this*.
  ***********************************************************************************************************/
 
-LUPI_HOST_DEVICE ProtareSingle *ProtareSingle::protare( MCGIDI_VectorSizeType a_index ) {
+LUPI_HOST_DEVICE ProtareSingle *ProtareSingle::protare( std::size_t a_index ) {
 
     if( a_index != 0 ) return( nullptr );
     return( this );
@@ -1665,7 +1669,7 @@ LUPI_HOST_DEVICE ProtareSingle const *ProtareSingle::protareWithReaction( int a_
  * @return                              Vector of doubles.
  ***********************************************************************************************************/
 
-LUPI_HOST_DEVICE Vector<double> ProtareSingle::temperatures( MCGIDI_VectorSizeType a_index ) const {
+LUPI_HOST_DEVICE Vector<double> ProtareSingle::temperatures( std::size_t a_index ) const {
 
     if( a_index != 0 ) LUPI_THROW( "ProtareSingle::temperatures: a_index not 0." );
     if( m_continuousEnergy ) return( m_heatedCrossSections.temperatures( ) );
@@ -1910,14 +1914,14 @@ LUPI_HOST_DEVICE double ProtareSingle::gainViaIntid( int a_hashIndex, double a_t
 
 LUPI_HOST_DEVICE void ProtareSingle::serialize2( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
-    MCGIDI_VectorSizeType vectorSize;
+    std::size_t vectorSize;
     LUPI::DataBuffer *workingBuffer = &a_buffer;
 
     DATA_MEMBER_STRING( m_interaction, a_buffer, a_mode );
     DATA_MEMBER_INT( m_URR_index, a_buffer, a_mode );
     DATA_MEMBER_CAST( m_hasURR_probabilityTables, a_buffer, a_mode, bool );
-    DATA_MEMBER_FLOAT( m_URR_domainMin, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_URR_domainMax, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_URR_domainMin, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_URR_domainMax, a_buffer, a_mode );
     DATA_MEMBER_VECTOR_DOUBLE( m_projectileMultiGroupBoundaries, a_buffer, a_mode );
     DATA_MEMBER_VECTOR_DOUBLE( m_projectileMultiGroupBoundariesCollapsed, a_buffer, a_mode );
     DATA_MEMBER_VECTOR_DOUBLE( m_upscatterModelAGroupVelocities, a_buffer, a_mode );
@@ -1925,11 +1929,11 @@ LUPI_HOST_DEVICE void ProtareSingle::serialize2( LUPI::DataBuffer &a_buffer, LUP
     vectorSize = m_nuclideGammaBranchStateInfos.size( );
     int vectorSizeInt = (int) vectorSize;
     DATA_MEMBER_INT( vectorSizeInt, *workingBuffer, a_mode );
-    vectorSize = (MCGIDI_VectorSizeType) vectorSizeInt;
+    vectorSize = (std::size_t) vectorSizeInt;
 
     if( a_mode == LUPI::DataBuffer::Mode::Unpack ) {
         m_nuclideGammaBranchStateInfos.resize( vectorSize, &(workingBuffer->m_placement) );
-        for( MCGIDI_VectorSizeType vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
+        for( std::size_t vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
             if (workingBuffer->m_placement != nullptr) {
                 m_nuclideGammaBranchStateInfos[vectorIndex] = new(workingBuffer->m_placement) NuclideGammaBranchStateInfo;
                 workingBuffer->incrementPlacement( sizeof( NuclideGammaBranchStateInfo ) );
@@ -1943,18 +1947,18 @@ LUPI_HOST_DEVICE void ProtareSingle::serialize2( LUPI::DataBuffer &a_buffer, LUP
         a_buffer.m_placement += m_nuclideGammaBranchStateInfos.internalSize();
         a_buffer.incrementPlacement( sizeof( NuclideGammaBranchStateInfo ) * vectorSize );
     }
-    for( MCGIDI_VectorSizeType vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
+    for( std::size_t vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
         m_nuclideGammaBranchStateInfos[vectorIndex]->serialize( *workingBuffer, a_mode );
     }
 
     vectorSize = m_branches.size( );
     vectorSizeInt = (int) vectorSize;
     DATA_MEMBER_INT( vectorSizeInt, *workingBuffer, a_mode );
-    vectorSize = (MCGIDI_VectorSizeType) vectorSizeInt;
+    vectorSize = (std::size_t) vectorSizeInt;
 
     if( a_mode == LUPI::DataBuffer::Mode::Unpack ) {
         m_branches.resize( vectorSize, &(workingBuffer->m_placement) );
-        for( MCGIDI_VectorSizeType vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
+        for( std::size_t vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
             if (workingBuffer->m_placement != nullptr) {
                 m_branches[vectorIndex] = new(workingBuffer->m_placement) NuclideGammaBranchInfo;
                 workingBuffer->incrementPlacement( sizeof( NuclideGammaBranchInfo ) );
@@ -1968,18 +1972,18 @@ LUPI_HOST_DEVICE void ProtareSingle::serialize2( LUPI::DataBuffer &a_buffer, LUP
         a_buffer.m_placement += m_branches.internalSize();
         workingBuffer->incrementPlacement( sizeof( NuclideGammaBranchInfo ) * vectorSize );
     }
-    for( MCGIDI_VectorSizeType vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
+    for( std::size_t vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
         m_branches[vectorIndex]->serialize( *workingBuffer, a_mode );
     }
 
     vectorSize = m_reactions.size( );
     vectorSizeInt = (int) vectorSize;
     DATA_MEMBER_INT( vectorSizeInt, *workingBuffer, a_mode );
-    vectorSize = (MCGIDI_VectorSizeType) vectorSizeInt;
+    vectorSize = (std::size_t) vectorSizeInt;
 
     if( a_mode == LUPI::DataBuffer::Mode::Unpack ) {
         m_reactions.resize( vectorSize, &(workingBuffer->m_placement) );
-        for( MCGIDI_VectorSizeType vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
+        for( std::size_t vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
             if (workingBuffer->m_placement != nullptr) {
                 m_reactions[vectorIndex] = new(workingBuffer->m_placement) Reaction;
                 workingBuffer->incrementPlacement( sizeof(Reaction));
@@ -1993,7 +1997,7 @@ LUPI_HOST_DEVICE void ProtareSingle::serialize2( LUPI::DataBuffer &a_buffer, LUP
         a_buffer.m_placement += m_reactions.internalSize();
         a_buffer.incrementPlacement( sizeof(Reaction) * vectorSize);
     }
-    for( MCGIDI_VectorSizeType vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
+    for( std::size_t vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
         m_reactions[vectorIndex]->serialize( *workingBuffer, a_mode );
         m_reactions[vectorIndex]->updateProtareSingleInfo( this, static_cast<int>( vectorIndex ) );
     }
@@ -2001,11 +2005,11 @@ LUPI_HOST_DEVICE void ProtareSingle::serialize2( LUPI::DataBuffer &a_buffer, LUP
     vectorSize = m_orphanProducts.size( );
     vectorSizeInt = (int) vectorSize;
     DATA_MEMBER_INT( vectorSizeInt, *workingBuffer, a_mode );
-    vectorSize = (MCGIDI_VectorSizeType) vectorSizeInt;
+    vectorSize = (std::size_t) vectorSizeInt;
 
     if( a_mode == LUPI::DataBuffer::Mode::Unpack ) {
         m_orphanProducts.resize( vectorSize, &(workingBuffer->m_placement) );
-        for( MCGIDI_VectorSizeType vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
+        for( std::size_t vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
             if (workingBuffer->m_placement != nullptr) {
                 m_orphanProducts[vectorIndex] = new(workingBuffer->m_placement) Reaction;
                 workingBuffer->incrementPlacement( sizeof(Reaction));
@@ -2021,7 +2025,7 @@ LUPI_HOST_DEVICE void ProtareSingle::serialize2( LUPI::DataBuffer &a_buffer, LUP
         a_buffer.incrementPlacement( sizeof( Reaction ) * vectorSize );
     }
 
-    for( MCGIDI_VectorSizeType vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
+    for( std::size_t vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
         m_orphanProducts[vectorIndex]->serialize( *workingBuffer, a_mode );
         m_orphanProducts[vectorIndex]->updateProtareSingleInfo( this, static_cast<int>( vectorIndex ) );
     }

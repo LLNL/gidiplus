@@ -374,7 +374,7 @@ hid_t getNodeId(hid_t loc_id, std::string name)
 ========== called by iterateElems in constructor ===========
 ============================================================
  */
-herr_t map_children(hid_t loc_id, char const *name, const H5L_info_t *info, void *opdata)
+herr_t map_children(hid_t loc_id, char const *name, LUPI_maybeUnused const H5L_info_t *info, void *opdata)
 {
   std::vector<HAPI::childInfo> *children =
           static_cast< std::vector<HAPI::childInfo>* >(opdata);

@@ -106,7 +106,7 @@ int main( int argc, char **argv ) {
 
     MCGIDI::MultiGroupHash multiGroupHash( *protare, temperatures[0] );
 
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < (MCGIDI_VectorSizeType) MCProtare->numberOfReactions( ); ++i1 ) {
+    for( std::size_t i1 = 0; i1 < MCProtare->numberOfReactions( ); ++i1 ) {
         MCGIDI::Reaction const &reaction = *MCProtare->reaction( i1 );
 
         std::cout << std::setw( 40 ) << reaction.label( ).c_str( ) << "  threshold = "
@@ -114,7 +114,7 @@ int main( int argc, char **argv ) {
                 << "  threshold = " << LUPI::Misc::doubleToString3( "%12.6g", reaction.crossSectionThreshold( ), true ) << std::endl;
     }
 
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < (MCGIDI_VectorSizeType) MCProtare->numberOfReactions( ); ++i1 ) {
+    for( std::size_t i1 = 0; i1 < MCProtare->numberOfReactions( ); ++i1 ) {
         MCGIDI::Reaction const &reaction = *MCProtare->reaction( i1 );
 
         std::cout << "    reaction: " << reaction.label( ).c_str( ) << std::endl;

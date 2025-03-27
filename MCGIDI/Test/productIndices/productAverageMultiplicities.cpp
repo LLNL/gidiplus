@@ -90,7 +90,7 @@ void main2( int argc, char **argv ) {
             std::cout << "        " << reaction->label( ).c_str( ) << std::endl;
 
             auto indices = reaction->productIndices( );
-            for( MCGIDI_VectorSizeType productIndex = 0; productIndex < indices.size( ); ++productIndex ) {
+            for( std::size_t productIndex = 0; productIndex < indices.size( ); ++productIndex ) {
                 int index = indices[productIndex];
                 PoPI::Base const &base= pops.get<PoPI::Base>( index );
                 if( base.isParticle() ) {

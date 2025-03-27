@@ -58,9 +58,9 @@ NuclideGammaBranchInfo::NuclideGammaBranchInfo( PoPI::NuclideGammaBranchInfo con
 
 LUPI_HOST_DEVICE void NuclideGammaBranchInfo::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
-    DATA_MEMBER_FLOAT( m_probability, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_photonEmissionProbability, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_gammaEnergy, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_probability, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_photonEmissionProbability, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_gammaEnergy, a_buffer, a_mode );
     DATA_MEMBER_INT( m_residualStateIndex, a_buffer, a_mode );
     DATA_MEMBER_CAST( m_residualStateKindIsContinuum, a_buffer, a_mode, bool );
 }
@@ -141,10 +141,10 @@ LUPI_HOST_DEVICE void NuclideGammaBranchStateInfo::serialize( LUPI::DataBuffer &
 
     DATA_MEMBER_CHAR_ARRAY( m_state, a_buffer, a_mode );
     DATA_MEMBER_INT( m_intid, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_nuclearLevelEnergy, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_nuclearLevelEnergyWidth, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_multiplicity, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_averageGammaEnergy, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_nuclearLevelEnergy, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_nuclearLevelEnergyWidth, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_multiplicity, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_averageGammaEnergy, a_buffer, a_mode );
     DATA_MEMBER_VECTOR_INT( m_branchIndices, a_buffer, a_mode );
 }
 

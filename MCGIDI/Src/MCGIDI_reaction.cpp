@@ -397,11 +397,11 @@ LUPI_HOST void Reaction::setUserParticleIndex( int a_particleIndex, int a_userPa
         (*iter)->setUserParticleIndex( a_particleIndex, a_userParticleIndex );
 #endif
 
-    for( auto i1 = 0; i1 < m_productIndices.size( ); ++i1 ) {
+    for( std::size_t i1 = 0; i1 < m_productIndices.size( ); ++i1 ) {
         if( m_productIndices[i1] == a_particleIndex ) m_userProductIndices[i1] = a_userParticleIndex;
     }
 
-    for( auto i1 = 0; i1 < m_productIndicesTransportable.size( ); ++i1 ) {
+    for( std::size_t i1 = 0; i1 < m_productIndicesTransportable.size( ); ++i1 ) {
         if( m_productIndicesTransportable[i1] == a_particleIndex ) m_userProductIndicesTransportable[i1] = a_userParticleIndex;
     }
 
@@ -431,11 +431,11 @@ LUPI_HOST void Reaction::setUserParticleIndexViaIntid( int a_particleIntid, int 
         (*iter)->setUserParticleIndexViaIntid( a_particleIntid, a_userParticleIndex );
 #endif
 
-    for( auto i1 = 0; i1 < m_productIntids.size( ); ++i1 ) {
+    for( std::size_t i1 = 0; i1 < m_productIntids.size( ); ++i1 ) {
         if( m_productIntids[i1] == a_particleIntid ) m_userProductIndices[i1] = a_userParticleIndex;
     }
 
-    for( auto i1 = 0; i1 < m_productIntidsTransportable.size( ); ++i1 ) {
+    for( std::size_t i1 = 0; i1 < m_productIntidsTransportable.size( ); ++i1 ) {
         if( m_productIntidsTransportable[i1] == a_particleIntid ) m_userProductIndicesTransportable[i1] = a_userParticleIndex;
     }
 
@@ -546,17 +546,17 @@ LUPI_HOST_DEVICE void Reaction::serialize( LUPI::DataBuffer &a_buffer, LUPI::Dat
     DATA_MEMBER_INT( m_initialStateIndex, a_buffer, a_mode );
     DATA_MEMBER_INT( m_neutronIndex, a_buffer, a_mode );
     DATA_MEMBER_CAST( m_hasFission, a_buffer, a_mode, bool );
-    DATA_MEMBER_FLOAT( m_projectileMass, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_targetMass, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_crossSectionThreshold, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_twoBodyThreshold, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_projectileMass, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_targetMass, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_crossSectionThreshold, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_twoBodyThreshold, a_buffer, a_mode );
     DATA_MEMBER_CAST( m_upscatterModelASupported, a_buffer, a_mode, bool );
     DATA_MEMBER_CAST( m_hasFinalStatePhotons, a_buffer, a_mode, bool );
     DATA_MEMBER_INT( m_fissionResiduaIntid, a_buffer, a_mode );
     DATA_MEMBER_INT( m_fissionResiduaIndex, a_buffer, a_mode );
     DATA_MEMBER_INT( m_fissionResiduaUserIndex, a_buffer, a_mode );
     serializeFissionResiduals( m_fissionResiduals, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_fissionResidualMass, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_fissionResidualMass, a_buffer, a_mode );
     DATA_MEMBER_VECTOR_DOUBLE( m_upscatterModelACrossSection, a_buffer, a_mode );
 
     DATA_MEMBER_VECTOR_INT( m_productIntids, a_buffer, a_mode );
@@ -609,8 +609,8 @@ LUPI_HOST_DEVICE void Reaction::serialize( LUPI::DataBuffer &a_buffer, LUPI::Dat
     }
 
     DATA_MEMBER_CAST( m_GRIN_specialSampleProducts, a_buffer, a_mode, bool );
-    DATA_MEMBER_FLOAT( m_GRIN_inelasticThreshold, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_GRIN_maximumCaptureIncidentEnergy, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_GRIN_inelasticThreshold, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_GRIN_maximumCaptureIncidentEnergy, a_buffer, a_mode );
 
     if( m_GRIN_specialSampleProducts ) {
         if( a_mode == LUPI::DataBuffer::Mode::Unpack ) {

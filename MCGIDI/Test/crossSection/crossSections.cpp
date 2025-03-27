@@ -95,7 +95,7 @@ void main2( int argc, char **argv ) {
     MCGIDI::URR_protareInfos URR_protare_infos( protares );
 
     std::cout << "List of reactions" << std::endl;
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < (MCGIDI_VectorSizeType) MCProtare->numberOfReactions( ); ++i1 ) {
+    for( std::size_t i1 = 0; i1 < MCProtare->numberOfReactions( ); ++i1 ) {
         MCGIDI::Reaction const &reaction = *(MCProtare->reaction( i1 ));
 
         std::cout << "    reaction: " << std::left << std::setw( 40 ) << reaction.label( ).c_str( ) << ":  final Q = " << reaction.finalQ( 0 ) 

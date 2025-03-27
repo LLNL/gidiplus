@@ -291,8 +291,8 @@ LUPI_HOST_DEVICE void Product::serialize( LUPI::DataBuffer &a_buffer, LUPI::Data
     DATA_MEMBER_INT( m_userParticleIndex, a_buffer, a_mode );
     DATA_MEMBER_STRING( m_label, a_buffer, a_mode );
     DATA_MEMBER_CAST( m_isCompleteParticle, a_buffer, a_mode, bool );
-    DATA_MEMBER_FLOAT( m_mass, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_excitationEnergy, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_mass, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_excitationEnergy, a_buffer, a_mode );
 
     int twoBodyOrder = 0;
     switch( m_twoBodyOrder ) {

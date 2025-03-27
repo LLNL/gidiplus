@@ -143,12 +143,12 @@ int main( int argc, char **argv ) {
     std::cout << "                                    cross section      change" << std::endl;
     MCGIDI::Vector<double> const &boundaries( multiGroupHash.boundaries( ) );
 
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < MCProtare->numberOfProtares( ); ++i1 ) {
+    for( std::size_t i1 = 0; i1 < MCProtare->numberOfProtares( ); ++i1 ) {
         MCGIDI::ProtareSingle const *protare_single = MCProtare->protare( i1 );
         MCGIDI::HeatedCrossSectionMultiGroup const &heatedCrossSectionMultiGroup = *protare_single->heatedMultigroupCrossSections( ).heatedCrossSections( )[0];
 
-        for( MCGIDI_VectorSizeType i3 = 0; i3 < boundaries.size( ); ++i3 ) {
-            MCGIDI_VectorSizeType i4 = i3;
+        for( std::size_t i3 = 0; i3 < boundaries.size( ); ++i3 ) {
+            std::size_t i4 = i3;
 
             if( i3 >= ( boundaries.size( ) - 1 ) ) i4 = boundaries.size( ) - 2;
             MCGIDI::HeatedCrossSectionsMultiGroup const &heated_cross_sections = protare_single->heatedMultigroupCrossSections( );

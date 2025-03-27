@@ -348,7 +348,7 @@ void main2( int argc, char **argv ) {
     if( energyMode == EnergyMode::crossSection ) {
         GIDI::Functions::XYs1d modeCrossSection;
         if( reactionIndex < 0 ) {
-            for( MCGIDI_VectorSizeType protareIndex = 0; protareIndex < MCProtare->numberOfProtares( ); ++protareIndex ) {
+            for( std::size_t protareIndex = 0; protareIndex < MCProtare->numberOfProtares( ); ++protareIndex ) {
                 MCGIDI::ProtareSingle *protareSingle = MCProtare->protare( protareIndex );
                 modeCrossSection += protareSingle->heatedCrossSections( ).crossSectionAsGIDI_XYs1d( temperature_MeV_k );
             } }
@@ -484,7 +484,7 @@ void main2( int argc, char **argv ) {
         recordStream.close( );
     }
     delete crossSectionXs_pdf_cdf1d;
-    GIDIP::Python::decrementRef( py_function );
+    if( py_function != nullptr ) GIDIP::Python::decrementRef( py_function );
 
     exit( EXIT_SUCCESS );
 }

@@ -226,7 +226,7 @@ int main2( int argc, char *argv[] ) {                                   // main 
     printf( "doPrint = %d, numCollisions = %g, numIsotopes = %d, doCompare = %d\n", doPrint, static_cast<double>( numCollisions ), numIsotopes, doCompare );
 
     std::vector<MCGIDI::Protare *>protares( numIsotopes );
-    std::string mapFilename( "/usr/gapps/data/nuclear/development/GIDI3/Versions/V17/Data/ENDL2009/ENDL2009.4/all.map" );
+    std::string mapFilename( "/usr/gapps/data/nuclear/development/GNDS_2.0/ENDL2009/ENDL2009.4.3/all.map" );
     PoPI::Database pops( "/usr/gapps/data/nuclear/common/pops.xml" );
 
     std::ifstream meta_stream( "/usr/gapps/data/nuclear/common/metastables_alias.xml" );

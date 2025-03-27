@@ -57,10 +57,10 @@ LUPI_HOST_DEVICE int evaluationForHashIndex( int a_hashIndex, Vector<int> const 
 
 #ifdef MCGIDI_CrossSectionBinarySubSearch
     int index2 = a_hashIndices[a_hashIndex];
-    int index3 = a_energies.size( ) - 1;
-    if( ( a_hashIndex + 1 ) < a_hashIndices.size( ) ) index3 = a_hashIndices[a_hashIndex+1] + 1;
-    if( index3 == a_energies.size( ) ) --index3;
-    if( index2 != index3 ) index2 = (int) binarySearchVectorBounded( a_energy, a_energies, index2, index3, false );
+    int index3 = (int) a_energies.size( ) - 1;
+    if( ( a_hashIndex + 1 ) < (int) a_hashIndices.size( ) ) index3 = a_hashIndices[a_hashIndex+1] + 1;
+    if( index3 == (int) a_energies.size( ) ) --index3;
+    if( index2 != index3 ) index2 = binarySearchVectorBounded( a_energy, a_energies, index2, index3, false );
 #endif
 
 #ifdef MCGIDI_CrossSectionBinarySubSearch
@@ -196,8 +196,8 @@ LUPI_HOST_DEVICE double ModelDBRC_data::crossSectionMax( double a_energy, double
 
 LUPI_HOST_DEVICE void ModelDBRC_data::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
-    DATA_MEMBER_FLOAT( m_neutronMass, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_targetMass, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_neutronMass, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_targetMass, a_buffer, a_mode );
     DATA_MEMBER_VECTOR_DOUBLE( m_energies, a_buffer, a_mode );
     DATA_MEMBER_VECTOR_DOUBLE( m_crossSections, a_buffer, a_mode );
     DATA_MEMBER_VECTOR_INT( m_hashIndices, a_buffer, a_mode );

@@ -54,8 +54,8 @@ class Vector
 {
  private:
    T* _data;
-   MCGIDI_VectorSizeType _capacity;
-   MCGIDI_VectorSizeType _size;
+   std::size_t _capacity;
+   std::size_t _size;
    bool _mem_type;
 
  public:
@@ -63,7 +63,7 @@ class Vector
    typedef T* const_iterator;
 
    LUPI_HOST_DEVICE Vector()        : _data(0), _capacity(0), _size(0), _mem_type(CPU_MEM) {};
-   LUPI_HOST_DEVICE Vector( MCGIDI_VectorSizeType s, bool mem_flag = CPU_MEM ) : _data(0), _capacity(s), _size(s), _mem_type(mem_flag)
+   LUPI_HOST_DEVICE Vector( std::size_t s, bool mem_flag = CPU_MEM ) : _data(0), _capacity(s), _size(s), _mem_type(mem_flag)
    {
        
       if( s == 0 ){ _data = nullptr; return;}	
@@ -87,7 +87,7 @@ class Vector
                 break;
         }
    }
-   LUPI_HOST_DEVICE Vector( MCGIDI_VectorSizeType s, const T& d, bool mem_flag = CPU_MEM ) : _data(0), _capacity(s), _size(s), _mem_type(mem_flag)
+   LUPI_HOST_DEVICE Vector( std::size_t s, const T& d, bool mem_flag = CPU_MEM ) : _data(0), _capacity(s), _size(s), _mem_type(mem_flag)
    { 
       if( s == 0 ){ _data = nullptr; return;}	
         switch ( (int) _mem_type){
@@ -109,7 +109,7 @@ class Vector
                 _data = new T [_capacity];
                 break;
         }
-      for (MCGIDI_VectorSizeType ii = 0; ii < _capacity; ++ii)
+      for (std::size_t ii = 0; ii < _capacity; ++ii)
          _data[ii] = d;
    }
 
@@ -138,7 +138,7 @@ class Vector
                 break;
         }
  
-      for (MCGIDI_VectorSizeType ii=0; ii<_size; ++ii)
+      for (std::size_t ii=0; ii<_size; ++ii)
          _data[ii] = aa._data[ii];
    }
 
@@ -167,7 +167,7 @@ class Vector
                 break;
         }
  
-      for (MCGIDI_VectorSizeType ii=0; ii<_size; ++ii)
+      for (std::size_t ii=0; ii<_size; ++ii)
          _data[ii] = aa[ii];
    }
    
@@ -177,7 +177,7 @@ class Vector
                 delete[] _data; 
                 break;
             case UVM_MEM:
-                 for (MCGIDI_VectorSizeType i=0; i < _size; ++i)
+                 for (std::size_t i=0; i < _size; ++i)
                    _data[i].~T();
 #if defined(__CUDACC__) && !defined(__CUDA_ARCH__)
                 cudaFree(_data);
@@ -203,8 +203,8 @@ class Vector
    LUPI_HOST_DEVICE void swap(Vector<T>& other)
    {
       MCGIDI_SWAP(_data,     other._data,     T*);
-      MCGIDI_SWAP(_capacity, other._capacity, MCGIDI_VectorSizeType);
-      MCGIDI_SWAP(_size,     other._size,     MCGIDI_VectorSizeType);
+      MCGIDI_SWAP(_capacity, other._capacity, std::size_t);
+      MCGIDI_SWAP(_size,     other._size,     std::size_t);
       MCGIDI_SWAP(_mem_type, other._mem_type, bool);
    }
    
@@ -238,26 +238,26 @@ class Vector
       _size++;
    }
 
-   LUPI_HOST_DEVICE const T& operator[]( MCGIDI_VectorSizeType index ) const
+   LUPI_HOST_DEVICE const T& operator[]( std::size_t index ) const
    {
       // assert( index < _capacity ); 
       // assert( index >= 0); comment out pointless assertion size_t type is >= 0 by definition
       return _data[index];
    }
 
-   LUPI_HOST_DEVICE T& operator[]( MCGIDI_VectorSizeType index )
+   LUPI_HOST_DEVICE T& operator[]( std::size_t index )
    {
       // assert( index < _capacity );
       // assert( index >= 0); comment out pointless assertion size_t type is >= 0 by definition
       return _data[index];
    }
    
-   LUPI_HOST_DEVICE MCGIDI_VectorSizeType capacity() const
+   LUPI_HOST_DEVICE std::size_t capacity() const
    {
       return _capacity;
    }
 
-   LUPI_HOST_DEVICE MCGIDI_VectorSizeType size() const
+   LUPI_HOST_DEVICE std::size_t size() const
    {
       return _size;
    }
@@ -272,7 +272,7 @@ class Vector
       return _data[_size-1];
    }
    
-   LUPI_HOST_DEVICE void reserve( MCGIDI_VectorSizeType s, char ** address = nullptr, bool mem_flag = CPU_MEM )
+   LUPI_HOST_DEVICE void reserve( std::size_t s, char ** address = nullptr, bool mem_flag = CPU_MEM )
    {
       if (s == _capacity) return;
       assert( _capacity == 0 );
@@ -308,7 +308,7 @@ class Vector
         }
    }
 
-   LUPI_HOST_DEVICE void resize( MCGIDI_VectorSizeType s, char ** address = nullptr, bool mem_flag = CPU_MEM )
+   LUPI_HOST_DEVICE void resize( std::size_t s, char ** address = nullptr, bool mem_flag = CPU_MEM )
    {
       if (_capacity != 0) { 
           assert( _capacity >= s);
@@ -327,8 +327,8 @@ class Vector
                 }
                 else {
                     _data = new(*address) T [_capacity];
-                    MCGIDI_VectorSizeType delta = sizeof(T) * _capacity;
-                    MCGIDI_VectorSizeType sub = delta % 8;
+                    std::size_t delta = sizeof(T) * _capacity;
+                    std::size_t sub = delta % 8;
                     if (sub != 0) delta += (8-sub);
                     *address += delta;
                 }
@@ -348,8 +348,8 @@ class Vector
                 if (address == nullptr || *address == nullptr) _data = new T [_capacity];
                 else {
                     _data = new(*address) T [_capacity];
-                    MCGIDI_VectorSizeType delta = sizeof(T) * _capacity;
-                    MCGIDI_VectorSizeType sub = delta % 8;
+                    std::size_t delta = sizeof(T) * _capacity;
+                    std::size_t sub = delta % 8;
                     if (sub != 0) delta += (8-sub);
                     *address += delta;
                 }
@@ -357,7 +357,7 @@ class Vector
         }
    }
 
-   LUPI_HOST_DEVICE void resize( MCGIDI_VectorSizeType s, const T& d, char ** address = nullptr, bool mem_flag = CPU_MEM ) 
+   LUPI_HOST_DEVICE void resize( std::size_t s, const T& d, char ** address = nullptr, bool mem_flag = CPU_MEM ) 
    { 
       assert( _capacity == 0 );
       _capacity = s;
@@ -369,8 +369,8 @@ class Vector
                 if (address == nullptr || *address == nullptr) _data = new T [_capacity];
                 else {
                     _data = new(*address) T [_capacity];
-                    MCGIDI_VectorSizeType delta = sizeof(T) * _capacity;
-                    MCGIDI_VectorSizeType sub = delta % 8;
+                    std::size_t delta = sizeof(T) * _capacity;
+                    std::size_t sub = delta % 8;
                     if (sub != 0) delta += (8-sub);
                     *address += delta;
                 }
@@ -390,15 +390,15 @@ class Vector
                 if (address == nullptr || *address == nullptr) _data = new T [_capacity];
                 else {
                     _data = new(*address) T [_capacity];
-                    MCGIDI_VectorSizeType delta = sizeof(T) * _capacity;
-                    MCGIDI_VectorSizeType sub = delta % 8;
+                    std::size_t delta = sizeof(T) * _capacity;
+                    std::size_t sub = delta % 8;
                     if (sub != 0) delta += (8-sub);
                     *address += delta;
                     *address += sizeof(T) * _capacity;
                 }
                 break;
         }
-      for (MCGIDI_VectorSizeType ii = 0; ii < _capacity; ++ii)
+      for (std::size_t ii = 0; ii < _capacity; ++ii)
          _data[ii] = d;
    }
 
@@ -407,7 +407,7 @@ class Vector
        return ( _size == 0 );
    }
 
-   LUPI_HOST_DEVICE void eraseEnd( MCGIDI_VectorSizeType NewEnd )
+   LUPI_HOST_DEVICE void eraseEnd( std::size_t NewEnd )
    {
        assert( NewEnd <= _size );
        _size = NewEnd;
@@ -424,11 +424,11 @@ class Vector
        _size = 0;
    }
 
-   LUPI_HOST_DEVICE void appendList( MCGIDI_VectorSizeType listSize, T* list )
+   LUPI_HOST_DEVICE void appendList( std::size_t listSize, T* list )
    {
        assert( _size + listSize < _capacity );
 
-       for( MCGIDI_VectorSizeType i = _size; i < _size + listSize; i++ )
+       for( std::size_t i = _size; i < _size + listSize; i++ )
        {
            _data[i] = list[ i-_size ];
        }
@@ -436,12 +436,12 @@ class Vector
    }
 
    //Atomically retrieve an availible index then increment that index some amount
-   LUPI_HOST_DEVICE MCGIDI_VectorSizeType atomic_Index_Inc( MCGIDI_VectorSizeType inc )
+   LUPI_HOST_DEVICE std::size_t atomic_Index_Inc( std::size_t inc )
    {
        if (_size+inc > _capacity)
           {MCGIDI_PRINTF("inc too much (size %d, inc %d cap %d)\n", _size, inc, _capacity); abort(); }
        assert(_size+inc <= _capacity);
-       MCGIDI_VectorSizeType pos;
+       std::size_t pos;
 
 //       #include "mc_omp_atomic_capture.hh"
        {pos = _size; _size = _size + inc;}
@@ -450,14 +450,14 @@ class Vector
    }
 
    // This will not work for a vector of base classes.
-   LUPI_HOST_DEVICE MCGIDI_VectorSizeType internalSize() const {
-       MCGIDI_VectorSizeType delta = sizeof(T) * _size;
-       MCGIDI_VectorSizeType sub = delta % 8;
+   LUPI_HOST_DEVICE std::size_t internalSize() const {
+       std::size_t delta = sizeof(T) * _size;
+       std::size_t sub = delta % 8;
        if (sub != 0) delta += (8-sub);
        return delta;
    }
 
-   LUPI_HOST_DEVICE void forceCreate(MCGIDI_VectorSizeType a_size, T* a_data) {
+   LUPI_HOST_DEVICE void forceCreate(std::size_t a_size, T* a_data) {
        _capacity = a_size;
        _size = a_size;
        _data = a_data;

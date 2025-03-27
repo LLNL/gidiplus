@@ -8,13 +8,18 @@
 */
 
 #include <iostream>
+#ifdef GIDI_PLUS_INCLUDE_PYTHON_BUILDING
 #include <Python.h>
+#endif
 
 #include <GIDIP_python.hpp>
 
 namespace GIDIP {
 
 namespace Python {
+
+#ifdef GIDI_PLUS_INCLUDE_PYTHON_BUILDING
+#include <Python.h>
 
 /* *********************************************************************************************************//**
  * This function loads the python module referenced by **a_moduleName** and returns it. The argument **a_moduleName**
@@ -126,6 +131,32 @@ double callFunctionReturnDouble( void *a_PyFunction, void *a_PyArgs ) {
     return( value );
 }
 
+#else
+
+//
+// If python stuff not to be included, define functions to only execute a throw.
+//
+
+void *loadModule( LUPI_maybeUnused std::string const &a_moduleName ) {
+    throw LUPI::Exception( "GIDIP::Python::loadModule: python build not included." );
+    return( nullptr );
+}
+
+void *loadFunctionInModule( LUPI_maybeUnused std::string const &a_moduleName, LUPI_maybeUnused std::string const &a_functionName ) {
+    throw LUPI::Exception( "GIDIP::Python::loadFunctionInModule: python build not included." );
+    return( nullptr );
+}
+
+void decrementRef( LUPI_maybeUnused void *a_pyObject ) {
+    throw LUPI::Exception( "GIDIP::Python::decrementRef: python build not included." );
+}
+
+double callFunctionReturnDouble( LUPI_maybeUnused void *a_PyFunction, LUPI_maybeUnused void *a_PyArgs ) {
+    throw LUPI::Exception( "GIDIP::Python::callFunctionReturnDouble: python build not included." );
+    return( 0.0 );
+}
+
+#endif
 }               // End of namespace Python.
 
 }               // End of namespace GIDIP.

@@ -22,7 +22,7 @@ namespace MCGIDI {
 LUPI_HOST_DEVICE void URR_protareInfo::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
     DATA_MEMBER_CAST( m_inURR, a_buffer, a_mode, bool );
-    DATA_MEMBER_FLOAT( m_rng_Value, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_rng_Value, a_buffer, a_mode );
 }
 
 /* *********************************************************************************************************//**
@@ -46,10 +46,10 @@ LUPI_HOST void URR_protareInfos::setup( Vector<Protare *> &a_protares ) {
 
     std::vector<URR_protareInfo> URR_protareInfo_1;
 
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < a_protares.size( ); ++i1 ) {
+    for( std::size_t i1 = 0; i1 < a_protares.size( ); ++i1 ) {
         Protare *protare = a_protares[i1];
 
-        for( MCGIDI_VectorSizeType i2 = 0; i2 < protare->numberOfProtares( ); ++i2 ) {
+        for( std::size_t i2 = 0; i2 < protare->numberOfProtares( ); ++i2 ) {
             ProtareSingle *protareSingle = const_cast<ProtareSingle *>( protare->protare( i2 ) );
 
             if( protareSingle->hasURR_probabilityTables( ) ) {
@@ -112,7 +112,7 @@ LUPI_HOST ACE_URR_probabilityTable::ACE_URR_probabilityTable( double a_energy, s
         m_crossSections( a_crossSection ) {
 
     double sum = 0.0;
-    for( int index = 0; index < m_propabilities.size( ); ++index ) {
+    for( std::size_t index = 0; index < m_propabilities.size( ); ++index ) {
         sum += m_propabilities[index];
         m_propabilities[index] = sum;
     }
@@ -137,7 +137,7 @@ LUPI_HOST_DEVICE ACE_URR_probabilityTable::~ACE_URR_probabilityTable( ) {
 
 LUPI_HOST_DEVICE double ACE_URR_probabilityTable::sample( double a_rng_Value ) {
 
-    MCGIDI_VectorSizeType index = binarySearchVector( a_rng_Value, m_propabilities, true );
+    int index = binarySearchVector( a_rng_Value, m_propabilities, true );
     if( m_propabilities[index] < a_rng_Value ) ++index;
     return( m_crossSections[index] );
 }
@@ -152,7 +152,7 @@ LUPI_HOST_DEVICE double ACE_URR_probabilityTable::sample( double a_rng_Value ) {
 
 LUPI_HOST_DEVICE void ACE_URR_probabilityTable::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
-    DATA_MEMBER_FLOAT( m_energy, a_buffer, a_mode  );
+    DATA_MEMBER_DOUBLE( m_energy, a_buffer, a_mode  );
     DATA_MEMBER_VECTOR_DOUBLE( m_propabilities, a_buffer, a_mode  );
     DATA_MEMBER_VECTOR_DOUBLE( m_crossSections, a_buffer, a_mode  );
 }
@@ -193,7 +193,7 @@ LUPI_HOST_DEVICE ACE_URR_probabilityTables::~ACE_URR_probabilityTables( ) {
  * @param a_capacity                    [in]    The size of the space to reserve.
  ***********************************************************************************************************/
 
-LUPI_HOST_DEVICE void ACE_URR_probabilityTables::reserve( MCGIDI_VectorSizeType a_capacity ) {
+LUPI_HOST_DEVICE void ACE_URR_probabilityTables::reserve( std::size_t a_capacity ) {
 
     m_energies.reserve( a_capacity );
     m_ACE_URR_probabilityTables.reserve( a_capacity );
@@ -223,12 +223,14 @@ LUPI_HOST_DEVICE void ACE_URR_probabilityTables::push_back( ACE_URR_probabilityT
 
 LUPI_HOST_DEVICE double ACE_URR_probabilityTables::sample( double a_energy, double a_rng_Value ) {
 
-    MCGIDI_VectorSizeType index = binarySearchVector( a_energy, m_energies, true );
-    if( index < m_energies.size( ) - 1 ) {
-        if( 0.5 * ( m_energies[index] + m_energies[index+1] ) < a_energy ) ++index;     // Find closest energy.
+    int index = binarySearchVector( a_energy, m_energies, true );
+
+    std::size_t index_t = (std::size_t) index;
+    if( index_t < m_energies.size( ) - 1 ) {
+        if( 0.5 * ( m_energies[index_t] + m_energies[index_t+1] ) < a_energy ) ++index_t;     // Find closest energy.
     }
 
-    return( m_ACE_URR_probabilityTables[index]->sample( a_rng_Value ) );
+    return( m_ACE_URR_probabilityTables[index_t]->sample( a_rng_Value ) );
 }
 
 /* *********************************************************************************************************//**
@@ -243,12 +245,12 @@ LUPI_HOST_DEVICE void ACE_URR_probabilityTables::serialize( LUPI::DataBuffer &a_
 
     DATA_MEMBER_VECTOR_DOUBLE( m_energies, a_buffer, a_mode );
 
-    MCGIDI_VectorSizeType vectorSize = m_energies.size( );
+    std::size_t vectorSize = m_energies.size( );
 
     if( a_mode == LUPI::DataBuffer::Mode::Unpack ) m_ACE_URR_probabilityTables.resize( vectorSize, &a_buffer.m_placement );
     if( a_mode == LUPI::DataBuffer::Mode::Memory ) a_buffer.m_placement += m_ACE_URR_probabilityTables.internalSize( );
 
-    for( MCGIDI_VectorSizeType vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
+    for( std::size_t vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
         ACE_URR_probabilityTable *ACE_URR_probabilityTable1 = m_ACE_URR_probabilityTables[vectorIndex];
         if( a_mode == LUPI::DataBuffer::Mode::Unpack ) {
             if( a_buffer.m_placement != nullptr ) {

@@ -84,7 +84,7 @@ void main2( int argc, char **argv ) {
         auto intids = reaction->productIntids( );
         auto indices = reaction->productIndices( );
         auto userIndices = reaction->userProductIndices( );
-        for( MCGIDI_VectorSizeType productIndex = 0; productIndex < intids.size( ); ++productIndex ) {
+        for( std::size_t productIndex = 0; productIndex < intids.size( ); ++productIndex ) {
             int intid = intids[productIndex];
             int index = indices[productIndex];
             int mulIndex = reaction->productMultiplicity( index );

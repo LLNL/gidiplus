@@ -105,9 +105,9 @@ LUPI_HOST_DEVICE void Distribution::serialize( LUPI::DataBuffer &a_buffer, LUPI:
     m_productFrame = GIDI::Frame::lab;
     if( frame == 1 ) m_productFrame = GIDI::Frame::centerOfMass;
 
-    DATA_MEMBER_FLOAT( m_projectileMass, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_targetMass, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_productMass, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_projectileMass, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_targetMass, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_productMass, a_buffer, a_mode );
 }
 
 /*! \class AngularTwoBody
@@ -167,9 +167,9 @@ LUPI_HOST_DEVICE AngularTwoBody::~AngularTwoBody( ) {
 LUPI_HOST_DEVICE void AngularTwoBody::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
     Distribution::serialize( a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_residualMass, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_Q, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_twoBodyThreshold, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_residualMass, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_Q, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_twoBodyThreshold, a_buffer, a_mode );
     DATA_MEMBER_INT( m_Upscatter, a_buffer, a_mode );
 
     m_angular = serializeProbability2d_d1( a_buffer, a_mode, m_angular );
@@ -471,8 +471,8 @@ LUPI_HOST_DEVICE double KalbachMann::evaluate( double a_energy, double a_energyO
 LUPI_HOST_DEVICE void KalbachMann::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
     Distribution::serialize( a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_energyToMeVFactor, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_eb_massFactor, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_energyToMeVFactor, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_eb_massFactor, a_buffer, a_mode );
 
     m_f = serializeProbability2d_d1( a_buffer, a_mode, m_f );
     m_r = serializeFunction2d( a_buffer, a_mode, m_r );
@@ -617,7 +617,7 @@ LUPI_HOST CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering( GIDI::Di
     m_probabilityNorm2_5[0] = 0.0;
     energy1 = m_energies[1];
     y1 = m_formFactor[0];
-    for( MCGIDI_VectorSizeType i1 = 1; i1 < m_probabilityNorm1_1.size( ); ++i1 ) {
+    for( std::size_t i1 = 1; i1 < m_probabilityNorm1_1.size( ); ++i1 ) {
         double energy2 = m_energies[i1];
         double y2 = m_formFactor[i1];
         double logEs = log( energy2 / energy1 );
@@ -654,7 +654,7 @@ LUPI_HOST_DEVICE CoherentPhotoAtomicScattering::~CoherentPhotoAtomicScattering( 
 LUPI_HOST_DEVICE double CoherentPhotoAtomicScattering::evaluate( double a_energyIn, double a_mu ) const {
 
     double probability;
-    MCGIDI_VectorSizeType lowerIndexEnergy = binarySearchVector( a_energyIn, m_energies );      // FIXME - need to handle case where lowerIndexEnergy = 0 like in evaluateScatteringFactor.
+    int lowerIndexEnergy = binarySearchVector( a_energyIn, m_energies, true );      // FIXME - need to handle case where lowerIndexEnergy = 0 like in evaluateScatteringFactor.
     double _a = m_a[lowerIndexEnergy];
     double _a_2 = _a * _a;
     double X1 = m_energies[lowerIndexEnergy];
@@ -702,7 +702,7 @@ LUPI_HOST_DEVICE double CoherentPhotoAtomicScattering::evaluate( double a_energy
 LUPI_HOST_DEVICE double CoherentPhotoAtomicScattering::evaluateFormFactor( double a_energyIn, double a_mu ) const {
 
     double X = a_energyIn * sqrt( 0.5 * ( 1 - a_mu ) );
-    MCGIDI_VectorSizeType lowerIndex = binarySearchVector( X, m_energies );
+    int lowerIndex = binarySearchVector( X, m_energies );
 
     if( lowerIndex < 1 ) {
         if( lowerIndex == 0 ) return( m_formFactor[0] );
@@ -938,7 +938,7 @@ LUPI_HOST_DEVICE double IncoherentPhotoAtomicScattering::evaluateKleinNishina( d
 
 LUPI_HOST_DEVICE double IncoherentPhotoAtomicScattering::evaluateScatteringFactor( double a_energyIn ) const {
 
-    MCGIDI_VectorSizeType lowerIndex = binarySearchVector( a_energyIn, m_energies );
+    int lowerIndex = binarySearchVector( a_energyIn, m_energies );
 
     if( lowerIndex < 1 ) {
         if( lowerIndex == -1 ) return( m_scatteringFactor.back( ) );
@@ -1074,7 +1074,7 @@ LUPI_HOST_DEVICE double IncoherentBoundToFreePhotoAtomicScattering::evaluateOccu
     const double alpha_binding = -m_bindingEnergy/PoPI_electronMass_MeV_c2;  // BE [MeV] / 0.511 [MeV]
     const double pzmax = ( -alpha_binding + alpha_in*(alpha_in - alpha_binding)*(1-a_mu) )/( sqrt( 2*alpha_in*(alpha_in-alpha_binding)*(1-a_mu) + alpha_binding*alpha_binding ) ); // *mec
 
-    MCGIDI_VectorSizeType lowerIndex = binarySearchVector( pzmax, m_pz );
+    int lowerIndex = binarySearchVector( pzmax, m_pz );
     const int size1 = m_occupationNumber.size();
 
     if( lowerIndex == -1 || lowerIndex == (size1 -1)){
@@ -1365,7 +1365,7 @@ LUPI_HOST_DEVICE void IncoherentElasticTNSL::serialize( LUPI::DataBuffer &a_buff
 
     Distribution::serialize( a_buffer, a_mode );
 
-    DATA_MEMBER_FLOAT( m_temperatureToMeV_K, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_temperatureToMeV_K, a_buffer, a_mode );
     m_DebyeWallerIntegral = serializeFunction1d_d1( a_buffer, a_mode, m_DebyeWallerIntegral );
 }
 

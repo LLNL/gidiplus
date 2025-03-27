@@ -43,10 +43,13 @@ LUPI_HOST_DEVICE HeatedReactionCrossSectionContinuousEnergy::HeatedReactionCross
 LUPI_HOST HeatedReactionCrossSectionContinuousEnergy::HeatedReactionCrossSectionContinuousEnergy( int a_offset, double a_threshold, Vector<double> &a_crossSection ) :
         m_offset( a_offset ),
         m_threshold( a_threshold ),
-        m_crossSections( a_crossSection ),
+        m_crossSections( a_crossSection.size( ) ),
         m_URR_mode( Transporting::URR_mode::none ),
         m_URR_probabilityTables( nullptr ),
         m_ACE_URR_probabilityTables( nullptr ) {
+
+    int index = 0;              // This and next line needed as m_crossSections may be an instance of Vector<float>.
+    for( auto iter = a_crossSection.begin( ); iter != a_crossSection.end( ); ++iter, ++index ) m_crossSections[index] = *iter;
 
 }
 
@@ -62,10 +65,14 @@ LUPI_HOST HeatedReactionCrossSectionContinuousEnergy::HeatedReactionCrossSection
                 ACE_URR_probabilityTables *a_ACE_URR_probabilityTables ) :
         m_offset( a_crossSection.start( ) ),
         m_threshold( a_threshold ),
-        m_crossSections( a_crossSection.Ys( ) ),
+        m_crossSections( a_crossSection.Ys( ).size( ) ),
         m_URR_mode( Transporting::URR_mode::none ),
         m_URR_probabilityTables( a_URR_probabilityTables ),
         m_ACE_URR_probabilityTables( a_ACE_URR_probabilityTables ) {
+
+    int index = 0;              // Next lines needed as m_crossSections may be an instance of Vector<float>.
+    std::vector<double> const &Ys = a_crossSection.Ys( );
+    for( auto iter = Ys.begin( ); iter != Ys.end( ); ++iter, ++index ) m_crossSections[index] = *iter;
 
     if( m_URR_probabilityTables != nullptr ) {
         m_URR_mode = Transporting::URR_mode::pdfs; }
@@ -122,7 +129,7 @@ LUPI_HOST GIDI::Functions::XYs1d HeatedReactionCrossSectionContinuousEnergy::cro
 
     std::vector<double> energies = vectorToSTD_vector( a_energies );
     std::vector<double> crossSection( energies.size( ), 0.0 );
-    for( MCGIDI_VectorSizeType index = 0; index < m_crossSections.size( ); ++index ) crossSection[m_offset+index] = m_crossSections[index];
+    for( std::size_t index = 0; index < m_crossSections.size( ); ++index ) crossSection[m_offset+index] = m_crossSections[index];
 
     return( GIDI::Functions::XYs1d( GIDI::Axes( ), ptwXY_interpolationLinLin, energies, crossSection, 0, a_temperature ) );
 }
@@ -138,8 +145,8 @@ LUPI_HOST GIDI::Functions::XYs1d HeatedReactionCrossSectionContinuousEnergy::cro
 LUPI_HOST_DEVICE void HeatedReactionCrossSectionContinuousEnergy::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
     DATA_MEMBER_INT( m_offset, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT(  m_threshold, a_buffer, a_mode  );
-    DATA_MEMBER_VECTOR_DOUBLE( m_crossSections, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE(  m_threshold, a_buffer, a_mode  );
+    DATA_MEMBER_VECTOR_FLOAT_OR_DOUBLE( m_crossSections, a_buffer, a_mode );
     m_URR_mode = serializeURR_mode( m_URR_mode,  a_buffer, a_mode );
     m_URR_probabilityTables = serializeProbability2d( a_buffer, a_mode, m_URR_probabilityTables );
     m_ACE_URR_probabilityTables = serializeACE_URR_probabilityTables( m_ACE_URR_probabilityTables, a_buffer, a_mode );
@@ -188,7 +195,7 @@ LUPI_HOST ContinuousEnergyGain::ContinuousEnergyGain( int a_particleIntid, int a
         m_particleIntid( a_particleIntid ),
         m_particleIndex( a_particleIndex ),
         m_userParticleIndex( -1 ),
-        m_gain( a_size, 0.0 ) {
+        m_gain( a_size, static_cast<MCGIDI_FLOAT>( 0.0 ) ) {
 
 }
 
@@ -226,7 +233,7 @@ LUPI_HOST_DEVICE void ContinuousEnergyGain::serialize( LUPI::DataBuffer &a_buffe
     DATA_MEMBER_INT( m_particleIntid, a_buffer, a_mode );
     DATA_MEMBER_INT( m_particleIndex, a_buffer, a_mode );
     DATA_MEMBER_INT( m_userParticleIndex, a_buffer, a_mode );
-    DATA_MEMBER_VECTOR_DOUBLE( m_gain, a_buffer, a_mode );
+    DATA_MEMBER_VECTOR_FLOAT_OR_DOUBLE( m_gain, a_buffer, a_mode );
 }
 
 /* *********************************************************************************************************//**
@@ -317,8 +324,8 @@ LUPI_HOST HeatedCrossSectionContinuousEnergy::HeatedCrossSectionContinuousEnergy
     std::vector<double> const &fixedGridPoints = a_settings.fixedGridPoints( );
     std::vector<int> fixedGridIndices( fixedGridPoints.size( ) );
     if( a_fixedGrid ) {
-        for( int i1 = 0; i1 < static_cast<int>( fixedGridPoints.size( ) ); ++i1 ) {
-            fixedGridIndices[i1] = static_cast<int>( binarySearchVector( fixedGridPoints[i1], energies ) );
+        for( std::size_t i1 = 0; i1 < fixedGridPoints.size( ); ++i1 ) {
+            fixedGridIndices[i1] = binarySearchVector( fixedGridPoints[i1], energies );
         }
         energiesPointer = &fixedGridPoints;
         m_energies = fixedGridPoints; }
@@ -374,7 +381,7 @@ LUPI_HOST HeatedCrossSectionContinuousEnergy::HeatedCrossSectionContinuousEnergy
             int start = 0;
 
             if( energies[reactionCrossSection3->start( )] > fixedGridPoints[0] ) {
-                start = static_cast<MCGIDI_VectorSizeType>( binarySearchVector( energies[reactionCrossSection3->start( )], fixedGridPoints ) ) + 1;
+                start = binarySearchVector( energies[reactionCrossSection3->start( )], fixedGridPoints ) + 1;
             }
 
             for( int i1 = 0; i1 < start; ++i1 ) reactionCrossSection4->set( i1, 0.0 );
@@ -395,7 +402,7 @@ LUPI_HOST HeatedCrossSectionContinuousEnergy::HeatedCrossSectionContinuousEnergy
         delete reactionCrossSectionZeroReactions;
     }
     m_totalCrossSection.resize( totalCrossSection.length( ), 0.0 );
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < static_cast<MCGIDI_VectorSizeType>( totalCrossSection.size( ) ); ++i1 ) m_totalCrossSection[i1+totalCrossSection.start()] = totalCrossSection[i1];
+    for( std::size_t i1 = 0; i1 < totalCrossSection.size( ); ++i1 ) m_totalCrossSection[i1+totalCrossSection.start()] = totalCrossSection[i1];
 
     if( hasURR_probabilityTables( ) ) {
         std::vector<int> reactions_in_URR_region;
@@ -436,7 +443,7 @@ LUPI_HOST HeatedCrossSectionContinuousEnergy::HeatedCrossSectionContinuousEnergy
             int particleIndex = a_setupInfo.m_particleIndices[particle->first];
 
             if( particleIntid == a_setupInfo.m_protare.projectileIntid( ) ) projectileGainIndex = i2;
-            m_gains[i2] = ContinuousEnergyGain( particleIntid, particleIndex, totalCrossSection.length( ) );
+            m_gains[i2] = new ContinuousEnergyGain( particleIntid, particleIndex, totalCrossSection.length( ) );
             if( particle->first == PoPI::IDs::photon ) photonGainIndex = i2;
         }
 
@@ -467,7 +474,7 @@ LUPI_HOST HeatedCrossSectionContinuousEnergy::HeatedCrossSectionContinuousEnergy
                 offset = reactionCrossSection->start( );
             }
             if( a_settings.useSlowerContinuousEnergyConversion( ) ) {                   // Old way which is slow as it does one energy at a time.
-                for( int energy_index = offset; energy_index < m_energies.size( ); ++energy_index ) {
+                for( std::size_t energy_index = (std::size_t) offset; energy_index < m_energies.size( ); ++energy_index ) {
                     double energy = m_energies[energy_index];
 
                     if( reactionCrossSection == nullptr ) {
@@ -511,12 +518,12 @@ LUPI_HOST HeatedCrossSectionContinuousEnergy::HeatedCrossSectionContinuousEnergy
             else {                                                                  // New way which is hopefully faster.
                 if( reactionCrossSection == nullptr ) {
                     if( isPhotoAtomic ) {                                           // Treat as Q = 0.0 since 2 photons will be emitted.
-                        for( int energyIndex = offset; energyIndex < m_energies.size( ); ++energyIndex ) {
+                        for( std::size_t energyIndex = (std::size_t) offset; energyIndex < m_energies.size( ); ++energyIndex ) {
                             deposition_energy[energyIndex] = m_energies[energyIndex];
                         } }
                     else {
                         available_energy->mapToXsAndAdd( offset, *energiesPointer, deposition_energy, 1.0 );
-                        for( int energyIndex = offset; energyIndex < m_energies.size( ); ++energyIndex ) {
+                        for( std::size_t energyIndex = (std::size_t) offset; energyIndex < m_energies.size( ); ++energyIndex ) {
                             double Q = deposition_energy[energyIndex] - m_energies[energyIndex];
                             if( fabs( Q ) < 1e-12 * deposition_energy[energyIndex] )
                                     Q = 0.0;                                            // Probably 0.0 due to rounding errors.
@@ -534,7 +541,7 @@ LUPI_HOST HeatedCrossSectionContinuousEnergy::HeatedCrossSectionContinuousEnergy
                     if( ( reactionCrossSection != nullptr ) && ( particle->first != PoPI::IDs::photon ) ) continue;
 
                     if( reaction->isPairProduction( ) && ( particle->first == PoPI::IDs::photon ) ) {
-                        for( int energyIndex = offset; energyIndex < m_energies.size( ); ++energyIndex ) {
+                        for( std::size_t energyIndex = (std::size_t) offset; energyIndex < m_energies.size( ); ++energyIndex ) {
                             deposition_energy[energyIndex] -= 2.0 * PoPI_electronMass_MeV_c2;    // Assumes energy unit is MeV.
                             gains[i1][energyIndex] = 2.0;
                         } }
@@ -544,7 +551,7 @@ LUPI_HOST HeatedCrossSectionContinuousEnergy::HeatedCrossSectionContinuousEnergy
                     }
 
                     if( i1 == projectileGainIndex ) {
-                        for( int energyIndex = offset; energyIndex < m_energies.size( ); ++energyIndex ) --gains[i1][energyIndex];
+                        for( std::size_t energyIndex = (std::size_t) offset; energyIndex < m_energies.size( ); ++energyIndex ) --gains[i1][energyIndex];
                     }
                 }
             }
@@ -557,7 +564,7 @@ LUPI_HOST HeatedCrossSectionContinuousEnergy::HeatedCrossSectionContinuousEnergy
                         double multiplicity = nuclideGammaBranchStateInfo->multiplicity( );
                         double averageGammaEnergy = nuclideGammaBranchStateInfo->averageGammaEnergy( );
 
-                        for( int energyIndex = offset; energyIndex < m_energies.size( ); ++energyIndex ) {
+                        for( std::size_t energyIndex = (std::size_t) offset; energyIndex < m_energies.size( ); ++energyIndex ) {
                             deposition_energy[energyIndex] -= averageGammaEnergy;
                             if( photonGainIndex >= 0 ) gains[photonGainIndex][energyIndex] += multiplicity;
                         }
@@ -566,7 +573,7 @@ LUPI_HOST HeatedCrossSectionContinuousEnergy::HeatedCrossSectionContinuousEnergy
             }
 
             double crossSection = 0.0;
-            for( int energyIndex = offset; energyIndex < m_energies.size( ); ++energyIndex ) {
+            for( std::size_t energyIndex = (std::size_t) offset; energyIndex < m_energies.size( ); ++energyIndex ) {
                 if( reactionCrossSection == nullptr ) {
                     crossSection = MCGIDI_reaction_cross_section->crossSection( energyIndex ); }
                 else {
@@ -576,8 +583,8 @@ LUPI_HOST HeatedCrossSectionContinuousEnergy::HeatedCrossSectionContinuousEnergy
                 m_depositionEnergy[energyIndex] += crossSection * deposition_energy[energyIndex];
                 m_depositionMomentum[energyIndex] += crossSection * deposition_momentum[energyIndex];
                 m_productionEnergy[energyIndex] += crossSection * production_energy[energyIndex];
-                for( MCGIDI_VectorSizeType i1 = 0; i1 < m_gains.size( ); ++i1 ) {
-                    m_gains[i1].adjustGain( energyIndex, crossSection * gains[i1][energyIndex] );
+                for( std::size_t i1 = 0; i1 < m_gains.size( ); ++i1 ) {
+                    m_gains[i1]->adjustGain( energyIndex, crossSection * gains[i1][energyIndex] );
                 }
             }
         }
@@ -589,7 +596,8 @@ LUPI_HOST HeatedCrossSectionContinuousEnergy::HeatedCrossSectionContinuousEnergy
 
 LUPI_HOST_DEVICE HeatedCrossSectionContinuousEnergy::~HeatedCrossSectionContinuousEnergy( ) {
 
-    for( Vector<HeatedReactionCrossSectionContinuousEnergy *>::const_iterator iter = m_reactionCrossSections.begin( ); iter < m_reactionCrossSections.end( ); ++iter ) delete *iter;
+    for( auto iter = m_reactionCrossSections.begin( ); iter < m_reactionCrossSections.end( ); ++iter ) delete *iter;
+    for( auto iter = m_gains.begin( ); iter < m_gains.end( ); ++iter ) delete *iter;
     delete m_ACE_URR_probabilityTables;
 }
 
@@ -635,7 +643,7 @@ LUPI_HOST_DEVICE double HeatedCrossSectionContinuousEnergy::URR_domainMin( ) con
 
     if( m_ACE_URR_probabilityTables != nullptr ) return( m_ACE_URR_probabilityTables->domainMin( ) );
 
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < m_reactionCrossSections.size( ); ++i1 ) {
+    for( std::size_t i1 = 0; i1 < m_reactionCrossSections.size( ); ++i1 ) {
         HeatedReactionCrossSectionContinuousEnergy *reactionCrossSection = m_reactionCrossSections[i1];
 
         if( reactionCrossSection->hasURR_probabilityTables( ) ) return( reactionCrossSection->URR_domainMin( ) );
@@ -654,7 +662,7 @@ LUPI_HOST_DEVICE double HeatedCrossSectionContinuousEnergy::URR_domainMax( ) con
 
     if( m_ACE_URR_probabilityTables != nullptr ) return( m_ACE_URR_probabilityTables->domainMax( ) );
 
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < m_reactionCrossSections.size( ); ++i1 ) {
+    for( std::size_t i1 = 0; i1 < m_reactionCrossSections.size( ); ++i1 ) {
         HeatedReactionCrossSectionContinuousEnergy *reactionCrossSection = m_reactionCrossSections[i1];
 
         if( reactionCrossSection->hasURR_probabilityTables( ) ) return( reactionCrossSection->URR_domainMax( ) );
@@ -676,7 +684,7 @@ LUPI_HOST_DEVICE double HeatedCrossSectionContinuousEnergy::crossSection( URR_pr
 
         if( URR_protare_info.m_inURR ) {
             double cross_section = 0.0;
-            for( MCGIDI_VectorSizeType i1 = 0; i1 < m_reactionsInURR_region.size( ); ++i1 ) {
+            for( std::size_t i1 = 0; i1 < m_reactionsInURR_region.size( ); ++i1 ) {
                 cross_section += reactionCrossSection2( m_reactionsInURR_region[i1], a_URR_protareInfos, a_URR_index, a_energy, 
                         energy_index, energy_fraction, false );
             }
@@ -728,7 +736,7 @@ LUPI_HOST_DEVICE double HeatedCrossSectionContinuousEnergy::reactionCrossSection
 LUPI_HOST_DEVICE double HeatedCrossSectionContinuousEnergy::reactionCrossSection( int a_reactionIndex, URR_protareInfos const &a_URR_protareInfos, int a_URR_index, 
                 double a_energy_in ) const {
 
-    int energyIndex = static_cast<int>( binarySearchVector( a_energy_in, m_energies ) );
+    int energyIndex = binarySearchVector( a_energy_in, m_energies );
     double energyFraction;
 
     if( energyIndex < 0 ) {
@@ -834,8 +842,8 @@ LUPI_HOST_DEVICE double HeatedCrossSectionContinuousEnergy::gain( int a_hashInde
     double energy_fraction;
     int energy_index = evaluationInfo( a_hashIndex, a_energy, &energy_fraction );
 
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < m_gains.size( ); ++i1 ) {
-        if( a_particleIndex == m_gains[i1].particleIndex( ) ) return( m_gains[i1].gain( energy_index, energy_fraction ) );
+    for( std::size_t i1 = 0; i1 < m_gains.size( ); ++i1 ) {
+        if( a_particleIndex == m_gains[i1]->particleIndex( ) ) return( m_gains[i1]->gain( energy_index, energy_fraction ) );
     }
 
     return( 0.0 );
@@ -854,8 +862,8 @@ LUPI_HOST_DEVICE double HeatedCrossSectionContinuousEnergy::gainViaIntid( int a_
     double energy_fraction;
     int energy_index = evaluationInfo( a_hashIndex, a_energy, &energy_fraction );
 
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < m_gains.size( ); ++i1 ) {
-        if( a_particleIntid == m_gains[i1].particleIntid( ) ) return( m_gains[i1].gain( energy_index, energy_fraction ) );
+    for( std::size_t i1 = 0; i1 < m_gains.size( ); ++i1 ) {
+        if( a_particleIntid == m_gains[i1]->particleIntid( ) ) return( m_gains[i1]->gain( energy_index, energy_fraction ) );
     }
 
     return( 0.0 );
@@ -870,7 +878,7 @@ LUPI_HOST_DEVICE double HeatedCrossSectionContinuousEnergy::gainViaIntid( int a_
 
 LUPI_HOST void HeatedCrossSectionContinuousEnergy::setUserParticleIndex( int a_particleIndex, int a_userParticleIndex ) {
 
-    for( auto iter = m_gains.begin( ); iter != m_gains.end( ); ++iter ) iter->setUserParticleIndex( a_particleIndex, a_userParticleIndex );
+    for( auto iter = m_gains.begin( ); iter != m_gains.end( ); ++iter ) (*iter)->setUserParticleIndex( a_particleIndex, a_userParticleIndex );
 }
 
 /* *********************************************************************************************************//**
@@ -882,7 +890,7 @@ LUPI_HOST void HeatedCrossSectionContinuousEnergy::setUserParticleIndex( int a_p
 
 LUPI_HOST void HeatedCrossSectionContinuousEnergy::setUserParticleIndexViaIntid( int a_particleIntid, int a_userParticleIndex ) {
 
-    for( auto iter = m_gains.begin( ); iter != m_gains.end( ); ++iter ) iter->setUserParticleIndexViaIntid( a_particleIntid, a_userParticleIndex );
+    for( auto iter = m_gains.begin( ); iter != m_gains.end( ); ++iter ) (*iter)->setUserParticleIndexViaIntid( a_particleIntid, a_userParticleIndex );
 }
 
 /* *********************************************************************************************************//**
@@ -895,25 +903,25 @@ LUPI_HOST void HeatedCrossSectionContinuousEnergy::setUserParticleIndexViaIntid(
 
 LUPI_HOST_DEVICE void HeatedCrossSectionContinuousEnergy::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
-    DATA_MEMBER_FLOAT( m_temperature, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_temperature, a_buffer, a_mode );
     DATA_MEMBER_VECTOR_INT( m_hashIndices, a_buffer, a_mode );
     DATA_MEMBER_VECTOR_DOUBLE( m_energies, a_buffer, a_mode );
-    DATA_MEMBER_VECTOR_DOUBLE( m_totalCrossSection, a_buffer, a_mode );
-    DATA_MEMBER_VECTOR_DOUBLE( m_depositionEnergy, a_buffer, a_mode );
-    DATA_MEMBER_VECTOR_DOUBLE( m_depositionMomentum, a_buffer, a_mode );
-    DATA_MEMBER_VECTOR_DOUBLE( m_productionEnergy, a_buffer, a_mode );
+    DATA_MEMBER_VECTOR_FLOAT_OR_DOUBLE( m_totalCrossSection, a_buffer, a_mode );
+    DATA_MEMBER_VECTOR_FLOAT_OR_DOUBLE( m_depositionEnergy, a_buffer, a_mode );
+    DATA_MEMBER_VECTOR_FLOAT_OR_DOUBLE( m_depositionMomentum, a_buffer, a_mode );
+    DATA_MEMBER_VECTOR_FLOAT_OR_DOUBLE( m_productionEnergy, a_buffer, a_mode );
     m_URR_mode = serializeURR_mode( m_URR_mode,  a_buffer, a_mode );
     DATA_MEMBER_VECTOR_INT( m_reactionsInURR_region, a_buffer, a_mode );
     m_ACE_URR_probabilityTables = serializeACE_URR_probabilityTables( m_ACE_URR_probabilityTables, a_buffer, a_mode );
 
-    MCGIDI_VectorSizeType vectorSize = m_reactionCrossSections.size( );
+    std::size_t vectorSize = m_reactionCrossSections.size( );
     int vectorSizeInt = (int) vectorSize;
     DATA_MEMBER_INT( vectorSizeInt, a_buffer, a_mode );
-    vectorSize = (MCGIDI_VectorSizeType) vectorSizeInt;
+    vectorSize = (std::size_t) vectorSizeInt;
 
     if( a_mode == LUPI::DataBuffer::Mode::Unpack ) m_reactionCrossSections.resize( vectorSize, &a_buffer.m_placement );
     if( a_mode == LUPI::DataBuffer::Mode::Memory ) a_buffer.m_placement += m_reactionCrossSections.internalSize();
-    for( MCGIDI_VectorSizeType memberIndex = 0; memberIndex < vectorSize; ++memberIndex ) {
+    for( std::size_t memberIndex = 0; memberIndex < vectorSize; ++memberIndex ) {
         if( a_mode == LUPI::DataBuffer::Mode::Unpack ) {
             if( a_buffer.m_placement != nullptr ) {
                 m_reactionCrossSections[memberIndex] = new(a_buffer.m_placement) HeatedReactionCrossSectionContinuousEnergy;
@@ -931,11 +939,23 @@ LUPI_HOST_DEVICE void HeatedCrossSectionContinuousEnergy::serialize( LUPI::DataB
     vectorSize = m_gains.size( );
     vectorSizeInt = (int) vectorSize;
     DATA_MEMBER_INT( vectorSizeInt, a_buffer, a_mode );
-    vectorSize = (MCGIDI_VectorSizeType) vectorSizeInt;
+    vectorSize = (std::size_t) vectorSizeInt;
     if( a_mode == LUPI::DataBuffer::Mode::Unpack ) m_gains.resize( vectorSize, &a_buffer.m_placement );
     if( a_mode == LUPI::DataBuffer::Mode::Memory ) a_buffer.m_placement += m_gains.internalSize();
-    for( MCGIDI_VectorSizeType memberIndex = 0; memberIndex < vectorSize; ++memberIndex ) {
-        m_gains[memberIndex].serialize( a_buffer, a_mode );
+    for( std::size_t memberIndex = 0; memberIndex < vectorSize; ++memberIndex ) {
+        if( a_mode == LUPI::DataBuffer::Mode::Unpack ) {
+            if( a_buffer.m_placement != nullptr ) {
+                m_gains[memberIndex] = new(a_buffer.m_placement) ContinuousEnergyGain;
+                a_buffer.incrementPlacement( sizeof( ContinuousEnergyGain ) ); }
+            else {
+                m_gains[memberIndex] = new ContinuousEnergyGain;
+            }
+        }
+
+        if( a_mode == LUPI::DataBuffer::Mode::Memory ) {
+            a_buffer.incrementPlacement( sizeof( ContinuousEnergyGain ) );
+        }
+        m_gains[memberIndex]->serialize( a_buffer, a_mode );
     }
 }
 
@@ -963,17 +983,17 @@ LUPI_HOST void HeatedCrossSectionContinuousEnergy::print( ProtareSingle const *a
     for( auto iter = m_hashIndices.begin( ); iter != m_hashIndices.end( ); ++iter )
         std::cout << indent2 << LUPI::Misc::argumentsToString( a_iFormat.c_str( ), *iter ) << std::endl;
     std::cout << std::endl;
-    MCGIDI_VectorSizeType energySize = static_cast<MCGIDI_VectorSizeType>( m_energies.size( ) );
+    std::size_t energySize = m_energies.size( );
     std::cout << a_indent << "# Number of energies = " << m_energies.size( ) << std::endl;
     std::cout << "#      projectile              total              deposition           deposition          production" << std::endl;
     std::cout << "#        energy             cross section           energy              momentum             energy"<< std::endl;
     std::cout << "#====================================================================================================="<< std::endl;
-    for( MCGIDI_VectorSizeType index = 0; index != energySize; ++index ) {
+    for( std::size_t index = 0; index != energySize; ++index ) {
         std::cout << LUPI::Misc::argumentsToString( lineFormat.c_str( ), m_energies[index], m_totalCrossSection[index], m_depositionEnergy[index], 
                 m_depositionMomentum[index], m_productionEnergy[index] ) << std::endl;
     }
 
-    for( auto iter = m_gains.begin( ); iter != m_gains.end( ); ++iter ) iter->print( a_protareSingle, a_indent, a_iFormat, a_energyFormat, a_dFormat );
+    for( auto iter = m_gains.begin( ); iter != m_gains.end( ); ++iter ) (*iter)->print( a_protareSingle, a_indent, a_iFormat, a_energyFormat, a_dFormat );
 
     std::cout << std::endl;
     std::cout << "# URR mode is ";
@@ -1099,8 +1119,8 @@ LUPI_HOST_DEVICE double HeatedCrossSectionsContinuousEnergy::crossSection( URR_p
  * @param   a_crossSectionVector        [in/out]    The energy dependent, total cross section to add cross section data to.
  ***********************************************************************************************************/
  
-LUPI_HOST_DEVICE void HeatedCrossSectionsContinuousEnergy::crossSectionVector( double a_temperature, double a_userFactor, int a_numberAllocated, 
-        double *a_crossSectionVector ) const {
+LUPI_HOST_DEVICE void HeatedCrossSectionsContinuousEnergy::crossSectionVector( double a_temperature, double a_userFactor, 
+                std::size_t a_numberAllocated, double *a_crossSectionVector ) const {
 
     int number_of_temperatures = static_cast<int>( m_temperatures.size( ) );
     int index1 = 0, index2 = 0;
@@ -1117,13 +1137,13 @@ LUPI_HOST_DEVICE void HeatedCrossSectionsContinuousEnergy::crossSectionVector( d
         fraction = ( a_temperature - m_temperatures[index1] ) / ( m_temperatures[index2] - m_temperatures[index1] );
     }
 
-    Vector<double> &totalCrossSection1 = m_heatedCrossSections[index1]->totalCrossSection( );
-    Vector<double> &totalCrossSection2 = m_heatedCrossSections[index2]->totalCrossSection( );
-    MCGIDI_VectorSizeType size = totalCrossSection1.size( );
+    Vector<MCGIDI_FLOAT> &totalCrossSection1 = m_heatedCrossSections[index1]->totalCrossSection( );
+    Vector<MCGIDI_FLOAT> &totalCrossSection2 = m_heatedCrossSections[index2]->totalCrossSection( );
+    std::size_t size = totalCrossSection1.size( );
     double factor1 = a_userFactor * ( 1.0 - fraction ), factor2 = a_userFactor * fraction;
 
     if( a_numberAllocated < totalCrossSection1.size( ) ) LUPI_THROW( "HeatedCrossSectionsContinuousEnergy::crossSectionVector: a_numberAllocated too small." );
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < size; ++i1 ) {
+    for( std::size_t i1 = 0; i1 < size; ++i1 ) {
         a_crossSectionVector[i1] += factor1 * totalCrossSection1[i1] + factor2 * totalCrossSection2[i1];
     }
 }
@@ -1412,14 +1432,14 @@ LUPI_HOST_DEVICE void HeatedCrossSectionsContinuousEnergy::serialize( LUPI::Data
     DATA_MEMBER_VECTOR_DOUBLE( m_temperatures, a_buffer, a_mode );
     DATA_MEMBER_VECTOR_DOUBLE( m_thresholds, a_buffer, a_mode );
 
-    MCGIDI_VectorSizeType vectorSize = m_heatedCrossSections.size( );
+    std::size_t vectorSize = m_heatedCrossSections.size( );
     int vectorSizeInt = (int) vectorSize;
     DATA_MEMBER_INT( vectorSizeInt, a_buffer, a_mode );
-    vectorSize = (MCGIDI_VectorSizeType) vectorSizeInt;
+    vectorSize = (std::size_t) vectorSizeInt;
 
     if( a_mode == LUPI::DataBuffer::Mode::Unpack ) m_heatedCrossSections.resize( vectorSize, &a_buffer.m_placement );
     if( a_mode == LUPI::DataBuffer::Mode::Memory ) a_buffer.m_placement += m_heatedCrossSections.internalSize();
-    for( MCGIDI_VectorSizeType memberIndex = 0; memberIndex < vectorSize; ++memberIndex ) {
+    for( std::size_t memberIndex = 0; memberIndex < vectorSize; ++memberIndex ) {
         if( a_mode == LUPI::DataBuffer::Mode::Unpack ) {
             if( a_buffer.m_placement != nullptr ) {
                 m_heatedCrossSections[memberIndex] = new(a_buffer.m_placement) HeatedCrossSectionContinuousEnergy;
@@ -1567,10 +1587,10 @@ LUPI_HOST HeatedReactionCrossSectionMultiGroup::HeatedReactionCrossSectionMultiG
 
 LUPI_HOST_DEVICE void HeatedReactionCrossSectionMultiGroup::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
-    DATA_MEMBER_FLOAT( m_threshold, a_buffer, a_mode  );
+    DATA_MEMBER_DOUBLE( m_threshold, a_buffer, a_mode  );
     DATA_MEMBER_INT( m_offset, a_buffer, a_mode );
     DATA_MEMBER_VECTOR_DOUBLE( m_crossSections, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_augmentedThresholdCrossSection, a_buffer, a_mode  );
+    DATA_MEMBER_DOUBLE( m_augmentedThresholdCrossSection, a_buffer, a_mode  );
 }
 
 /* *********************************************************************************************************//**
@@ -1645,8 +1665,8 @@ LUPI_HOST HeatedCrossSectionMultiGroup::HeatedCrossSectionMultiGroup( LUPI::Stat
     m_totalCrossSection = totalCrossSection.data( );
 
     m_augmentedCrossSection.resize( totalCrossSection.size( ) );
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < m_augmentedCrossSection.size( ); ++i1 ) m_augmentedCrossSection[i1] = 0;
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < m_reactionCrossSections.size( ); ++i1 )
+    for( std::size_t i1 = 0; i1 < m_augmentedCrossSection.size( ); ++i1 ) m_augmentedCrossSection[i1] = 0;
+    for( std::size_t i1 = 0; i1 < m_reactionCrossSections.size( ); ++i1 )
         m_augmentedCrossSection[m_reactionCrossSections[i1]->offset( )] += m_reactionCrossSections[i1]->augmentedThresholdCrossSection( );
 
 
@@ -1671,7 +1691,7 @@ LUPI_HOST HeatedCrossSectionMultiGroup::HeatedCrossSectionMultiGroup( LUPI::Stat
 
         vector = a_protare.multiGroupGain( a_smr, multi_group_settings, a_temperatureInfo, particle->first, a_reactionsToExclude );
         vector = collapseAndcheckZeroReaction( vector, a_settings, a_particles, 0.0, a_zeroReactions );
-        m_gains[i1] = MultiGroupGain( particleIntid, particleIndex, vector );
+        m_gains[i1] = new MultiGroupGain( particleIntid, particleIndex, vector );
     }
 }
 
@@ -1680,7 +1700,8 @@ LUPI_HOST HeatedCrossSectionMultiGroup::HeatedCrossSectionMultiGroup( LUPI::Stat
 
 LUPI_HOST_DEVICE HeatedCrossSectionMultiGroup::~HeatedCrossSectionMultiGroup( ) {
 
-    for( Vector<HeatedReactionCrossSectionMultiGroup *>::const_iterator iter = m_reactionCrossSections.begin( ); iter < m_reactionCrossSections.end( ); ++iter ) delete *iter;
+    for( auto iter = m_reactionCrossSections.begin( ); iter < m_reactionCrossSections.end( ); ++iter ) delete *iter;
+    for( auto iter = m_gains.begin( ); iter < m_gains.end( ); ++iter ) delete *iter;
 }
 
 /* *********************************************************************************************************//**
@@ -1712,8 +1733,8 @@ LUPI_HOST_DEVICE double HeatedCrossSectionMultiGroup::crossSection( int a_hashIn
 
 LUPI_HOST_DEVICE double HeatedCrossSectionMultiGroup::gain( int a_particleIndex, int a_hashIndex ) const {
 
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < m_gains.size( ); ++i1 ) {
-        if( a_particleIndex == m_gains[i1].particleIndex( ) ) return( m_gains[i1].gain( a_hashIndex ) );
+    for( std::size_t i1 = 0; i1 < m_gains.size( ); ++i1 ) {
+        if( a_particleIndex == m_gains[i1]->particleIndex( ) ) return( m_gains[i1]->gain( a_hashIndex ) );
     }
 
     return( 0.0 );
@@ -1730,8 +1751,8 @@ LUPI_HOST_DEVICE double HeatedCrossSectionMultiGroup::gain( int a_particleIndex,
 
 LUPI_HOST_DEVICE double HeatedCrossSectionMultiGroup::gainViaIntid( int a_particleIntid, int a_hashIndex ) const {
 
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < m_gains.size( ); ++i1 ) {
-        if( a_particleIntid == m_gains[i1].particleIntid( ) ) return( m_gains[i1].gain( a_hashIndex ) );
+    for( std::size_t i1 = 0; i1 < m_gains.size( ); ++i1 ) {
+        if( a_particleIntid == m_gains[i1]->particleIntid( ) ) return( m_gains[i1]->gain( a_hashIndex ) );
     }
 
     return( 0.0 );
@@ -1746,7 +1767,7 @@ LUPI_HOST_DEVICE double HeatedCrossSectionMultiGroup::gainViaIntid( int a_partic
 
 LUPI_HOST void HeatedCrossSectionMultiGroup::setUserParticleIndex( int a_particleIndex, int a_userParticleIndex ) {
 
-    for( auto iter = m_gains.begin( ); iter != m_gains.end( ); ++iter ) iter->setUserParticleIndex( a_particleIndex, a_userParticleIndex );
+    for( auto iter = m_gains.begin( ); iter != m_gains.end( ); ++iter ) (*iter)->setUserParticleIndex( a_particleIndex, a_userParticleIndex );
 }
 
 /* *********************************************************************************************************//**
@@ -1758,7 +1779,7 @@ LUPI_HOST void HeatedCrossSectionMultiGroup::setUserParticleIndex( int a_particl
 
 LUPI_HOST void HeatedCrossSectionMultiGroup::setUserParticleIndexViaIntid( int a_particleIntid, int a_userParticleIndex ) {
 
-    for( auto iter = m_gains.begin( ); iter != m_gains.end( ); ++iter ) iter->setUserParticleIndexViaIntid( a_particleIntid, a_userParticleIndex );
+    for( auto iter = m_gains.begin( ); iter != m_gains.end( ); ++iter ) (*iter)->setUserParticleIndexViaIntid( a_particleIntid, a_userParticleIndex );
 }
 
 /* *********************************************************************************************************//**
@@ -1777,14 +1798,14 @@ LUPI_HOST_DEVICE void HeatedCrossSectionMultiGroup::serialize( LUPI::DataBuffer 
     DATA_MEMBER_VECTOR_DOUBLE( m_depositionMomentum, a_buffer, a_mode );
     DATA_MEMBER_VECTOR_DOUBLE( m_productionEnergy, a_buffer, a_mode );
 
-    MCGIDI_VectorSizeType vectorSize = m_reactionCrossSections.size( );
+    std::size_t vectorSize = m_reactionCrossSections.size( );
     int vectorSizeInt = (int) vectorSize;
     DATA_MEMBER_INT( vectorSizeInt, a_buffer, a_mode );
-    vectorSize = (MCGIDI_VectorSizeType) vectorSizeInt;
+    vectorSize = (std::size_t) vectorSizeInt;
 
     if( a_mode == LUPI::DataBuffer::Mode::Unpack ) m_reactionCrossSections.resize( vectorSize, &a_buffer.m_placement );
     if( a_mode == LUPI::DataBuffer::Mode::Memory ) a_buffer.m_placement += m_reactionCrossSections.internalSize();
-    for( MCGIDI_VectorSizeType memberIndex = 0; memberIndex < vectorSize; ++memberIndex ) {
+    for( std::size_t memberIndex = 0; memberIndex < vectorSize; ++memberIndex ) {
         if( a_mode == LUPI::DataBuffer::Mode::Unpack ) {
             if( a_buffer.m_placement != nullptr ) {
                 m_reactionCrossSections[memberIndex] = new(a_buffer.m_placement) HeatedReactionCrossSectionMultiGroup;
@@ -1802,11 +1823,22 @@ LUPI_HOST_DEVICE void HeatedCrossSectionMultiGroup::serialize( LUPI::DataBuffer 
     vectorSize = m_gains.size( );
     vectorSizeInt = (int) vectorSize;
     DATA_MEMBER_INT( vectorSizeInt, a_buffer, a_mode );
-    vectorSize = (MCGIDI_VectorSizeType) vectorSizeInt;
+    vectorSize = (std::size_t) vectorSizeInt;
     if( a_mode == LUPI::DataBuffer::Mode::Unpack ) m_gains.resize( vectorSize, &a_buffer.m_placement );
     if( a_mode == LUPI::DataBuffer::Mode::Memory ) a_buffer.m_placement += m_gains.internalSize();
-    for( MCGIDI_VectorSizeType memberIndex = 0; memberIndex < vectorSize; ++memberIndex ) {
-        m_gains[memberIndex].serialize( a_buffer, a_mode );
+    for( std::size_t memberIndex = 0; memberIndex < vectorSize; ++memberIndex ) {
+        if( a_mode == LUPI::DataBuffer::Mode::Unpack ) {
+            if( a_buffer.m_placement != nullptr ) {
+                m_gains[memberIndex] = new(a_buffer.m_placement) MultiGroupGain;
+                a_buffer.incrementPlacement( sizeof( MultiGroupGain ) ); }
+            else {
+                m_gains[memberIndex] = new MultiGroupGain;
+            }
+        }
+        if( a_mode == LUPI::DataBuffer::Mode::Memory ) {
+            a_buffer.incrementPlacement( sizeof( MultiGroupGain ) );
+        }
+        m_gains[memberIndex]->serialize( a_buffer, a_mode );
     }
 }
 
@@ -1824,7 +1856,7 @@ LUPI_HOST void HeatedCrossSectionMultiGroup::write( FILE *a_file ) const {
     writeVector( a_file, "Deposition momentum", 0, m_depositionMomentum );
     writeVector( a_file, "Production energy", 0, m_productionEnergy );
 
-    for( Vector<MultiGroupGain>::const_iterator iter = m_gains.begin( ); iter != m_gains.end( ); ++iter ) iter->write( a_file );
+    for( auto iter = m_gains.begin( ); iter != m_gains.end( ); ++iter ) (*iter)->write( a_file );
     int reactionIndex = 0;
     for( Vector<HeatedReactionCrossSectionMultiGroup *>::const_iterator iter = m_reactionCrossSections.begin( ); iter < m_reactionCrossSections.end( ); ++iter ) {
         (*iter)->write( a_file, reactionIndex );
@@ -1931,8 +1963,8 @@ LUPI_HOST_DEVICE double HeatedCrossSectionsMultiGroup::crossSection( int a_hashI
  * @param   a_crossSectionVector            [in/out]    The energy dependent, total cross section to add cross section data to.
  ***********************************************************************************************************/
  
-LUPI_HOST_DEVICE void HeatedCrossSectionsMultiGroup::crossSectionVector( double a_temperature, double a_userFactor, int a_numberAllocated, 
-        double *a_crossSectionVector ) const {
+LUPI_HOST_DEVICE void HeatedCrossSectionsMultiGroup::crossSectionVector( double a_temperature, double a_userFactor, 
+                std::size_t a_numberAllocated, double *a_crossSectionVector ) const {
 
     int number_of_temperatures = static_cast<int>( m_temperatures.size( ) );
     int index1 = 0, index2 = 0;
@@ -1951,11 +1983,11 @@ LUPI_HOST_DEVICE void HeatedCrossSectionsMultiGroup::crossSectionVector( double 
 
     Vector<double> &totalCrossSection1 = m_heatedCrossSections[index1]->totalCrossSection( );
     Vector<double> &totalCrossSection2 = m_heatedCrossSections[index2]->totalCrossSection( );
-    MCGIDI_VectorSizeType size = totalCrossSection1.size( );
+    std::size_t size = totalCrossSection1.size( );
     double factor1 = a_userFactor * ( 1.0 - fraction ), factor2 = a_userFactor * fraction;
 
     if( a_numberAllocated < totalCrossSection1.size( ) ) LUPI_THROW( "HeatedCrossSectionsMultiGroup::crossSectionVector: a_numberAllocated too small." );
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < size; ++i1 ) {
+    for( std::size_t i1 = 0; i1 < size; ++i1 ) {
         a_crossSectionVector[i1] += factor1 * totalCrossSection1[i1] + factor2 * totalCrossSection2[i1];
     }
 }
@@ -1998,7 +2030,7 @@ LUPI_HOST_DEVICE double HeatedCrossSectionsMultiGroup::reactionCrossSection( int
 
 LUPI_HOST_DEVICE double HeatedCrossSectionsMultiGroup::reactionCrossSection( int a_reactionIndex, double a_temperature, double a_energy_in ) const {
 
-    int energyIndex = static_cast<int>( binarySearchVector( a_energy_in, m_projectileMultiGroupBoundariesCollapsed ) );
+    int energyIndex = binarySearchVector( a_energy_in, m_projectileMultiGroupBoundariesCollapsed );
 
     if( energyIndex < 0 ) {
         energyIndex = 0;
@@ -2190,14 +2222,14 @@ LUPI_HOST_DEVICE void HeatedCrossSectionsMultiGroup::serialize( LUPI::DataBuffer
     DATA_MEMBER_VECTOR_INT( m_multiGroupThresholdIndex, a_buffer, a_mode );
     DATA_MEMBER_VECTOR_DOUBLE( m_projectileMultiGroupBoundariesCollapsed, a_buffer, a_mode );
 
-    MCGIDI_VectorSizeType vectorSize = m_heatedCrossSections.size( );
+    std::size_t vectorSize = m_heatedCrossSections.size( );
     int vectorSizeInt = (int) vectorSize;
     DATA_MEMBER_INT( vectorSizeInt, a_buffer, a_mode );
-    vectorSize = (MCGIDI_VectorSizeType) vectorSizeInt;
+    vectorSize = (std::size_t) vectorSizeInt;
 
     if( a_mode == LUPI::DataBuffer::Mode::Unpack ) m_heatedCrossSections.resize( vectorSize, &a_buffer.m_placement );
     if( a_mode == LUPI::DataBuffer::Mode::Memory ) a_buffer.m_placement += m_heatedCrossSections.internalSize();
-    for( MCGIDI_VectorSizeType memberIndex = 0; memberIndex < vectorSize; ++memberIndex ) {
+    for( std::size_t memberIndex = 0; memberIndex < vectorSize; ++memberIndex ) {
         if( a_mode == LUPI::DataBuffer::Mode::Unpack ) {
             if( a_buffer.m_placement != nullptr ) {
                 m_heatedCrossSections[memberIndex] = new(a_buffer.m_placement) HeatedCrossSectionMultiGroup;
@@ -2223,19 +2255,21 @@ LUPI_HOST_DEVICE void HeatedCrossSectionsMultiGroup::serialize( LUPI::DataBuffer
 LUPI_HOST void HeatedCrossSectionsMultiGroup::write( FILE *a_file, int a_temperatureIndex ) const {
 
     if( a_temperatureIndex < 0 ) return;
-    if( a_temperatureIndex >= m_temperatures.size( ) ) return;
 
-    printf( "HeatedCrossSectionsMultiGroup::write for temperature %.4e\n", m_temperatures[a_temperatureIndex] );
+    std::size_t temperatureIndex = (std::size_t) a_temperatureIndex;
+    if( temperatureIndex >= m_temperatures.size( ) ) return;
+
+    printf( "HeatedCrossSectionsMultiGroup::write for temperature %.4e\n", m_temperatures[temperatureIndex] );
 
     fprintf( a_file, "    boundaries index                           " );
     std::string space( 14, ' ' );
-    for( int index = 0; index < m_projectileMultiGroupBoundariesCollapsed.size( ); ++index ) {
-        fprintf( a_file, "%s%6d", space.c_str( ), index );
+    for( std::size_t index = 0; index < m_projectileMultiGroupBoundariesCollapsed.size( ); ++index ) {
+        fprintf( a_file, "%s%6zu", space.c_str( ), index );
     }
     fprintf( a_file, "\n" );
     writeVector( a_file, "boundaries", 0, m_projectileMultiGroupBoundariesCollapsed );
 
-    m_heatedCrossSections[a_temperatureIndex]->write( a_file );
+    m_heatedCrossSections[temperatureIndex]->write( a_file );
 }
 
 /* *********************************************************************************************************//**
@@ -2244,7 +2278,7 @@ LUPI_HOST void HeatedCrossSectionsMultiGroup::write( FILE *a_file, int a_tempera
 
 LUPI_HOST void HeatedCrossSectionsMultiGroup::print( ) const {
 
-    for( int index = 0; index < m_heatedCrossSections.size( ); ++index ) write( stdout, index );
+    for( std::size_t index = 0; index < m_heatedCrossSections.size( ); ++index ) write( stdout, index );
 }
 
 /* *********************************************************************************************************//**

@@ -69,8 +69,8 @@ LUPI_HOST_DEVICE FunctionBase::~FunctionBase( ) {
 LUPI_HOST_DEVICE void FunctionBase::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
     DATA_MEMBER_INT( m_dimension, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_domainMin, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_domainMax, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_domainMin, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_domainMax, a_buffer, a_mode );
 
     int interpolation = 0;
     if( a_mode != LUPI::DataBuffer::Mode::Unpack ) {
@@ -118,7 +118,7 @@ LUPI_HOST_DEVICE void FunctionBase::serialize( LUPI::DataBuffer &a_buffer, LUPI:
         }
     }
 
-    DATA_MEMBER_FLOAT( m_outerDomainValue, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_outerDomainValue, a_buffer, a_mode );
 }
 
 /*
@@ -424,7 +424,7 @@ LUPI_HOST_DEVICE Constant1d::~Constant1d( ) {
 LUPI_HOST_DEVICE void Constant1d::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
     Function1d::serialize( a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_value, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_value, a_buffer, a_mode );
 }
 
 /*
@@ -455,11 +455,11 @@ LUPI_HOST XYs1d::XYs1d( GIDI::Functions::XYs1d const &a_XYs1d ) :
         Function1d_d2( a_XYs1d.domainMin( ), a_XYs1d.domainMax( ), GIDI2MCGIDI_interpolation( a_XYs1d.interpolation( ) ), a_XYs1d.outerDomainValue( ) ) {
 
     m_type = Function1dType::XYs;
-    MCGIDI_VectorSizeType size = a_XYs1d.size( );
+    std::size_t size = a_XYs1d.size( );
 
     m_Xs.resize( size );
     m_Ys.resize( size );
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < size; ++i1 ) {
+    for( std::size_t i1 = 0; i1 < size; ++i1 ) {
         std::pair<double, double> xy = a_XYs1d[i1];
         m_Xs[i1] = xy.first;
         m_Ys[i1] = xy.second;
@@ -477,7 +477,7 @@ LUPI_HOST_DEVICE XYs1d::~XYs1d( ) {
 */
 LUPI_HOST_DEVICE double XYs1d::evaluate( double a_x1 ) const {
 
-    MCGIDI_VectorSizeType lower = binarySearchVector( a_x1, m_Xs );
+    int lower = binarySearchVector( a_x1, m_Xs );
 
     if( lower < 0 ) {
         if( lower == -2 ) return( m_Ys[0] );
@@ -688,7 +688,7 @@ LUPI_HOST Regions1d::Regions1d( GIDI::Functions::Regions1d const &a_regions1d ) 
 
 LUPI_HOST_DEVICE Regions1d::~Regions1d( ) {
 
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < m_functions1d.size( ); ++i1 ) delete m_functions1d[i1];
+    for( std::size_t i1 = 0; i1 < m_functions1d.size( ); ++i1 ) delete m_functions1d[i1];
 }
 /*
 ============================================================
@@ -705,7 +705,7 @@ LUPI_HOST_DEVICE void Regions1d::append( Function1d_d2 *a_function1d ) {
 */
 LUPI_HOST_DEVICE double Regions1d::evaluate( double a_x1 ) const {
 
-    MCGIDI_VectorSizeType lower = binarySearchVector( a_x1, m_Xs );
+    int lower = binarySearchVector( a_x1, m_Xs );
 
     if( lower < 0 ) {
         if( lower == -1 ) {                     // a_x1 > last value of m_Xs.
@@ -730,13 +730,13 @@ LUPI_HOST_DEVICE void Regions1d::serialize( LUPI::DataBuffer &a_buffer, LUPI::Da
     Function1d::serialize( a_buffer, a_mode );
     DATA_MEMBER_VECTOR_DOUBLE( m_Xs, a_buffer, a_mode );
 
-    MCGIDI_VectorSizeType vectorSize = m_functions1d.size( );
+    std::size_t vectorSize = m_functions1d.size( );
     int vectorSizeInt = (int) vectorSize;
     DATA_MEMBER_INT( vectorSizeInt, a_buffer, a_mode );
-    vectorSize = (MCGIDI_VectorSizeType) vectorSizeInt;
+    vectorSize = (std::size_t) vectorSizeInt;
     if( a_mode == LUPI::DataBuffer::Mode::Unpack ) m_functions1d.resize( vectorSize, &a_buffer.m_placement );
     if( a_mode == LUPI::DataBuffer::Mode::Memory ) a_buffer.m_placement += m_functions1d.internalSize();
-    for( MCGIDI_VectorSizeType vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
+    for( std::size_t vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
         m_functions1d[vectorIndex] = serializeFunction1d_d2( a_buffer, a_mode, m_functions1d[vectorIndex] );
     }
 }
@@ -862,7 +862,7 @@ LUPI_HOST_DEVICE double TerrellFissionNeutronMultiplicityModel::evaluate( double
 LUPI_HOST_DEVICE void TerrellFissionNeutronMultiplicityModel::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
     Function1d::serialize( a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_width, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_width, a_buffer, a_mode );
 
     m_multiplicity = serializeFunction1d_d1( a_buffer, a_mode, m_multiplicity );
 }
@@ -985,7 +985,7 @@ LUPI_HOST XYs2d::XYs2d( GIDI::Functions::XYs2d const &a_XYs2d ) :
 
     Vector<GIDI::Functions::Function1dForm *> const &function1ds = a_XYs2d.function1ds( );
     m_functions1d.resize( function1ds.size( ) );
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < function1ds.size( ); ++i1 ) m_functions1d[i1] = parseFunction1d_d1( function1ds[i1] );
+    for( std::size_t i1 = 0; i1 < function1ds.size( ); ++i1 ) m_functions1d[i1] = parseFunction1d_d1( function1ds[i1] );
 }
 
 /* *********************************************************************************************************//**
@@ -993,14 +993,14 @@ LUPI_HOST XYs2d::XYs2d( GIDI::Functions::XYs2d const &a_XYs2d ) :
 
 LUPI_HOST_DEVICE XYs2d::~XYs2d( ) {
 
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < m_functions1d.size( ); ++i1 ) delete m_functions1d[i1];
+    for( std::size_t i1 = 0; i1 < m_functions1d.size( ); ++i1 ) delete m_functions1d[i1];
 }
 /*
 ============================================================
 */
 LUPI_HOST_DEVICE double XYs2d::evaluate( double a_x2, double a_x1 ) const {
 
-    MCGIDI_VectorSizeType lower = binarySearchVector( a_x2, m_Xs );
+    int lower = binarySearchVector( a_x2, m_Xs );
     double evaluatedValue = 0.0;
 
     if( lower < 0 ) {
@@ -1053,13 +1053,13 @@ LUPI_HOST_DEVICE void XYs2d::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBu
     Function2d::serialize( a_buffer, a_mode );
     DATA_MEMBER_VECTOR_DOUBLE( m_Xs, a_buffer, a_mode );
 
-    MCGIDI_VectorSizeType vectorSize = m_functions1d.size( );
+    std::size_t vectorSize = m_functions1d.size( );
     int vectorSizeInt = (int) vectorSize;
     DATA_MEMBER_INT( vectorSizeInt, a_buffer, a_mode );
-    vectorSize = (MCGIDI_VectorSizeType) vectorSizeInt;
+    vectorSize = (std::size_t) vectorSizeInt;
     if( a_mode == LUPI::DataBuffer::Mode::Unpack ) m_functions1d.resize( vectorSize, &a_buffer.m_placement );
     if( a_mode == LUPI::DataBuffer::Mode::Memory ) a_buffer.m_placement += m_functions1d.internalSize();
-    for( MCGIDI_VectorSizeType vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
+    for( std::size_t vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
         m_functions1d[vectorIndex] = serializeFunction1d_d1( a_buffer, a_mode, m_functions1d[vectorIndex] );
     }
 }
@@ -1341,7 +1341,7 @@ LUPI_HOST_DEVICE Xs_pdf_cdf1d::~Xs_pdf_cdf1d( ) {
 */
 LUPI_HOST_DEVICE double Xs_pdf_cdf1d::evaluate( double a_x1 ) const {
 
-    MCGIDI_VectorSizeType lower = binarySearchVector( a_x1, m_Xs );
+    int lower = binarySearchVector( a_x1, m_Xs );
 
     if( lower < 0 ) {
         if( lower == -2 ) return( m_pdf[0] );
@@ -1604,7 +1604,7 @@ LUPI_HOST XYs2d::XYs2d( GIDI::Functions::XYs2d const &a_XYs2d ) :
 
     Vector<GIDI::Functions::Function1dForm *> const &function1ds = a_XYs2d.function1ds( );
     m_probabilities.resize( function1ds.size( ) );
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < function1ds.size( ); ++i1 ) m_probabilities[i1] = parseProbability1d( function1ds[i1] );
+    for( std::size_t i1 = 0; i1 < function1ds.size( ); ++i1 ) m_probabilities[i1] = parseProbability1d( function1ds[i1] );
 }
 
 /* *********************************************************************************************************//**
@@ -1612,14 +1612,14 @@ LUPI_HOST XYs2d::XYs2d( GIDI::Functions::XYs2d const &a_XYs2d ) :
 
 LUPI_HOST_DEVICE XYs2d::~XYs2d( ) {
 
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < m_probabilities.size( ); ++i1 ) delete m_probabilities[i1];
+    for( std::size_t i1 = 0; i1 < m_probabilities.size( ); ++i1 ) delete m_probabilities[i1];
 }
 /*
 ============================================================
 */
 LUPI_HOST_DEVICE double XYs2d::evaluate( double a_x2, double a_x1 ) const {
 
-    MCGIDI_VectorSizeType lower = binarySearchVector( a_x2, m_Xs );
+    int lower = binarySearchVector( a_x2, m_Xs );
 
     if( lower < 0 ) {
         if( lower == -2 ) return( m_probabilities[0]->evaluate( a_x1 ) );
@@ -1643,57 +1643,15 @@ LUPI_HOST_DEVICE void XYs2d::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBu
 
     ProbabilityBase2d::serialize( a_buffer, a_mode );
 
-    MCGIDI_VectorSizeType vectorSize = m_probabilities.size( );
+    std::size_t vectorSize = m_probabilities.size( );
     int vectorSizeInt = (int) vectorSize;
     DATA_MEMBER_INT( vectorSizeInt, a_buffer, a_mode );
-    vectorSize = (MCGIDI_VectorSizeType) vectorSizeInt;
+    vectorSize = (std::size_t) vectorSizeInt;
 
     if( a_mode == LUPI::DataBuffer::Mode::Unpack ) m_probabilities.resize( vectorSize, &a_buffer.m_placement );
     if( a_mode == LUPI::DataBuffer::Mode::Memory ) a_buffer.m_placement += m_probabilities.internalSize();
 
-    for( MCGIDI_VectorSizeType vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
-        int type = 0;
-
-        if( a_mode != LUPI::DataBuffer::Mode::Unpack ) {
-            ProbabilityBase1dType pType = ProbabilityBase1dClass( m_probabilities[vectorIndex] );
-
-            switch( pType ) {
-            case ProbabilityBase1dType::none :
-                break;
-            case ProbabilityBase1dType::xs_pdf_cdf :
-                type = 1;
-                break;
-            }
-        }
-
-        DATA_MEMBER_INT( type, a_buffer, a_mode );
-
-        if( a_mode == LUPI::DataBuffer::Mode::Unpack ) {
-            m_probabilities[vectorIndex] = nullptr;
-            switch( type ) {
-            case 0 :
-                break;
-            case 1 :
-                if( a_buffer.m_placement != nullptr ) {
-                    m_probabilities[vectorIndex] = new(a_buffer.m_placement) Probabilities::Xs_pdf_cdf1d;
-                    a_buffer.incrementPlacement( sizeof( Probabilities::Xs_pdf_cdf1d ) ); }
-                else {
-                    m_probabilities[vectorIndex] = new Probabilities::Xs_pdf_cdf1d;
-                }
-                break;
-            }
-        }
-        if( a_mode == LUPI::DataBuffer::Mode::Memory ) {
-            switch( type ) {
-            case 0 :
-                break;
-            case 1 :
-                a_buffer.incrementPlacement( sizeof( Probabilities::Xs_pdf_cdf1d ) );
-                break;
-            }
-        }
-    }
-    for( MCGIDI_VectorSizeType vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
+    for( std::size_t vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
         m_probabilities[vectorIndex] = serializeProbability1d( a_buffer, a_mode, m_probabilities[vectorIndex] );
     }
 }
@@ -1718,7 +1676,7 @@ LUPI_HOST Regions2d::Regions2d( GIDI::Functions::Regions2d const &a_regions2d ) 
 
     Vector<GIDI::Functions::Function2dForm *> const &function2ds = a_regions2d.function2ds( );
     m_probabilities.resize( function2ds.size( ) );
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < function2ds.size( ); ++i1 ) m_probabilities[i1] = parseProbability2d_d2( function2ds[i1], nullptr );
+    for( std::size_t i1 = 0; i1 < function2ds.size( ); ++i1 ) m_probabilities[i1] = parseProbability2d_d2( function2ds[i1], nullptr );
 }
 
 /* *********************************************************************************************************//**
@@ -1726,14 +1684,14 @@ LUPI_HOST Regions2d::Regions2d( GIDI::Functions::Regions2d const &a_regions2d ) 
 
 LUPI_HOST_DEVICE Regions2d::~Regions2d( ) {
 
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < m_probabilities.size( ); ++i1 ) delete m_probabilities[i1];
+    for( std::size_t i1 = 0; i1 < m_probabilities.size( ); ++i1 ) delete m_probabilities[i1];
 }
 /*
 ============================================================
 */
 LUPI_HOST_DEVICE double Regions2d::evaluate( double a_x2, double a_x1 ) const {
 
-    MCGIDI_VectorSizeType lower = binarySearchVector( a_x2, m_Xs );
+    int lower = binarySearchVector( a_x2, m_Xs );
 
     if( lower < 0 ) {
         if( lower == -1 ) {                         // a_x2 > last value of m_Xs.
@@ -1757,14 +1715,14 @@ LUPI_HOST_DEVICE void Regions2d::serialize( LUPI::DataBuffer &a_buffer, LUPI::Da
 
     ProbabilityBase2d::serialize( a_buffer, a_mode );
 
-    MCGIDI_VectorSizeType vectorSize = m_probabilities.size( );
+    std::size_t vectorSize = m_probabilities.size( );
     int vectorSizeInt = (int) vectorSize;
     DATA_MEMBER_INT( vectorSizeInt, a_buffer, a_mode );
-    vectorSize = (MCGIDI_VectorSizeType) vectorSizeInt;
+    vectorSize = (std::size_t) vectorSizeInt;
 
     if( a_mode == LUPI::DataBuffer::Mode::Unpack ) m_probabilities.resize( vectorSize, &a_buffer.m_placement );
     if( a_mode == LUPI::DataBuffer::Mode::Memory ) a_buffer.m_placement += m_probabilities.internalSize();
-    for( MCGIDI_VectorSizeType vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
+    for( std::size_t vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
         m_probabilities[vectorIndex] = serializeProbability2d_d2( a_buffer, a_mode, m_probabilities[vectorIndex] );
     }
 }
@@ -1832,7 +1790,7 @@ LUPI_HOST_DEVICE DiscreteGamma2d::~DiscreteGamma2d( ) {
 LUPI_HOST_DEVICE void DiscreteGamma2d::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
     ProbabilityBase2d::serialize( a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_value, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_value, a_buffer, a_mode );
 }
 
 /*
@@ -1902,8 +1860,8 @@ LUPI_HOST_DEVICE double PrimaryGamma2d::evaluate( double a_x2, double a_x1 ) con
 LUPI_HOST_DEVICE void PrimaryGamma2d::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
     ProbabilityBase2d::serialize( a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_primaryEnergy, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_massFactor, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_primaryEnergy, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_massFactor, a_buffer, a_mode );
     DATA_MEMBER_STRING( m_finalState, a_buffer, a_mode );
     DATA_MEMBER_INT( m_initialStateIndex, a_buffer, a_mode );
 }
@@ -2039,10 +1997,10 @@ LUPI_HOST_DEVICE void NBodyPhaseSpace2d::serialize( LUPI::DataBuffer &a_buffer, 
 
     ProbabilityBase2d::serialize( a_buffer, a_mode );
     DATA_MEMBER_INT( m_numberOfProducts, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_mass, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_energy_in_COMFactor, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_massFactor, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_Q, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_mass, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_energy_in_COMFactor, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_massFactor, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_Q, a_buffer, a_mode );
 
     m_dist = serializeProbability1d( a_buffer, a_mode, m_dist );
 }
@@ -2100,7 +2058,7 @@ LUPI_HOST_DEVICE double Evaporation2d::evaluate( double a_x2, double a_x1 ) cons
 LUPI_HOST_DEVICE void Evaporation2d::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
     ProbabilityBase2d::serialize( a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_U, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_U, a_buffer, a_mode );
 
     m_theta = serializeFunction1d_d1( a_buffer, a_mode, m_theta );
 }
@@ -2214,7 +2172,7 @@ LUPI_HOST_DEVICE double SimpleMaxwellianFission2d::evaluate( double a_x2, double
 LUPI_HOST_DEVICE void SimpleMaxwellianFission2d::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
     ProbabilityBase2d::serialize( a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_U, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_U, a_buffer, a_mode );
     m_theta = serializeFunction1d_d1( a_buffer, a_mode, m_theta );
 }
 
@@ -2279,7 +2237,7 @@ LUPI_HOST_DEVICE double Watt2d::evaluate( double a_x2, double a_x1 ) const {
 LUPI_HOST_DEVICE void Watt2d::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
     ProbabilityBase2d::serialize( a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_U, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_U, a_buffer, a_mode );
     m_a = serializeFunction1d_d1( a_buffer, a_mode, m_a );
     m_b = serializeFunction1d_d1( a_buffer, a_mode, m_b );
 }
@@ -2306,7 +2264,7 @@ LUPI_HOST WeightedFunctionals2d::WeightedFunctionals2d( GIDI::Functions::Weighte
     Vector<GIDI::Functions::Weighted_function2d *> const &weighted_function2d = a_weightedFunctionals2d.weighted_function2d( );
     m_weight.resize( weighted_function2d.size( ) );
     m_energy.resize( weighted_function2d.size( ) );
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < weighted_function2d.size( ); ++i1 ) {
+    for( std::size_t i1 = 0; i1 < weighted_function2d.size( ); ++i1 ) {
         m_weight[i1] = Functions::parseFunction1d_d1( weighted_function2d[i1]->weight( ) );
         m_energy[i1] = parseProbability2d_d1( weighted_function2d[i1]->energy( ), nullptr );
     }
@@ -2317,18 +2275,18 @@ LUPI_HOST WeightedFunctionals2d::WeightedFunctionals2d( GIDI::Functions::Weighte
 
 LUPI_HOST_DEVICE WeightedFunctionals2d::~WeightedFunctionals2d( ) {
 
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < m_weight.size( ); ++i1 ) delete m_weight[i1];
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < m_energy.size( ); ++i1 ) delete m_energy[i1];
+    for( std::size_t i1 = 0; i1 < m_weight.size( ); ++i1 ) delete m_weight[i1];
+    for( std::size_t i1 = 0; i1 < m_energy.size( ); ++i1 ) delete m_energy[i1];
 }
 /*
 ============================================================
 */
 LUPI_HOST_DEVICE double WeightedFunctionals2d::evaluate( double a_x2, double a_x1 ) const {
 
-    MCGIDI_VectorSizeType n1 = m_weight.size( );
+    std::size_t n1 = m_weight.size( );
     double evaluatedValue = 0;
 
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < n1; ++i1 ) {
+    for( std::size_t i1 = 0; i1 < n1; ++i1 ) {
         evaluatedValue += m_weight[i1]->evaluate( a_x2 ) * m_energy[i1]->evaluate( a_x2, a_x1 );
     }
     return( evaluatedValue  );
@@ -2346,23 +2304,23 @@ LUPI_HOST_DEVICE void WeightedFunctionals2d::serialize( LUPI::DataBuffer &a_buff
 
     ProbabilityBase2d::serialize( a_buffer, a_mode );
 
-    MCGIDI_VectorSizeType vectorSize = m_weight.size( );
+    std::size_t vectorSize = m_weight.size( );
     int vectorSizeInt = (int) vectorSize;
     DATA_MEMBER_INT( vectorSizeInt, a_buffer, a_mode );
-    vectorSize = (MCGIDI_VectorSizeType) vectorSizeInt;
+    vectorSize = (std::size_t) vectorSizeInt;
     if( a_mode == LUPI::DataBuffer::Mode::Unpack ) m_weight.resize( vectorSize, &a_buffer.m_placement );
     if( a_mode == LUPI::DataBuffer::Mode::Memory ) a_buffer.m_placement += m_weight.internalSize();
-    for( MCGIDI_VectorSizeType vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
+    for( std::size_t vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
         m_weight[vectorIndex] = serializeFunction1d_d1( a_buffer, a_mode, m_weight[vectorIndex] );
     }
 
     vectorSize = m_energy.size( );
     vectorSizeInt = (int) vectorSize;
     DATA_MEMBER_INT( vectorSizeInt, a_buffer, a_mode );
-    vectorSize = (MCGIDI_VectorSizeType) vectorSizeInt;
+    vectorSize = (std::size_t) vectorSizeInt;
     if( a_mode == LUPI::DataBuffer::Mode::Unpack ) m_energy.resize( vectorSize, &a_buffer.m_placement );
     if( a_mode == LUPI::DataBuffer::Mode::Memory ) a_buffer.m_placement += m_energy.internalSize();
-    for( MCGIDI_VectorSizeType vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
+    for( std::size_t vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
         m_energy[vectorIndex] = serializeProbability2d_d1( a_buffer, a_mode, m_energy[vectorIndex] );
     }
 }
@@ -2485,7 +2443,7 @@ LUPI_HOST XYs3d::XYs3d( GIDI::Functions::XYs3d const &a_XYs3d ) :
 
     Vector<GIDI::Functions::Function2dForm *> const &functions2d = a_XYs3d.function2ds( );
     m_probabilities.resize( functions2d.size( ) );
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < functions2d.size( ); ++i1 ) m_probabilities[i1] = parseProbability2d_d1( functions2d[i1], nullptr );
+    for( std::size_t i1 = 0; i1 < functions2d.size( ); ++i1 ) m_probabilities[i1] = parseProbability2d_d1( functions2d[i1], nullptr );
 }
 
 /* *********************************************************************************************************//**
@@ -2493,14 +2451,14 @@ LUPI_HOST XYs3d::XYs3d( GIDI::Functions::XYs3d const &a_XYs3d ) :
 
 LUPI_HOST_DEVICE XYs3d::~XYs3d( ) {
 
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < m_probabilities.size( ); ++i1 ) delete m_probabilities[i1];
+    for( std::size_t i1 = 0; i1 < m_probabilities.size( ); ++i1 ) delete m_probabilities[i1];
 }
 /*
 ============================================================
 */
 LUPI_HOST_DEVICE double XYs3d::evaluate( double a_x3, double a_x2, double a_x1 ) const {
 
-    MCGIDI_VectorSizeType lower = binarySearchVector( a_x3, m_Xs );
+    int lower = binarySearchVector( a_x3, m_Xs );
     double evaluatedValue;
 
     if( lower == -2 ) {                         // a_x3 < first value of Xs.
@@ -2548,14 +2506,14 @@ LUPI_HOST_DEVICE void XYs3d::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBu
 
     ProbabilityBase3d::serialize( a_buffer, a_mode );
 
-    MCGIDI_VectorSizeType vectorSize = m_probabilities.size( );
+    std::size_t vectorSize = m_probabilities.size( );
     int vectorSizeInt = (int) vectorSize;
     DATA_MEMBER_INT( vectorSizeInt, a_buffer, a_mode );
-    vectorSize = (MCGIDI_VectorSizeType) vectorSizeInt;
+    vectorSize = (std::size_t) vectorSizeInt;
 
     if( a_mode == LUPI::DataBuffer::Mode::Unpack ) m_probabilities.resize( vectorSize, &a_buffer.m_placement );
     if( a_mode == LUPI::DataBuffer::Mode::Memory ) a_buffer.m_placement += m_probabilities.internalSize();
-    for( MCGIDI_VectorSizeType vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
+    for( std::size_t vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
         m_probabilities[vectorIndex] = serializeProbability2d_d1( a_buffer, a_mode, m_probabilities[vectorIndex] );
     }
 }
@@ -2716,7 +2674,7 @@ LUPI_HOST static ProbabilityBase1d *ptwXY_To_Xs_pdf_cdf1d( ptwXYPoints *pdfXY ) 
 
     ptwXPoints *cdfX = nullptr;
     ptwXYPoint *point;
-    MCGIDI_VectorSizeType n1 = (MCGIDI_VectorSizeType) ptwXY_length( nullptr, pdfXY );
+    std::size_t n1 = (std::size_t) ptwXY_length( nullptr, pdfXY );
     std::vector<double> Xs( n1 ), pdf( n1 ), cdf( n1 );
 
     if( ( cdfX = ptwXY_runningIntegral( nullptr, pdfXY ) ) == nullptr ) throw std::runtime_error( "ptwXY_To_Xs_pdf_cdf1d: ptwXY_runningIntegral returned error." );
@@ -2724,7 +2682,7 @@ LUPI_HOST static ProbabilityBase1d *ptwXY_To_Xs_pdf_cdf1d( ptwXYPoints *pdfXY ) 
     if( norm <= 0 ) throw std::runtime_error( "ptwXY_To_Xs_pdf_cdf1d: norm <= 0." );
 
     norm = 1. / norm;
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < n1; ++i1 ) {
+    for( std::size_t i1 = 0; i1 < n1; ++i1 ) {
         point = ptwXY_getPointAtIndex_Unsafely( pdfXY, i1 );
         Xs[i1] = point->x;
         pdf[i1] = norm * point->y;

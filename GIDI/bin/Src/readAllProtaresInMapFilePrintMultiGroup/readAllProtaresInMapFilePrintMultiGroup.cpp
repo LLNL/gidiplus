@@ -100,14 +100,10 @@ void main2( int argc, char **argv ) {
 
     for( std::size_t index = 1; index < argv_options.m_arguments.size( ); ++index ) pops.addFile( argv[argv_options.m_arguments[index]], false );
 
-#ifndef _WIN32
     LUPI::Timer timer;
-#endif
     walk( mapFilename, pops );
-#ifndef _WIN32
     if( printTiming ) std::cout << std::endl << LUPI::Misc::doubleToString3( "Total CPU %7.3f s", timer.deltaTime( ).CPU_time( ) )
             << LUPI::Misc::doubleToString3( " wall %6.3f s", timer.deltaTime( ).wallTime( ) ) << std::endl;
-#endif
 }
 /*
 =========================================================
@@ -151,9 +147,7 @@ void readProtare( std::string const &protareFilename, PoPI::Database const &pops
     try {
         std::cout << "        " << protareFilename;
 
-#ifndef _WIN32
         LUPI::Timer timer;
-#endif
         protare = new GIDI::ProtareSingle( *constructionPtr, protareFilename, GIDI::FileType::XML, pops, particleSubstitution, a_libraries, 
                 GIDI_MapInteractionNuclearChars, a_targetRequiredInGlobalPoPs );
         GIDI::ProtareSingle *protareSingle = protare->protare( 0 );
@@ -214,12 +208,9 @@ void readProtare( std::string const &protareFilename, PoPI::Database const &pops
         }
 
         std::cout << "    lazy parsing done " << protare->numberOfLazyParsingHelperForms( ) << " and replaced " << protare->numberOfLazyParsingHelperFormsReplaced( ) << ":";
-
-#ifndef _WIN32
         if( printData ) std::cout << std::endl << "    timing: ";
         if( printTiming ) std::cout << LUPI::Misc::doubleToString3( " CPU %6.3f s", timer.deltaTime( ).CPU_time( ) )
                 << LUPI::Misc::doubleToString3( " wall %6.3f s", timer.deltaTime( ).wallTime( ) );
-#endif
         std::cout << std::endl; }
     catch (char const *str) {
         throwMessage = str; }

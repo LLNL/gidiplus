@@ -95,7 +95,7 @@ LUPI_HOST int MCGIDI_popsIndex( PoPI::Database const &a_pops, std::string const 
 
 LUPI_HOST Vector<double> GIDI_VectorDoublesToMCGIDI_VectorDoubles( GIDI::Vector a_vector ) {
 
-    Vector<double> vector( static_cast<MCGIDI_VectorSizeType>( a_vector.size( ) ) );
+    Vector<double> vector( a_vector.size( ) );
 
     for( std::size_t i1 = 0; i1 < a_vector.size( ); ++i1 ) vector[i1] = a_vector[i1];
 

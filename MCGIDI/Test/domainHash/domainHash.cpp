@@ -111,11 +111,11 @@ static int check2( int bins, double domainMin, double domainMax, std::vector<dou
     MCGIDI::Vector<double> _domain( domain );
     MCGIDI::Vector<int> map = domainHash.map( _domain );
     std::cout << "  map.size = " << map.size( ) << std::endl;
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < map.size( ); ++i1 ) std::cout << "  " << map[i1];
+    for( std::size_t i1 = 0; i1 < map.size( ); ++i1 ) std::cout << "  " << map[i1];
     std::cout << std::endl;
 
     int lastValue = 0;
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < map.size( ); ++i1 ) {
+    for( std::size_t i1 = 0; i1 < map.size( ); ++i1 ) {
         if( map[i1] < lastValue ) ++errCount;
         lastValue = map[i1];
     }

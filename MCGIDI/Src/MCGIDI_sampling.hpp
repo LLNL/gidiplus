@@ -284,7 +284,7 @@ class MCGIDIVectorProductHandler : public ProductHandler {
         Vector<Product> m_products;             /**< The list of products sampled. */
 
     public:
-        LUPI_HOST_DEVICE MCGIDIVectorProductHandler( MCGIDI_VectorSizeType a_size = 20 ) :
+        LUPI_HOST_DEVICE MCGIDIVectorProductHandler( std::size_t a_size = 20 ) :
                 m_products( ) {
 
             m_products.reserve( a_size );
@@ -292,7 +292,7 @@ class MCGIDIVectorProductHandler : public ProductHandler {
         LUPI_HOST_DEVICE ~MCGIDIVectorProductHandler( ) {}
 
         LUPI_HOST_DEVICE std::size_t size( ) { return( m_products.size( ) ); }
-        LUPI_HOST_DEVICE Product const &operator[]( MCGIDI_VectorSizeType a_index ) const { return( m_products[a_index] ); }
+        LUPI_HOST_DEVICE Product const &operator[]( std::size_t a_index ) const { return( m_products[a_index] ); }
         LUPI_HOST_DEVICE Vector<Product> const &products( ) const { return( m_products ); }
         LUPI_HOST_DEVICE void push_back( Product &a_product ) { m_products.push_back( a_product ); }
         LUPI_HOST_DEVICE void clear( ) { m_products.clear( ); }

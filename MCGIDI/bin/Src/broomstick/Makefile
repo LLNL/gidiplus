@@ -8,7 +8,12 @@ SHELL = /bin/sh
 # <<END-copyright>>
 
 OpenMPFlags = -fopenmp
-LIBS_extras = -lGIDIP_python $(shell python3-config --libs)
+
+ifdef GIDI_PLUS_INCLUDE_PYTHON_BUILDING
+	LIBS_extras = -lGIDIP_python $(shell python3-config --libs)
+else
+	LIBS_extras = -lGIDIP_python
+endif
 
 GIDI_PLUS_PATH ?= $(abspath ../../../..)
 CppSources = $(sort $(wildcard *.cpp))

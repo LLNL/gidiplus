@@ -1,3 +1,10 @@
+# <<BEGIN-copyright>>
+# Copyright 2019, Lawrence Livermore National Security, LLC.
+# See the top-level COPYRIGHT file for details.
+# 
+# SPDX-License-Identifier: MIT
+# <<END-copyright>>
+
 from xData import enums as enumsModule
 from xData import constant as constantModule
 from xData import XYs1d as XYs1dModule

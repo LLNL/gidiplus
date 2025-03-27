@@ -140,7 +140,7 @@ LUPI_HOST void ProtareTNSL::setUserParticleIndexViaIntid2( int a_particleIntid, 
  * @return                              Pointer to the requested protare or nullptr if invalid *a_index*..
  ***********************************************************************************************************/
 
-LUPI_HOST_DEVICE ProtareSingle const *ProtareTNSL::protare( MCGIDI_VectorSizeType a_index ) const {
+LUPI_HOST_DEVICE ProtareSingle const *ProtareTNSL::protare( std::size_t a_index ) const {
 
     if( a_index == 0 ) return( m_protareWithElastic );
     if( a_index == 1 ) return( m_TNSL );
@@ -155,7 +155,7 @@ LUPI_HOST_DEVICE ProtareSingle const *ProtareTNSL::protare( MCGIDI_VectorSizeTyp
  * @return                              Pointer to the requested protare or nullptr if invalid *a_index*..
  ***********************************************************************************************************/
 
-LUPI_HOST_DEVICE ProtareSingle *ProtareTNSL::protare( MCGIDI_VectorSizeType a_index ) {
+LUPI_HOST_DEVICE ProtareSingle *ProtareTNSL::protare( std::size_t a_index ) {
 
     if( a_index == 0 ) return( m_protareWithElastic );
     if( a_index == 1 ) return( m_TNSL );
@@ -187,7 +187,7 @@ LUPI_HOST_DEVICE ProtareSingle const *ProtareTNSL::protareWithReaction( int a_in
  * @return                              Vector of doubles.
  ***********************************************************************************************************/
 
-LUPI_HOST_DEVICE Vector<double> ProtareTNSL::temperatures( MCGIDI_VectorSizeType a_index ) const {
+LUPI_HOST_DEVICE Vector<double> ProtareTNSL::temperatures( std::size_t a_index ) const {
 
     if( a_index == 0 ) return( m_protareWithElastic->temperatures( 0 ) );
     if( a_index == 1 ) return( m_TNSL->temperatures( 0 ) );
@@ -240,7 +240,7 @@ LUPI_HOST_DEVICE bool ProtareTNSL::reactionHasURR_probabilityTables( int a_index
  * @return                          The threshold for reaction at index *a_index*.
  ***********************************************************************************************************/
 
-LUPI_HOST_DEVICE double ProtareTNSL::threshold( int a_index ) const {
+LUPI_HOST_DEVICE double ProtareTNSL::threshold( std::size_t a_index ) const {
 
     int index = a_index - m_numberOfTNSLReactions;
 
@@ -491,8 +491,8 @@ LUPI_HOST_DEVICE void ProtareTNSL::serialize2( LUPI::DataBuffer &a_buffer, LUPI:
     DATA_MEMBER_INT( numberOfTNSLReactions, a_buffer, a_mode );
     m_numberOfTNSLReactions = static_cast<std::size_t>( numberOfTNSLReactions );
 
-    DATA_MEMBER_FLOAT( m_TNSL_maximumEnergy, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_TNSL_maximumTemperature, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_TNSL_maximumEnergy, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_TNSL_maximumTemperature, a_buffer, a_mode );
 
     if( a_mode == LUPI::DataBuffer::Mode::Unpack ) {
         if( a_buffer.m_placement != nullptr ) {

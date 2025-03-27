@@ -400,7 +400,7 @@ Matrix Reaction::multiGroupProductMatrix( LUPI::StatusMessageReporting &a_smr, T
                 Vector productionCrossSection = multiGroupCrossSection( a_smr, a_settings, a_temperatureInfo ) * 2;
                 std::map<std::string, GIDI::Transporting::Particle> const &particles = a_particles.particles( );
                 std::map<std::string, GIDI::Transporting::Particle>::const_iterator particle = particles.find( PoPI::IDs::photon );
-                GIDI::Transporting::MultiGroup const &multiGroup = particle->second.multiGroup( );
+                GIDI::Transporting::MultiGroup const &multiGroup = particle->second.fineMultiGroup( );
                 int multiGroupIndexFromEnergy = multiGroup.multiGroupIndexFromEnergy( PoPI_electronMass_MeV_c2, true );
                 Matrix matrix2( productionCrossSection.size( ), productionCrossSection.size( ) );
 

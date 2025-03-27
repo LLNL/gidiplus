@@ -151,14 +151,15 @@ LUPI_HOST_DEVICE GRIN_inelasticForEnergy::~GRIN_inelasticForEnergy( ) {
 
 LUPI_HOST_DEVICE int GRIN_inelasticForEnergy::sampleLevelIndex( double a_projectileEnergy, double a_random ) const {
 
-    int index = 0;
+    std::size_t index = 0;
 
     for( auto iter = m_thresholds.begin( ); iter != m_thresholds.end( ); ++iter, ++index ) {
         if( *iter >= a_projectileEnergy ) break;
     }
-    --index;
 
-    if( index < 0 ) return( -1 );
+    if( index == 0 ) return( -1 );
+
+    --index;
 
     double randomMax = a_random * m_levelsAndProbabilities.m_summedProbabilities[m_indices[index]];
     for( index = 0; index < m_levelsAndProbabilities.m_levels.size( ) - 1; ++index ) {
@@ -269,12 +270,12 @@ LUPI_HOST_DEVICE void GRIN_inelastic::serialize( LUPI::DataBuffer &a_buffer, LUP
 
     DATA_MEMBER_INT( m_neutronIndex, a_buffer, a_mode );
     DATA_MEMBER_INT( m_neutronUserParticleIndex, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_neutronMass, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_neutronMass, a_buffer, a_mode );
 
     DATA_MEMBER_INT( m_targetIntid, a_buffer, a_mode );
     DATA_MEMBER_INT( m_targetIndex, a_buffer, a_mode );
     DATA_MEMBER_INT( m_targetUserParticleIndex, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_targetMass, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_targetMass, a_buffer, a_mode );
 
     DATA_MEMBER_VECTOR_DOUBLE( m_energies, a_buffer, a_mode );
 
@@ -520,12 +521,12 @@ LUPI_HOST void GRIN_capture::setUserParticleIndexViaIntid( int a_particleIntid, 
 
 LUPI_HOST_DEVICE void GRIN_capture::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
-    DATA_MEMBER_FLOAT( m_captureNeutronSeparationEnergy, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_captureNeutronSeparationEnergy, a_buffer, a_mode );
     DATA_MEMBER_VECTOR_DOUBLE( m_summedProbabilities, a_buffer, a_mode );
     DATA_MEMBER_INT( m_residualIntid, a_buffer, a_mode );
     DATA_MEMBER_INT( m_residualIndex, a_buffer, a_mode );
     DATA_MEMBER_INT( m_residualUserIndex, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_residualMass, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_residualMass, a_buffer, a_mode );
 
     std::size_t vectorSize = m_captureLevelProbabilities.size( );
     int vectorSizeInt = (int) vectorSize;

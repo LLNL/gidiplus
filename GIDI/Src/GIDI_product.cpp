@@ -96,7 +96,7 @@ Product::Product( Construction::Settings const &a_construction, HAPI::Node const
             GIDI::Functions::Function1dForm const *function1d = m_multiplicity.get<GIDI::Functions::Function1dForm>( 0 );
 
             if( function1d->type( ) == FormType::constant1d ) {
-                m_productMultiplicity = int( function1d->evaluate( 0.0 ) ); }
+                m_productMultiplicity = static_cast<int>( function1d->evaluate( 0.0 ) ); }
             else if( function1d->type( ) != FormType::unspecified1d ) {
                 m_productMultiplicity = -1;
             }

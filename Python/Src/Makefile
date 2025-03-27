@@ -11,7 +11,9 @@ GIDI_PLUS_PATH ?= $(abspath ../..)
 
 include $(GIDI_PLUS_PATH)/Makefile.paths
 
-Python_CFLAGS = $(shell python3-config --cflags)
+ifdef GIDI_PLUS_INCLUDE_PYTHON_BUILDING
+	Python_CFLAGS = $(shell python3-config --cflags) -DGIDI_PLUS_INCLUDE_PYTHON_BUILDING
+endif
 
 .PHONY: default clean realclean
 
@@ -26,7 +28,7 @@ default:
 
 %.o: %.cpp
 	echo "    "$<
-	$(CXX) -c $(Python_CFLAGS) $(local_CXXFLAGS) -O $< -o $@
+	$(CXX) -c $(Python_CFLAGS) $(local_CXXFLAGS) -O1 $< -o $@
 
 $(Archive): $(CppObjs)
 	rm -f $@

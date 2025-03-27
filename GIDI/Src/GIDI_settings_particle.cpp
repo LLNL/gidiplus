@@ -265,7 +265,7 @@ int Particle::appendFlux( Flux const &a_flux ) {
 
 ProcessedFlux const *Particle::nearestProcessedFluxToTemperature( double a_temperature ) const {
 
-    double priorTemperature, lastTemperature;
+    double priorTemperature, lastTemperature = 0;  // initialize to silence compiler warning
     std::vector<ProcessedFlux>::const_iterator iter;
 
     if( m_processedFluxes.size( ) == 0 ) return( nullptr );
