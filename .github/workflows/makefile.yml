@@ -7,7 +7,7 @@ on:
     branches: [ "master" ]
 
 env:
-  cppflags: "-std=c++17 -Wall -Wpedantic -Wshadow -Wstrict-aliasing -Wdelete-non-virtual-dtor -Wfloat-conversion -ffp-contract=off -funroll-loops -finline-functions"
+  cppflags: "-std=c++17 -Wall -Wpedantic -Wshadow -Wstrict-aliasing -Wdelete-non-virtual-dtor -Wfloat-conversion -ffp-contract=off -funroll-loops -finline-functions -DMCGIDI_USE_DOUBLES"
 
 jobs:
   build:
