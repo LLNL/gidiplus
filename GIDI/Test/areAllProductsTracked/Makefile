@@ -21,3 +21,4 @@ check: $(Executables)
 	../Utilities/diff.com areAllProductsTracked/areAllProductsTracked Benchmarks/areAllProductsTracked.H1+Li6.out Outputs/areAllProductsTracked.H1+Li6.out
 	./areAllProductsTracked --pid photon --tid O16 	> Outputs/areAllProductsTracked.photon+O16.out
 	../Utilities/diff.com areAllProductsTracked/areAllProductsTracked Benchmarks/areAllProductsTracked.photon+O16.out Outputs/areAllProductsTracked.photon+O16.out
+	for ff in Benchmarks/*; do echo ${ff}; diff ${ff} ${ff/Benchmarks/Outputs}; echo; done

@@ -21,3 +21,4 @@ check: $(Executables)
 	./statusMessageReporting 1 1 > Outputs/statusMessageReporting.2
 	./statusMessageReporting 1 1 1 > Outputs/statusMessageReporting.3
 	-diff -r Benchmarks Outputs > /dev/null; if [ $$? -ne 0 ]; then echo "FAILURE: statusMessageReporting"; fi
+	for ff in Benchmarks/*; do echo ${ff}; diff ${ff} ${ff/Benchmarks/Outputs}; echo; done

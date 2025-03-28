@@ -23,3 +23,4 @@ check: $(Executables)
 	../Utilities/diff.com productIDs/productIDs Benchmarks/productIDs.Th227.out Outputs/productIDs.Th227.out
 	./productIDs --tid Th227 --ENDL99120 > Outputs/productIDs.Th227.ENDL99120.out
 	../Utilities/diff.com productIDs/productIDs Benchmarks/productIDs.Th227.ENDL99120.out Outputs/productIDs.Th227.ENDL99120.out
+	for ff in Benchmarks/*; do echo ${ff}; diff ${ff} ${ff/Benchmarks/Outputs}; echo; done

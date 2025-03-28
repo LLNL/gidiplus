@@ -25,3 +25,4 @@ check: $(Executables)
 	$(PYTHON) ../Utilities/diff.py settingsProcess/productMatrixCollapse Benchmarks/productMatrixCollapse.Th227.out Outputs/productMatrixCollapse.Th227.out
 	./productMatrixCollapse_photoAtomic > Outputs/productMatrixCollapse_photoAtomic.O.out
 	$(PYTHON) ../Utilities/diff.py settingsProcess/productMatrixCollapse_photoAtomic Benchmarks/productMatrixCollapse_photoAtomic.O.out Outputs/productMatrixCollapse_photoAtomic.O.out
+	for ff in Benchmarks/*; do echo ${ff}; diff ${ff} ${ff/Benchmarks/Outputs}; echo; done

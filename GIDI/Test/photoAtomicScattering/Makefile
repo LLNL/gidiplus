@@ -17,3 +17,4 @@ check: $(Executables)
 	if [ ! -e Outputs ]; then mkdir Outputs; fi
 	./coherentPhotonScattering > Outputs/coherentPhotonScattering.out
 	$(PYTHON) ../Utilities/diff.py photoAtomicScattering/coherentPhotonScattering Benchmarks/coherentPhotonScattering.out Outputs/coherentPhotonScattering.out
+	for ff in Benchmarks/*; do echo ${ff}; diff ${ff} ${ff/Benchmarks/Outputs}; echo; done
