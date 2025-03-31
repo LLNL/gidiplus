@@ -17,4 +17,4 @@ check: $(Executables)
 	if [ ! -e Outputs ]; then mkdir Outputs; fi
 	./ancestry > Outputs/ancestry.out
 	../Utilities/diff.com ancestry/ancestry Benchmarks/ancestry.out Outputs/ancestry.out
-	for ff in Benchmarks/*; do echo ${ff}; diff ${ff} ${ff/Benchmarks/Outputs}; echo; done
+	diff -r Benchmarks Outputs

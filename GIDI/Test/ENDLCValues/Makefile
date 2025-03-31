@@ -36,4 +36,4 @@ check: $(Executables)
 
 	./ENDLCValues --minus 5 40 --pid photon > Outputs/ENDLCValues_-5_40.out
 	../Utilities/diff.com ENDLCValues/ENDLCValues Benchmarks/ENDLCValues_-5_40.out Outputs/ENDLCValues_-5_40.out
-	for ff in Benchmarks/*; do echo ${ff}; diff ${ff} ${ff/Benchmarks/Outputs}; echo; done
+	diff -r Benchmarks Outputs
