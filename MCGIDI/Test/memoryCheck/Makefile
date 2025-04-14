@@ -1,4 +1,4 @@
-SHELL = /bin/ksh
+SHELL = /bin/sh
 
 # <<BEGIN-copyright>>
 # Copyright 2019, Lawrence Livermore National Security, LLC.
@@ -15,3 +15,4 @@ include ../Makefile.check
 
 check: memoryCheck
 	./memoryCheck
+	./memoryCheck --DBRC

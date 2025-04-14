@@ -1,4 +1,4 @@
-SHELL = /bin/ksh
+SHELL = /bin/sh
 
 # <<BEGIN-copyright>>
 # Copyright 2019, Lawrence Livermore National Security, LLC.
@@ -7,8 +7,8 @@ SHELL = /bin/ksh
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
-DIRS = readAllProtaresInMapFile directory toXML reactions GNDS_FileType incompleteParticles HAPI_ReadAllProtaresInMapFile mapTiming producedPaticles \
-		readAllProtaresInMapFilePrintMultiGroup checkMultigroupSums
+DIRS = readAllProtaresInMapFile directory toXML reactions GNDS_FileType incompleteParticles HAPI_ReadAllProtaresInMapFile mapTiming producedParticles \
+		readAllProtaresInMapFilePrintMultiGroup checkMultigroupSums multiGroupCollapse
 
 .PHONY: default bin compile check clean realclean doDirs $(DIRS)
 

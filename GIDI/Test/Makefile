@@ -1,4 +1,4 @@
-SHELL = /bin/ksh
+SHELL = /bin/sh
 
 # <<BEGIN-copyright>>
 # Copyright 2019, Lawrence Livermore National Security, LLC.
@@ -13,7 +13,7 @@ DIRS = Utilities matrix VectorAndMatrixReverse map parseXML groupBoundaries inve
 	transportCorrection availableEnergy multiplicity Q averageProductData depositionData \
 	settingsProcess multiGroup temperatures splitString ancestry readAll photoAtomicScattering photoScattering TNSL gain \
 	multiGroups fluxes ENDLCValues activeReactions delayedNeutronProducts sumsCheck modifiedCrossSection RIS_viaMap \
-	areAllProductsTracked
+	areAllProductsTracked regions1dAsXYs1d suitePop
 
 default:
 	cd Utilities; $(MAKE)

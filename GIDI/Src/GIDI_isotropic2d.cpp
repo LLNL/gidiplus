@@ -70,7 +70,7 @@ double Isotropic2d::domainMax( ) const {
  * @return                          The value 0.5.
  ***********************************************************************************************************/
 
-double Isotropic2d::evaluate( double a_x2, double a_x1 ) const {
+double Isotropic2d::evaluate( LUPI_maybeUnused double a_x2, LUPI_maybeUnused double a_x1 ) const {
 
     return( 0.5 );
 }

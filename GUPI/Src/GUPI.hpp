@@ -24,6 +24,15 @@ class Suite;
 
 typedef Entry *(*GUPI_parseSuite)( Suite *a_parent, HAPI::Node const &a_node );
 
+#define GUPI_documentationChars "documentation"
+#define GUPI_titleChars "title"
+#define GUPI_abstractChars "abstract"
+#define GUPI_bodyChars "body"
+#define GUPI_endfCompatibleChars "endfCompatible"
+#define GUPI_doiChars "doi"
+#define GUPI_publicationDateChars "publicationDate"
+#define GUPI_versionChars "version"
+
 /*
 ============================================================
 ======================== WriteInfo =========================
@@ -88,8 +97,9 @@ class Ancestry {
     public:
         Ancestry( std::string const &a_moniker, std::string const &a_attribute = "" );
         virtual ~Ancestry( );
+        Ancestry &operator=( Ancestry const &a_ancestry );
 
-        std::string moniker( ) const { return( m_moniker ); }                               /**< Returns the value of the *m_moniker* member. */
+        std::string const &moniker( ) const { return( m_moniker ); }                               /**< Returns the value of the *m_moniker* member. */
         void setMoniker( std::string const &a_moniker ) { m_moniker = a_moniker; }          /**< Set the value of the *m_moniker* member to *a_moniker*. */
         Ancestry *ancestor( ) { return( m_ancestor ); }                                     /**< Returns the value of the *m_ancestor* member. */
         Ancestry const *ancestor( ) const { return( m_ancestor ); }                                     /**< Returns the value of the *m_ancestor* member. */
@@ -141,14 +151,89 @@ class Entry : public Ancestry {
         std::string const &keyName( ) const { return( m_keyName ); }        /**< Returns a const reference to the *m_keyName* member. */
         std::string const &keyValue( ) const { return( m_keyValue ); }      /**< Returns a const reference to the *m_keyValue* member. */
 
-        Ancestry *findInAncestry3( std::string const &a_item ) { return( nullptr ); }
-        Ancestry const *findInAncestry3( std::string const &a_item ) const { return( nullptr ); }
+        Ancestry *findInAncestry3( LUPI_maybeUnused std::string const &a_item ) { return( nullptr ); }
+        Ancestry const *findInAncestry3( LUPI_maybeUnused std::string const &a_item ) const { return( nullptr ); }
         LUPI_HOST void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode );
         std::string xlinkItemKey( ) const {
 
             if( m_keyValue == "" ) return( "" );
             return( buildXLinkItemKey( m_keyName, m_keyValue ) );
         } 
+};
+
+/*
+============================================================
+========================== Text ============================
+============================================================
+*/
+
+class Text : public Ancestry {
+
+    public:
+        enum class Encoding {
+            utf8,
+            ascii
+        };
+
+        enum class Markup {
+            none,
+            xml,
+            html,
+            latex
+        };
+    
+    private:
+        std::string m_body;
+        Encoding m_encoding;
+        Markup m_markup;
+        std::string m_label;
+
+    public:
+        Text( HAPI::Node const &a_node );
+        ~Text( );
+
+        std::string const &body( ) const { return m_body; }
+        Encoding encoding( ) const { return m_encoding; }
+        Markup markup( ) const { return m_markup; }
+        std::string const &label( ) const { return m_label; }
+
+        Ancestry *findInAncestry3( LUPI_maybeUnused std::string const &a_item ) { return( nullptr ); }
+        Ancestry const *findInAncestry3( LUPI_maybeUnused std::string const &a_item ) const { return( nullptr ); }
+
+};
+
+/*
+============================================================
+===================== Documentation ========================
+============================================================
+*/
+class Documentation : public Ancestry {
+
+    private:
+        std::string m_doi;                                              /**< The name of the key used by the parent suite to reference *this* entry. */
+        std::string m_publicationDate;                                             /**< The key used by the parent suite to reference *this* entry. */
+        std::string m_version;
+
+        Text m_title;
+        Text m_abstract;
+        Text m_body;     
+
+    public:
+        // Documentation(std::string const &a_moniker, Text const &a_doi, std::string const &a_publicationDate, Text const &a_version);
+        Documentation(HAPI::Node const &a_node);
+        ~Documentation( );
+
+        std::string const &doi( ) const { return m_doi; }
+        std::string const &publicationDate( ) const { return m_publicationDate; }
+        std::string const &version( ) const { return m_version; }
+
+        Text const &title( ) const { return m_title; }
+        Text const &abstract( ) const { return m_abstract; }
+        Text const &body( ) const { return m_body; }
+
+        Ancestry *findInAncestry3( LUPI_maybeUnused std::string const &a_item ) { return( nullptr ); }
+        Ancestry const *findInAncestry3( LUPI_maybeUnused std::string const &a_item ) const { return( nullptr ); }
+
 };
 
 /*

@@ -1,4 +1,4 @@
-SHELL = /bin/ksh
+SHELL = /bin/sh
 
 # <<BEGIN-copyright>>
 # Copyright 2019, Lawrence Livermore National Security, LLC.
@@ -19,3 +19,7 @@ check: $(Executables)
 	../Utilities/diff.com productIDs/productIDs Benchmarks/productIDs.out Outputs/productIDs.out
 	./productIDs --pa --pid photon > Outputs/productIDs.photon.pa.out
 	../Utilities/diff.com productIDs/productIDs Benchmarks/productIDs.photon.pa.out Outputs/productIDs.photon.pa.out
+	./productIDs --tid Th227 > Outputs/productIDs.Th227.out
+	../Utilities/diff.com productIDs/productIDs Benchmarks/productIDs.Th227.out Outputs/productIDs.Th227.out
+	./productIDs --tid Th227 --ENDL99120 > Outputs/productIDs.Th227.ENDL99120.out
+	../Utilities/diff.com productIDs/productIDs Benchmarks/productIDs.Th227.ENDL99120.out Outputs/productIDs.Th227.ENDL99120.out

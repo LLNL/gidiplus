@@ -201,76 +201,134 @@ reaction (  1) = O + photon [incoherent]  threshold = 0
         productIndex       photon KE = 0.966982  p = 2.99792e+10  m_px_vx = 1.99989e+10  m_py_vy = 1.68305e+10  m_pz_vz = 1.4681e+10
     energy = 56.295
         productIndex       photon KE = 4.59084  p = 2.99792e+10  m_px_vx = -7.23804e+07  m_py_vy = 1.32047e+10  m_pz_vz = 2.69144e+10
-reaction (  2) = e- + O [photo-electric]  threshold = 0
-    energy = 1e-13
-    energy = 2e-13
-    energy = 4e-13
-    energy = 8e-13
-    energy = 1.6e-12
-    energy = 3.2e-12
-    energy = 6.4e-12
-    energy = 1.28e-11
-    energy = 2.56e-11
-    energy = 5.12e-11
-    energy = 1.024e-10
-    energy = 2.048e-10
-    energy = 4.096e-10
-    energy = 8.192e-10
-    energy = 1.6384e-09
-    energy = 3.2768e-09
-    energy = 6.5536e-09
-    energy = 1.31072e-08
-    energy = 2.62144e-08
-    energy = 5.24288e-08
-    energy = 1.04858e-07
-    energy = 2.09715e-07
-    energy = 4.1943e-07
-    energy = 8.38861e-07
-    energy = 1.67772e-06
-    energy = 3.35544e-06
-    energy = 6.71089e-06
-    energy = 1.34218e-05
-    energy = 2.68435e-05
-    energy = 5.36871e-05
-    energy = 0.000107374
-    energy = 0.000214748
-    energy = 0.000429497
-    energy = 0.000858993
-    energy = 0.00171799
-    energy = 0.00343597
-    energy = 0.00687195
-    energy = 0.0137439
-    energy = 0.0274878
-    energy = 0.0549756
-    energy = 0.109951
-    energy = 0.219902
-    energy = 0.439805
-    energy = 0.879609
-    energy = 1.75922
-    energy = 3.51844
-    energy = 7.03687
-    energy = 14.0737
-    energy = 28.1475
-    energy = 56.295
-reaction (  3) = O + photon [pair production: electron field]  threshold = 1.022
-    energy = 1.022
+reaction (  2) = e- + e- + e-_anti + O [pair production: electron field]  threshold = 2.044
+    energy = 2.044
         productIndex       photon KE = 0.510999  p = 2.99792e+10  m_px_vx = -1.39377e+10  m_py_vy = 2.64762e+10  m_pz_vz = -1.87312e+09
         productIndex       photon KE = 0.510999  p = 2.99792e+10  m_px_vx = 1.39377e+10  m_py_vy = -2.64762e+10  m_pz_vz = 1.87312e+09
-    energy = 2.044
+    energy = 4.088
         productIndex       photon KE = 0.510999  p = 2.99792e+10  m_px_vx = 1.37302e+10  m_py_vy = 2.62336e+10  m_pz_vz = 4.69403e+09
         productIndex       photon KE = 0.510999  p = 2.99792e+10  m_px_vx = -1.37302e+10  m_py_vy = -2.62336e+10  m_pz_vz = -4.69403e+09
-    energy = 4.088
+    energy = 8.176
         productIndex       photon KE = 0.510999  p = 2.99792e+10  m_px_vx = 2.31808e+10  m_py_vy = 8.05169e+09  m_pz_vz = -1.72213e+10
         productIndex       photon KE = 0.510999  p = 2.99792e+10  m_px_vx = -2.31808e+10  m_py_vy = -8.05169e+09  m_pz_vz = 1.72213e+10
-    energy = 8.176
+    energy = 16.352
         productIndex       photon KE = 0.510999  p = 2.99792e+10  m_px_vx = 1.84136e+09  m_py_vy = 1.84791e+10  m_pz_vz = -2.35348e+10
         productIndex       photon KE = 0.510999  p = 2.99792e+10  m_px_vx = -1.84136e+09  m_py_vy = -1.84791e+10  m_pz_vz = 2.35348e+10
-    energy = 16.352
+    energy = 32.704
         productIndex       photon KE = 0.510999  p = 2.99792e+10  m_px_vx = -2.44249e+10  m_py_vy = 9.5679e+09  m_pz_vz = 1.45132e+10
         productIndex       photon KE = 0.510999  p = 2.99792e+10  m_px_vx = 2.44249e+10  m_py_vy = -9.5679e+09  m_pz_vz = -1.45132e+10
-    energy = 32.704
+    energy = 65.408
         productIndex       photon KE = 0.510999  p = 2.99792e+10  m_px_vx = 1.16557e+10  m_py_vy = 5.36905e+09  m_pz_vz = 2.70938e+10
         productIndex       photon KE = 0.510999  p = 2.99792e+10  m_px_vx = -1.16557e+10  m_py_vy = -5.36905e+09  m_pz_vz = -2.70938e+10
-    energy = 65.408
+reaction (  3) = e- + e-_anti + O [pair production: nuclear field]  threshold = 1.022
+    energy = 1.022
         productIndex       photon KE = 0.510999  p = 2.99792e+10  m_px_vx = 2.908e+10  m_py_vy = 2.31359e+09  m_pz_vz = 6.91037e+09
         productIndex       photon KE = 0.510999  p = 2.99792e+10  m_px_vx = -2.908e+10  m_py_vy = -2.31359e+09  m_pz_vz = -6.91037e+09
+    energy = 2.044
+        productIndex       photon KE = 0.510999  p = 2.99792e+10  m_px_vx = 2.98689e+10  m_py_vy = 1.16704e+08  m_pz_vz = 2.56737e+09
+        productIndex       photon KE = 0.510999  p = 2.99792e+10  m_px_vx = -2.98689e+10  m_py_vy = -1.16704e+08  m_pz_vz = -2.56737e+09
+    energy = 4.088
+        productIndex       photon KE = 0.510999  p = 2.99792e+10  m_px_vx = 6.91585e+09  m_py_vy = 2.00077e+10  m_pz_vz = 2.12278e+10
+        productIndex       photon KE = 0.510999  p = 2.99792e+10  m_px_vx = -6.91585e+09  m_py_vy = -2.00077e+10  m_pz_vz = -2.12278e+10
+    energy = 8.176
+        productIndex       photon KE = 0.510999  p = 2.99792e+10  m_px_vx = -9.91472e+09  m_py_vy = 1.57535e+10  m_pz_vz = -2.35007e+10
+        productIndex       photon KE = 0.510999  p = 2.99792e+10  m_px_vx = 9.91472e+09  m_py_vy = -1.57535e+10  m_pz_vz = 2.35007e+10
+    energy = 16.352
+        productIndex       photon KE = 0.510999  p = 2.99792e+10  m_px_vx = -7.95969e+09  m_py_vy = 2.88735e+10  m_pz_vz = 1.31116e+09
+        productIndex       photon KE = 0.510999  p = 2.99792e+10  m_px_vx = 7.95969e+09  m_py_vy = -2.88735e+10  m_pz_vz = -1.31116e+09
+    energy = 32.704
+        productIndex       photon KE = 0.510999  p = 2.99792e+10  m_px_vx = -1.21009e+09  m_py_vy = 6.28073e+09  m_pz_vz = 2.9289e+10
+        productIndex       photon KE = 0.510999  p = 2.99792e+10  m_px_vx = 1.21009e+09  m_py_vy = -6.28073e+09  m_pz_vz = -2.9289e+10
+    energy = 65.408
+        productIndex       photon KE = 0.510999  p = 2.99792e+10  m_px_vx = 1.85144e+10  m_py_vy = 2.16986e+10  m_pz_vz = -9.22734e+09
+        productIndex       photon KE = 0.510999  p = 2.99792e+10  m_px_vx = -1.85144e+10  m_py_vy = -2.16986e+10  m_pz_vz = 9.22734e+09
+reaction (  4) = e- + O{1s1/2}  threshold = 0.000538
+    energy = 0.000538
+    energy = 0.001076
+    energy = 0.002152
+    energy = 0.004304
+    energy = 0.008608
+    energy = 0.017216
+    energy = 0.034432
+    energy = 0.068864
+    energy = 0.137728
+    energy = 0.275456
+    energy = 0.550912
+    energy = 1.10182
+    energy = 2.20365
+    energy = 4.4073
+    energy = 8.81459
+    energy = 17.6292
+    energy = 35.2584
+    energy = 70.5167
+reaction (  5) = e- + O{2s1/2}  threshold = 2.848e-05
+    energy = 2.848e-05
+    energy = 5.696e-05
+    energy = 0.00011392
+    energy = 0.00022784
+    energy = 0.00045568
+    energy = 0.00091136
+    energy = 0.00182272
+    energy = 0.00364544
+    energy = 0.00729088
+    energy = 0.0145818
+    energy = 0.0291635
+    energy = 0.058327
+    energy = 0.116654
+    energy = 0.233308
+    energy = 0.466616
+    energy = 0.933233
+    energy = 1.86647
+    energy = 3.73293
+    energy = 7.46586
+    energy = 14.9317
+    energy = 29.8634
+    energy = 59.7269
+reaction (  6) = e- + O{2p1/2}  threshold = 1.362e-05
+    energy = 1.362e-05
+    energy = 2.724e-05
+    energy = 5.448e-05
+    energy = 0.00010896
+    energy = 0.00021792
+    energy = 0.00043584
+    energy = 0.00087168
+    energy = 0.00174336
+    energy = 0.00348672
+    energy = 0.00697344
+    energy = 0.0139469
+    energy = 0.0278938
+    energy = 0.0557875
+    energy = 0.111575
+    energy = 0.22315
+    energy = 0.4463
+    energy = 0.8926
+    energy = 1.7852
+    energy = 3.5704
+    energy = 7.1408
+    energy = 14.2816
+    energy = 28.5632
+    energy = 57.1264
+reaction (  7) = e- + O{2p3/2}  threshold = 1.362e-05
+    energy = 1.362e-05
+    energy = 2.724e-05
+    energy = 5.448e-05
+    energy = 0.00010896
+    energy = 0.00021792
+    energy = 0.00043584
+    energy = 0.00087168
+    energy = 0.00174336
+    energy = 0.00348672
+    energy = 0.00697344
+    energy = 0.0139469
+    energy = 0.0278938
+    energy = 0.0557875
+    energy = 0.111575
+    energy = 0.22315
+    energy = 0.4463
+    energy = 0.8926
+    energy = 1.7852
+    energy = 3.5704
+    energy = 7.1408
+    energy = 14.2816
+    energy = 28.5632
+    energy = 57.1264

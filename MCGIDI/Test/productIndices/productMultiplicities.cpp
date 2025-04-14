@@ -48,9 +48,16 @@ void main2( int argc, char **argv ) {
     argvOptions argv_options( __FILE__, description );
     ParseTestOptions parseTestOptions( argv_options, argc, argv );
 
+    argv_options.add( argvOption( "--ENDL99120", false, "If present, ENDL two 99120 products are list for a fission reaction." ) );
+
     parseTestOptions.parse( );
 
     GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, parseTestOptions.photonMode( ) );
+    if( argv_options.find( "--ENDL99120" )->present( ) )
+        construction.setFissionResiduals( GIDI::Construction::FissionResiduals::ENDL99120 );
+    if( argv_options.find( "--ENDL99120" )->present( ) )
+        construction.setFissionResiduals( GIDI::Construction::FissionResiduals::ENDL99120 );
+
     GIDI::Protare *protare = parseTestOptions.protare( pops, "../../../TestData/PoPs/pops.xml", "../../../GIDI/Test/Data/MG_MC/all_maps.map",
         construction, PoPI::IDs::neutron, "O16" );
 
@@ -74,12 +81,17 @@ void main2( int argc, char **argv ) {
 
         std::cout << reaction->label( ).c_str( ) << std::endl;
 
+        auto intids = reaction->productIntids( );
         auto indices = reaction->productIndices( );
         auto userIndices = reaction->userProductIndices( );
-        for( MCGIDI_VectorSizeType productIndex = 0; productIndex < indices.size( ); ++productIndex ) {
+        for( std::size_t productIndex = 0; productIndex < intids.size( ); ++productIndex ) {
+            int intid = intids[productIndex];
             int index = indices[productIndex];
+            int mulIndex = reaction->productMultiplicity( index );
+            int mulIntid = reaction->productMultiplicityViaIntid( intid );
 
-            std::cout << "    " << index << "  " << reaction->productMultiplicity( index ) << " " << userIndices[productIndex] << std::endl;
+            std::cout << "    " << intid << "  " << mulIndex << " " << userIndices[productIndex] << std::endl;
+            if( mulIndex != mulIntid ) std::cout << "ERROR: mulIndex = " << mulIndex << " != mulIntid = " << mulIntid << std::endl;
         }
     }
 

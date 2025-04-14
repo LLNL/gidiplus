@@ -113,10 +113,11 @@ __global__ void sample( MCGIDI::ProtareSingle *a_MCProtare, int a_numCollisions,
     MCGIDI::URR_protareInfos urr;
 // The next 4 lines cause a "nvlink warning".
     double crossSection = a_MCProtare->crossSection( urr, hashIndex, temperature, energy );
-    int reactionIndex = a_MCProtare->sampleReaction( urr, hashIndex, temperature, energy, crossSection, (double (*)(void *)) myRNG, &seed );
+    int reactionIndex = a_MCProtare->sampleReaction( urr, hashIndex, temperature, energy, crossSection, [&]( ) -> double { return myRNG( &seed ); } );
 
     MCGIDI::Reaction const *reaction = a_MCProtare->reaction( reactionIndex );
-    reaction->sampleProducts( a_MCProtare, energy, input, (double (*)( void * )) myRNG, &seed, products );
+    reaction->sampleProducts( a_MCProtare, energy, input, [&]( ) -> double { return myRNG( &seed ); }, 
+            [&]( MCGIDI::Sampling::Product &a_product ) -> void { products.push_back( a_product ); }, products );
 }
 
 /*
@@ -225,7 +226,7 @@ int main2( int argc, char *argv[] ) {                                   // main 
     printf( "doPrint = %d, numCollisions = %g, numIsotopes = %d, doCompare = %d\n", doPrint, static_cast<double>( numCollisions ), numIsotopes, doCompare );
 
     std::vector<MCGIDI::Protare *>protares( numIsotopes );
-    std::string mapFilename( "/usr/gapps/data/nuclear/development/GIDI3/Versions/V17/Data/ENDL2009/ENDL2009.4/all.map" );
+    std::string mapFilename( "/usr/gapps/data/nuclear/development/GNDS_2.0/ENDL2009/ENDL2009.4.3/all.map" );
     PoPI::Database pops( "/usr/gapps/data/nuclear/common/pops.xml" );
 
     std::ifstream meta_stream( "/usr/gapps/data/nuclear/common/metastables_alias.xml" );
@@ -339,10 +340,11 @@ int main2( int argc, char *argv[] ) {                                   // main 
             int hashIndex = domainHash.index( energy );
             MCGIDI::URR_protareInfos urr;
             double crossSection = gidi_data.crossSection( urr, hashIndex, temperature, energy );
-            int reactionIndex = MCProtare->sampleReaction( urr, hashIndex, temperature, energy, crossSection, (double (*)(void *)) myRNG, &seed );
+            int reactionIndex = MCProtare->sampleReaction( urr, hashIndex, temperature, energy, crossSection, [&]( ) -> double { return myRNG(&seed); } );
 
             MCGIDI::Reaction const *reaction = gidi_data.reaction( reactionIndex );
-            reaction->sampleProducts( &gidi_data, energy, input, (double (*)(void *)) myRNG, &seed, products );
+            reaction->sampleProducts( MCProtare, energy, input, [&]( ) -> double { return myRNG(&seed); }, 
+                    [&]( MCGIDI::Sampling::Product &a_product ) -> void { products.push_back( a_product ); }, products );
         }
         gettimeofday( &tv2, nullptr );
         printf( "Host tally:       " );

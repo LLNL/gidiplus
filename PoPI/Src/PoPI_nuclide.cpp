@@ -32,7 +32,8 @@ namespace PoPI {
 Nuclide::Nuclide( HAPI::Node const &a_node, Database *a_DB, Isotope *a_isotope ) :
         Particle( a_node, Particle_class::nuclide, PoPI_nuclideChars, -1 ),
         m_isotope( a_isotope ),
-        m_nucleus( a_node.child( PoPI_nucleusChars ), a_DB, this ) {
+        m_nucleus( a_node.child( PoPI_nucleusChars ), a_DB, this ),
+        m_gammaDecayData( a_node.child( PoPI_gammaDecayDataChars ) ) {
 
     int sign = ( isAnti( ) ? -1 : 1 );
     setIntid( sign * ( 1000 * ( 1000 * levelIndex( ) + Z( ) ) + A( ) ) );
@@ -122,13 +123,21 @@ double Nuclide::massValue( char const *a_unit ) const {
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-void Nuclide::calculateNuclideGammaBranchStateInfos( PoPI::Database const &a_pops, NuclideGammaBranchStateInfos &a_nuclideGammaBranchStateInfos ) const {
+void Nuclide::calculateNuclideGammaBranchStateInfos( PoPI::Database const &a_pops, NuclideGammaBranchStateInfos &a_nuclideGammaBranchStateInfos,
+                    bool a_alwaysAdd ) const {
 
-    NuclideGammaBranchStateInfo *nuclideGammaBranchStateInfo = new NuclideGammaBranchStateInfo( ID( ) );
+    if( a_nuclideGammaBranchStateInfos.find( ID( ) ) != nullptr )
+        return;
 
-    decayData( ).calculateNuclideGammaBranchStateInfo( a_pops, *nuclideGammaBranchStateInfo );    
+    NuclideGammaBranchStateInfo *nuclideGammaBranchStateInfo = new NuclideGammaBranchStateInfo( ID( ), intid( ), kind( ), m_nucleus.energy( "MeV" ) );
 
-    if( nuclideGammaBranchStateInfo->branches( ).size( ) > 0 ) {
+    if( m_gammaDecayData.rows( ) > 0 ) {
+        m_gammaDecayData.calculateNuclideGammaBranchStateInfo( a_pops, *nuclideGammaBranchStateInfo ); }
+    else {
+        decayData( ).calculateNuclideGammaBranchStateInfo( a_pops, *nuclideGammaBranchStateInfo );    
+    }
+
+    if( ( nuclideGammaBranchStateInfo->branches( ).size( ) > 0 ) || a_alwaysAdd ) {
         a_nuclideGammaBranchStateInfos.add( nuclideGammaBranchStateInfo ); }
     else {
         delete nuclideGammaBranchStateInfo;

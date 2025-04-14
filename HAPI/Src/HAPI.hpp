@@ -18,6 +18,7 @@
 #include <nf_buffer.h>
 #include <nf_utilities.h>
 
+// Uncomment the next line for G4GIDI/GEANT4.
 // #define HAPI_USE_PUGIXML 1
 
 #ifdef HAPI_USE_PUGIXML
@@ -27,7 +28,6 @@
 
 #ifdef HAPI_USE_HDF5
 #include <hdf5.h>
-#include <time.h>
 #endif
 
 #include <LUPI.hpp>
@@ -408,10 +408,6 @@ class HDFDataManager : public DataManager{
         size_t m_num_int_reads;
         size_t m_num_int_elem;
 
-        /* for timing
-        using TimeType = timespec;
-        TimeType m_tstart;
-         */
     public:
         HDFDataManager(std::string const &filename);
         virtual ~HDFDataManager();

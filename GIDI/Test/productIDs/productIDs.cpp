@@ -15,7 +15,7 @@
 static char const *description = "This program prints all and transportable particle ID for a protare and its reactions.";
 
 void main2( int argc, char **argv );
-void printIDs( char const *prefix, std::set<std::string> &IDs, PoPI::Database &pops );
+void printIDs( char const *prefix, std::set<std::string> &IDs, LUPI_maybeUnused PoPI::Database &pops );
 /*
 =========================================================
 */
@@ -46,10 +46,15 @@ void main2( int argc, char **argv ) {
 
     parseTestOptions.m_askGNDS_File = true;
 
+    argv_options.add( argvOption( "--ENDL99120", false, "If present, ENDL two 99120 products are list for a fission reaction." ) );
+
     parseTestOptions.parse( );
 
     GIDI::Construction::PhotoMode photo_mode = parseTestOptions.photonMode( GIDI::Construction::PhotoMode::nuclearAndAtomic );
     GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, photo_mode );
+    if( argv_options.find( "--ENDL99120" )->present( ) ) 
+        construction.setFissionResiduals( GIDI::Construction::FissionResiduals::ENDL99120 );
+
     PoPI::Database pops;
     GIDI::Protare *protare = parseTestOptions.protare( pops, "../../../TestData/PoPs/pops.xml", "../all.map", construction, PoPI::IDs::neutron, "O16" );
 
@@ -114,7 +119,7 @@ void main2( int argc, char **argv ) {
 /*
 =========================================================
 */
-void printIDs( char const *prefix, std::set<std::string> &IDs, PoPI::Database &pops ) {
+void printIDs( char const *prefix, std::set<std::string> &IDs, LUPI_maybeUnused PoPI::Database &pops ) {
 
     std::cout << prefix;
 

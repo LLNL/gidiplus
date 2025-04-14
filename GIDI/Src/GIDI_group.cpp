@@ -23,7 +23,7 @@ namespace GIDI {
  * @param a_pops            [in]    A PoPI::Database instance used to get particle indices and possibly other particle information.
  ***********************************************************************************************************/
 
-Group::Group( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops ) :
+Group::Group( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, LUPI_maybeUnused PoPI::Database const &a_pops ) :
         Form( a_node, a_setupInfo, FormType::group ),
         m_grid( a_node.child( GIDI_gridChars ), a_setupInfo, a_construction.useSystem_strtod( ) ) {
 

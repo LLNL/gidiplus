@@ -55,11 +55,11 @@ Particle::~Particle( ) {
 
 double Particle::massValue( char const *a_unit ) const {
 
-    if( m_mass.size( ) == 0 ) throw Exception( "Particle \"" + ID( ) + "\" does not have any mass data." );
+    if( m_mass.size( ) == 0 ) throw Exception( "Particle '" + ID( ) + "' does not have any mass data." );
 
     PQ_double const *pq_mass = dynamic_cast<PQ_double const *>( mass( )[0] );
 
-    if( pq_mass == nullptr ) throw Exception( "Particle does not have a PoPI::PQ_double mass." );
+    if( pq_mass == nullptr ) throw Exception( "Particle '" + ID( ) + "' does not have a PoPI::PQ_double mass." );
     return( pq_mass->value( a_unit ) );
 }
 
@@ -104,7 +104,7 @@ std::string Particle::toXMLListExtraAttributes( void ) const {
  * @param a_indent1                     [in]    The amount of indentation to added to each line added to *a_XMLList*.
  ***********************************************************************************************************/
 
-void Particle::toXMLListExtraElements( std::vector<std::string> &a_XMLList, std::string const &a_indent1 ) const {
+void Particle::toXMLListExtraElements( LUPI_maybeUnused std::vector<std::string> &a_XMLList, LUPI_maybeUnused std::string const &a_indent1 ) const {
 
     return;
 }

@@ -43,7 +43,7 @@ Suite::Suite( std::string const &a_moniker, std::string const &a_keyName ) :
 /* *********************************************************************************************************//**
  * @param a_construction        [in]    Used to pass user options to the constructor.
  * @param a_moniker             [in]    The **GNDS** moniker for the Suite instance.
- * @param a_node                [in]    The HAPI::Node to be parsed and used to construct the Product.
+ * @param a_node                [in]    The HAPI::Node to be parsed and used to construct the Suite.
  * @param a_keyName             [in]    The name of the key for referencing up child nodes.
  * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
  * @param a_pops                [in]    The *external* PoPI::Database instance used to get particle indices and possibly other particle information.
@@ -60,9 +60,11 @@ Suite::Suite( Construction::Settings const &a_construction, std::string const &a
         GUPI::Ancestry( a_moniker ),
         m_keyName( a_keyName ),
         m_styles( a_styles ),
-        m_allowsLazyParsing( a_allowsLazyParsing ) {
+        m_allowsLazyParsing( a_allowsLazyParsing ),
+        m_href( "" ) {
 
     HAPI::Node const node = a_node.child( a_moniker.c_str( ) );
+    m_href = node.attribute_as_string( GIDI_hrefChars );
 
     if( !node.empty( ) ) parse( a_construction, node, a_setupInfo, a_pops, a_internalPoPs, a_parseSuite, a_styles );
 }
@@ -115,7 +117,7 @@ int Suite::operator[]( std::string const &a_keyValue ) const {
 
     std::map<std::string, int>::const_iterator iter = m_map.find( a_keyValue );
     if( iter == m_map.end( ) ) {
-        throw Exception( "form '" + a_keyValue + "' not in database." );
+        throw Exception( "form '" + a_keyValue + "' not in suite " + toXLink( ) + "." );
     }
 
     return( iter->second );
@@ -244,7 +246,7 @@ Suite::const_iterator Suite::checkLazyParsingHelperFormIterator( Suite::const_it
 Suite::iterator Suite::find( std::string const &a_keyValue, bool a_convertLazyParsingHelperForm ) {
 
     for( Suite::iterator iter = m_forms.begin( ); iter != m_forms.end( ); ++iter ) {
-        if( (*iter)->keyName( ) == a_keyValue ) {
+        if( (*iter)->keyValue( ) == a_keyValue ) {
             if( a_convertLazyParsingHelperForm ) return( checkLazyParsingHelperFormIterator( iter ) );
             return( iter );
         }
@@ -308,6 +310,57 @@ std::vector<Suite::const_iterator> Suite::findAllOfMoniker( std::string const &a
     }
 
     return( iters );
+}
+
+/* *********************************************************************************************************//**
+ * This method finds the nearest form of instance Functions::XYs1d in *this* that is prior to the form with label *a_label*.
+ *
+ * @param a_label               [in]    The label of the form to start from when looking backwards.
+ * @param a_formType            [in]    The type of form to return.
+ *
+ * @return                              Pointer to an Functions::XYs1d instance of nullptr if one not found.
+ ***********************************************************************************************************/
+
+Form const *Suite::findInstanceOfTypeInLineage( std::string const &a_label, std::string const &a_moniker ) const {
+
+    Form const *form1 = nullptr;
+    auto formIter = m_forms.end( );
+
+    for( auto iter = m_forms.begin( ); iter != m_forms.end( ); ++iter ) {
+        if( (*iter)->label( ) == a_label ) break;
+        if( (*iter)->actualMoniker( ) == a_moniker ) formIter  = iter;
+    }
+
+    if( formIter != m_forms.end( ) ) {
+        form1 = *checkLazyParsingHelperFormIterator( formIter );
+    }
+
+    return( form1 );
+}
+
+/* *********************************************************************************************************//**
+ * This method finds the nearest form of instance Functions::XYs1d in *this* that is prior to the form with label *a_label*.
+ *
+ * @param a_styles              [in]    The styles suite for the protare.
+ * @param a_label               [in]    The label of the form to start from when looking backwards.
+ * @param a_formType            [in]    The type of form to return.
+ *
+ * @return                              Pointer to an Functions::XYs1d instance of nullptr if one not found.
+ ***********************************************************************************************************/
+
+Form *Suite::findInstanceOfTypeInLineage( Styles::Suite const &a_styles, std::string const &a_label, std::string const &a_moniker ) {
+
+    auto stylesIter = a_styles.find( a_label );
+    if( stylesIter != a_styles.end( ) ) {
+        auto suiteIter = find( a_label );
+        if( suiteIter != end( ) ) {
+            if( (*suiteIter)->actualMoniker( ) == a_moniker ) return( *checkLazyParsingHelperFormIterator( suiteIter ) );
+        }
+        Styles::Base const *style = static_cast<Styles::Base const *>( *stylesIter );
+        return( findInstanceOfTypeInLineage( a_styles, style->getDerivedStyle( )->keyValue( ), a_moniker ) );
+    }
+
+    return( nullptr );
 }
 
 /* *********************************************************************************************************//**

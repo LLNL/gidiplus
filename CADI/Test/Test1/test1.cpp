@@ -15,7 +15,7 @@
 
 // static char const *description = "Reads an isotopic abundance file.";
 
-void main2( int argc, char **argv );
+void main2( LUPI_maybeUnused int argc, LUPI_maybeUnused char **argv );
 void chemicalElementPrint( PoPI::Database const &pops, CADI::Map::IAM &a_IAM, std::string const &a_symbol, std::string const &a_evaluation );
 /*
 =========================================================
@@ -40,7 +40,7 @@ int main( int argc, char **argv ) {
 /*
 =========================================================
 */
-void main2( int argc, char **argv ) {
+void main2( LUPI_maybeUnused int argc, LUPI_maybeUnused char **argv ) {
 
     PoPI::Database pops( "../../../TestData/PoPs/pops.xml" );
     std::string fileName( "../../../TestData/isotopicAbundances/COGZA2a.xml" );

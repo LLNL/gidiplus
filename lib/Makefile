@@ -1,4 +1,4 @@
-SHELL = /bin/ksh
+SHELL = /bin/sh
 
 # <<BEGIN-copyright>>
 # Copyright 2019, Lawrence Livermore National Security, LLC.
@@ -9,7 +9,7 @@ SHELL = /bin/ksh
 
 .PHONY: default bin all libs docs check clean realclean
 
-DIRS = pugixml numericalFunctions LUPI HAPI GUPI CADI RISI PoPI GIDI MCGIDI
+DIRS = pugixml numericalFunctions LUPI Python HAPI GUPI CADI RISI PoPI GIDI MCGIDI
 
 default: libs
 

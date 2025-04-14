@@ -37,7 +37,7 @@ Nucleus::Nucleus( HAPI::Node const &a_node, Database *a_DB, Nuclide *a_nuclide )
         m_levelIndex( a_node.attribute( PoPI_indexChars ).as_int( ) ),              // The int version of m_levelName.
         m_energy( a_node.child( PoPI_energyChars ) ) {
 
-    if( a_node.empty( ) ) throw Exception( "nuclide is missing nuclues" );
+    if( a_node.empty( ) ) throw Exception( "nuclide is missing nucleus" );
 
     int sign = ( isAnti( ) ? -1 : 1 );
     setIntid( sign * ( 1000 * ( 1000 * (levelIndex( ) + 500) + Z( ) ) + A( ) ) );

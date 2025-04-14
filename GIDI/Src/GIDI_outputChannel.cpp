@@ -23,7 +23,8 @@ OutputChannel::OutputChannel( bool a_twoBody, bool a_fissions, std::string a_pro
         m_process( a_process ),
         m_Q( GIDI_QChars, GIDI_labelChars ),
         m_products( GIDI_productsChars, GIDI_labelChars ),
-        m_fissionFragmentData( ) {
+        m_fissionFragmentData( ),
+        m_fissionResiduals( Construction::FissionResiduals::none ) {
 
     m_Q.setAncestor( this );
     m_products.setAncestor( this );
@@ -44,19 +45,21 @@ OutputChannel::OutputChannel( bool a_twoBody, bool a_fissions, std::string a_pro
  ***********************************************************************************************************/
 
 OutputChannel::OutputChannel( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, 
-                PoPI::Database const &a_internalPoPs, Styles::Suite const *a_styles, bool a_isFission ) :
+                PoPI::Database const &a_internalPoPs, Styles::Suite const *a_styles, bool a_isFission, LUPI_maybeUnused bool a_addFissionResiduals ) :
         GUPI::Ancestry( a_node.name( ) ),
         m_twoBody( std::string( a_node.attribute_as_string( GIDI_genreChars ) ) == GIDI_twoBodyChars ),
         m_fissions( a_isFission ),
         m_process( std::string( a_node.attribute_as_string( GIDI_processChars ) ) ),
         m_Q( a_construction, GIDI_QChars, GIDI_labelChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseQSuite, a_styles ),
         m_products( a_construction, GIDI_productsChars, GIDI_labelChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseProductSuite, a_styles ),
-        m_fissionFragmentData( a_construction, a_node.child( GIDI_fissionFragmentDataChars ), a_setupInfo, a_pops, a_internalPoPs, a_styles ) {
+        m_fissionFragmentData( a_construction, a_node.child( GIDI_fissionFragmentDataChars ), a_setupInfo, a_pops, a_internalPoPs, a_styles ),
+        m_fissionResiduals( Construction::FissionResiduals::none ) {
+
+    if( a_isFission ) m_fissionResiduals = a_construction.fissionResiduals( );
 
     m_Q.setAncestor( this );
     m_products.setAncestor( this );
     m_fissionFragmentData.setAncestor( this );
-
 }
 
 /* *********************************************************************************************************//**
@@ -97,6 +100,8 @@ int OutputChannel::depth( ) const {
 
 bool OutputChannel::areAllProductsTracked( Transporting::Particles const &a_particles ) const {
 // Does not check m_fissionFragmentData as its will only have neutrons which should already be in m_products at least for now.
+
+    if( isFission( ) ) return( false );
 
     for( auto iter = m_products.begin( ); iter != m_products.end( ); ++iter ) {
         Product *product = static_cast<Product *>( *iter );
@@ -215,6 +220,14 @@ void OutputChannel::productIDs( std::set<std::string> &a_indices, Transporting::
     }
 
     m_fissionFragmentData.productIDs( a_indices, a_particles, a_transportablesOnly );
+
+    if( !a_transportablesOnly && isFission( ) ) {
+        if(      m_fissionResiduals == Construction::FissionResiduals::ENDL99120 ) {
+            a_indices.insert( PoPI::IDs::FissionProductENDL99120 ); }
+        else if( m_fissionResiduals == Construction::FissionResiduals::ENDL99125 ) {
+            a_indices.insert( PoPI::IDs::FissionProductENDL99125 );
+        }
+    }
 }
 
 /* *********************************************************************************************************//**
@@ -229,6 +242,14 @@ int OutputChannel::productMultiplicity( std::string const &a_productID ) const {
 
     int total_multiplicity = 0;
     std::size_t size = m_products.size( );
+
+    if( isFission( ) ) {
+        if(      ( a_productID == PoPI::IDs::FissionProductENDL99120 ) && ( m_fissionResiduals == Construction::FissionResiduals::ENDL99120 ) ) {
+            return( 2 ); }
+        else if( ( a_productID == PoPI::IDs::FissionProductENDL99125 ) && ( m_fissionResiduals == Construction::FissionResiduals::ENDL99125 ) ) {
+            return( 2 );
+        }
+    }
 
     for( std::size_t index = 0; index < size; ++index ) {
         Product const &product = *m_products.get<Product>( index );
@@ -491,6 +512,30 @@ void OutputChannel::mapContinuousEnergyProductData( Transporting::Settings const
 
     m_fissionFragmentData.mapContinuousEnergyProductData( a_settings, a_particleID, a_energies, a_offset, a_productEnergies, a_productMomenta,
                 a_productGains, a_ignoreIncompleteParticles );
+}
+
+/* *********************************************************************************************************//**
+ * This methods calculates multi-group data for all needed components and adds each component's multi-group with label *a_heatedMultiGroupLabel*.
+ *
+ * @param   a_temperatureInfo                   [in]    Specifies the temperature and labels use to lookup the requested data.
+ * @param   a_heatedMultiGroupLabel             [in]    The label of the style for the multi-group data being added.
+ * @param   a_multiGroupCalulationInformation   [in]    Store multi-group boundary and flux data used for multi-grouping.
+ * @param   a_crossSectionXYs1d                 [in[    The cross section weight.
+ ***********************************************************************************************************/
+
+void OutputChannel::calculateMultiGroupData( ProtareSingle const *a_protare, Styles::TemperatureInfo const &a_temperatureInfo, 
+                std::string const &a_heatedMultiGroupLabel, MultiGroupCalulationInformation const &a_multiGroupCalulationInformation, 
+                Functions::XYs1d const &a_crossSectionXYs1d ) {
+
+    calculate1dMultiGroupDataInComponent( a_protare, a_heatedMultiGroupLabel, a_multiGroupCalulationInformation, m_Q, a_crossSectionXYs1d );
+
+    for( std::size_t index = 0; index < m_products.size( ); ++index ) {
+        Product &product = *m_products.get<Product>( index );
+
+        product.calculateMultiGroupData( a_protare, a_temperatureInfo, a_heatedMultiGroupLabel, a_multiGroupCalulationInformation, a_crossSectionXYs1d );
+    }
+
+    m_fissionFragmentData.calculateMultiGroupData( a_protare, a_temperatureInfo, a_heatedMultiGroupLabel, a_multiGroupCalulationInformation, a_crossSectionXYs1d );
 }
 
 /* *********************************************************************************************************//**

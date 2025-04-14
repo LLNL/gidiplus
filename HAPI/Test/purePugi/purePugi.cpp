@@ -1,3 +1,12 @@
+/*
+# <<BEGIN-copyright>>
+# Copyright 2019, Lawrence Livermore National Security, LLC.
+# See the top-level COPYRIGHT file for details.
+# 
+# SPDX-License-Identifier: MIT
+# <<END-copyright>>
+*/
+
 #include <stdlib.h>
 #include <stdexcept>
 #include <iostream>
@@ -8,10 +17,12 @@
 
 #include <pugixml.hpp>
 
+#include <LUPI.hpp>
+
 using std::cout;
 using std::endl;
 
-int main( int argc, char **argv ) {
+int main( LUPI_maybeUnused int argc, LUPI_maybeUnused char **argv ) {
 
     std::cerr << "    " << "purePugi" << std::endl;
 

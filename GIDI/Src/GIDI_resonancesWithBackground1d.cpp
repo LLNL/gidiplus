@@ -65,7 +65,7 @@ ResonancesWithBackground1d::~ResonancesWithBackground1d( ) {
  * @param       a_inRegions         [in]        If *true*, *this* is in a Regions2d container.
  ***********************************************************************************************************/
 
-void ResonancesWithBackground1d::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
+void ResonancesWithBackground1d::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent, LUPI_maybeUnused bool a_embedded, LUPI_maybeUnused bool a_inRegions ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     std::string attributes;
@@ -140,7 +140,7 @@ double ResonanceBackground1d::domainMax( ) const {
  * @return                      The value of the function at the point *a_x1*.
  ***********************************************************************************************************/
 
-double ResonanceBackground1d::evaluate( double a_x1 ) const {
+double ResonanceBackground1d::evaluate( LUPI_maybeUnused double a_x1 ) const {
 
     throw Exception( "ResonanceBackground1d::evaluate: not implemented" );
 }
@@ -154,7 +154,7 @@ double ResonanceBackground1d::evaluate( double a_x1 ) const {
  * @param       a_inRegions         [in]        If *true*, *this* is in a Regions2d container.
  ***********************************************************************************************************/
 
-void ResonanceBackground1d::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
+void ResonanceBackground1d::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent, LUPI_maybeUnused bool a_embedded, LUPI_maybeUnused bool a_inRegions ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
 
@@ -223,7 +223,7 @@ double ResonanceBackgroundRegion1d::domainMax( ) const {
  * @return                      The value of the function at the point *a_x1*.
  ***********************************************************************************************************/
 
-double ResonanceBackgroundRegion1d::evaluate( double a_x1 ) const {
+double ResonanceBackgroundRegion1d::evaluate( LUPI_maybeUnused double a_x1 ) const {
 
     throw Exception( "ResonanceBackgroundRegion1d::evaluate: not implemented" );
 }
@@ -237,7 +237,7 @@ double ResonanceBackgroundRegion1d::evaluate( double a_x1 ) const {
  * @param       a_inRegions         [in]        If *true*, *this* is in a Regions2d container.
  ***********************************************************************************************************/
 
-void ResonanceBackgroundRegion1d::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
+void ResonanceBackgroundRegion1d::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent, LUPI_maybeUnused bool a_embedded, LUPI_maybeUnused bool a_inRegions ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
 

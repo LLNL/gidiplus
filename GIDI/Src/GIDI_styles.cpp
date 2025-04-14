@@ -69,7 +69,20 @@ std::string const *Suite::findLabelInLineage( GIDI::Suite const &a_suite, std::s
 Base::Base( HAPI::Node const &a_node, SetupInfo &a_setupInfo, GIDI::Suite *a_parent ) : 
         Form( a_node, a_setupInfo, FormType::style, a_parent ),
         m_date( a_node.attribute_as_string( GIDI_dateChars ) ),
+        m_label( a_node.attribute_as_string( GIDI_labelChars ) ),
         m_derivedStyle( a_node.attribute_as_string( GIDI_derivedFromChars ) ) {
+
+    if( a_node.child( GUPI_documentationChars ).empty( ) ) {
+        m_documentation = nullptr;
+    } else {
+        m_documentation = new GUPI::Documentation( a_node.child( GIDI_documentationChars ) );
+    }
+}
+
+Base::~Base( ) {
+
+    delete m_documentation;
+
 }
 
 /* *********************************************************************************************************//**
@@ -611,7 +624,6 @@ void MultiGroup::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_i
 HeatedMultiGroup::HeatedMultiGroup( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, 
                 PoPI::Database const &a_pops, GIDI::Suite *a_parent ) : 
         Base( a_node, a_setupInfo, a_parent ),
-        m_href( "" ),
         m_transportables( a_construction, GIDI_transportablesChars, GIDI_labelChars, a_node, a_setupInfo, a_pops, a_pops, parseTransportablesSuite, nullptr ),
         m_flux( a_construction, a_node.child( GIDI_fluxNodeChars ), a_setupInfo ),
         m_inverseSpeed( a_construction, a_node.child( GIDI_inverseSpeedChars ).child( GIDI_gridded1dChars ), a_setupInfo, nullptr ),
@@ -621,16 +633,23 @@ HeatedMultiGroup::HeatedMultiGroup( Construction::Settings const &a_construction
     m_flux.setAncestor( this );
     m_inverseSpeed.setAncestor( this );
 
-    set_href( a_node.attribute_as_string( GIDI_hrefChars ) );
-
-    if( ( m_transportables.size( ) == 0 ) && ( a_setupInfo.m_multiGroup != nullptr ) ) {
-        GIDI::Suite const &transportables1 = a_setupInfo.m_multiGroup->transportables( );
-
-        for( std::size_t index = 0; index < transportables1.size( ); ++index ) {
-            Transportable const &transportable = *transportables1.get<Transportable>( index );
-
-            m_transportables.add( new Transportable( transportable ) );
+    if( m_transportables.size( ) == 0 ) {
+        GIDI::Suite const *transportables1 = nullptr;
+        if( a_setupInfo.m_multiGroup != nullptr ) {
+            transportables1 = &a_setupInfo.m_multiGroup->transportables( ); }
+        else if( a_setupInfo.m_heatedMultiGroup != nullptr ) {
+            transportables1 = &a_setupInfo.m_heatedMultiGroup->transportables( );
         }
+        if( transportables1 != nullptr ) {
+            for( std::size_t index = 0; index < transportables1->size( ); ++index ) {
+                Transportable const &transportable = *transportables1->get<Transportable>( index );
+
+                m_transportables.add( new Transportable( transportable ) );
+            }
+            
+        } }
+    else if( a_setupInfo.m_heatedMultiGroup == nullptr ) {
+        a_setupInfo.m_heatedMultiGroup = this;
     }
 }
 
@@ -653,29 +672,6 @@ PhysicalQuantity const &HeatedMultiGroup::temperature( ) const {
 
     if( style == nullptr ) throw Exception( "No style with temperature." );
     return( style->temperature( ) );
-}
-
-/* *********************************************************************************************************//**
- * Ascends the **derivedFrom** styles until a temperature is found.
- *
- * @return          Returns the temperature associated with this style.
- ***********************************************************************************************************/
-
-void HeatedMultiGroup::set_href( std::string const &a_href ) {
-
-    if( a_href != "" ) {
-        if( m_transportables.size( ) != 0 ) throw Exception( "HeatedMultiGroup has transportable instances; therefore, setting href is not allowed." );
-
-        Suite const &transportables1 = dynamic_cast<Suite const &>( *findInAncestry( a_href ) );
-
-        for( std::size_t index = 0; index < transportables1.size( ); ++index ) {
-            Transportable const &transportable = *transportables1.get<Transportable>( index );
-
-            m_transportables.add( new Transportable( transportable ) );
-        }
-    }
-
-    m_href = a_href;
 }
 
 /* *********************************************************************************************************//**
@@ -740,7 +736,7 @@ void HeatedMultiGroup::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string cons
  * @param a_parent      [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-SnElasticUpScatter::SnElasticUpScatter( HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, GIDI::Suite *a_parent ) :
+SnElasticUpScatter::SnElasticUpScatter( HAPI::Node const &a_node, SetupInfo &a_setupInfo, LUPI_maybeUnused PoPI::Database const &a_pops, GIDI::Suite *a_parent ) :
         Base( a_node, a_setupInfo, a_parent ),
         m_upperCalculatedGroup( a_node.attribute_as_int( GIDI_upperCalculatedGroupChars ) ) {
 
@@ -796,7 +792,7 @@ void SnElasticUpScatter::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string co
  * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-GriddedCrossSection::GriddedCrossSection( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, GIDI::Suite *a_parent ) :
+GriddedCrossSection::GriddedCrossSection( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, LUPI_maybeUnused PoPI::Database const &a_pops, GIDI::Suite *a_parent ) :
         Base( a_node, a_setupInfo, a_parent ),
         m_grid( a_node.child( GIDI_gridChars ), a_setupInfo, a_construction.useSystem_strtod( ) ) {
 
@@ -852,7 +848,7 @@ void GriddedCrossSection::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string c
  * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-URR_probabilityTables::URR_probabilityTables( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, GIDI::Suite *a_parent ) :
+URR_probabilityTables::URR_probabilityTables( LUPI_maybeUnused Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, LUPI_maybeUnused PoPI::Database const &a_pops, GIDI::Suite *a_parent ) :
         Base( a_node, a_setupInfo, a_parent ) {
 
 }

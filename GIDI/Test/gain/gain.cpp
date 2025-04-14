@@ -16,7 +16,8 @@
 static char const *description = "The program prints the multi-group gain for a protare and its reactions.";
 
 void main2( int argc, char **argv );
-void gain( GIDI::Protare *a_protare, PoPI::Database &a_pops, GIDI::Transporting::MG &a_settings, GIDI::Styles::TemperatureInfos temperatures, char const *a_productID );
+void gain( GIDI::Protare *a_protare, LUPI_maybeUnused PoPI::Database &a_pops, GIDI::Transporting::MG &a_settings,
+                GIDI::Styles::TemperatureInfos temperatures, char const *a_productID );
 /*
 =========================================================
 */
@@ -71,7 +72,8 @@ void main2( int argc, char **argv ) {
 /*
 =========================================================
 */
-void gain( GIDI::Protare *a_protare, PoPI::Database &a_pops, GIDI::Transporting::MG &a_settings, GIDI::Styles::TemperatureInfos temperatures, char const *a_productID ) {
+void gain( GIDI::Protare *a_protare, LUPI_maybeUnused PoPI::Database &a_pops, GIDI::Transporting::MG &a_settings,
+                GIDI::Styles::TemperatureInfos temperatures, char const *a_productID ) {
 
     LUPI::StatusMessageReporting smr1;
     std::string prefix( "Total particle gain" );

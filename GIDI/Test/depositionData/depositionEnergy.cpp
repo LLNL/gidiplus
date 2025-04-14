@@ -11,6 +11,7 @@
 #include <iostream>
 #include <iomanip>
 #include <math.h>
+#include <algorithm>
 
 #include "GIDI_testUtilities.hpp"
 
@@ -42,12 +43,14 @@ int main( int argc, char **argv ) {
 */
 void main2( int argc, char **argv ) {
 
+    std::size_t maxReactionLabelLength = 0;
     LUPI::StatusMessageReporting smr1;
     argvOptions argv_options( "depositionEnergy", description );
     ParseTestOptions parseTestOptions( argv_options, argc, argv );
 
     parseTestOptions.m_askGNDS_File = true;
     argv_options.add( argvOption( "-z", false, "If present, setZeroDepositionIfAllProductsTracked is called with **true**, otherwise **false**." ) );
+    argv_options.add( argvOption( "--byReaction", false, "If present, energy deposition by reaction is also printed." ) );
 
     parseTestOptions.parse( );
 
@@ -74,13 +77,16 @@ void main2( int argc, char **argv ) {
     GIDI::Styles::TemperatureInfos temperatures = protare->temperatures( );
     GIDI::Styles::TemperatureInfo const &temperature = temperatures[0];
     GIDI::Transporting::MG settings( protare->projectile( ).ID( ), GIDI::Transporting::Mode::multiGroup, GIDI::Transporting::DelayedNeutrons::on );
-    settings.setZeroDepositionIfAllProductsTracked( argv_options.find( "-z" )->present( ) || true );
-    GIDI::Transporting::Particles particles;
+    settings.setZeroDepositionIfAllProductsTracked( argv_options.find( "-z" )->present( ) || false );
+    bool byReaction = argv_options.find( "--byReaction" )->present( );
 
+    GIDI::Transporting::Particles particles;
     for( std::size_t i1 = 0; i1 < argv_options.m_arguments.size( ); ++i1 ) {
         std::string particleID( argv[argv_options.m_arguments[i1]] );
+        std::string nuclideID = PoPI::specialParticleID( PoPI::SpecialParticleID_mode::nuclide, particleID );
 
-        GIDI::Transporting::Particle particle( particleID, groups_from_bdfls.getViaGID( particle_GID_map[particleID] ) );
+        std::cout << "# Transporting " << particleID << " (" << nuclideID << ")" << std::endl;
+        GIDI::Transporting::Particle particle( particleID, groups_from_bdfls.getViaGID( particle_GID_map[nuclideID] ) );
         particle.appendFlux( fluxes_from_bdfls.getViaFID( 1 ) );
         particles.add( particle );
     }
@@ -98,13 +104,21 @@ void main2( int argc, char **argv ) {
         GIDI::Reaction const *reaction = protare->reaction( index );
 
         depositionEnergySum += reaction->multiGroupDepositionEnergy( smr1, settings, temperature, particles );
+        maxReactionLabelLength = std::max( maxReactionLabelLength, reaction->label( ).size( ) );
+    }
+
+    for( std::size_t index = 0; index < protare->numberOfOrphanProducts( ); ++index ) {
+        GIDI::Reaction const *reaction = protare->orphanProduct( index );
+
+        depositionEnergySum += reaction->multiGroupDepositionEnergy( smr1, settings, temperature, particles );
+        maxReactionLabelLength = std::max( maxReactionLabelLength, reaction->label( ).size( ) );
     }
 
     GIDI::Vector photonAverageEnergy;
     for( std::size_t index = 0; index < protare->numberOfOrphanProducts( ); ++index ) {
         GIDI::Reaction const *reaction = protare->orphanProduct( index );
 
-        depositionEnergySum -= reaction->multiGroupAverageEnergy( smr1, settings, temperature, PoPI::IDs::photon );
+//        depositionEnergySum -= reaction->multiGroupAverageEnergy( smr1, settings, temperature, PoPI::IDs::photon );
         photonAverageEnergy += reaction->multiGroupAverageEnergy( smr1, settings, temperature, PoPI::IDs::photon );
     }
 
@@ -123,6 +137,32 @@ void main2( int argc, char **argv ) {
 
     prefix = "photon average energy   ::";
     printVector( prefix, photonAverageEnergy );
+
+    if( byReaction ) {
+        ++maxReactionLabelLength;
+        std::cout << std::endl << std::endl;
+        std::cout << "Deposition energy by reaction:" << std::endl;
+
+        for( std::size_t index = 0; index < protare->numberOfReactions( ); ++index ) {
+            GIDI::Reaction const *reaction = protare->reaction( index );
+            std::string label( reaction->label( ) );
+            label.resize( maxReactionLabelLength, ' ' );
+            label += "::";
+
+            depositionEnergy = reaction->multiGroupDepositionEnergy( smr1, settings, temperature, particles );
+            printVector( label, depositionEnergy );
+        }
+
+        for( std::size_t index = 0; index < protare->numberOfOrphanProducts( ); ++index ) {
+            GIDI::Reaction const *reaction = protare->orphanProduct( index );
+            std::string label( reaction->label( ) );
+            label.resize( maxReactionLabelLength, ' ' );
+            label += "::";
+
+            depositionEnergy = reaction->multiGroupDepositionEnergy( smr1, settings, temperature, particles );
+            printVector( label, depositionEnergy );
+        }
+    }
 
     delete protare;
 }

@@ -13,7 +13,7 @@ LIBS =  -lGIDI_testUtilities -lMCGIDI_testUtilities -lutilities4Speed -lMCGIDI -
 
 default: $(Executables)
 
-$(Executables): %: %.cpp
+$(Executables): %: %.cpp ../../../include/*.h* ../../../lib/*.a
 	echo "    "$@
 	$(CXX) $(local_CXXFLAGS) $< -o $@ $(LIBS)
 

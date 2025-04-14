@@ -170,7 +170,7 @@ double Ys1d::domainMax( ) const {
  * @return
  ***********************************************************************************************************/
 
-double Ys1d::evaluate( double a_x1 ) const {
+double Ys1d::evaluate( LUPI_maybeUnused double a_x1 ) const {
 
 #if !defined(__NVCC__) && !defined(__HIP__)
     throw Exception( "Ys1d::evaluate: not implemented" );
@@ -188,7 +188,7 @@ double Ys1d::evaluate( double a_x1 ) const {
  * @param       a_inRegions         [in]        If *true*, *this* is in a Regions1d container.
  ***********************************************************************************************************/
 
-void Ys1d::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
+void Ys1d::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent, LUPI_maybeUnused bool a_embedded, LUPI_maybeUnused bool a_inRegions ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     std::string attributes = a_writeInfo.addAttribute( GIDI_labelChars, label( ) );
@@ -200,27 +200,16 @@ void Ys1d::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const &a_in
 }
 
 /* *********************************************************************************************************//**
- * Prints the pair (index, y) values to stdout. The format string must have a long and a double conversion specifiers (e.g., "    %10ld %.6f").
+ * Writes the pair (index, y) values to *a_file*. The format string must have a long and a double conversion specifiers (e.g., "    %10ld %.6f").
  *
+ * @param       a_file              [in]    The C FILE instance to write the data to.
  * @param       a_format            [in]    The format string passed to the C printf function.
  ***********************************************************************************************************/
 
-void Ys1d::print( char const *a_format ) {
+void Ys1d::write( FILE *a_file, std::string const &a_format ) const {
 
     long size = static_cast<long>(  m_Ys.size( ) );
-    for( long index = 0; index < size; ++index ) printf( a_format, index + m_start, m_Ys[index] );
-}
-
-/* *********************************************************************************************************//**
- * Prints the pair (index, y) values to stdout. The format string must have a long and a double conversion specifiers (e.g., "    %10ld %.6f").
- *
- * @param       a_format            [in]    The format string passed to the C printf function.
- ***********************************************************************************************************/
-
-void Ys1d::print( std::string const &a_format ) {
-
-    print( a_format.c_str( ) );
-
+    for( long index = 0; index < size; ++index ) fprintf( a_file, a_format.c_str( ), index + m_start, m_Ys[index] );
 }
 
 }               // End namespace Functions.

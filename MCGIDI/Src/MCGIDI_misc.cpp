@@ -7,8 +7,6 @@
 # <<END-copyright>>
 */
 
-#include "math.h"
-
 #include "MCGIDI.hpp"
 
 namespace MCGIDI {
@@ -20,9 +18,16 @@ namespace MCGIDI {
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-LUPI_HOST SetupInfo::SetupInfo( ProtareSingle &a_protare ) :
+LUPI_HOST SetupInfo::SetupInfo( ProtareSingle &a_protare, GIDI::ProtareSingle const &a_GIDI_protare, PoPI::Database const &a_popsUser, 
+                PoPI::Database const &a_pops ) :
         m_protare( a_protare ),
-        m_initialStateIndex( -1 ) {
+        m_GIDI_protare( a_GIDI_protare ),
+        m_popsUser( a_popsUser ),
+        m_pops( a_pops ),
+        m_neutronIndex( MCGIDI_popsIndex( a_popsUser, PoPI::IDs::neutron ) ),
+        m_photonIndex( MCGIDI_popsIndex( a_popsUser, PoPI::IDs::photon ) ),
+        m_initialStateIndex( -1 ),
+        m_GRIN_continuumGammas( nullptr ) {
 
 }
 
@@ -31,25 +36,54 @@ LUPI_HOST SetupInfo::SetupInfo( ProtareSingle &a_protare ) :
 
 LUPI_HOST SetupInfo::~SetupInfo( ) {
 
-    for( auto iter = m_ACE_URR_protabilityTablesFromGIDI.begin( ); iter != m_ACE_URR_protabilityTablesFromGIDI.end( ); ++iter ) delete (*iter).second;
+    for( auto iter = m_ACE_URR_probabilityTablesFromGIDI.begin( ); iter != m_ACE_URR_probabilityTablesFromGIDI.end( ); ++iter ) delete (*iter).second;
 }
 
+/* *********************************************************************************************************//**
+ * This function returns the intid for particle *a_id* or -1 if *a_id* not in *a_pops*.
+ *
+ * @param       a_pops      [in]    A PoPI::Database to retrived the particle's intid from.
+ * @param       a_id        [in]    The GNDS PoPs id of the particle whose intid is requested.
+ *
+ * @return                          The *intid*.
+ ***********************************************************************************************************/
+
+LUPI_HOST int MCGIDI_popsIntid( PoPI::Database const &a_pops, std::string const &a_id ) {
+
+    if( a_id == PoPI::IDs::FissionProductENDL99120 ) return( PoPI::Intids::FissionProductENDL99120 );
+    if( a_id == PoPI::IDs::FissionProductENDL99125 ) return( PoPI::Intids::FissionProductENDL99125 );
+    int intid =  a_pops.intid( a_id );
+
+    if( intid < 0 ) {
+        if(      a_id == PoPI::IDs::neutron ) {
+            intid = PoPI::Intids::neutron; }
+        else if( a_id == PoPI::IDs::photon ) {
+            intid = PoPI::Intids::photon ; }
+        else {
+            PoPI::ParseIdInfo parseIdInfo( a_id );
+            if( parseIdInfo.isSupported( ) ) {
+                if( parseIdInfo.isNuclear( ) ) {
+                    intid = 1000 * parseIdInfo.Z( ) + parseIdInfo.A( );
+                }
+            }
+        }
+    }
+    return( intid );
+}
 
 /* *********************************************************************************************************//**
+ * This function returns the index in *a_pops* for particle *a_id* or -1 if *a_id* not in *a_pops*.
+ *
+ * @param       a_pops      [in]    A PoPI::Database to retrived the particle's index from.
+ * @param       a_id        [in]    The GNDS PoPs id of the particle whose index is requested.
+ *
  * @return                          The *index*.
  ***********************************************************************************************************/
 
-LUPI_HOST int MCGIDI_popsIndex( PoPI::Database const &a_pops, std::string const &a_ID ) {
+LUPI_HOST int MCGIDI_popsIndex( PoPI::Database const &a_pops, std::string const &a_id ) {
 
-    int index = -1;
-
-    try {
-        index = a_pops[a_ID]; }
-    catch (...) {
-        index = -1;
-    }
-
-    return( index );
+    if( !a_pops.exists( a_id ) ) return( -1 );
+    return( a_pops[a_id] );
 }
 
 /* *********************************************************************************************************//**
@@ -61,7 +95,7 @@ LUPI_HOST int MCGIDI_popsIndex( PoPI::Database const &a_pops, std::string const 
 
 LUPI_HOST Vector<double> GIDI_VectorDoublesToMCGIDI_VectorDoubles( GIDI::Vector a_vector ) {
 
-    Vector<double> vector( static_cast<MCGIDI_VectorSizeType>( a_vector.size( ) ) );
+    Vector<double> vector( a_vector.size( ) );
 
     for( std::size_t i1 = 0; i1 < a_vector.size( ); ++i1 ) vector[i1] = a_vector[i1];
 
@@ -69,15 +103,15 @@ LUPI_HOST Vector<double> GIDI_VectorDoublesToMCGIDI_VectorDoubles( GIDI::Vector 
 }
 
 /* *********************************************************************************************************//**
- * Adds the items in *a_productIndicesFrom* to the set *a_productIndicesTo*.
+ * Adds the items in Vector *a_from* to the set *a_to*.
  *
- * @param a_productIndicesTo            [in]    The list of ints to add to the set.
- * @param a_productIndicesFrom          [in]    The set to add the ints to.
+ * @param a_to              [in]    The list of ints to add to the set.
+ * @param a_from            [in]    The set to add the ints to.
  ***********************************************************************************************************/
 
-LUPI_HOST void addVectorItemsToSet( Vector<int> const &a_productIndicesFrom, std::set<int> &a_productIndicesTo ) {
+LUPI_HOST void addVectorItemsToSet( Vector<int> const &a_from, std::set<int> &a_to ) {
 
-    for( Vector<int>::const_iterator iter = a_productIndicesFrom.begin( ); iter != a_productIndicesFrom.end( ); ++iter ) a_productIndicesTo.insert( *iter );
+    for( Vector<int>::const_iterator iter = a_from.begin( ); iter != a_from.end( ); ++iter ) a_to.insert( *iter );
 }
 
 /* *********************************************************************************************************//**
@@ -192,214 +226,6 @@ LUPI_HOST_DEVICE int muCOM_From_muLab( double a_muLab, double a_boostBeta, doubl
 }
 
 /* *********************************************************************************************************//**
- * The function returns a normalized Maxwellian speed (i.e., v = |velocity|) in 3d (i.e., v^2 Exp( -v^2 )).
- * Using formula in https://link.springer.com/content/pdf/10.1007%2Fs10955-011-0364-y.pdf.
- * Author Nader M.A. Mohamed, title "Efficient Algorithm for Generating Maxwell Random Variables".
- *
- * @param a_userrng         [in]    The random number generator function to use.
- * @param a_rngState        [in]    The value of the random number generator state to use.
- *
- * @return                              The sampled normalized Maxwellian speed.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE double sampleBetaFromMaxwellian( double (*a_userrng)( void * ), void *a_rngState ) {
-
-    double _g = 2.0 / ( 1.37 * 0.5 * 1.772453850905516 );      // 1.772453850905516 = sqrt( pi ).
-    double beta, r1;
-
-    do {
-        r1 = a_userrng( a_rngState );
-        beta = sqrt( -2.0 * log( r1 ) );
-    } while( _g * r1 * beta < a_userrng( a_rngState ) );
-
-    return( beta );
-}
-
-/* *********************************************************************************************************//**
- * This function is used internally to sample a target's velocity (speed and cosine of angle relative to projectile)
- * for a heated target using zero temperature, multi-grouped cross sections.
- *
- * @param a_protare             [in]    The Protare instance for the projectile and target.
- * @param a_projectileEnergy    [in]    The energy of the projectile in the lab frame of the target.
- * @param a_input               [in]    Contains needed input like the targets temperature. Also will have the target sampled velocity on return if return value is *true*.
- * @param a_userrng             [in]    The random number generator function to use.
- * @param a_rngState            [in]    The value of the random number generator state to use.
- *
- * @return                              Returns *true* if target velocity is sampled and false otherwise.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE bool sampleTargetBetaForUpscatterModelA( Protare const *a_protare, double a_projectileEnergy, Sampling::Input &a_input,
-                double (*a_userrng)( void * ), void *a_rngState ) {
-
-    double projectileBeta = MCGIDI_particleBeta( a_protare->projectileMass( ), a_projectileEnergy );
-
-    double temperature = a_input.m_temperature * 1e-3;                   // FIXME Assumes m_temperature is in keV/k for now.
-    double targetThermalBeta = MCGIDI_particleBeta( a_protare->targetMass( ), temperature );
-
-    if( targetThermalBeta < 1e-4 * projectileBeta ) return( false );
-
-    double relativeBetaMin = projectileBeta - 2.0 * targetThermalBeta;
-    double relativeBetaMax = projectileBeta + 2.0 * targetThermalBeta;
-
-    Vector<double> const &upscatterModelAGroupVelocities = a_protare->upscatterModelAGroupVelocities( );
-    MCGIDI_VectorSizeType maxIndex = upscatterModelAGroupVelocities.size( ) - 2;
-    MCGIDI_VectorSizeType relativeBetaMinIndex = binarySearchVector( relativeBetaMin, upscatterModelAGroupVelocities, true );
-    MCGIDI_VectorSizeType relativeBetaMaxIndex = binarySearchVector( relativeBetaMax, upscatterModelAGroupVelocities, true );
-    double targetBeta, relativeBeta, mu;
-
-    if( relativeBetaMinIndex >= maxIndex ) relativeBetaMinIndex = maxIndex;
-    if( relativeBetaMaxIndex >= maxIndex ) relativeBetaMaxIndex = maxIndex;
-
-    if( relativeBetaMinIndex == relativeBetaMaxIndex ) {
-        targetBeta = targetThermalBeta * sampleBetaFromMaxwellian( a_userrng, a_rngState );
-        mu = 1.0 - 2.0 * a_userrng( a_rngState );
-        relativeBeta = sqrt( targetBeta * targetBeta + projectileBeta * projectileBeta - 2.0 * mu * targetBeta * projectileBeta ); }
-    else {
-
-        Vector<double> const &upscatterModelACrossSection = a_input.m_reaction->upscatterModelACrossSection( );
-        double reactionRate;
-        double reactionRateMax = 0;
-        for( MCGIDI_VectorSizeType i1 = relativeBetaMinIndex; i1 <= relativeBetaMaxIndex; ++i1 ) {
-            reactionRate = upscatterModelACrossSection[i1] * upscatterModelAGroupVelocities[i1+1];
-            if( reactionRate > reactionRateMax ) reactionRateMax = reactionRate;
-        }
-
-        do {
-            targetBeta = targetThermalBeta * sampleBetaFromMaxwellian( a_userrng, a_rngState );
-            mu = 1.0 - 2.0 * a_userrng( a_rngState );
-            relativeBeta = sqrt( targetBeta * targetBeta + projectileBeta * projectileBeta - 2.0 * mu * targetBeta * projectileBeta );
-
-            MCGIDI_VectorSizeType index = binarySearchVector( relativeBeta, upscatterModelAGroupVelocities, true );
-            if( index > maxIndex ) index = maxIndex;
-            reactionRate = upscatterModelACrossSection[index] * relativeBeta;
-        } while( reactionRate <  a_userrng( a_rngState ) * reactionRateMax );
-    }
-
-    a_input.m_projectileBeta = projectileBeta;
-    a_input.m_relativeMu = mu;
-    a_input.m_targetBeta = targetBeta;
-    a_input.m_relativeBeta = relativeBeta;
-    a_input.m_projectileEnergy = particleKineticEnergy( a_protare->projectileMass( ), relativeBeta );
-
-    return( true );
-}
-
-/* *********************************************************************************************************//**
- * This function boost a particle from one frame to another frame. The frames have a relative speed *a_boostSpeed*
- * and cosine of angle *a_boostMu* between their z-axes. BRB FIXME, currently it is the x-axis.
- *
- * @param a_input                   [in]    Instance containing a random number generator that returns a double in the range [0, 1).
- * @param a_userrng                 [in]    The random number generator function to use.
- * @param a_rngState                [in]    The value of the random number generator state to use.
- * @param a_product                 [in]    The particle to boost.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE void upScatterModelABoostParticle( Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState, Sampling::Product &a_product ) {
-
-    double C_rel = 1.0;
-    if( a_input.m_relativeBeta != 0.0 ) C_rel = ( a_input.m_projectileBeta - a_input.m_relativeMu * a_input.m_targetBeta ) / a_input.m_relativeBeta;
-    double S_rel = sqrt( 1.0 - C_rel * C_rel );
-
-    double pz_vz = a_product.m_pz_vz;
-    a_product.m_pz_vz =  C_rel * a_product.m_pz_vz + S_rel * a_product.m_px_vx;
-    a_product.m_px_vx = -S_rel * pz_vz             + C_rel * a_product.m_px_vx;
-
-    double targetSpeed = MCGIDI_speedOfLight_cm_sec * a_input.m_targetBeta;
-    a_product.m_pz_vz += a_input.m_relativeMu * targetSpeed;
-    a_product.m_px_vx += sqrt( 1.0 - a_input.m_relativeMu * a_input.m_relativeMu ) * targetSpeed;
-
-    double phi = 2.0 * M_PI * a_userrng( a_rngState );
-    double sine = sin( phi );
-    double cosine = cos( phi );
-    double px_vx = a_product.m_px_vx;
-    a_product.m_px_vx = cosine * a_product.m_px_vx - sine   * a_product.m_py_vy;
-    a_product.m_py_vy = sine   * px_vx             + cosine * a_product.m_py_vy;
-
-    double speed2 = a_product.m_px_vx * a_product.m_px_vx + a_product.m_py_vy * a_product.m_py_vy + a_product.m_pz_vz * a_product.m_pz_vz;
-    speed2 /= MCGIDI_speedOfLight_cm_sec * MCGIDI_speedOfLight_cm_sec;
-
-    a_product.m_kineticEnergy = particleKineticEnergyFromBeta2( a_product.m_productMass, speed2 );
-}
-
-/* *********************************************************************************************************//**
- * This function samples an energy and cosine of the angle for a photon for Klein Nishina scattering (i.e, incoherent photo-atomic scattering).
- *
- * @param a_energyIn            [in]    The energy of the incoming photon.
- * @param a_userrng             [in]    The random number generator function to use.
- * @param a_rngState            [in]    The value of the random number generator state to use.
- * @param a_energyOut           [in]    The energy of the scattered photon.
- * @param a_mu                  [in]    The cosine of the angle of the scattered photon's z-axis and the incoming photon's z-axis.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE void MCGIDI_sampleKleinNishina( double a_energyIn, double (*a_userrng)( void * ), void *a_rngState, double *a_energyOut, double *a_mu ) {
-/*
-  Description
-    Sample the Klein-Nishina distribution.
-      The unit of energy is the rest mass of the electron.
-      Reference: R. N. Blomquist and E. N. Gelbard, Nuclear Science
-      and Engineering, 83, 380-384 (1983)
-
-   This routine was taken from MCAPM which was from MCNP with only cosmetic changes.
-
-   Input
-     a_energyIn       - incident photon energy ( in electron rest mass units )
-     *userrng       - user supplied random number generator
-     *rngstate      - random number generator state
-   Output
-     *a_energyOut   - exiting photon energy ( in electron rest mass units )
-     *a_mu          - exiting photon cosine
-*/
-
-    double a1, b1, t1, s1, r1, mu, energyOut;
-
-    a1 = 1.0 / a_energyIn;
-    b1 = 1.0 / ( 1.0 + 2.0 * a_energyIn );
-
-    if( a_energyIn < 3.0 ) {                      // Kahn''s method ( e < 1.5 MeV ) AECU-3259.
-        bool reject = true;
-
-        t1 = 1.0 / ( 1.0 + 8.0 * b1 );
-        do {
-            if( a_userrng( a_rngState ) <= t1 ) {
-                r1 = 2.0 * a_userrng( a_rngState );
-                s1 = 1.0 / ( 1.0 + a_energyIn * r1 );
-                mu = 1.0 - r1;
-                reject = a_userrng( a_rngState ) > 4.0 * s1 * ( 1.0 - s1 ); }
-            else {
-                s1 = ( 1.0 + 2.0 * a_energyIn * a_userrng( a_rngState ) ) * b1;
-                mu = 1.0 + a1 * ( 1.0 - 1.0 / s1 );
-                reject = a_userrng( a_rngState ) > 0.5 * ( mu * mu + s1 );
-            }
-        } while( reject );
-        energyOut = a_energyIn / ( 1 + a_energyIn * ( 1 - mu ) ); }
-    else {                                        // Koblinger''s method ( e > 1.5 MeV ) NSE 56, 218 ( 1975 ).
-        t1 = a_userrng( a_rngState ) * ( 4.0 * a1 + 0.5 * ( 1.0 - b1 * b1 ) - ( 1.0 - 2.0 * ( 1.0 + a_energyIn ) * ( a1 * a1 ) ) * log( b1 ) );
-        if( t1 > 2.0 * a1 ) {
-            if( t1 > 4.0 * a1 ) {
-                if( t1 > 4.0 * a1 + 0.5 * ( 1.0 - b1 * b1 ) ) {
-                    energyOut = a_energyIn * pow( b1, a_userrng( a_rngState ) );
-                    mu = 1.0 + a1 - 1.0 / energyOut; }
-                else {
-                    energyOut = a_energyIn * sqrt( 1.0 - a_userrng( a_rngState ) * ( 1.0 - b1 * b1 ) );
-                    mu = 1.0 + a1 - 1.0 / energyOut;
-                  } }
-            else {
-                energyOut = a_energyIn * ( 1.0 + a_userrng( a_rngState ) * ( b1 - 1.0 ) );
-                mu =  1.0 + a1 - 1.0 / energyOut; } }
-        else {
-            r1 = 2.0 * a_userrng( a_rngState );
-            mu = 1.0 - r1;
-            energyOut = 1.0 / ( a1 + r1 );
-          }
-    }
-
-    *a_mu = mu;
-    *a_energyOut = energyOut;
-
-    return;
-}
-
-/* *********************************************************************************************************//**
  * This function returns a unique integer for the **Distributions::Type**. For internal use when broadcasting a
  * distribution for MPI and GPUs needs.
  *              
@@ -454,6 +280,9 @@ LUPI_HOST_DEVICE int distributionTypeToInt( Distributions::Type a_type ) {
         break;
     case Distributions::Type::branching3d :
         distributionType = 13;
+        break;
+    case Distributions::Type::incoherentBoundToFreePhotoAtomicScattering :
+        distributionType = 14;
         break;
     }
 
@@ -514,6 +343,9 @@ LUPI_HOST_DEVICE Distributions::Type intToDistributionType( int a_type ) {
         break;
     case 13 :
         type = Distributions::Type::branching3d;
+        break;
+    case 14 :
+        type = Distributions::Type::incoherentBoundToFreePhotoAtomicScattering;
         break;
     default:
         LUPI_THROW( "intToDistributionType: unsupported distribution type." );
@@ -600,9 +432,9 @@ LUPI_HOST_DEVICE void serializeDelayedNeutrons( LUPI::DataBuffer &a_buffer, LUPI
  * This method serializes *a_Qs* for broadcasting as needed for MPI and GPUs. The method can count the number of required
  * bytes, pack *a_Qs* or unpack *a_Qs* depending on *a_mode*.
  *
- * @param a_Qs                  [in]    The Q functions to serialize.
  * @param a_buffer              [in]    The buffer to read or write data to depending on *a_mode*.
  * @param a_mode                [in]    Specifies the action of this method.
+ * @param a_Qs                  [in]    The Q functions to serialize.
  ***********************************************************************************************************/
 
 LUPI_HOST_DEVICE void serializeQs( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode, Vector<Functions::Function1d_d1 *> &a_Qs ) {
@@ -621,6 +453,85 @@ LUPI_HOST_DEVICE void serializeQs( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer:
     for( std::size_t vectorIndex = 0; vectorIndex < vectorSize; ++vectorIndex ) {
         a_Qs[vectorIndex] = serializeFunction1d_d1( a_buffer, a_mode, a_Qs[vectorIndex] );
     }
+}
+
+
+/* *********************************************************************************************************//**
+ * 
+ * @param a_fissionResiduals    [in]    A reference to the GIDI::Construction::FissionResiduals reference serialize.
+ * @param a_buffer              [in]    The buffer to read or write data to depending on *a_mode*.
+ * @param a_mode                [in]    Specifies the action of this method.
+ ***********************************************************************************************************/
+
+LUPI_HOST_DEVICE void serializeFissionResiduals( GIDI::Construction::FissionResiduals &a_fissionResiduals, 
+                LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
+
+    int fissionResidualsInt = 0;
+
+    if( a_mode != LUPI::DataBuffer::Mode::Unpack ) {
+        switch( a_fissionResiduals ) {
+        case GIDI::Construction::FissionResiduals::none :
+            break;
+        case GIDI::Construction::FissionResiduals::ENDL99120 :
+            fissionResidualsInt = 1;
+            break;
+        case GIDI::Construction::FissionResiduals::ENDL99125 :
+            fissionResidualsInt = 2;
+            break;
+        }
+    }
+
+    DATA_MEMBER_INT( fissionResidualsInt, a_buffer, a_mode );
+
+    if( a_mode == LUPI::DataBuffer::Mode::Unpack ) {
+        switch( fissionResidualsInt ) {
+        case 0 :
+            a_fissionResiduals = GIDI::Construction::FissionResiduals::none;
+            break;
+        case 1 :
+            a_fissionResiduals = GIDI::Construction::FissionResiduals::ENDL99120;
+            break;
+        case 2 :
+            a_fissionResiduals = GIDI::Construction::FissionResiduals::ENDL99125;
+            break;
+        }
+    }
+}
+
+/* *********************************************************************************************************//**
+ * This function returns a std::vector<double> that represents **a_input**.
+ *
+ * @param a_input               [in]    The input for the returned std::vector<double> instance.
+ *
+ * @returns                             A std::vector<double> instance.
+ ***********************************************************************************************************/
+
+LUPI_HOST std::vector<double> vectorToSTD_vector( Vector<double> a_input ) {
+
+    std::vector<double> vector( a_input.size( ) );
+
+    std::size_t index = 0;
+    for( auto iter = a_input.begin( ); iter != a_input.end( ); ++iter, ++index ) vector[index] = *iter;
+
+    return( vector );
+}
+
+/* *********************************************************************************************************//**
+ * This function returns a std::vector<double> that represents **a_input**.
+ *
+ * @param a_input               [in]    The input for the returned std::vector<double> instance.
+ *
+ * @returns                             A std::vector<double> instance.
+ ***********************************************************************************************************/
+
+LUPI_HOST std::vector<double> vectorToSTD_vector( Vector<float> a_input ) {
+
+    std::vector<double> vector( a_input.size( ) );
+
+    std::size_t index = 0;
+    for( auto iter = a_input.begin( ); iter != a_input.end( ); ++iter, ++index ) vector[index] = *iter;
+
+    return( vector );
 }
 
 }

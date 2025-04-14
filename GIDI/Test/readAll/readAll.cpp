@@ -18,7 +18,7 @@ GIDI::Map::Map *mapRoot = nullptr;
 
 void main2( int argc, char **argv );
 void walk( std::string const &mapFilename, PoPI::Database const &pops );
-void readProtare( std::string const &protareFilename, PoPI::Database const &pops, std::string const &a_resolvedLibrary );
+void readProtare( std::string const &protareFilename, PoPI::Database const &pops, LUPI_maybeUnused std::string const &a_resolvedLibrary );
 /*
 =========================================================
 */
@@ -88,7 +88,7 @@ void walk( std::string const &mapFilename, PoPI::Database const &pops ) {
 /*
 =========================================================
 */
-void readProtare( std::string const &protareFilename, PoPI::Database const &pops, std::string const &a_resolvedLibrary ) {
+void readProtare( std::string const &protareFilename, PoPI::Database const &pops, LUPI_maybeUnused std::string const &a_resolvedLibrary ) {
 
     std::cout << std::endl;
     std::cout << "        " << stripDirectoryBase( protareFilename, "/GIDI/" ) << std::endl;
@@ -101,14 +101,19 @@ void readProtare( std::string const &protareFilename, PoPI::Database const &pops
     protare = new GIDI::ProtareSingle( construction, protareFilename, GIDI::FileType::XML, pops, particleSubstitution, libraries, GIDI_MapInteractionNuclearChars );
 
     GIDI::Map::ProtareBase const *protareEntry = mapRoot->findProtareEntry( protare->projectile( ).ID( ), protare->target( ).ID( ), "", protare->evaluation( ) );
-    std::cout << "        library          = " << protareEntry->parent( )->library( ) << std::endl;
-    std::cout << "        resolved library = " << protareEntry->parent( )->resolvedLibrary( ) << std::endl;
+    if( protareEntry == nullptr ) {
+        std::cout << "ERROR: Could not find protare '" << protare->projectile( ).ID( ) << " + " << protare->target( ).ID( ) 
+                << "' with evaluation " << protare->evaluation( ) << " in map file using findProtareEntry."; }
+    else {
+        std::cout << "        library          = " << protareEntry->parent( )->library( ) << std::endl;
+        std::cout << "        resolved library = " << protareEntry->parent( )->resolvedLibrary( ) << std::endl;
 
-    GIDI::stringAndDoublePairs labelsAndMuCutoffs = protare->muCutoffForCoulombPlusNuclearElastic( );
-    for( std::size_t i1 = 0; i1 < labelsAndMuCutoffs.size( ); ++i1 ) {
-        GIDI::stringAndDoublePair labelAndMuCutoff = labelsAndMuCutoffs[i1];
+        GIDI::stringAndDoublePairs labelsAndMuCutoffs = protare->muCutoffForCoulombPlusNuclearElastic( );
+        for( std::size_t i1 = 0; i1 < labelsAndMuCutoffs.size( ); ++i1 ) {
+            GIDI::stringAndDoublePair labelAndMuCutoff = labelsAndMuCutoffs[i1];
 
-        std::cout << "    label = " << labelAndMuCutoff.first << " mu = " << labelAndMuCutoff.second << std::endl;
+            std::cout << "    label = " << labelAndMuCutoff.first << " mu = " << labelAndMuCutoff.second << std::endl;
+        }
     }
 
     delete protare;

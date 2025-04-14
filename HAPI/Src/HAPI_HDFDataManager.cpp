@@ -9,7 +9,6 @@
 
 #include "HAPI.hpp"
 #include <vector>
-//#include <time.h>
 
 #ifdef HAPI_USE_HDF5
 namespace HAPI {
@@ -31,40 +30,10 @@ namespace HAPI {
 
         m_stride[0] = 1;
         m_block[0] = 1;
-
-        /*
-        m_num_double_reads = 0;
-        m_num_double_elem = 0;
-        m_num_int_reads = 0;
-        m_num_int_elem = 0;
-        clock_gettime(CLOCK_MONOTONIC, &m_tstart);
-        */
     }
 
     HDFDataManager::~HDFDataManager()
     {
-      /*  timing info for debugging
-      TimeType tstop;
-      clock_gettime(CLOCK_MONOTONIC, &tstop);
-
-      double t = tstop.tv_sec - m_tstart.tv_sec;
-      t += (tstop.tv_nsec - m_tstart.tv_nsec)/1000000000.0;
-
-      printf("\n");
-      printf("HDFDataManager: num double reads: %ld\n", (long)m_num_double_reads);
-      printf("HDFDataManager: num double reads: %ld\n", (long)m_num_double_elem);
-      printf("HDFDataManager: num int reads:    %ld\n", (long)m_num_int_reads);
-      printf("HDFDataManager: num int reads:    %ld\n", (long)m_num_int_elem);
-
-      printf("HDFDataManager: Elapsed time:     %lf\n", t);
-
-      size_t num_bytes_read = sizeof(double)*m_num_double_elem + sizeof(int)*m_num_int_elem;
-      double MB = num_bytes_read/1024.0/1024.4;
-      printf("HDFDataManager: Megabytes read:   %lf\n", MB);
-      double MB_sec = MB / t;
-      printf("HDFDataManager: Megabytes/second: %lf\n", MB_sec);
-      */
-
         if( m_iDataPresent ) {
             H5Dclose(m_dataset_ints);
             H5Sclose(m_dataspace_ints);

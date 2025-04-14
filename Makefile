@@ -1,4 +1,4 @@
-SHELL = /bin/ksh
+SHELL = /bin/sh
 
 # <<BEGIN-copyright>>
 # Copyright 2019, Lawrence Livermore National Security, LLC.
@@ -9,10 +9,10 @@ SHELL = /bin/ksh
 
 # These must be set by hand when we do a release.
 gidiplus_major = 3
-gidiplus_minor = 28
+gidiplus_minor = 33
 baseTag = GIDI_plus.$(gidiplus_major).$(gidiplus_minor).0
 
-DIRS_GIDI_plus = LUPI HAPI GUPI PoPI CADI RISI GIDI MCGIDI include lib Doc
+DIRS_GIDI_plus = LUPI Python HAPI GUPI PoPI CADI RISI GIDI MCGIDI include lib Doc
 DIRS_default2 = numericalFunctions $(DIRS_GIDI_plus)
 DIRS = pugixml $(DIRS_default2)
 
@@ -23,14 +23,15 @@ include Makefile.paths
 
 PREFIX = `pwd`/install
 
-.PHONY: default pugixml pugixml_dummy install clean realclean tar doDIRS
+.PHONY: default all bin default2 pugixml pugixml_dummy install docs check clean realclean tar doDIRS
 
 default:
 	$(MAKE) _TARGET=default default2
 	echo 'Note, bin executables not built, use target bin or all to build bin executables.'
 
 all:
-	$(MAKE) _TARGET=all default2
+	$(MAKE) _TARGET=default default2
+	$(MAKE) _TARGET=bin _DIRS="$(DIRS_GIDI_plus)" doDIRS
 
 bin:
 	$(MAKE) _TARGET=bin default2
@@ -111,6 +112,21 @@ tar: gidiplus_version.h
 	find ../$$fileName -iname "Makefile.popskit" -exec rm {} \; ; \
 	rm -rf ../$${fileName}/custom_hooks ../$${fileName}/GIDI/Test/GIDI_Test_Data.tar.gz; \
 	cp gidiplus_version.h ../$$fileName; \
+	cd ../; \
+	tar -cf $${fileName}.tar $$fileName
+
+snapshot: gidiplus_version.h
+	fileName=`git describe --long --match ${baseTag} | awk -F "-" '{(NF>2) ? patchVal=$$(NF-1) : patchVal=0; printf "gidiplus-%s.%s.%s.%s-snapshot", ${gidiplus_major}, ${gidiplus_minor}, patchVal, $$NF}'`; \
+	if [ "$$fileName" == "" ]; then exit; fi; \
+	rm -rf ../$$fileName; \
+	mkdir ../$$fileName; \
+	git ls-files --recurse-submodules -z | tar --null -T - gidiplus_version.h GIDI/Test/Data -czf ../$$fileName/tmp.tar.gz; \
+	cd ../$$fileName; \
+	tar -xf tmp.tar.gz; \
+	rm tmp.tar.gz; \
+	find . -iname ".git*" -exec rm {} \; ; \
+	find . -iname "Makefile.popskit" -exec rm {} \; ; \
+	rm -rf custom_hooks GIDI/Test/GIDI_Test_Data.tar.gz; \
 	cd ../; \
 	tar -cf $${fileName}.tar $$fileName
 

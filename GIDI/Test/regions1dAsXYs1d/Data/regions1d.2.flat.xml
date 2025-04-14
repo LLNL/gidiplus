@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<regions1d>
+  <axes></axes>
+  <function1ds>
+    <XYs1d index="0">
+      <values>1e-4 1 1 20</values></XYs1d>
+    <XYs1d index="1" interpolation="flat">
+      <values>1 22 1e3 40</values></XYs1d></function1ds></regions1d>

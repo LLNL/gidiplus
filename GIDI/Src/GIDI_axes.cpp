@@ -78,6 +78,32 @@ Axes::~Axes( ) {
 }
 
 /* *********************************************************************************************************//**
+ * The assignment operator. This method sets the members of *this* to those of *a_rhs* except for those
+ * not set by base classes.
+ *
+ * @param a_rhs                     [in]    Instance whose member are used to set the members of *this*.
+ ***********************************************************************************************************/
+
+Axes &Axes::operator=( Axes const &a_rhs ) {
+
+    if( this != &a_rhs ) {
+        Form::operator=( a_rhs );
+
+        for( std::size_t index = 0; index < a_rhs.size( ); ++index ) {
+            auto axis = a_rhs[index];
+            if( axis->type( ) == FormType::axis ) {
+                m_axes.push_back( new Axis( *axis ) ); }
+            else {
+                Grid const *grid = static_cast<Grid const *>( axis );
+                m_axes.push_back( new Grid( *grid ) );
+            }
+        }
+    }
+
+    return( *this );
+}
+
+/* *********************************************************************************************************//**
  * Fills the argument *a_writeInfo* with the XML lines that represent *this*. Recursively enters each sub-node.
  *
  * @param       a_writeInfo         [in/out]    Instance containing incremental indentation and other information and stores the appended lines.

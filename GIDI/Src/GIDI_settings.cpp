@@ -154,10 +154,15 @@ Form const *MG::form( LUPI::StatusMessageReporting &a_smr, GIDI::Suite const &a_
     }
 
     if( iter == a_suite.end( ) ) {
+        std::string sourceInfo( a_suite.toXLink( ) );
+        ProtareSingle const *rootProtareSingle = static_cast<ProtareSingle const *>( a_suite.root( ) );
+        sourceInfo += " for protare " + rootProtareSingle->projectile( ).ID( ) + " + " + rootProtareSingle->target( ).ID( ) 
+                + " for " + rootProtareSingle->evaluation( ) + ".";
+
         if( throwOnError( ) ) {
-            throw Exception( "ERROR from GIDI::MG::form: label '" + label + "' not found in suite '" + a_suite.toXLink( ) ); }
+            throw Exception( "ERROR from GIDI::MG::form: label '" + label + "' not found in suite '" + sourceInfo ); }
         else {
-            std::string warning( "data for " + a_dataType + " not found with label '" + label + "' in suite " + a_suite.toXLink( ) );
+            std::string warning( "data for " + a_dataType + " not found with label '" + label + "' in suite " + sourceInfo );
             smr_setReportError2p( a_smr.smr( ), 0, 0, warning.c_str( ) );
         }
         return( nullptr );

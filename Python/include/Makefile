@@ -1,5 +1,3 @@
-SHELL = /bin/ksh
-
 # <<BEGIN-copyright>>
 # Copyright 2019, Lawrence Livermore National Security, LLC.
 # See the top-level COPYRIGHT file for details.
@@ -7,8 +5,14 @@ SHELL = /bin/ksh
 # SPDX-License-Identifier: MIT
 # <<END-copyright>>
 
-GIDI_PLUS_PATH ?= $(abspath ../../../..)
-CppSources = $(sort $(wildcard *.cpp))
+.PHONY: default headers clean realclean
 
-include $(GIDI_PLUS_PATH)/Makefile.paths
-include ../Makefile.bin
+default: headers
+
+headers:
+	cp ../Src/*.hpp .
+
+clean:
+	rm -f *.hpp
+
+realclean: clean

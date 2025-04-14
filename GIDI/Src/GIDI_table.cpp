@@ -78,7 +78,7 @@ void Table::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent
  * @param a_parent          [in]    The parent GIDI::Suite.
  ***********************************************************************************************************/
 
-Column::Column( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+Column::Column( LUPI_maybeUnused Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
         Form( a_node, a_setupInfo, FormType::column, a_parent ),
         m_index( a_node.attribute_as_string( GIDI_indexChars ) ),
         m_name( a_node.attribute_as_string( GIDI_nameChars ) ),
@@ -136,7 +136,7 @@ void Column::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_inden
  * @param a_setupInfo       [in]    Information create my the Protare constructor to help in parsing.
  ***********************************************************************************************************/
 
-Data::Data( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo ) :
+Data::Data( LUPI_maybeUnused Construction::Settings const &a_construction, HAPI::Node const &a_node, LUPI_maybeUnused SetupInfo &a_setupInfo ) :
         GUPI::Ancestry( GIDI_dataChars ),
         m_sep( a_node.attribute_as_string( GIDI_sepChars ) ),
         m_body( a_node.text().get() ) {

@@ -8,7 +8,6 @@
 */
 
 #include <stdlib.h>
-#include <libgen.h>
 #include <iostream>
 
 #include <LUPI.hpp>
@@ -230,7 +229,7 @@ std::string ArgumentBase::printStatus2( ) const {
  * @param a_indent          [in]    The amount of indentation to start the first line with.
  ***********************************************************************************************************/
 
-void ArgumentBase::printStatus3( std::string const &a_indent ) const {
+void ArgumentBase::printStatus3( LUPI_maybeUnused std::string const &a_indent ) const {
 
 }
 
@@ -244,8 +243,7 @@ void ArgumentBase::printStatus3( std::string const &a_indent ) const {
  * @param a_argumentType        [in]    The type of argument to create.
  * @param a_name                [in]    The name of the argument.
  * @param a_descriptor          [in]    The string printed with arugment's help.
- * @param a_minimumNeeded       [in]    Not used. Will probably be deprecated.
- * @param a_maximumNeeded       [in]    Not used. Will probably be deprecated.
+ * @param a_default             [in]    The default bool value.
  ***********************************************************************************************************/
 
 OptionBoolean::OptionBoolean( ArgumentType a_argumentType, std::string const &a_name, std::string const &a_descriptor, bool a_default ) :
@@ -290,7 +288,7 @@ std::string OptionBoolean::printStatus2( ) const {
  * @param a_maximumNeeded       [in]    Not used. Will probably be deprecated.
  ***********************************************************************************************************/
 
-OptionTrue::OptionTrue( std::string const &a_name, std::string const &a_descriptor, int a_minimumNeeded, int a_maximumNeeded ) :
+OptionTrue::OptionTrue( std::string const &a_name, std::string const &a_descriptor, LUPI_maybeUnused int a_minimumNeeded, LUPI_maybeUnused int a_maximumNeeded ) :
         OptionBoolean( ArgumentType::True, a_name, a_descriptor, false ) {
 
 }
@@ -308,7 +306,7 @@ OptionTrue::OptionTrue( std::string const &a_name, std::string const &a_descript
  * @param a_maximumNeeded       [in]    Not used. Will probably be deprecated.
  ***********************************************************************************************************/
 
-OptionFalse::OptionFalse( std::string const &a_name, std::string const &a_descriptor, int a_minimumNeeded, int a_maximumNeeded ) :
+OptionFalse::OptionFalse( std::string const &a_name, std::string const &a_descriptor, LUPI_maybeUnused int a_minimumNeeded, LUPI_maybeUnused int a_maximumNeeded ) :
         OptionBoolean( ArgumentType::False, a_name, a_descriptor, true ) {
 
 }
@@ -326,7 +324,7 @@ OptionFalse::OptionFalse( std::string const &a_name, std::string const &a_descri
  * @param a_maximumNeeded       [in]    Not used. Will probably be deprecated.
  ***********************************************************************************************************/
 
-OptionCounter::OptionCounter( std::string const &a_name, std::string const &a_descriptor, int a_minimumNeeded, int a_maximumNeeded ) :
+OptionCounter::OptionCounter( std::string const &a_name, std::string const &a_descriptor, LUPI_maybeUnused int a_minimumNeeded, LUPI_maybeUnused int a_maximumNeeded ) :
         ArgumentBase( ArgumentType::Count, a_name, a_descriptor, 0, -1 ) {
 
 }
@@ -353,7 +351,7 @@ std::string OptionCounter::printStatus2( ) const {
  * @param a_maximumNeeded       [in]    Not used. Will probably be deprecated.
  ***********************************************************************************************************/
 
-OptionStore::OptionStore( std::string const &a_name, std::string const &a_descriptor, int a_minimumNeeded, int a_maximumNeeded ) :
+OptionStore::OptionStore( std::string const &a_name, std::string const &a_descriptor, LUPI_maybeUnused int a_minimumNeeded, LUPI_maybeUnused int a_maximumNeeded ) :
         ArgumentBase( ArgumentType::Store, a_name, a_descriptor, 0, -1 ) {
 
 }
@@ -688,7 +686,7 @@ void ArgumentParser::help( ) const {
         printHeader = false;
 
         std::string line = (*argumentIterator)->name( );
-        if( ( (*argumentIterator)->minimumNeeded( ) != (*argumentIterator)->maximumNeeded( ) ) or ( (*argumentIterator)->maximumNeeded( ) != 1 ) )
+        if( ( (*argumentIterator)->minimumNeeded( ) != (*argumentIterator)->maximumNeeded( ) ) || ( (*argumentIterator)->maximumNeeded( ) != 1 ) )
                     line += " [" + std::to_string( (*argumentIterator)->minimumNeeded( ) ) + "," + std::to_string( (*argumentIterator)->maximumNeeded( ) ) + "]";
         printArgumentDescription( line, (*argumentIterator)->descriptor( ) );
     }
@@ -706,7 +704,7 @@ void ArgumentParser::help( ) const {
         }
         if( (*argumentIterator)->requiresAValue( ) ) line += " VALUE";
         if( (*argumentIterator)->argumentType( ) == ArgumentType::Append ) {
-            if( ( (*argumentIterator)->minimumNeeded( ) != (*argumentIterator)->maximumNeeded( ) ) or ( (*argumentIterator)->maximumNeeded( ) != 1 ) )
+            if( ( (*argumentIterator)->minimumNeeded( ) != (*argumentIterator)->maximumNeeded( ) ) || ( (*argumentIterator)->maximumNeeded( ) != 1 ) )
                     line += " [" + std::to_string( (*argumentIterator)->minimumNeeded( ) ) + "," + std::to_string( (*argumentIterator)->maximumNeeded( ) ) + "]";
         }
         printArgumentDescription( line, (*argumentIterator)->descriptor( ) );

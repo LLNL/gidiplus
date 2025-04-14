@@ -11,7 +11,7 @@ EXES = $(CppSources:.cpp=)
 
 default: bin
 
-%: %.cpp
+%: %.cpp ../../../../include/*.h* ../../../../lib/*.a
 	echo "    "$@
 	$(CXX) $(local_CXXFLAGS) $< -o $@ $(LIBS)
 

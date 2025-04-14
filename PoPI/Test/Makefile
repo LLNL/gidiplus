@@ -1,4 +1,4 @@
-SHELL = /bin/ksh
+SHELL = /bin/sh
 
 # <<BEGIN-copyright>>
 # Copyright 2019, Lawrence Livermore National Security, LLC.
@@ -9,7 +9,8 @@ SHELL = /bin/ksh
 
 .PHONY: default check clean realclean
 
-DIRS = Test1 Test2 Test3 Test4 Test5 specialParticleID aliasReferences symbols baseAntiQualifierFromID intid
+DIRS = Test1 Test2 Test3 Test4 Test5 specialParticleID aliasReferences symbols baseAntiQualifierFromID intid \
+		parseIdInfo massValue aliasesUnreferenced
 
 default:
 	$(MAKE) doDirs TARGET=default

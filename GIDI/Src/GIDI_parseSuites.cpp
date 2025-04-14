@@ -29,8 +29,8 @@ namespace GIDI {
  * @return                                  The parsed and constructed GIDI::Form or nullptr if the node is not supported.
  ***********************************************************************************************************/
 
-Form *parseExternalFilesSuite( Construction::Settings const &a_construction, GIDI::Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
-		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
+Form *parseExternalFilesSuite( LUPI_maybeUnused Construction::Settings const &a_construction, GIDI::Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+		LUPI_maybeUnused PoPI::Database const &a_pops, LUPI_maybeUnused PoPI::Database const &a_internalPoPs, std::string const &a_name, LUPI_maybeUnused Styles::Suite const *a_styles ) {
 
     Form *form = nullptr;
 
@@ -59,7 +59,7 @@ Form *parseExternalFilesSuite( Construction::Settings const &a_construction, GID
  ***********************************************************************************************************/
 
 Form *parseStylesSuite( Construction::Settings const &a_construction, GIDI::Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
-		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
+		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, LUPI_maybeUnused Styles::Suite const *a_styles ) {
 
     Form *form = nullptr;
 
@@ -117,7 +117,7 @@ Form *parseStylesSuite( Construction::Settings const &a_construction, GIDI::Suit
  ***********************************************************************************************************/
 
 Form *parseTransportablesSuite( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
-		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
+		PoPI::Database const &a_pops, LUPI_maybeUnused PoPI::Database const &a_internalPoPs, std::string const &a_name, LUPI_maybeUnused Styles::Suite const *a_styles ) {
 
     Form *form = nullptr;
 
@@ -240,8 +240,8 @@ Form *parseReactionType( std::string const &a_moniker, Construction::Settings co
  * @return                                  The parsed and constructed GIDI::CrossSectionSum instance.
  ***********************************************************************************************************/
 
-Form *parseSumsCrossSectionsSuite( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
-		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
+Form *parseSumsCrossSectionsSuite( Construction::Settings const &a_construction, LUPI_maybeUnused Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, LUPI_maybeUnused Styles::Suite const *a_styles ) {
 
     Form *form = nullptr;
 
@@ -269,8 +269,8 @@ Form *parseSumsCrossSectionsSuite( Construction::Settings const &a_construction,
  * @return                                  The parsed and constructed GIDI::MultiplicitySum instance.
  ***********************************************************************************************************/
 
-Form *parseSumsMultiplicitiesSuite( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
-		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
+Form *parseSumsMultiplicitiesSuite( Construction::Settings const &a_construction, LUPI_maybeUnused Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, LUPI_maybeUnused Styles::Suite const *a_styles ) {
 
     Form *form = nullptr;
 
@@ -302,7 +302,7 @@ Form *parseSumsMultiplicitiesSuite( Construction::Settings const &a_construction
 
 Form *parseDoubleDifferentialCrossSectionSuite( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node,
 		SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name,
-		Styles::Suite const *a_styles ) {
+		LUPI_maybeUnused Styles::Suite const *a_styles ) {
 
     if( a_construction.parseMode( ) == Construction::ParseMode::outline ) return( nullptr );
     if( a_construction.parseMode( ) == Construction::ParseMode::multiGroupOnly ) return( nullptr );
@@ -313,6 +313,8 @@ Form *parseDoubleDifferentialCrossSectionSuite( Construction::Settings const &a_
         form = new DoubleDifferentialCrossSection::CoherentPhotoAtomicScattering( a_construction, a_node, a_setupInfo, a_pops, a_internalPoPs, a_parent ); }
     else if( a_name == GIDI_incoherentPhotonScatteringChars ) {
         form = new DoubleDifferentialCrossSection::IncoherentPhotoAtomicScattering( a_construction, a_node, a_setupInfo, a_pops, a_internalPoPs, a_parent ); }
+    else if( a_name == GIDI_incoherentBoundToFreePhotonScatteringChars ) {
+        form = new DoubleDifferentialCrossSection::IncoherentBoundToFreePhotoAtomicScattering( a_construction, a_node, a_setupInfo, a_pops, a_internalPoPs, a_parent ); }
     else if( a_name == GIDI_TNSL_coherentElasticChars ) {
         form = new DoubleDifferentialCrossSection::n_ThermalNeutronScatteringLaw::CoherentElastic( a_construction, a_node, a_setupInfo, a_pops, a_internalPoPs, a_parent ); }
     else if( a_name == GIDI_TNSL_incoherentElasticChars ) {
@@ -343,8 +345,8 @@ Form *parseDoubleDifferentialCrossSectionSuite( Construction::Settings const &a_
  * @return                                  The parsed and constructed GIDI::Form or nullptr if the node is not supported.
  ***********************************************************************************************************/
 
-Form *parseScatteringAtom( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
-		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
+Form *parseScatteringAtom( Construction::Settings const &a_construction, LUPI_maybeUnused Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+		LUPI_maybeUnused PoPI::Database const &a_pops, LUPI_maybeUnused PoPI::Database const &a_internalPoPs, LUPI_maybeUnused std::string const &a_name, LUPI_maybeUnused Styles::Suite const *a_styles ) {
 
     return( new DoubleDifferentialCrossSection::n_ThermalNeutronScatteringLaw::ScatteringAtom( a_construction, a_node, a_setupInfo ) );
 }
@@ -365,7 +367,7 @@ Form *parseScatteringAtom( Construction::Settings const &a_construction, Suite *
  ***********************************************************************************************************/
 
 Form *parseCrossSectionSuite( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
-		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
+		LUPI_maybeUnused PoPI::Database const &a_pops, LUPI_maybeUnused PoPI::Database const &a_internalPoPs, std::string const &a_name, LUPI_maybeUnused Styles::Suite const *a_styles ) {
 
     if( a_construction.parseMode( ) == Construction::ParseMode::outline ) return( nullptr );
     if( ( a_construction.parseMode( ) == Construction::ParseMode::multiGroupOnly ) && ( a_name != GIDI_gridded1dChars ) ) return( nullptr );
@@ -427,7 +429,7 @@ Form *parseDelayedNeutronsSuite( Construction::Settings const &a_construction, S
  ***********************************************************************************************************/
 
 Form *parseFissionEnergyReleasesSuite( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
-		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
+		LUPI_maybeUnused PoPI::Database const &a_pops, LUPI_maybeUnused PoPI::Database const &a_internalPoPs, std::string const &a_name, LUPI_maybeUnused Styles::Suite const *a_styles ) {
 
     if( a_name != GIDI_fissionEnergyReleaseChars ) throw Exception( std::string( "Invalid " ) + GIDI_fissionEnergyReleasesChars " child node of moniker " + a_name );
     return( new Functions::FissionEnergyRelease( a_construction, a_node, a_setupInfo, a_parent ) );
@@ -448,8 +450,8 @@ Form *parseFissionEnergyReleasesSuite( Construction::Settings const &a_construct
  * @return                                  The parsed and constructed GIDI::Form or nullptr if the node is not supported.
  ***********************************************************************************************************/
 
-Form *parsePhysicalQuantitySuite( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
-		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
+Form *parsePhysicalQuantitySuite( LUPI_maybeUnused Construction::Settings const &a_construction, LUPI_maybeUnused Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
+		LUPI_maybeUnused PoPI::Database const &a_pops, LUPI_maybeUnused PoPI::Database const &a_internalPoPs, LUPI_maybeUnused std::string const &a_name, LUPI_maybeUnused Styles::Suite const *a_styles ) {
 
     return( new PhysicalQuantity( a_node, a_setupInfo ) );
 }
@@ -470,7 +472,7 @@ Form *parsePhysicalQuantitySuite( Construction::Settings const &a_construction, 
  ***********************************************************************************************************/
 
 Form *parseAvailableSuite( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
-		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
+		LUPI_maybeUnused PoPI::Database const &a_pops, LUPI_maybeUnused PoPI::Database const &a_internalPoPs, std::string const &a_name, LUPI_maybeUnused Styles::Suite const *a_styles ) {
 
     if( a_construction.parseMode( ) == Construction::ParseMode::outline ) return( nullptr );
     if( ( a_construction.parseMode( ) == Construction::ParseMode::multiGroupOnly ) && ( a_name != GIDI_gridded1dChars ) ) return( nullptr );
@@ -494,7 +496,7 @@ Form *parseAvailableSuite( Construction::Settings const &a_construction, Suite *
  ***********************************************************************************************************/
 
 Form *parseQSuite( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
-		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
+		LUPI_maybeUnused PoPI::Database const &a_pops, LUPI_maybeUnused PoPI::Database const &a_internalPoPs, LUPI_maybeUnused std::string const &a_name, LUPI_maybeUnused Styles::Suite const *a_styles ) {
 
     Form *form = nullptr;
 
@@ -550,7 +552,7 @@ Form *parseProductSuite( Construction::Settings const &a_construction, Suite *a_
  ***********************************************************************************************************/
 
 Form *parseMultiplicitySuite( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
-		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
+		LUPI_maybeUnused PoPI::Database const &a_pops, LUPI_maybeUnused PoPI::Database const &a_internalPoPs, std::string const &a_name, LUPI_maybeUnused Styles::Suite const *a_styles ) {
 
     if( a_construction.parseMode( ) == Construction::ParseMode::outline ) return( nullptr );
 
@@ -575,7 +577,7 @@ Form *parseMultiplicitySuite( Construction::Settings const &a_construction, Suit
  ***********************************************************************************************************/
 
 Form *parseDistributionSuite( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
-		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
+		LUPI_maybeUnused PoPI::Database const &a_pops, LUPI_maybeUnused PoPI::Database const &a_internalPoPs, std::string const &a_name, LUPI_maybeUnused Styles::Suite const *a_styles ) {
 
     if( a_construction.parseMode( ) == Construction::ParseMode::outline ) return( nullptr );
     if( a_name == GIDI_multiGroup3dChars ) {
@@ -610,6 +612,8 @@ Form *parseDistributionSuite( Construction::Settings const &a_construction, Suit
         form = new Distributions::CoherentPhotoAtomicScattering( a_construction, a_node, a_setupInfo, a_parent ); }
     else if( a_name == GIDI_incoherentPhotonScatteringChars ) {
         form = new Distributions::IncoherentPhotoAtomicScattering( a_construction, a_node, a_setupInfo, a_parent ); }
+    else if( a_name == GIDI_incoherentBoundToFreePhotonScatteringChars ) {
+        form = new Distributions::IncoherentBoundToFreePhotoAtomicScattering( a_construction, a_node, a_setupInfo, a_parent ); }
     else if( a_name == GIDI_thermalNeutronScatteringLawChars ) {
         form = new Distributions::ThermalNeutronScatteringLaw( a_construction, a_node, a_setupInfo, a_parent ); }
     else if( a_name == GIDI_branching3dChars ) {
@@ -645,7 +649,7 @@ Form *parseDistributionSuite( Construction::Settings const &a_construction, Suit
  ***********************************************************************************************************/
 
 Form *parseAverageEnergySuite( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
-		PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
+		LUPI_maybeUnused PoPI::Database const &a_pops, LUPI_maybeUnused PoPI::Database const &a_internalPoPs, std::string const &a_name, LUPI_maybeUnused Styles::Suite const *a_styles ) {
 
     if( a_construction.parseMode( ) == Construction::ParseMode::outline ) return( nullptr );
     if( ( a_construction.parseMode( ) == Construction::ParseMode::multiGroupOnly ) && ( a_name != GIDI_gridded1dChars ) ) return( nullptr );
@@ -670,7 +674,7 @@ Form *parseAverageEnergySuite( Construction::Settings const &a_construction, Sui
  ***********************************************************************************************************/
 
 Form *parseAverageMomentumSuite( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
-		        PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
+		        LUPI_maybeUnused PoPI::Database const &a_pops, LUPI_maybeUnused PoPI::Database const &a_internalPoPs, std::string const &a_name, LUPI_maybeUnused Styles::Suite const *a_styles ) {
 
     if( a_construction.parseMode( ) == Construction::ParseMode::outline ) return( nullptr );
     if( ( a_construction.parseMode( ) == Construction::ParseMode::multiGroupOnly ) && ( a_name != GIDI_gridded1dChars ) ) return( nullptr );
@@ -695,7 +699,7 @@ Form *parseAverageMomentumSuite( Construction::Settings const &a_construction, S
  ***********************************************************************************************************/
 
 Form *parseACE_URR_probabilityTables( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
-                PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
+                LUPI_maybeUnused PoPI::Database const &a_pops, LUPI_maybeUnused PoPI::Database const &a_internalPoPs, std::string const &a_name, LUPI_maybeUnused Styles::Suite const *a_styles ) {
 
     if( a_name != GIDI_ACE_URR_probabilityTableChars ) throw Exception( std::string( "Invalid " ) + GIDI_ACE_URR_probabilityTablesChars " child node of moniker " + a_name );
 
@@ -719,7 +723,7 @@ Form *parseACE_URR_probabilityTables( Construction::Settings const &a_constructi
  ***********************************************************************************************************/
 
 Form *parseColumnHeaders( Construction::Settings const &a_construction, Suite *a_parent, HAPI::Node const &a_node, SetupInfo &a_setupInfo,
-                PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs, std::string const &a_name, Styles::Suite const *a_styles ) {
+                LUPI_maybeUnused PoPI::Database const &a_pops, LUPI_maybeUnused PoPI::Database const &a_internalPoPs, std::string const &a_name, LUPI_maybeUnused Styles::Suite const *a_styles ) {
 
     if( a_name != GIDI_columnChars ) throw Exception( std::string( "Invalid " ) + GIDI_columnHeadersChars + " child node of moniker " + a_name );
 

@@ -12,7 +12,7 @@
 
 #include <RISI.hpp>
 
-// static char const *description = "Reads in a **RIS** file and prints it.";
+static char const *description = "Reads in a **RIS** file and prints it.";
 
 void main2( int argc, char **argv );
 /*
@@ -40,10 +40,16 @@ int main( int argc, char **argv ) {
 */
 void main2( int argc, char **argv ) {
 
-    std::cerr << "    " << LUPI::FileInfo::basenameWithoutExtension( __FILE__ ) << std::endl;
+    LUPI::ArgumentParser argumentParser( __FILE__, description );
+    LUPI::Positional *inputPathArgument = argumentParser.add<LUPI::Positional>( "inputPath", "The path to the ris file to read.", 0, 1 );
+
+    argumentParser.parse( argc, argv );
+
+    std::string path( "../../../LUPI/Test/splitString/test.ris" );
+    if( inputPathArgument->counts( ) > 0 ) path = inputPathArgument->value( );
 
     GIDI::RISI::Projectiles projectiles;
 
-    GIDI::RISI::readRIS( "../../../LUPI/Test/splitString/test.ris", "MeV", projectiles );
+    GIDI::RISI::readRIS( path, "MeV", projectiles );
     projectiles.print( );
 }

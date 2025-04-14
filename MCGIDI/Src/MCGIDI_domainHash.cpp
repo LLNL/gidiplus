@@ -7,8 +7,6 @@
 # <<END-copyright>>
 */
 
-#include <math.h>
-
 #include "MCGIDI.hpp"
 
 namespace MCGIDI {
@@ -86,7 +84,7 @@ LUPI_HOST_DEVICE int DomainHash::index( double a_domain ) const {
  * @return                              The hash indices.
  ***********************************************************************************************************/
 
-LUPI_HOST_DEVICE Vector<int> DomainHash::map( Vector<double> &a_domainValues ) const {
+LUPI_HOST_DEVICE Vector<int> DomainHash::map( Vector<double> const &a_domainValues ) const {
 
     std::size_t i1, size( a_domainValues.size( ) );
     Vector<int> indices( m_bins + 2, 0 );
@@ -116,11 +114,11 @@ LUPI_HOST_DEVICE Vector<int> DomainHash::map( Vector<double> &a_domainValues ) c
 LUPI_HOST_DEVICE void DomainHash::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
     DATA_MEMBER_INT( m_bins, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_domainMin, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_domainMax, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_u_domainMin, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_u_domainMax, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_inverse_du, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_domainMin, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_domainMax, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_u_domainMin, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_u_domainMax, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_inverse_du, a_buffer, a_mode );
 }
 
 /* *********************************************************************************************************//**

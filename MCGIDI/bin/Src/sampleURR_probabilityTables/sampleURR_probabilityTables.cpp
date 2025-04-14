@@ -50,11 +50,8 @@ void main2( int argc, char **argv ) {                        // Useful for detec
     std::vector<std::string> libraries;
     char *endChar;
     std::set<int> reactionsToExclude;
-    void *rngState = nullptr;
-    unsigned long long seed = 1;
+    unsigned long long rngState = 1;
     long numberOfDomainSteps = 10;
-
-    MCGIDI_test_rngSetup( seed );
 
     argvOptions2 argv_options( "sampleURR_probabilityTables", description );
 
@@ -140,7 +137,7 @@ void main2( int argc, char **argv ) {                        // Useful for detec
                 cross_section_bins.clear( );
 
                 for( long sampleIndex = 0; sampleIndex < 1000; ++sampleIndex ) {
-                    URR_protare_infos.updateProtare( MC_protare, energy, float64RNG64, rngState );
+                    URR_protare_infos.updateProtare( MC_protare, energy, [&]() -> double { return float64RNG64( &rngState ); } );
                     double cross_section = MC_protare->crossSection( URR_protare_infos, hashIndex, 0.0, energy );
 
                     if( sampleIndex == 0 ) cross_section_min = cross_section;
@@ -150,7 +147,7 @@ void main2( int argc, char **argv ) {                        // Useful for detec
                 cross_section_bins.setDomain( 0.5 * cross_section_min, 2.0 * cross_section_max );
 
                 for( long sampleIndex = 0; sampleIndex < numberOfSamples; ++sampleIndex ) {
-                    URR_protare_infos.updateProtare( MC_protare, energy, float64RNG64, rngState );
+                    URR_protare_infos.updateProtare( MC_protare, energy, [&]() -> double { return float64RNG64( &rngState ); } );
 
                     double cross_section = MC_protare->crossSection( URR_protare_infos, hashIndex, 0.0, energy );
                     cross_section_bins.accrue( cross_section );
@@ -183,7 +180,7 @@ void main2( int argc, char **argv ) {                        // Useful for detec
                     cross_section_max = 0.0;
                     cross_section_mean = 0.0;
                     for( long sampleIndex = 0; sampleIndex < 1000; ++sampleIndex ) {
-                        URR_protare_infos.updateProtare( MC_protare, energy, float64RNG64, rngState );
+                        URR_protare_infos.updateProtare( MC_protare, energy, [&]() -> double { return myRNG(&seed); } );
                         double cross_section = MC_protare->reactionCrossSection( reaction_index, URR_protare_infos, hashIndex, 0.0, energy );
 
                         if( sampleIndex == 0 ) cross_section_min = cross_section;
@@ -193,7 +190,7 @@ void main2( int argc, char **argv ) {                        // Useful for detec
                     cross_section_bins.setDomain( 0.5 * cross_section_min, 2.0 * cross_section_max );
 
                     for( long sampleIndex = 0; sampleIndex < numberOfSamples; ++sampleIndex ) {
-                        URR_protare_infos.updateProtare( MC_protare, energy, float64RNG64, rngState );
+                        URR_protare_infos.updateProtare( MC_protare, energy, [&]() -> double { return float64RNG64( &rngState ); } );
 
                         double cross_section = MC_protare->reactionCrossSection( reaction_index, URR_protare_infos, hashIndex, 0.0, energy );
                         cross_section_bins.accrue( cross_section );

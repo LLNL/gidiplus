@@ -28,8 +28,7 @@ int main( int argc, char **argv ) {
     PoPI::Database pops( "../../../TestData/PoPs/pops.xml" );
     GIDI::Protare *protare;
     GIDI::Transporting::Particles particles;
-    void *rngState = nullptr;
-    unsigned long long seed = 1;
+    unsigned long long rngState = 1;
     double energyDomainMax = 20.0;
     std::size_t numberOfFissionSamples = 100 * 1000;
     std::set<int> reactionsToExclude;
@@ -56,7 +55,7 @@ int main( int argc, char **argv ) {
 
     std::string mapFilename = argv_options.find( "--map" )->zeroOrOneOption( argv, "../../../GIDI/Test/all3T.map" );
     std::string projectileID = argv_options.find( "--pid" )->zeroOrOneOption( argv, PoPI::IDs::neutron );
-    int projectileIndex = pops[projectileID];
+    int neutronIndex = pops[PoPI::IDs::neutron];
     std::string targetID = argv_options.find( "--tid" )->zeroOrOneOption( argv, "O16" );
 
     GIDI::Transporting::DelayedNeutrons delayedNeutrons = GIDI::Transporting::DelayedNeutrons::off;
@@ -68,8 +67,6 @@ int main( int argc, char **argv ) {
     }
 
     GIDI::Map::Map map( mapFilename, pops );
-
-    MCGIDI_test_rngSetup( seed );
 
     try {
         GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, photo_mode );
@@ -129,11 +126,13 @@ int main( int argc, char **argv ) {
             products.clear( );
 
             std::cout << "    energy = " << LUPI::Misc::doubleToString3( "%.6g", energy, true )  << std::endl;
-            reaction->sampleProducts( MCProtare, energy, input, float64RNG64, rngState, products );
+            reaction->sampleProducts( MCProtare, energy, input, [&]( ) -> double { return float64RNG64( &rngState ); }, 
+                    [&]( MCGIDI::Sampling::Product &a_product ) -> void { products.push_back( a_product ); }, products );
             for( std::size_t i2 = 0; i2 < products.size( ); ++i2 ) {
                 MCGIDI::Sampling::Product const &product = products[i2];
 
-                PoPI::Particle const &particle = pops.particle( product.m_productIndex );
+                PoPI::ParseIntidInfo parseIntidInfo( product.m_productIntid );
+                PoPI::Particle const &particle = pops.particle(  parseIntidInfo.id( ) );
                 std::cout << "        productIndex " << std::setw( 12 ) << particle.ID( );
                 if( product.m_sampledType == MCGIDI::Sampling::SampledType::unspecified ) {
                     std::cout << " unspecified distribution" << std::endl; }
@@ -160,11 +159,12 @@ int main( int argc, char **argv ) {
 
                 for( std::size_t i2 = 0; i2 < numberOfFissionSamples; ++i2 ) {
                     products.clear( );
-                    reaction->sampleProducts( MCProtare, energy, input, float64RNG64, rngState, products );
+                    reaction->sampleProducts( MCProtare, energy, input, [&]( ) -> double { return float64RNG64( &rngState ); }, 
+                            [&]( MCGIDI::Sampling::Product &a_product ) -> void { products.push_back( a_product ); }, products );
                     for( std::size_t i3 = 0; i3 < products.size( ); ++i3 ) {
                         MCGIDI::Sampling::Product const &product = products[i3];
 
-                        if( product.m_productIndex == projectileIndex ) {
+                        if( product.m_productIndex == neutronIndex ) {
                             ++totalFissionNeutrons;
                             if( product.m_delayedNeutronIndex > -1 ) {
                                 ++delayedFissionNeutrons;

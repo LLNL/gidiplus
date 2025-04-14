@@ -25,20 +25,23 @@ int family2Integer( Particle_class a_family ) {
     if( a_family == Particle_class::gaugeBoson ) return( 0 );
     if( a_family == Particle_class::lepton ) return( 1 );
     if( a_family == Particle_class::baryon ) return( 2 );
-    if( a_family == Particle_class::ENDL_fissionProduct ) return( 98 );
-
-// Still need ENDL_fissionProduct and TNSL.
+    if( a_family == Particle_class::nuclideMetaStable ) return( 50 );
+    if( a_family == Particle_class::nucleusMetaStable ) return( 60 );
+    if( a_family == Particle_class::ENDL_fissionProduct ) return( 99 );
 
     return( -3 );
 }
 
 /* *********************************************************************************************************//**
  * This function is for internal use.
- * Returns the intid for the particle of family *a_family* with family indentifier *a_SSSSSSS*.
+ * Returns the intid for the particle of family *a_family* with family indentifier *a_SSSSSSS*. If the return value is -1
+ * the family is not supported by this function.
  *
  * @param a_isAnti          [in]    If **true** particle is an anti-particle and otherwise its a particle.
  * @param a_family          [in]    The particle's family.
  * @param a_SSSSSSS         [in]    The particle's indentifier within its family.
+ *
+ * @return                          The intid for the particle.
  ***********************************************************************************************************/
 
 int intidHelper( bool a_isAnti, Particle_class a_family, int a_SSSSSSS ) {
@@ -67,9 +70,10 @@ int intidHelper( bool a_isAnti, Particle_class a_family, int a_SSSSSSS ) {
  * If *m_family* is **Particle_class::unknown** then all other members are undefined.
  *
  * @param a_intid           [in]    The intid for the particle to parse.
+ * @param a_GRIN_mode       [in]    For the GRIN project, nuclear levels go beyond 499, so this flag causes III >= 500 to be treated as a nuclide.
  ***********************************************************************************************************/
 
-ParseIntidInfo::ParseIntidInfo( int a_intid ) :
+ParseIntidInfo::ParseIntidInfo( int a_intid, bool a_GRIN_mode ) :
         m_intid( a_intid ),
         m_family( Particle_class::unknown ),
         m_isAnti( a_intid < 0 ),
@@ -77,7 +81,6 @@ ParseIntidInfo::ParseIntidInfo( int a_intid ) :
         m_AAA( -1 ),
         m_ZZZ( -1 ),
         m_III( -1 ),
-        m_nuclearLevelIndex( -1 ),
         m_metaStableIndex( -1 ),
         m_generation( -1 ),
         m_isNeutrino( false ),
@@ -87,46 +90,49 @@ ParseIntidInfo::ParseIntidInfo( int a_intid ) :
 
     int intidAbs = std::abs( a_intid );
 
-    int nuclearLike = intidAbs / 1000000000;
+    bool nuclearLike = intidAbs / 1000000000 == 0;
     int family = (intidAbs / 10000000) % 100;
     int SSSSSSS = intidAbs % 10000000;
 
-    if(      nuclearLike == 0 ) {
+    if(      nuclearLike ) {
         m_AAA = intidAbs % 1000;
         m_ZZZ = intidAbs % 1000000 / 1000;
         m_III = intidAbs % 1000000000 / 1000000;
 
-        int III = m_III;
-        if( m_III < 500 ) {
+        m_nuclearLevelIndex = m_III;
+        if( ( m_III < 500 ) || a_GRIN_mode ) {
             m_family = Particle_class::nuclide; }
         else {
-            III -= 500;
+            m_nuclearLevelIndex -= 500;
             m_family =  Particle_class::nucleus;
-        }
-        if( III <= 480 ) {
-            m_nuclearLevelIndex = III; }
-        else {
-            m_metaStableIndex = III - 480;
         } }
-    else if( nuclearLike == 1 ) {
-        m_familyId = SSSSSSS;
-        if(      family == 0 ) {
-            m_family =  Particle_class::gaugeBoson; }
-        else if( family == 1 ) {
-            int neutronoFlag = ( SSSSSSS % 100 ) / 10;
-            if( neutronoFlag > 1 ) return;                      // Invalid particle.
+    else {
+        int topFamilyDigid = family / 10;
+        if( ( topFamilyDigid == 5 ) || ( topFamilyDigid == 6 ) ) {
+            m_family = topFamilyDigid == 5 ? Particle_class::nuclideMetaStable : Particle_class::nucleusMetaStable;
+            m_AAA = intidAbs % 1000;
+            m_ZZZ = intidAbs % 1000000 / 1000;
+            m_metaStableIndex = intidAbs % 100000000 / 1000000; }
+        else {
+            m_familyId = SSSSSSS;
+            if(      family == 0 ) {
+                m_family =  Particle_class::gaugeBoson; }
+            else if( family == 1 ) {
+                int neutronoFlag = ( SSSSSSS % 100 ) / 10;
+                if( neutronoFlag > 1 ) return;                      // Invalid particle.
 
-            m_family =  Particle_class::lepton;
-            m_generation = SSSSSSS % 10;
-            m_isNeutrino = neutronoFlag != 0; }
-        else if( family == 2 ) {
-            m_family =  Particle_class::baryon;
-            m_baryonGroup = SSSSSSS / 1000000;
-            m_baryonId = SSSSSSS % 1000000; }
-        else if( family == 98 ) {
-            m_family =  Particle_class::ENDL_fissionProduct; }
-        else if( family == 99 ) {
-            m_family =  Particle_class::TNSL;
+                m_family =  Particle_class::lepton;
+                m_generation = SSSSSSS % 10;
+                m_isNeutrino = neutronoFlag != 0; }
+            else if( family == 2 ) {
+                m_family =  Particle_class::baryon;
+                m_baryonGroup = SSSSSSS / 1000000;
+                m_baryonId = SSSSSSS % 1000000; }
+            else if( family == 98 ) {
+                m_family =  Particle_class::TNSL; }
+            else if( family == 99 ) {
+                m_family =  Particle_class::ENDL_fissionProduct;
+            }
         }
     }
 }
@@ -140,19 +146,19 @@ std::string ParseIntidInfo::id( ) {
 
     std::string pid;
 
-    if( ( m_family == Particle_class::nuclide ) || ( m_family == Particle_class::nucleus ) ) {
-        pid = chemicalElementInfoFromZ( m_ZZZ, true, m_family == Particle_class::nucleus );
+    if( ( m_family == Particle_class::nuclide ) || ( m_family == Particle_class::nucleus ) || ( m_family == Particle_class::nuclideMetaStable ) ||
+                ( m_family == Particle_class::nucleusMetaStable ) ) {
+        bool isNucleus = ( m_family == Particle_class::nucleus ) || ( m_family == Particle_class::nucleusMetaStable );
+        pid = chemicalElementInfoFromZ( m_ZZZ, true, isNucleus );
         if( pid != "" ) {
             pid += LUPI::Misc::argumentsToString( "%d", m_AAA );
 
-            int III = m_III;
-            if( m_family == Particle_class::nucleus ) III -= 500;
-            if( III > 0 ) {
-                if( m_metaStableIndex > 0 ) {
+            if( ( m_family == Particle_class::nuclideMetaStable ) || ( m_family == Particle_class::nucleusMetaStable ) ) {
                     pid += LUPI::Misc::argumentsToString( "_m%d", m_metaStableIndex ); }
-                else {
-                    pid += LUPI::Misc::argumentsToString( "_e%d", III );
-                }
+            else {
+                int III = m_III;
+                if( m_family == Particle_class::nucleus ) III -= 500;
+                if( III != 0 ) pid += LUPI::Misc::argumentsToString( "_e%d", III );
             }
         } }
     else if( m_family == Particle_class::gaugeBoson ) {

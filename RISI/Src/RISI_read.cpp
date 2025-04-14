@@ -33,12 +33,15 @@ static void readRIS2( std::string const &a_basePath, std::string const &a_fileNa
  ***********************************************************************************************************/
 
 Reaction::Reaction( double a_effectiveThreshold, std::vector<std::string> const &a_products, std::vector<int> const &a_multiplicities,
-                std::vector<std::string> const &a_intermediates, std::string const &a_process ) :
+                std::vector<std::string> const &a_intermediates, std::string const &a_process, std::string const &reactionLabel,
+                std::string const &convarianceFlag ) :
         m_effectiveThreshold( a_effectiveThreshold ),
         m_products( a_products ),
         m_multiplicities( a_multiplicities ),
         m_intermediates( a_intermediates ),
-        m_process( a_process ) {
+        m_process( a_process ),
+        m_reactionLabel( reactionLabel ),
+        m_convarianceFlag( convarianceFlag ) {
 
 }
 
@@ -104,7 +107,7 @@ Protare::~Protare( ) {
 /* *********************************************************************************************************//**
  ***********************************************************************************************************/
 
-void Protare::Oops( std::vector<std::string> const &a_elements ) {
+void Protare::Oops( LUPI_maybeUnused std::vector<std::string> const &a_elements ) {
 
     throw "No mode has been set for adding to the Protare: " + m_projectile + " + " + m_target + ".";
 }
@@ -126,6 +129,14 @@ void Protare::addReaction( std::vector<std::string> const &a_elements ) {
     double effectiveThreshold = m_energyConversionFactor * std::stod( a_elements[1] );
     std::vector<std::string> intermediates = LUPI::Misc::splitString( a_elements[2], ':', true );
 
+    std::string reactionLabel;
+    std::string covarianceFlag;
+
+    if( a_elements.size( ) > 5 ) {
+        reactionLabel = a_elements[4];
+        covarianceFlag = a_elements[5];
+    }
+
     std::vector<std::string> products;
     std::vector<int> multiplicities;
 
@@ -140,7 +151,7 @@ void Protare::addReaction( std::vector<std::string> const &a_elements ) {
         multiplicities.push_back( static_cast<int>( multiplicity ) );
     }
 
-    m_reactions.push_back( new Reaction( effectiveThreshold, products, multiplicities, intermediates, a_elements[3] ) );
+    m_reactions.push_back( new Reaction( effectiveThreshold, products, multiplicities, intermediates, a_elements[3], reactionLabel, covarianceFlag ) );
 }
 
 /* *********************************************************************************************************//**

@@ -429,6 +429,8 @@ void IAM::addFile( std::string const &a_sourcePath ) {
         entry->setAncestor( this );
         m_entries.push_back( entry );
     }
+
+    delete doc;
 }
 
 /* *********************************************************************************************************//**

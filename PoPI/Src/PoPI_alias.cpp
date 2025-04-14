@@ -30,8 +30,8 @@ Alias::Alias( HAPI::Node const &a_node, Database *a_DB, Particle_class a_class )
         m_pid( a_node.attribute( PoPI_pidChars ).value( ) ),
         m_pidIndex( -1 ) {
 
-    if( supportedNucluesAliases.find( ID( ) ) != supportedNucluesAliases.end( ) ) {
-        ParseIdInfo idInfo( supportedNucluesAliases[ID( )] );
+    if( supportedNucleusAliases.find( ID( ) ) != supportedNucleusAliases.end( ) ) {
+        ParseIdInfo idInfo( supportedNucleusAliases[ID( )] );
 
         setIntid( 1000 * ( 1000 * (idInfo.index( ) + 500) + idInfo.Z( ) ) + idInfo.A( ) );       // Anti is currently not supported.
     }
@@ -43,22 +43,6 @@ Alias::Alias( HAPI::Node const &a_node, Database *a_DB, Particle_class a_class )
 
 Alias::~Alias( ) {
 
-}
-
-/* *********************************************************************************************************//**
- * This method uses *a_DB* to get the final particle and returns its mass in units of *a_unit*.
- *
- * @param       a_DB        [in]    The PoPs database to look up the final particle.
- * @param       a_unit      [in]    The unit of the returned mass.
- *
- * @return                          The mass in units of *a_unit*.
- ***********************************************************************************************************/
-
-double Alias::massValue2( Database const &a_DB, std::string const &a_unit ) const {
-
-    Particle const &particle = a_DB.particle( a_DB.final( m_pid ) );
-
-    return( particle.massValue( a_unit ) );
 }
 
 /* *********************************************************************************************************//**
@@ -86,15 +70,14 @@ void Alias::toXMLList( std::vector<std::string> &a_XMLList, std::string const &a
  ***********************************************************************************************************/
 
 MetaStable::MetaStable( HAPI::Node const &a_node, Database *a_DB ) :
-        Alias( a_node, a_DB, Particle_class::metaStable ),
+        Alias( a_node, a_DB, Particle_class::nuclideMetaStable ),                           // Initial guess. */
         m_metaStableIndex( a_node.attribute( PoPI_metaStableIndexChars ).as_int( ) ) {
 
     ParseIdInfo idInfo( ID( ) );
     if( idInfo.isNuclear( ) ) {
-        int offset = 480;
-        if( idInfo.isNucleus( ) ) offset += 500;
-
-        setIntid( 1000 * ( 1000 * (idInfo.index( ) + offset) + idInfo.Z( ) ) + idInfo.A( ) );       // Anti is currently not supported.
+        m_class = idInfo.isNucleus( ) ? Particle_class::nucleusMetaStable : Particle_class::nuclideMetaStable;
+        int intid2 = intidHelper( false, m_class, 1000 * idInfo.Z( ) + idInfo.A( ) );
+        setIntid( intid2 + 1000000 * idInfo.index( ) );
     }
 
     addToDatabase( a_DB );

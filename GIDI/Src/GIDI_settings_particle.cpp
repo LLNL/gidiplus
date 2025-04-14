@@ -171,9 +171,11 @@ void Particles::print( ) const {
  * @param a_mode            [in]    Should probably be deprecated.
  ***********************************************************************************************************/
 
-Particle::Particle( std::string const &a_pid, MultiGroup const &a_multiGroup, Functions::Function3dForm const &a_fluxes, Transporting::Mode a_mode ) :
+Particle::Particle( std::string const &a_pid, MultiGroup const &a_multiGroup, Functions::Function3dForm const &a_fluxes,
+                    Transporting::Mode a_mode ) :
         m_pid( a_pid ),
         m_mode( a_mode ),
+        m_conserve( Transporting::Conserve::number ),
         m_multiGroup( a_multiGroup ) {
 
     std::vector<Transporting::Flux> fluxes = settingsFluxesFromFunction3d( a_fluxes );
@@ -188,7 +190,8 @@ Particle::Particle( std::string const &a_pid, MultiGroup const &a_multiGroup, Fu
 
 Particle::Particle( std::string const &a_pid, Transporting::Mode a_mode ) :
         m_pid( a_pid ),
-        m_mode( a_mode ) {
+        m_mode( a_mode ),
+        m_conserve( Transporting::Conserve::number ) {
 
 }
 
@@ -201,6 +204,7 @@ Particle::Particle( std::string const &a_pid, Transporting::Mode a_mode ) :
 Particle::Particle( std::string const &a_pid, MultiGroup const &a_group, Transporting::Mode a_mode ) :
         m_pid( a_pid ),
         m_mode( a_mode ),
+        m_conserve( Transporting::Conserve::number ),
         m_multiGroup( a_group ) {
 
 }
@@ -212,6 +216,7 @@ Particle::Particle( std::string const &a_pid, MultiGroup const &a_group, Transpo
 Particle::Particle( Particle const &a_particle ) :
         m_pid( a_particle.pid( ) ),
         m_mode( a_particle.mode( ) ),
+        m_conserve( a_particle.conserve( ) ),
         m_multiGroup( a_particle.multiGroup( ) ),
         m_collapseIndices( a_particle.collapseIndices( ) ) {
 
@@ -260,7 +265,7 @@ int Particle::appendFlux( Flux const &a_flux ) {
 
 ProcessedFlux const *Particle::nearestProcessedFluxToTemperature( double a_temperature ) const {
 
-    double priorTemperature, lastTemperature;
+    double priorTemperature, lastTemperature = 0;  // initialize to silence compiler warning
     std::vector<ProcessedFlux>::const_iterator iter;
 
     if( m_processedFluxes.size( ) == 0 ) return( nullptr );
@@ -329,7 +334,15 @@ void Particle::process( Transportable const &a_transportable, double a_epsilon )
             m_processedFluxes.push_back( __processedFlux );
         }
 
-        m_fineMultiGroup.set( "", groupBoundaries );
+        m_fineMultiGroup = a_transportable.group( );
+    }
+
+    if( a_transportable.conserve() == GIDI_conserveNumberChars ) {
+        m_conserve = Transporting::Conserve::number;
+    } else if( a_transportable.conserve() == GIDI_conserveEnergyOutChars ) {
+        m_conserve = Transporting::Conserve::energyOut;
+    } else {
+        throw Exception( "Unrecognized particle conserve flag '" + a_transportable.conserve() + "'" );
     }
 }
 

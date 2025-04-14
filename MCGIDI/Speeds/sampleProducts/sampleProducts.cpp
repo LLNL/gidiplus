@@ -96,7 +96,8 @@ void main2( int argc, char **argv ) {
             for( double energy = threshold; energy < 100.1; energy *= 10, ++energyIndex ) {
                 for( long sampleIndex = 0; sampleIndex <= numberOfSamples; ++sampleIndex ) {
                     products.clear( );
-                    reaction->sampleProducts( MCProtare, energy, input, myRNG, rngState, products );
+                    reaction->sampleProducts( MCProtare, energy, input, [&]() -> double { return myRNG( &rngState); },
+                            [&] (MCGIDI::Sampling::Product &a_product) -> void { products.push_back( a_product ); }, products );
                 }
                 printTime_energy( "                energy: ", energyIndex, energy, time3_1 );
             }

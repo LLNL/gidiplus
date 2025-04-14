@@ -20,7 +20,7 @@ namespace Transporting {
 /* *********************************************************************************************************//**
  * Class to store user defined preferences for creating an MCGIDI::Protare instance.
  *
- * @param a_pops                        [in]    A PoPs Database instance used to get particle indices and possibly other particle information.
+ * @param a_pops                        [in]    A PoPs Database instance used to get particle intids and possibly other particle information.
  * @param a_projectileID                [in]    The PoPs id for the projectile.
  * @param a_styles                      [in]    The styles child node of the GIDI::Protare.
  * @param a_label                       [in]    
@@ -28,19 +28,16 @@ namespace Transporting {
  * @param a_energyDomainMax             [in]    The maximum projectile energy for which data should be loaded.
  ***********************************************************************************************************/
 
-LUPI_HOST MC::MC( PoPI::Database const &a_pops, std::string const &a_projectileID, GIDI::Styles::Suite const *a_styles, std::string const &a_label, 
+LUPI_HOST MC::MC( LUPI_maybeUnused PoPI::Database const &a_pops, std::string const &a_projectileID, GIDI::Styles::Suite const *a_styles, std::string const &a_label, 
                 GIDI::Transporting::DelayedNeutrons a_delayedNeutrons, double a_energyDomainMax ) :
         GIDI::Transporting::Settings( a_projectileID, a_delayedNeutrons ),
-        m_pops( a_pops ),
-        m_neutronIndex( a_pops[PoPI::IDs::neutron] ),
-        m_photonIndex( a_pops[PoPI::IDs::photon] ),
-        m_electronIndex( a_pops[PoPI::IDs::electron] ),
         m_styles( a_styles ),
         m_label( a_label ),
         m_energyDomainMax( a_energyDomainMax ),
         m_ignoreENDF_MT5( false ),
         m_sampleNonTransportingParticles( false ),
         m_useSlowerContinuousEnergyConversion( false ),
+        m_addExpectedValueData( true ),
         m_crossSectionLookupMode( LookupMode::Data1d::continuousEnergy ),
         m_other1dDataLookupMode( LookupMode::Data1d::continuousEnergy ),
         m_distributionLookupMode( LookupMode::Distribution::pdf_cdf ),
@@ -48,33 +45,32 @@ LUPI_HOST MC::MC( PoPI::Database const &a_pops, std::string const &a_projectileI
         m_upscatterModelALabel( "" ),
         m_URR_mode( URR_mode::none ),
         m_wantTerrellPromptNeutronDistribution( false ),
-        m_wantRawTNSL_distributionSampling( true ) {
+        m_wantRawTNSL_distributionSampling( true ),
+        m_makePhotonEmissionProbabilitiesOne( false ),
+        m_zeroNuclearLevelEnergyWidth( false )  {
 
 }
 
 /* *********************************************************************************************************//**
  * Class to store user defined preferences for creating an MCGIDI::Protare instance.
  *
- * @param a_pops                        [in]    A PoPs Database instance used to get particle indices and possibly other particle information.
+ * @param a_pops                        [in]    A PoPs Database instance used to get particle intids and possibly other particle information.
  * @param a_protare                     [in]    GIDI::Protare whose information is used to fill *this*.
  * @param a_label                       [in]    
  * @param a_delayedNeutrons             [in]    Sets whether delayed neutron data will be load or not if available.
  * @param a_energyDomainMax             [in]    The maximum projectile energy for which data should be loaded.
  ***********************************************************************************************************/
 
-LUPI_HOST MC::MC( PoPI::Database const &a_pops, GIDI::Protare const &a_protare, std::string const &a_label, 
+LUPI_HOST MC::MC( LUPI_maybeUnused PoPI::Database const &a_pops, GIDI::Protare const &a_protare, std::string const &a_label, 
                 GIDI::Transporting::DelayedNeutrons a_delayedNeutrons, double a_energyDomainMax ) :
         GIDI::Transporting::Settings( a_protare.projectile( ).ID( ), a_delayedNeutrons ),
-        m_pops( a_pops ),
-        m_neutronIndex( a_pops[PoPI::IDs::neutron] ),
-        m_photonIndex( a_pops[PoPI::IDs::photon] ),
-        m_electronIndex( a_pops[PoPI::IDs::electron] ),
         m_styles( &a_protare.styles( ) ),
         m_label( a_label ),
         m_energyDomainMax( a_energyDomainMax ),
         m_ignoreENDF_MT5( false ),
         m_sampleNonTransportingParticles( false ),
         m_useSlowerContinuousEnergyConversion( false ),
+        m_addExpectedValueData( true ),
         m_crossSectionLookupMode( LookupMode::Data1d::continuousEnergy ),
         m_other1dDataLookupMode( LookupMode::Data1d::continuousEnergy ),
         m_distributionLookupMode( LookupMode::Distribution::pdf_cdf ),
@@ -82,7 +78,9 @@ LUPI_HOST MC::MC( PoPI::Database const &a_pops, GIDI::Protare const &a_protare, 
         m_upscatterModelALabel( "" ),
         m_URR_mode( URR_mode::none ),
         m_wantTerrellPromptNeutronDistribution( false ),
-        m_wantRawTNSL_distributionSampling( true ) {
+        m_wantRawTNSL_distributionSampling( true ),
+        m_makePhotonEmissionProbabilitiesOne( false ),
+        m_zeroNuclearLevelEnergyWidth( false )  {
 
 }
 

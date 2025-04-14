@@ -33,7 +33,8 @@ static std::map<int, std::string>  ZtoChemicalElementSymbols{
     {111, "Rg"}, {112, "Cn"}, {113, "Nh"}, {114, "Fl"}, {115, "Mc"}, {116, "Lv"}, {117, "Ts"}, {118, "Og"} };
 
 static std::map<std::string, int> chemicalElementSymbolToZs;
-std::map<std::string, std::string> supportedNucluesAliases{ {"d", "h2"}, {"t", "h3"}, {"h", "he3"}, {"a", "he4"} };
+std::map<std::string, std::string> supportedNucleusAliases{ {"d", "h2"}, {"t", "h3"}, {"h", "he3"}, {"a", "he4"} };
+static std::string protonFakeAlias( "h1" );
 
 /*! \class ChemicalElement
  * This class represents a **PoPs** chemicalElement instance.
@@ -47,7 +48,7 @@ std::map<std::string, std::string> supportedNucluesAliases{ {"d", "h2"}, {"t", "
  * @param a_parent          [in]    The parent suite that will contain *this*.
  ***********************************************************************************************************/
 
-ChemicalElement::ChemicalElement( HAPI::Node const &a_node, Database *a_DB, Database *a_parent ) :
+ChemicalElement::ChemicalElement( HAPI::Node const &a_node, Database *a_DB, LUPI_maybeUnused Database *a_parent ) :
         SymbolBase( a_node, Particle_class::chemicalElement ),
         m_Z( a_node.attribute( PoPI_Z_Chars ).as_int( ) ),
         m_name( a_node.attribute( PoPI_nameChars ).value( ) ),
@@ -1014,34 +1015,44 @@ int Z_FromChemicalElementSymbol( std::string const &a_symbol ) {
 
 
 /* *********************************************************************************************************//**
- * Returns the chemical element's symbol (*a_wantSymbol* = **true**) or name (*a_wantSymbol* = **false**) for
- * the requrest atomic number *a_Z*. *a_wantSymbol* is **true**, the returned symbol is for the nuclide when
- * *a_asNucleus* is **false** and for the nucleus otherwise.
+ * This class breaks down a PoPs id for a nuclide or nuclear into its components (e.g., Z, A, index).
+ * The *a_id* can also be a nuclear meta-stable or one of the light paritlce aliases (i.e., "d", "t", "h" or "a").
+ * If *a_id* is a light particle alias, its nucleus equavalent is used. Also, "p" is treated as "h1", and "n"
+ * returns Z = 0 and A = 1. Currently, no other PoPs id's are supported.
  *
- * @param a_Z               [in]    The Z (atomic number of the chemical element.
- * @param a_wantSymbol      [in]    If **true** returns the chemical element's symbol otherwise its name.
- * @param a_asNucleus       [in]    If **true** returns the symbol for the nucleus, otherwise for the nuclide. As no affect if a_wantSymbol is **false**.
- *
- * @return                          The symbol for the nuclide or the nucleus, or the name as a std::string.
+ * @param a_id              [in]    The PoPs id of the particle.
  ***********************************************************************************************************/
 
 ParseIdInfo::ParseIdInfo( std::string const &a_id ) :
+        m_isSupported( false ),
         m_id( a_id ),
         m_isNuclear( false ),
         m_isNucleus( false ),
+        m_isChemicalElement( false ),
         m_isAnti( false ),
         m_isMetaStable( false ),
+        m_symbol( "" ),
+        m_Z( 0 ),
         m_A( 0 ), 
-        m_index( 0 ) {
+        m_index( 0 ),
+        m_qualifier( "" ) {
 
     std::string a_anti;
-    std::string const *id2 = &a_id;
 
-    if( supportedNucluesAliases.find( a_id ) != supportedNucluesAliases.end( ) ) {
-        id2 = &supportedNucluesAliases[a_id];
-    }
-    std::string baseId = baseAntiQualifierFromID( *id2, a_anti, &m_qualifier );
+    std::string baseId = baseAntiQualifierFromID( a_id, a_anti, &m_qualifier );
     m_isAnti = IDs::anti == a_anti;
+
+    if( supportedNucleusAliases.find( baseId ) != supportedNucleusAliases.end( ) ) {
+        baseId = supportedNucleusAliases[baseId]; }
+    else if( baseId == IDs::proton ) {
+        baseId = protonFakeAlias;
+    }
+
+    if( baseId == "n" ) {
+        m_A = 1;
+        m_isSupported = true;
+        return;
+    }
 
     std::vector<std::string> parts;
     if( baseId.find( "_m" ) != std::string::npos ) {
@@ -1055,38 +1066,111 @@ ParseIdInfo::ParseIdInfo( std::string const &a_id ) :
 // meta-stable specifier. If no match is found, assume a_id does not define a nuclear id.
     std::string isotope = parts[0];
     std::size_t digitIndex = isotope.find_first_of( "01233456789" );
+
     std::string symbol( isotope.substr( 0, digitIndex ) );                      // This should be S.
+    std::string symbolCap;
+    if( symbol.size( ) > 0 ) {
+        char firstChar[2];
+        firstChar[0] = std::toupper( symbol[0] );
+        firstChar[1] = 0;
+        std::string firstStringChar( firstChar );
+        symbolCap = firstStringChar + symbol.substr( 1 );
+    }
+
     if( digitIndex != std::string::npos ) {
         std::string AStr( isotope.substr( digitIndex ) );                       // This should be A.
         if( symbol.size( ) > 0 ) {
-            char firstChar[2];
-            firstChar[0] = std::toupper( symbol[0] );
-            firstChar[1] = 0;
-            std::string firstStringChar( firstChar );
-            std::string symbolCap( firstStringChar + symbol.substr( 1 ) );
-
             m_Z = Z_FromChemicalElementSymbol( symbolCap );
             if( m_Z > 0 ) {                                                     // We have a valid chemical element symbol.
                 if( ( AStr.size( ) > 0 ) && ( LUPI::Misc::stringToInt( AStr, m_A ) ) ) {
                     if( m_A < 0 ) {
                         m_A = 0; }
                     else {
-                        bool isValidNuclearId = parts.size( ) == 0;
+                        bool isValidNuclearId = parts.size( ) == 1;
 
                         if( parts.size( ) > 1 ) {
                             isValidNuclearId = ( parts.size( ) == 2 ) && LUPI::Misc::stringToInt( parts[1], m_index );
                         }
 
                         if( isValidNuclearId ) {                                // Should be a valid nuclear id.
-                            m_isNuclear = true;
                             m_symbol = symbolCap;
+                            m_isNuclear = true;
                             m_isNucleus =  symbolCap != symbol;
                         }
                     }
                 }
+                m_isSupported = true;
             }
+        } }
+    else if( symbol.size( ) > 0 ) {
+        m_Z = Z_FromChemicalElementSymbol( symbolCap );
+        if( m_Z > 0 ) {
+            m_symbol = symbolCap;
+            m_isChemicalElement = true;
+            m_isSupported = true;
         }
     }
+}
+
+/* *********************************************************************************************************//**
+ * This method prints the contents of *this*. This is mainly for debugging.
+ *
+ * @param a_terse           [in]    If **true**, all members are printed on one line with no description. Otherwise, each member is printed on a separate line with a description.
+ * @param a_indent          [in]    The amount of indentation on each line before anything is printed.
+ ***********************************************************************************************************/
+
+void ParseIdInfo::print( bool a_terse, std::string const &a_indent ) const {
+
+    if( a_terse ) {
+        std::cout << a_indent << m_id 
+                << boolToString( m_isSupported, " " ).c_str( ) 
+                << boolToString( m_isNuclear, " " ).c_str( ) 
+                << boolToString( m_isNucleus, " " ).c_str( )
+                << boolToString( m_isChemicalElement, " " ).c_str( ) 
+                << boolToString( m_isAnti, " " ).c_str( ) 
+                << boolToString( m_isMetaStable, " " ).c_str( ) 
+                << LUPI::Misc::argumentsToString( " %s", m_symbol.c_str( ) ) 
+                << LUPI::Misc::argumentsToString( " %d", m_Z ) 
+                << LUPI::Misc::argumentsToString( " %d", m_A ) 
+                << LUPI::Misc::argumentsToString( " %d", m_index )
+                << LUPI::Misc::argumentsToString( " %s", m_qualifier.c_str( ) ) 
+                << std::endl; }
+    else {
+        std::cout << a_indent << "id = " << m_id << std::endl;
+        std::cout << a_indent << LUPI::Misc::argumentsToString( "  isSupported = %s", boolToString( m_isSupported, "" ).c_str( ) ) << std::endl;
+        std::cout << a_indent << LUPI::Misc::argumentsToString( "  isNuclear = %s", boolToString( m_isNuclear, "" ).c_str( ) ) << std::endl;
+        std::cout << a_indent << LUPI::Misc::argumentsToString( "  isNucleus = %s", boolToString( m_isNucleus, "" ).c_str( ) ) << std::endl;
+        std::cout << a_indent << LUPI::Misc::argumentsToString( "  isChemicalElement = %s", boolToString( m_isChemicalElement, "" ).c_str( ) ) << std::endl;
+        std::cout << a_indent << LUPI::Misc::argumentsToString( "  isAnti = %s", boolToString( m_isAnti, "" ).c_str( ) ) << std::endl;
+        std::cout << a_indent << LUPI::Misc::argumentsToString( "  isMetaStable = %s", boolToString( m_isMetaStable, "" ).c_str( ) ) << std::endl;
+        std::cout << a_indent << LUPI::Misc::argumentsToString( "  symbol = <%s>", m_symbol.c_str( ) ) << std::endl;
+        std::cout << a_indent << LUPI::Misc::argumentsToString( "  Z = %d", m_Z ) << std::endl;
+        std::cout << a_indent << LUPI::Misc::argumentsToString( "  A = %d", m_A ) << std::endl;
+        std::cout << a_indent << LUPI::Misc::argumentsToString( "  index = %d", m_index ) << std::endl;
+        std::cout << a_indent << LUPI::Misc::argumentsToString( "  qualifier = <%s>", m_qualifier.c_str( ) ) << std::endl;
+    }
+}
+
+/* *********************************************************************************************************//**
+ * This method returns a string representation of *a_value*.
+ *
+ * @param a_value           [in]    If **true**, all members are printed on one line with no description. Otherwise, each member is printed on a separate line w
+ * @param a_prefix          [in]    The amount of indentation on each line before anything is printed.
+ *
+ * @return                          The string representation of *a_value*.
+ ***********************************************************************************************************/
+
+std::string ParseIdInfo::boolToString( bool a_value, std::string const &a_prefix ) const {
+
+    std::string boolString( a_prefix );
+
+    if( a_value ) {
+        boolString += "true"; }
+    else {
+        boolString += "false";
+    }
+
+    return( boolString );
 }
 
 }

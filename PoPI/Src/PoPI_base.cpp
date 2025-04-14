@@ -25,7 +25,9 @@ namespace PoPI {
 
 Base::Base( std::string const &a_id, Particle_class a_class ) :
         m_id( a_id ),
-        m_class( a_class ) {
+        m_class( a_class ),
+        m_index( -1 ),
+        m_intid( -1 ) {
 
 }
 
@@ -40,7 +42,8 @@ Base::Base( std::string const &a_id, Particle_class a_class ) :
 Base::Base( HAPI::Node const &a_node, std::string const &a_label, Particle_class a_class ) :
         m_id( a_node.attribute( a_label.c_str( ) ).value( ) ),
         m_class( a_class ),
-        m_index( -1 ) {
+        m_index( -1 ),
+        m_intid( -1 ) {
 
 }
 
@@ -61,8 +64,7 @@ Base::~Base( ) {
  ***********************************************************************************************************/
 
 IDBase::IDBase( std::string const &a_id, Particle_class a_class ) :
-        Base( a_id, a_class ),
-        m_intid( -1 ) {
+        Base( a_id, a_class ) {
 
 }
 
@@ -74,8 +76,7 @@ IDBase::IDBase( std::string const &a_id, Particle_class a_class ) :
  ***********************************************************************************************************/
 
 IDBase::IDBase( HAPI::Node const &a_node, Particle_class a_class ) :
-        Base( a_node, PoPI_idChars, a_class ),
-        m_intid( -1 ) {
+        Base( a_node, PoPI_idChars, a_class ) {
 
 }
 

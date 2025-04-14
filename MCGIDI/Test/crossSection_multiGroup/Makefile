@@ -1,4 +1,4 @@
-SHELL = /bin/ksh
+SHELL = /bin/sh
 
 # <<BEGIN-copyright>>
 # Copyright 2019, Lawrence Livermore National Security, LLC.
@@ -20,8 +20,8 @@ check: crossSection_multiGroup crossSectionSum_multiGroup
 
 	./crossSection_multiGroup --pid photon --tid O16 --map ../../../GIDI/Test/Data/MG_MC/all.map > Outputs/crossSection_multiGroup.photon+O16.out
 	../Utilities/diff.com crossSection_multiGroup/crossSection_multiGroup-1 Benchmarks/crossSection_multiGroup.photon+O16.out Outputs/crossSection_multiGroup.photon+O16.out
-	./crossSection_multiGroup --pid photon --tid O16 --map ../../../GIDI/Test/Data/MG_MC/all.map -n > Outputs/crossSection_multiGroup.photon+O16.out
-	../Utilities/diff.com crossSection_multiGroup/crossSection_multiGroup-2 Benchmarks/crossSection_multiGroup.photon+O16.out Outputs/crossSection_multiGroup.photon+O16.out
+	./crossSection_multiGroup --pid photon --tid O16 --map ../../../GIDI/Test/Data/MG_MC/all.map -n > Outputs/crossSection_multiGroup.photon+O16.nuclear.out
+	../Utilities/diff.com crossSection_multiGroup/crossSection_multiGroup-2 Benchmarks/crossSection_multiGroup.photon+O16.nuclear.out Outputs/crossSection_multiGroup.photon+O16.nuclear.out
 	./crossSection_multiGroup --pid photon --tid O16 --map ../../../GIDI/Test/Data/MG_MC/all.map -a > Outputs/crossSection_multiGroup.photon+O16.atomic.out
 	../Utilities/diff.com crossSection_multiGroup/crossSection_multiGroup-3 Benchmarks/crossSection_multiGroup.photon+O16.atomic.out Outputs/crossSection_multiGroup.photon+O16.atomic.out
 	./crossSection_multiGroup --pid photon --tid O16 --map ../../../GIDI/Test/Data/MG_MC/all.map -a -n > Outputs/crossSection_multiGroup.photon+O16.atomic+nuclear.out

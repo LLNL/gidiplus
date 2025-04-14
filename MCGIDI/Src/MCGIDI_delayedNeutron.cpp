@@ -54,13 +54,25 @@ LUPI_HOST_DEVICE DelayedNeutron::~DelayedNeutron( ) {
 /* *********************************************************************************************************//**
  * Updates the m_userParticleIndex to *a_userParticleIndex* for all particles with PoPs index *a_particleIndex*.
  *  
- * @param a_particleIndex       [in]    The PoPs id of the particle whose userPid is to be set.
- * @param a_userParticleIndex   [in]    The particle id specified by the user.
+ * @param a_particleIndex       [in]    The PoPs index of the particle whose user index is to be set.
+ * @param a_userParticleIndex   [in]    The particle index specified by the user.
  ***********************************************************************************************************/
 
 LUPI_HOST void DelayedNeutron::setUserParticleIndex( int a_particleIndex, int a_userParticleIndex ) {
     
     m_product.setUserParticleIndex( a_particleIndex, a_userParticleIndex );
+}
+
+/* *********************************************************************************************************//**
+ * Updates the m_userParticleIndex to *a_userParticleIndex* for all particles with PoPs intid *a_particleIntid*.
+ *
+ * @param a_particleIndex       [in]    The PoPs intid of the particle whose user index is to be set.
+ * @param a_userParticleIndex   [in]    The particle index specified by the user.
+ ***********************************************************************************************************/
+
+LUPI_HOST void DelayedNeutron::setUserParticleIndexViaIntid( int a_particleIntid, int a_userParticleIndex ) {
+
+    m_product.setUserParticleIndexViaIntid( a_particleIntid, a_userParticleIndex );
 }
 
 /* *********************************************************************************************************//**
@@ -74,7 +86,7 @@ LUPI_HOST void DelayedNeutron::setUserParticleIndex( int a_particleIndex, int a_
 LUPI_HOST_DEVICE void DelayedNeutron::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
     DATA_MEMBER_INT( m_delayedNeutronIndex, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_rate, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_rate, a_buffer, a_mode );
     m_product.serialize( a_buffer, a_mode );
 }
 

@@ -37,8 +37,7 @@ int main( int argc, char **argv ) {
     std::vector<std::string> libraries;
     GIDI::Transporting::Particles particles;
     int reactionIndex = 1;
-    void *rngState = nullptr;
-    unsigned long long seed = 1;
+    unsigned long long rngState = 1;
     char *message;
     std::set<int> reactionsToExclude;
     LUPI::StatusMessageReporting smr1;
@@ -46,8 +45,6 @@ int main( int argc, char **argv ) {
     std::cerr << "    " << __FILE__;
     for( int i1 = 1; i1 < argc; i1++ ) std::cerr << " " << argv[i1];
     std::cerr << std::endl;
-
-    MCGIDI_test_rngSetup( seed );
 
     try {
         GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, GIDI::Construction::PhotoMode::atomicOnly );
@@ -100,7 +97,8 @@ int main( int argc, char **argv ) {
         muBins.clear( );
         for( long i1 = 0; i1 < numberOfSamples; ++i1 ) {
             products.clear( );
-            reaction->sampleProducts( MCProtare, energy, input, float64RNG64, rngState, products );
+            reaction->sampleProducts( MCProtare, energy, input, [&]( ) -> double { return float64RNG64( &rngState ); }, 
+                    [&]( MCGIDI::Sampling::Product &a_product ) -> void { products.push_back( a_product ); }, products );
             for( std::size_t i2 = 0; i2 < products.size( ); ++i2 ) {
                 MCGIDI::Sampling::Product const &product = products[i2];
 

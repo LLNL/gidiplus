@@ -38,6 +38,24 @@ Ancestry::~Ancestry( ) {
 }
 
 /* *********************************************************************************************************//**
+ * The assignment operator. This method sets the member's of *this* to those of *a_ancestry* except for
+ * the member *m_ancestor* which is set to **nullptr**.
+ *
+ * @param a_ancestry            [in]    Instance whose member are used to set the members of *this*.
+ ***********************************************************************************************************/
+
+Ancestry &Ancestry::operator=( Ancestry const &a_ancestry ) {
+
+    if( this != &a_ancestry ) {
+        m_moniker = a_ancestry.moniker( );
+        m_ancestor = nullptr;
+        m_attribute = a_ancestry.attribute( );
+    }
+
+    return( *this );
+}
+
+/* *********************************************************************************************************//**
  * Returns the root node, ascending all parent nodes until one is found without an ancester. That node is returned.
  *
  * @return                              Returns the root node (i.e., the top level node).
@@ -199,7 +217,7 @@ std::string Ancestry::toXLink( ) const {
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void Ancestry::toXMLList( WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void Ancestry::toXMLList( LUPI_maybeUnused WriteInfo &a_writeInfo, LUPI_maybeUnused std::string const &a_indent ) const {
 
     std::cout << "Node '" << moniker( ) << "' needs toXMLList methods." << std::endl;
 }

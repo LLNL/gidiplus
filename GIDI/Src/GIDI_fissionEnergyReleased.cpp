@@ -65,7 +65,7 @@ FissionEnergyRelease::~FissionEnergyRelease( ) {
  * @return                              Multi-group Q-value.
  ***********************************************************************************************************/
 
-Vector FissionEnergyRelease::multiGroupQ( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo ) const {
+Vector FissionEnergyRelease::multiGroupQ( LUPI_maybeUnused LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, LUPI_maybeUnused Styles::TemperatureInfo const &a_temperatureInfo ) const {
 
     Vector vector( 0 );
 

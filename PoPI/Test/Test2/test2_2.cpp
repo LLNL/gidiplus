@@ -15,7 +15,7 @@ void printInfo( PoPI::Database const &a_pops, char const *a_id );
 /*
 =========================================================
 */
-int main( int argc, char **argv ) {
+int main( LUPI_maybeUnused int argc, LUPI_maybeUnused char **argv ) {
 
     std::cerr << "    " << LUPI::FileInfo::basenameWithoutExtension( __FILE__ ) << std::endl;
 

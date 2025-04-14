@@ -49,7 +49,7 @@ DiscreteGamma2d::~DiscreteGamma2d( ) {
  * @return                          The energy of the discrete gamma.
  ***********************************************************************************************************/
 
-double DiscreteGamma2d::evaluate( double a_x2, double a_x1 ) const {
+double DiscreteGamma2d::evaluate( LUPI_maybeUnused double a_x2, LUPI_maybeUnused double a_x1 ) const {
 
 // FIXME - Do we need to check domain?
     return( m_value );
@@ -64,7 +64,7 @@ double DiscreteGamma2d::evaluate( double a_x2, double a_x1 ) const {
  * @param       a_inRegions         [in]        This is not used in this method.
  ***********************************************************************************************************/
 
-void DiscreteGamma2d::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
+void DiscreteGamma2d::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent, LUPI_maybeUnused bool a_embedded, LUPI_maybeUnused bool a_inRegions ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     std::string attributes = a_writeInfo.addAttribute( GIDI_valueChars, LUPI::Misc::doubleToShortestString( value( ) ) );

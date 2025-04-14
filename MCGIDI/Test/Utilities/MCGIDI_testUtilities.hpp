@@ -16,6 +16,9 @@
 #include <vector>
 #include <stdexcept>
 
+#include <LUPI.hpp>
+#include <LUPI_declareMacro.hpp>
+
 class argvOption2 {
 
     public:
@@ -59,7 +62,12 @@ long asLong2( char const *a_chars );
 double asDouble2( char const *a_chars );
 std::string doubleToString2( char const *format, double value );
 std::string longToString2( char const *format, long value );
-void MCGIDI_test_rngSetup( unsigned long long a_seed );
-double float64RNG64( void *a_dummy );
+/*
+=========================================================
+*/
+LUPI_HOST_DEVICE inline double float64RNG64( unsigned long long *a_state ) {
 
+    *a_state = 0x27bb2ee687b0b0fd * *a_state + 0xb504f32d;
+    return( 5.42101086242752157e-20 * *a_state );
+}
 #endif          // MCGIDI_testUtilities_hpp_included

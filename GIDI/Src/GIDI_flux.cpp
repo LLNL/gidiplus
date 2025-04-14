@@ -85,7 +85,6 @@ void Fluxes::addFile( std::string const &a_fileName ) {
 
     std::string name( fluxes.name( ) );
     Construction::Settings construction( Construction::ParseMode::all, GIDI::Construction::PhotoMode::atomicOnly );
-    PoPI::Database pops;
 
     SetupInfo setupInfo( nullptr );
 

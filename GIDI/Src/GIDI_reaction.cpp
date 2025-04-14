@@ -30,6 +30,7 @@ Reaction::Reaction( int a_ENDF_MT, std::string a_fissionGenre ) :
         m_isPhotoAtomicIncoherentScattering( false ),
         m_RutherfordScatteringPresent( false ),
         m_onlyRutherfordScatteringPresent( false ),
+        m_nuclearPlusInterferencePresent( false ),
         m_decayPositronium( false ),
         m_doubleDifferentialCrossSection( GIDI_doubleDifferentialCrossSectionChars, GIDI_labelChars ),
         m_crossSection( GIDI_crossSectionChars, GIDI_labelChars ),
@@ -70,7 +71,8 @@ Reaction::Reaction( Construction::Settings const &a_construction, HAPI::Node con
         m_isPhotoAtomicIncoherentScattering( false ),
         m_RutherfordScatteringPresent( false ),
         m_onlyRutherfordScatteringPresent( false ),
-        m_decayPositronium( a_construction.decayPositronium( ) ),
+        m_nuclearPlusInterferencePresent( false ),
+        m_decayPositronium( false ),
         m_doubleDifferentialCrossSection( a_construction, GIDI_doubleDifferentialCrossSectionChars, GIDI_labelChars, a_node, a_setupInfo, a_pops, 
                 a_internalPoPs, parseDoubleDifferentialCrossSectionSuite, a_styles ),
         m_crossSection( a_construction, GIDI_crossSectionChars, GIDI_labelChars, a_node, a_setupInfo, a_pops, a_internalPoPs, parseCrossSectionSuite, a_styles ),
@@ -79,6 +81,7 @@ Reaction::Reaction( Construction::Settings const &a_construction, HAPI::Node con
         m_outputChannel( nullptr ) {
 
     m_isPairProduction = label( ).find( "pair production" ) != std::string::npos;
+    m_decayPositronium = m_isPairProduction && a_construction.decayPositronium( );
     m_isPhotoAtomicIncoherentScattering = false;
     if( m_doubleDifferentialCrossSection.size( ) > 0 )
         m_isPhotoAtomicIncoherentScattering = m_doubleDifferentialCrossSection.get<Form>( 0 )->type( ) == FormType::incoherentPhotonScattering;
@@ -89,7 +92,8 @@ Reaction::Reaction( Construction::Settings const &a_construction, HAPI::Node con
     m_availableMomentum.setAncestor( this );
 
     a_setupInfo.m_outputChannelLevel = 0;
-    m_outputChannel = new OutputChannel( a_construction, a_node.child( GIDI_outputChannelChars ), a_setupInfo, a_pops, a_internalPoPs, a_styles, hasFission( ) );
+    m_outputChannel = new OutputChannel( a_construction, a_node.child( GIDI_outputChannelChars ), a_setupInfo, a_pops, 
+            a_internalPoPs, a_styles, hasFission( ), true );
     m_outputChannel->setAncestor( this );
 
     HAPI::Node const CoulombPlusNuclearElastic = a_node.child( GIDI_doubleDifferentialCrossSectionChars ).first_child( );
@@ -98,6 +102,7 @@ Reaction::Reaction( Construction::Settings const &a_construction, HAPI::Node con
         m_onlyRutherfordScatteringPresent = true;
         for( HAPI::Node child = CoulombPlusNuclearElastic.first_child( ); !child.empty( ); child.to_next_sibling( ) ) {
             if( child.name( ) != GIDI_RutherfordScatteringChars ) m_onlyRutherfordScatteringPresent = false;
+            if( child.name( ) == GIDI_nuclearPlusInterferenceChars ) m_nuclearPlusInterferencePresent = true;
         }
     }
 
@@ -173,7 +178,18 @@ Reaction::~Reaction( ) {
 
 void Reaction::productIDs( std::set<std::string> &a_ids, Transporting::Particles const &a_particles, bool a_transportablesOnly ) const {
 
-    m_outputChannel->productIDs( a_ids, a_particles, a_transportablesOnly );
+    if( m_decayPositronium ) {
+        std::string electronAnti( PoPI::IDs::electron + PoPI::IDs::anti );
+        std::set<std::string> ids;
+        m_outputChannel->productIDs( ids, a_particles, a_transportablesOnly );
+        for( auto iterId = ids.begin( ); iterId != ids.end( ); ++iterId ) {
+            if( ( *iterId == PoPI::IDs::electron ) || ( *iterId == electronAnti ) ) continue;
+            a_ids.insert( *iterId );
+        }
+        a_ids.insert( PoPI::IDs::photon ); }
+    else {
+        m_outputChannel->productIDs( a_ids, a_particles, a_transportablesOnly );
+    }
 }
 
 /* *********************************************************************************************************//**
@@ -211,7 +227,7 @@ Vector Reaction::multiGroupMultiplicity( LUPI::StatusMessageReporting &a_smr, Tr
 
     Vector vector( 0 );
 
-    if( m_isPairProduction && m_decayPositronium ) {
+    if( m_decayPositronium ) {
         if( a_productID == PoPI::IDs::photon ) vector += multiGroupCrossSection( a_smr, a_settings, a_temperatureInfo ) * 2; }
     else {
         vector += m_outputChannel->multiGroupMultiplicity( a_smr, a_settings, a_temperatureInfo, a_productID );
@@ -354,7 +370,7 @@ Vector Reaction::multiGroupCrossSection( LUPI::StatusMessageReporting &a_smr, Tr
 Vector Reaction::multiGroupQ( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings,
                 Styles::TemperatureInfo const &a_temperatureInfo, bool a_final ) const {
 
-    if( m_isPairProduction && m_decayPositronium ) return( Vector { 0 } );          // Special case, returns Q with all 0.0s.
+    if( m_decayPositronium ) return( Vector { 0 } );          // Special case, returns Q with all 0.0s.
 
     return( m_outputChannel->multiGroupQ( a_smr, a_settings, a_temperatureInfo, a_final ) );
 }
@@ -378,13 +394,13 @@ Matrix Reaction::multiGroupProductMatrix( LUPI::StatusMessageReporting &a_smr, T
 
     Matrix matrix( 0, 0 );
 
-    if( m_isPairProduction && m_decayPositronium ) {
+    if( m_decayPositronium ) {
         if( a_productID == PoPI::IDs::photon ) {
             if( a_order == 0 ) {
                 Vector productionCrossSection = multiGroupCrossSection( a_smr, a_settings, a_temperatureInfo ) * 2;
                 std::map<std::string, GIDI::Transporting::Particle> const &particles = a_particles.particles( );
                 std::map<std::string, GIDI::Transporting::Particle>::const_iterator particle = particles.find( PoPI::IDs::photon );
-                GIDI::Transporting::MultiGroup const &multiGroup = particle->second.multiGroup( );
+                GIDI::Transporting::MultiGroup const &multiGroup = particle->second.fineMultiGroup( );
                 int multiGroupIndexFromEnergy = multiGroup.multiGroupIndexFromEnergy( PoPI_electronMass_MeV_c2, true );
                 Matrix matrix2( productionCrossSection.size( ), productionCrossSection.size( ) );
 
@@ -440,7 +456,7 @@ Vector Reaction::multiGroupAvailableEnergy( LUPI::StatusMessageReporting &a_smr,
     Functions::Gridded1d const *form = dynamic_cast<Functions::Gridded1d const*>( a_settings.form( a_smr, m_availableEnergy, a_temperatureInfo, "available energy" ) );
     if( form != nullptr ) vector = form->data( );
 
-    if( m_isPairProduction && m_decayPositronium ) 
+    if( m_decayPositronium ) 
         vector -= m_outputChannel->multiGroupQ( a_smr, a_settings, a_temperatureInfo, false );
 
     return( vector );
@@ -463,7 +479,7 @@ Vector Reaction::multiGroupAverageEnergy( LUPI::StatusMessageReporting &a_smr, T
 
     Vector vector( 0 );
 
-    if( m_isPairProduction && m_decayPositronium ) {
+    if( m_decayPositronium ) {
         if( a_productID == PoPI::IDs::photon ) vector += multiGroupCrossSection( a_smr, a_settings, a_temperatureInfo ) * 2.0 * PoPI_electronMass_MeV_c2; }
     else {
         vector += m_outputChannel->multiGroupAverageEnergy( a_smr, a_settings, a_temperatureInfo, a_productID );
@@ -492,9 +508,12 @@ Vector Reaction::multiGroupDepositionEnergy( LUPI::StatusMessageReporting &a_smr
     std::map<std::string, Transporting::Particle> const &products = a_particles.particles( );
     Vector vector;
 
-    if( ( a_settings.zeroDepositionIfAllProductsTracked( ) ) && areAllProductsTracked( a_particles ) ) return( vector );
+    if( moniker( ) != GIDI_orphanProductChars ) {
+        if( ( a_settings.zeroDepositionIfAllProductsTracked( ) ) && areAllProductsTracked( a_particles ) && !m_isPairProduction ) return( vector );
 
-    vector = multiGroupAvailableEnergy( a_smr, a_settings, a_temperatureInfo );
+        vector = multiGroupAvailableEnergy( a_smr, a_settings, a_temperatureInfo );
+    }
+
     Vector availableEnergy( vector );
 
     for( std::map<std::string, Transporting::Particle>::const_iterator iter = products.begin( ); iter != products.end( ); ++iter ) {
@@ -567,7 +586,11 @@ Vector Reaction::multiGroupDepositionMomentum( LUPI::StatusMessageReporting &a_s
                 Styles::TemperatureInfo const &a_temperatureInfo, Transporting::Particles const &a_particles ) const {
 
     std::map<std::string, Transporting::Particle> const &products = a_particles.particles( );
-    Vector vector = multiGroupAvailableMomentum( a_smr, a_settings, a_temperatureInfo );
+    Vector vector;
+
+    if( moniker( ) != GIDI_orphanProductChars ) {
+        vector = multiGroupAvailableMomentum( a_smr, a_settings, a_temperatureInfo );
+    }
 
     for( std::map<std::string, Transporting::Particle>::const_iterator iter = products.begin( ); iter != products.end( ); ++iter ) {
         vector -= multiGroupAverageMomentum( a_smr, a_settings, a_temperatureInfo, iter->first );
@@ -621,6 +644,7 @@ void Reaction::delayedNeutronProducts( DelayedNeutronProducts &a_delayedNeutronP
 void Reaction::incompleteParticles( Transporting::Settings const &a_settings, std::set<std::string> &a_incompleteParticles ) const {
 
     if( m_outputChannel != nullptr ) m_outputChannel->incompleteParticles( a_settings, a_incompleteParticles );
+    if( m_isPairProduction ) a_incompleteParticles.erase( PoPI::IDs::photon );          // Kludge for old processed files.
 }
 
 /* *********************************************************************************************************//**
@@ -680,16 +704,22 @@ void Reaction::mapContinuousEnergyProductData( Transporting::Settings const &a_s
  *
  * Either or both of *a_offset* and *a_slope* can be an empty Functions::XYs1d instance or a nullptr.
  * If both *a_offset* and *a_slope* are non-empty Functions::XYs1d instances, the domains of both must be the same.
+ * If the returned value is false, no data are changed.
  * 
- * @param       a_offset        [in]    A pointer to a XYs1d function for the offset.
- * @param       a_slope         [in]    A pointer to a XYs1d function for the slope.
+ * @param       a_offset            [in]    A pointer to a XYs1d function for the offset.
+ * @param       a_slope             [in]    A pointer to a XYs1d function for the slope.
+ * @param       a_updateMultiGroup  [in]    If true, the multi-group data are also modified.
+ *
+ * @return                                  true if data can be modified and false otherwise.
  ***********************************************************************************************************/
 
-void Reaction::modifiedCrossSection( Functions::XYs1d const *a_offset, Functions::XYs1d const *a_slope ) {
+bool Reaction::modifyCrossSection( Functions::XYs1d const *a_offset, Functions::XYs1d const *a_slope, bool a_updateMultiGroup ) {
+/*
+    -) FIXME, this does not modify the total cross section for the protare! Does it needed to be?
+*/
 
     ProtareSingle &protare( dynamic_cast<ProtareSingle &>( *root( ) ) );
     Styles::Suite const &styles = protare.styles( );
-    Suite &crossSectionSuite = crossSection( );
     Functions::XYs1d const *offset1 = a_offset, *slope1 = a_slope;
 
     if( a_offset == nullptr ) offset1 = new Functions::XYs1d( );            // Handle nullptr cases.
@@ -699,7 +729,7 @@ void Reaction::modifiedCrossSection( Functions::XYs1d const *a_offset, Functions
         if( slope1->size( ) == 0 ) {
             if( a_offset == nullptr ) delete offset1;
             if( a_slope == nullptr ) delete slope1;
-            return;
+            return( false );
         }
         Functions::XYs1d const *offset2 = Functions::XYs1d::makeConstantXYs1d( offset1->axes( ), slope1->domainMin( ), slope1->domainMax( ), 0.0 );
         if( a_offset == nullptr ) delete offset1;
@@ -712,16 +742,19 @@ void Reaction::modifiedCrossSection( Functions::XYs1d const *a_offset, Functions
 
     double domainMin = offset1->domainMin( ), domainMax = offset1->domainMax( );
 
-    if( domainMin != slope1->domainMin( ) ) throw Exception( "GIDI::Reaction::modifiedCrossSection: offset and slope domainMins differ." );
-    if( domainMax != slope1->domainMax( ) ) throw Exception( "GIDI::Reaction::modifiedCrossSection: offset and slope domainMaxs differ." );
+    if( domainMin != slope1->domainMin( ) ) throw Exception( "GIDI::Reaction::modifyCrossSection: offset and slope domainMins differ." );
+    if( domainMax != slope1->domainMax( ) ) throw Exception( "GIDI::Reaction::modifyCrossSection: offset and slope domainMaxs differ." );
 
     Styles::TemperatureInfos temperatureInfos = protare.temperatures( );
 
-    Functions::XYs1d *xys1d = crossSectionSuite.get<Functions::XYs1d>( temperatureInfos[0].heatedCrossSection( ) );
+    Functions::XYs1d *xys1d = static_cast<Functions::XYs1d *>(
+            m_crossSection.findInstanceOfTypeInLineage( styles, temperatureInfos[0].heatedCrossSection( ), GIDI_XYs1dChars ) );
+    if( xys1d == nullptr ) throw Exception( "GIDI::Reaction::modifyCrossSection: could not find XYs1d cross section." );
+
     if( ( xys1d->domainMin( ) >= domainMax ) || ( xys1d->domainMax( ) <= domainMin ) ) {
         if( a_offset == nullptr ) delete offset1;
         if( a_slope == nullptr ) delete slope1;
-        return;
+        return( false );
     }
 
     double crossSectionDomainMax = xys1d->domainMax( );
@@ -734,8 +767,14 @@ void Reaction::modifiedCrossSection( Functions::XYs1d const *a_offset, Functions
     if( a_slope == nullptr ) delete slope1;
 
     for( auto temperatureInfo = temperatureInfos.begin( ); temperatureInfo != temperatureInfos.end( ); ++temperatureInfo ) {
-        xys1d = crossSectionSuite.get<Functions::XYs1d>( temperatureInfo->heatedCrossSection( ) );
+        xys1d = static_cast<Functions::XYs1d *>( 
+                m_crossSection.findInstanceOfTypeInLineage( styles, temperatureInfo->heatedCrossSection( ), GIDI_XYs1dChars ) );
         Functions::XYs1d xys1dSliced = xys1d->domainSlice( domainMin, domainMax, true );
+        if( xys1dSliced.interpolation( ) != ptwXY_interpolationLinLin ) {
+            Functions::XYs1d *temp = xys1dSliced.asXYs1d( true, 1e-3, 1e-6, 1e-6 );
+            xys1dSliced = (*temp);
+            delete temp;
+        }
         Functions::XYs1d modified = offset + slope * xys1dSliced;
 
         int64_t index1;
@@ -750,7 +789,7 @@ void Reaction::modifiedCrossSection( Functions::XYs1d const *a_offset, Functions
             p1->y = modified.evaluate( p1->x );
         }
 
-        Functions::Ys1d *ys1d = crossSectionSuite.get<Functions::Ys1d>( temperatureInfo->griddedCrossSection( ) );
+        Functions::Ys1d *ys1d = m_crossSection.get<Functions::Ys1d>( temperatureInfo->griddedCrossSection( ) );
         std::vector<double> &Ys = ys1d->Ys( );
         Styles::GriddedCrossSection const griddedCrossSection = *styles.get<Styles::GriddedCrossSection>( temperatureInfo->griddedCrossSection( ) );
         nf_Buffer<double> const &grid = griddedCrossSection.grid( ).values( );
@@ -764,7 +803,81 @@ void Reaction::modifiedCrossSection( Functions::XYs1d const *a_offset, Functions
             }
             Ys[index2] = modified.evaluate( xValue );
         }
+        if( a_updateMultiGroup ) recalculateMultiGroupData( &protare, *temperatureInfo );
     }
+
+    return( true );
+}
+
+/* *********************************************************************************************************//**
+ * Thid methid is deprecated, use modifyCrossSection instead. See modifyCrossSection for useage.
+ ***********************************************************************************************************/
+
+bool Reaction::modifiedCrossSection( Functions::XYs1d const *a_offset, Functions::XYs1d const *a_slope ) {
+
+    return modifyCrossSection( a_offset, a_slope, false );
+}
+
+/* *********************************************************************************************************//**
+ * This function recalculates the multi-group data for data labelled with a_temperatureInfo.heatedMultiGroup().
+ *
+ * @param       a_temperatureInfo   [in]    The temperature for which multi-group data are to be recalculated.
+ ***********************************************************************************************************/
+
+void Reaction::recalculateMultiGroupData( ProtareSingle const *a_protare, Styles::TemperatureInfo const &a_temperatureInfo ) {
+
+    std::string heatedMultiGroupLabel = a_temperatureInfo.heatedMultiGroup( );
+
+    GUPI::Ancestry const *ancestorRoot = root( );
+    if( ancestorRoot->moniker( ) != GIDI_topLevelChars ) throw Exception( "Reaction::recalculateMultiGroupData: could not find parent protare." );
+
+    Styles::Suite const &styles = a_protare->styles( );
+    if( styles.find( heatedMultiGroupLabel ) == styles.end( ) ) return;
+
+    Styles::HeatedMultiGroup const &heatedMultiGroupStyle = *styles.get<Styles::HeatedMultiGroup const>( heatedMultiGroupLabel );
+
+    std::vector<double> groupBoundaries = heatedMultiGroupStyle.groupBoundaries( a_protare->projectile( ).ID( ) );
+    Transporting::MultiGroup multiGroup = Transporting::MultiGroup( "recal", groupBoundaries );
+
+    Transporting::Flux flux( "recal", a_temperatureInfo.temperature( ).value( ) );
+    double energies[2] = { groupBoundaries[0], groupBoundaries.back( ) };
+    double fluxValues[2] = { 1.0, 1.0 };
+    Transporting::Flux_order flux_order( 0, 2, energies, fluxValues );
+    flux.addFluxOrder( flux_order );
+
+    MultiGroupCalulationInformation multiGroupCalulationInformation( multiGroup, flux );
+    calculateMultiGroupData( a_protare, a_temperatureInfo, heatedMultiGroupLabel, multiGroupCalulationInformation );
+}
+
+/* *********************************************************************************************************//**
+ * This methods calculates multi-group data for all needed components and adds each component's multi-group with label *a_heatedMultiGroupLabel*.
+ *
+ * @param   a_temperatureInfo                   [in]    Specifies the temperature and labels use to lookup the requested data.
+ * @param   a_heatedMultiGroupLabel             [in]    The label of the style for the multi-group data being added.
+ * @param   a_multiGroupCalulationInformation   [in]    Store multi-group boundary and flux data used for multi-grouping.
+ * @param   a_crossSectionXYs1d                 [in[    The cross section weight.
+ ***********************************************************************************************************/
+
+// FIXME maybe, as upscatter is currently not handled.
+    
+void Reaction::calculateMultiGroupData( ProtareSingle const *a_protare, Styles::TemperatureInfo const &a_temperatureInfo, 
+                std::string const &a_heatedMultiGroupLabel, MultiGroupCalulationInformation const &a_multiGroupCalulationInformation ) {
+
+    Styles::Suite const &styles = a_protare->styles( );
+    Transporting::MultiGroup multiGroup = a_multiGroupCalulationInformation.m_multiGroup;
+
+    std::vector<double> flatValues { multiGroup[0], 1.0, multiGroup[multiGroup.size( ) - 1], 1.0 };
+    Functions::XYs1d flatFunction( Axes( ), ptwXY_interpolationLinLin, flatValues );
+
+    Functions::XYs1d const *crossSectionXYs1d = static_cast<Functions::XYs1d *>( 
+                m_crossSection.findInstanceOfTypeInLineage( styles, a_temperatureInfo.heatedCrossSection( ), GIDI_XYs1dChars ) );
+
+    calculate1dMultiGroupDataInComponent( a_protare, a_heatedMultiGroupLabel, a_multiGroupCalulationInformation, m_crossSection, flatFunction );
+    calculate1dMultiGroupDataInComponent( a_protare, a_heatedMultiGroupLabel, a_multiGroupCalulationInformation, m_availableEnergy, *crossSectionXYs1d );
+    calculate1dMultiGroupDataInComponent( a_protare, a_heatedMultiGroupLabel, a_multiGroupCalulationInformation, m_availableMomentum, *crossSectionXYs1d );
+
+    if( m_outputChannel != nullptr ) 
+        m_outputChannel->calculateMultiGroupData( a_protare, a_temperatureInfo, a_heatedMultiGroupLabel, a_multiGroupCalulationInformation, *crossSectionXYs1d );
 }
 
 /* *********************************************************************************************************//**
@@ -820,14 +933,13 @@ int ENDL_CFromENDF_MT( int ENDF_MT, int *ENDL_C, int *ENDL_S ) {
                            -171, -172, -173, -174, -175, -176, -177, -178, -179, -180,
                            -181, -182, -183, -184, -185, -186, -187, -188,   28, -190,
                            -191, -192,   38, -194, -195, -196, -197, -198, -199, -200 };
-
     *ENDL_C = 0;
     *ENDL_S = 0;
     if( ENDF_MT <= 0 ) {
         *ENDL_C = -ENDF_MT;
         return( 1 );
     }
-    if( ENDF_MT > 891 ) return( 1 );
+    if( ENDF_MT > 1572 ) return( 1 );
     if( ENDF_MT < 50 ) {
         *ENDL_C = MT1_50ToC[ENDF_MT - 1]; }
     else if( ENDF_MT <= 91 ) {
@@ -838,7 +950,7 @@ int ENDL_CFromENDF_MT( int ENDF_MT, int *ENDL_C, int *ENDL_S ) {
     else if( ( ENDF_MT == 452 ) || ( ENDF_MT == 455 ) || ( ENDF_MT == 456 ) || ( ENDF_MT == 458 ) ) {
         *ENDL_C = 15;
         if( ENDF_MT == 455 ) *ENDL_S = 7; }
-    else if( ( ENDF_MT >= 502 ) and ( ENDF_MT <= 572 ) ) {
+    else if( ( ENDF_MT >= 502 ) && ( ENDF_MT <= 572 ) ) {
         if( ENDF_MT == 502 ) {
             *ENDL_C = 71; }
         else if( ENDF_MT == 504 ) {
@@ -867,7 +979,9 @@ int ENDL_CFromENDF_MT( int ENDF_MT, int *ENDL_C, int *ENDL_S ) {
             if( ENDF_MT != 849 ) *ENDL_S = 1; }
         else if( ( ENDF_MT >= 875 ) && ( ENDF_MT <= 891 ) ) {
             *ENDL_C = 12;
-            if( ENDF_MT != 891 ) *ENDL_S = 1;
+            if( ENDF_MT != 891 ) *ENDL_S = 1; }
+        else if( ( ENDF_MT >= 1534 ) && (ENDF_MT <= 1572 ) ) {
+            *ENDL_C = 72;
         }
     }
 

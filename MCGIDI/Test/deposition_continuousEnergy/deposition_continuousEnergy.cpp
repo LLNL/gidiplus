@@ -20,6 +20,7 @@
 static char const *description = "Loops over temperature and energy, printing the total cross section. If projectile is a photon, see options *-pa* and *-pn*.";
 
 void main2( int argc, char **argv );
+void checkIntidGain( MCGIDI::Protare *MCProtare, int a_hashIndex, double a_temperature, double a_energy, int a_index, int a_intid );
 /*
 =========================================================
 */
@@ -118,7 +119,7 @@ void main2( int argc, char **argv ) {
     protares[0] = MCProtare;
     MCGIDI::URR_protareInfos URR_protare_infos( protares );
 
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < (MCGIDI_VectorSizeType) MCProtare->numberOfReactions( ); ++i1 ) {
+    for( std::size_t i1 = 0; i1 < MCProtare->numberOfReactions( ); ++i1 ) {
         MCGIDI::Reaction const &reaction = *MCProtare->reaction( i1 );
 
         std::cout << std::setw( 40 ) << reaction.label( ).c_str( ) << "  threshold = " 
@@ -127,7 +128,7 @@ void main2( int argc, char **argv ) {
     }
 
     std::cout << "List of reactions:" << std::endl;
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < (MCGIDI_VectorSizeType) MCProtare->numberOfReactions( ); ++i1 ) {
+    for( std::size_t i1 = 0; i1 < MCProtare->numberOfReactions( ); ++i1 ) {
         MCGIDI::Reaction const &reaction = *MCProtare->reaction( i1 );
 
         std::cout << "    reaction: " << reaction.label( ).c_str( ) << std::endl;
@@ -151,10 +152,26 @@ void main2( int argc, char **argv ) {
             if( particles.hasParticle( PoPI::IDs::neutron ) ) std::cout << doubleToString2( "    %16.8e", MCProtare->gain( hashIndex, temperature, energy, neutronIndex ) );
             if( particles.hasParticle( PoPI::IDs::photon ) ) std::cout << doubleToString2( "    %16.8e", MCProtare->gain( hashIndex, temperature, energy, photonIndex ) );
             std::cout << std::endl;
+
+            if( particles.hasParticle( PoPI::IDs::neutron ) ) checkIntidGain( MCProtare, hashIndex, temperature, energy, neutronIndex, PoPI::Intids::neutron );
+            if( particles.hasParticle( PoPI::IDs::photon ) ) checkIntidGain( MCProtare, hashIndex, temperature, energy, photonIndex, PoPI::Intids::photon );
         }
     }
 
     delete protare;
 
     delete MCProtare;
+}
+
+/*
+=========================================================
+*/
+void checkIntidGain( MCGIDI::Protare *MCProtare, int a_hashIndex, double a_temperature, double a_energy, int a_index, int a_intid ) {
+
+    double gainIndex = MCProtare->gain( a_hashIndex, a_temperature, a_energy, a_index );
+    double gainIntid = MCProtare->gainViaIntid( a_hashIndex, a_temperature, a_energy, a_intid );
+
+    if( gainIndex != gainIntid ) 
+        std::cout << "ERROR: gain and gainViaIntid difference (" << gainIndex << " vs " << gainIntid << ") for intid = " << a_intid 
+                << " at energy " << a_energy << std::endl;
 }

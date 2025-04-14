@@ -20,40 +20,6 @@ namespace GIDI {
 static std::size_t startIndexAttribute( HAPI::Node const &a_node );
 
 /* *********************************************************************************************************//**
- * This function takes a file path and returns its real path. On a Unix system, the system function realPath is called.
- *
- * @param a_path        [in]    The path whose real path is to be determined.
- *
- * @return                      The real path.
- ***********************************************************************************************************/
-
-std::string realPath( char const *a_path ) {
-
-    char *p1 = realpath( a_path, nullptr );
-
-    if( p1 == nullptr ) {
-        std::string errMsg( "realPath: file does not exist: " );
-        throw Exception( errMsg + a_path );
-    } 
-    std::string basePath( p1 );
-    free( p1 );
-    return( basePath );
-}
-
-/* *********************************************************************************************************//**
- * This function takes a file path and returns its real path. On a Unix system, the system function realPath is called.
- *
- * @param a_path        [in]    The path whose real path is to be determined.
- *
- * @return                      The real path.
- ***********************************************************************************************************/
-
-std::string realPath( std::string const &a_path ) {
-
-    return( realPath( a_path.c_str( ) ) );
-}
-
-/* *********************************************************************************************************//**
  * This function searchs the list of ascending values *a_Xs* for the two values that bound *a_x* using a bi-section search.
  * If *a_x* is less than the first value, -2 is returned. If *a_x* is greater than the last value, -1 is returned.
  * Otherwise, the returned index will be such that *a_Xs*[index] <= *a_x* < *a_Xs*[index+1].
@@ -134,7 +100,7 @@ void parseValuesOfDoubles( Construction::Settings const &a_construction, HAPI::N
  * @param a_useSystem_strtod    [in]    Flag passed to the function nfu_stringToListOfDoubles.
  ***********************************************************************************************************/
 
-void parseValuesOfDoubles( HAPI::Node const &a_node, SetupInfo &a_setupInfo, nf_Buffer<double> &a_values, int a_useSystem_strtod ) {
+void parseValuesOfDoubles( HAPI::Node const &a_node, SetupInfo &a_setupInfo, nf_Buffer<double> &a_values, LUPI_maybeUnused int a_useSystem_strtod ) {
 
     std::string href = a_node.attribute_as_string( GIDI_hrefChars );
 
@@ -164,7 +130,7 @@ void parseValuesOfDoubles( HAPI::Node const &a_node, SetupInfo &a_setupInfo, nf_
  * @param a_values              [in]    The list to fill with the converted values.
  ***********************************************************************************************************/
 
-void parseValuesOfInts( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, nf_Buffer<int> &a_values) {
+void parseValuesOfInts( LUPI_maybeUnused Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, nf_Buffer<int> &a_values) {
 
     parseValuesOfInts( a_node, a_setupInfo, a_values );
 }
@@ -268,7 +234,7 @@ void doublesToXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent
  * @return                      The *frame* enum representing the node's frame.
  ***********************************************************************************************************/
 
-Frame parseFrame( HAPI::Node const &a_node, SetupInfo &a_setupInfo, std::string const &a_name ) {
+Frame parseFrame( HAPI::Node const &a_node, LUPI_maybeUnused SetupInfo &a_setupInfo, std::string const &a_name ) {
 
     Frame frame = Frame::lab;
     if( strcmp( a_node.attribute_as_string( a_name.c_str( ) ).c_str( ), GIDI_centerOfMassChars ) == 0 ) frame = Frame::centerOfMass;

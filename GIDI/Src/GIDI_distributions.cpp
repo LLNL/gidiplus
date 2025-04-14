@@ -504,7 +504,7 @@ void LLNLAngularEnergy::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string con
  * @param a_parent              [in]    The **m_distribution** member of GIDI::Product this distribution form belongs to.
  ***********************************************************************************************************/
 
-CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering( Construction::Settings const &a_construction, HAPI::Node const &a_node, 
+CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering( LUPI_maybeUnused Construction::Settings const &a_construction, HAPI::Node const &a_node, 
                 SetupInfo &a_setupInfo, Suite *a_parent ) :
         Distribution( a_node, a_setupInfo, FormType::coherentPhotonScattering, a_parent ),
         m_href( a_node.attribute_as_string( GIDI_hrefChars ) ) {
@@ -523,11 +523,25 @@ CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering( Construction::Sett
  * @param a_parent              [in]    The **m_distribution** member of GIDI::Product this distribution form belongs to.
  ***********************************************************************************************************/
 
-IncoherentPhotoAtomicScattering::IncoherentPhotoAtomicScattering( Construction::Settings const &a_construction, HAPI::Node const &a_node,
+IncoherentPhotoAtomicScattering::IncoherentPhotoAtomicScattering( LUPI_maybeUnused Construction::Settings const &a_construction, HAPI::Node const &a_node,
                 SetupInfo &a_setupInfo, Suite *a_parent ) :
         Distribution( a_node, a_setupInfo, FormType::incoherentPhotonScattering, a_parent ),
         m_href( a_node.attribute_as_string( GIDI_hrefChars ) ) {
 
+}
+
+/* *********************************************************************************************************//**
+ *
+ * @param a_construction        [in]    Used to pass user options to the constructor.
+ * @param a_node                [in]    The **HAPI::Node** to be parsed and used to construct the IncoherentPhotoAtomicScattering.
+ * @param a_setupInfo           [in]    Information create my the Protare constructor to help in parsing.
+ * @param a_parent              [in]    The **m_distribution** member of GIDI::Product this distribution form belongs to.
+ ***********************************************************************************************************/
+
+IncoherentBoundToFreePhotoAtomicScattering::IncoherentBoundToFreePhotoAtomicScattering( LUPI_maybeUnused Construction::Settings const &a_construction, HAPI::Node const &a_node,
+                SetupInfo &a_setupInfo, Suite *a_parent ) :
+        Distribution( a_node, a_setupInfo, FormType::incoherentBoundToFreePhotonScattering, a_parent ),
+        m_href( a_node.attribute_as_string( GIDI_hrefChars ) ) {
 }
 
 /*! \class ThermalNeutronScatteringLaw
@@ -542,7 +556,7 @@ IncoherentPhotoAtomicScattering::IncoherentPhotoAtomicScattering( Construction::
  * @param a_parent              [in]    The **m_distribution** member of GIDI::Product this distribution form belongs to.
  ***********************************************************************************************************/
 
-ThermalNeutronScatteringLaw::ThermalNeutronScatteringLaw( Construction::Settings const &a_construction, HAPI::Node const &a_node,
+ThermalNeutronScatteringLaw::ThermalNeutronScatteringLaw( LUPI_maybeUnused Construction::Settings const &a_construction, HAPI::Node const &a_node,
 		SetupInfo &a_setupInfo, Suite *a_parent ) :
         Distribution( a_node, a_setupInfo, FormType::thermalNeutronScatteringLaw, a_parent ),
         m_href( a_node.attribute_as_string( GIDI_hrefChars ) ) {
@@ -561,7 +575,7 @@ ThermalNeutronScatteringLaw::ThermalNeutronScatteringLaw( Construction::Settings
  * @param a_parent              [in]    The **m_distribution** member of GIDI::Product this distribution form belongs to.
  ***********************************************************************************************************/
 
-Branching3d::Branching3d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+Branching3d::Branching3d( LUPI_maybeUnused Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
         Distribution( a_node, a_setupInfo, FormType::branching3d, a_parent ),
         m_initialState( a_setupInfo.m_initialState ) {
 
@@ -579,7 +593,7 @@ Branching3d::Branching3d( Construction::Settings const &a_construction, HAPI::No
  * @param a_parent              [in]    The **m_distribution** member of GIDI::Product this distribution form belongs to.
  ***********************************************************************************************************/
 
-Reference3d::Reference3d( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+Reference3d::Reference3d( LUPI_maybeUnused Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
         Distribution( a_node, a_setupInfo, FormType::reference3d, a_parent ),
         m_href( a_node.attribute_as_string( GIDI_hrefChars ) ) {
 
@@ -613,7 +627,7 @@ void Reference3d::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_
  * @param a_parent              [in]    The **m_distribution** member of GIDI::Product this distribution form belongs to.
  ***********************************************************************************************************/
 
-CoulombPlusNuclearElastic::CoulombPlusNuclearElastic( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+CoulombPlusNuclearElastic::CoulombPlusNuclearElastic( LUPI_maybeUnused Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
         Distribution( a_node, a_setupInfo, FormType::CoulombPlusNuclearElastic3d, a_parent ),
         m_href( a_node.attribute_as_string( GIDI_hrefChars ) ) {
 
@@ -648,7 +662,7 @@ void CoulombPlusNuclearElastic::toXMLList( GUPI::WriteInfo &a_writeInfo, std::st
  * @param a_parent              [in]    The **m_distribution** member of GIDI::Product this distribution form belongs to.
  ***********************************************************************************************************/
 
-LLNLLegendre::LLNLLegendre( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+LLNLLegendre::LLNLLegendre( LUPI_maybeUnused Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
         Distribution( a_node, a_setupInfo, FormType::LLNLLegendre, a_parent ) {
 
 }
@@ -680,7 +694,7 @@ void LLNLLegendre::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a
  * @param a_parent              [in]    The **m_distribution** member of GIDI::Product this distribution form belongs to.
  ***********************************************************************************************************/
 
-Unspecified::Unspecified( Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
+Unspecified::Unspecified( LUPI_maybeUnused Construction::Settings const &a_construction, HAPI::Node const &a_node, SetupInfo &a_setupInfo, Suite *a_parent ) :
         Distribution( a_node, a_setupInfo, FormType::unspecified, a_parent ) {
 
 }

@@ -12,18 +12,88 @@
 
 #include <LUPI_declareMacro.hpp>
 #include <MCGIDI_vector.hpp>
+#include <MCGIDI_string.hpp>
 
 namespace MCGIDI {
+
+/*
+============================================================
+======================= DomainHash =========================
+============================================================
+*/
+class DomainHash {
+
+    private:
+        int m_bins;                                                         /**< The number of bins for the hash. */
+        double m_domainMin;                                                 /**< The minimum domain value for the hash. */
+        double m_domainMax;                                                 /**< The maximum domain value for the hash. */
+        double m_u_domainMin;                                               /**< The log of m_domainMin ). */
+        double m_u_domainMax;                                               /**< The log of m_domainMax ). */
+        double m_inverse_du;                                                /**< The value *m_bins* / ( *m_u_domainMax* - *m_u_domainMin* ). */
+
+    public:
+        LUPI_HOST_DEVICE DomainHash( );
+        LUPI_HOST_DEVICE DomainHash( int a_bins, double a_domainMin, double a_domainMax );
+        LUPI_HOST_DEVICE DomainHash( DomainHash const &a_domainHash );
+
+        LUPI_HOST_DEVICE int bins( ) const { return( m_bins ); }                     /**< Returns the value of the **m_bins**. */
+        LUPI_HOST_DEVICE double domainMin( ) const { return( m_domainMin ); }        /**< Returns the value of the **m_domainMax**. */
+        LUPI_HOST_DEVICE double domainMax( ) const { return( m_domainMax ); }        /**< Returns the value of the **m_domainMax**. */
+        LUPI_HOST_DEVICE double u_domainMin( ) const { return( m_u_domainMin ); }    /**< Returns the value of the **m_u_domainMin**. */
+        LUPI_HOST_DEVICE double u_domainMax( ) const { return( m_u_domainMax ); }    /**< Returns the value of the **m_u_domainMax**. */
+        LUPI_HOST_DEVICE double inverse_du( ) const { return( m_inverse_du ); }      /**< Returns the value of the **m_inverse_du**. */
+
+        LUPI_HOST_DEVICE int index( double a_domain ) const ;
+        LUPI_HOST_DEVICE Vector<int> map( Vector<double> const &a_domainValues ) const ;
+
+        LUPI_HOST_DEVICE void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode );
+
+        LUPI_HOST void print( bool a_printValues ) const ;
+};
 
 namespace Sampling {
 
 enum class SampledType { firstTwoBody, secondTwoBody, uncorrelatedBody, unspecified, photon };
 
+LUPI_HOST_DEVICE int evaluationForHashIndex( int a_hashIndex, Vector<int> const &a_hashIndices, double a_energy, 
+                Vector<double> const &a_energies, double *a_energyFraction );
+
 namespace Upscatter {
 
-    enum class Model { none, A, B, BSnLimits };
+    enum class Model { none, A, B, BSnLimits, DBRC };
 
-}
+/*
+============================================================
+===================== ModelDBRC_data =======================
+============================================================
+*/
+
+class ModelDBRC_data {
+
+    public:
+        double m_neutronMass;                   /**< The mass of the neutron. */
+        double m_targetMass;                    /**< The mass of the target. */
+        Vector<double> m_energies;              /**< The energy grid for the cross section. */
+        Vector<double> m_crossSections;         /**< The cross sections corresponding to the energy grid. */
+        Vector<int> m_hashIndices;              /**< The indicies for the energy hash function. */
+        MCGIDI::DomainHash m_domainHash;        /**< The hash "function". */
+
+    public:
+        LUPI_HOST_DEVICE ModelDBRC_data( );
+        LUPI_HOST ModelDBRC_data( double a_neutronMass, double a_targetMass, Vector<double> const &a_energies, Vector<double> const &a_crossSections,
+                DomainHash const &a_domainHash );
+        LUPI_HOST_DEVICE ~ModelDBRC_data( );
+
+        LUPI_HOST_DEVICE double evaluate( double a_energy );
+        LUPI_HOST_DEVICE double targetThermalSpeed( double a_temperature );
+        LUPI_HOST_DEVICE double crossSectionMax( double a_energy, double a_targetThermalSpeed );
+
+        LUPI_HOST_DEVICE void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode );
+};
+
+LUPI_HOST_DEVICE ModelDBRC_data *serializeModelDBRC_data( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode, ModelDBRC_data *a_modelDBRC_data );
+
+}           // End of namespace Upscatter.
 
 /*
 ============================================================
@@ -80,6 +150,7 @@ class Input {
         double m_relativeMu;                        /**< BRB */
         double m_targetBeta;                        /**< The beta = speed / c of the target. */
         double m_relativeBeta;                      /**< The beta = speed / c of the relative speed between the projectile and the target.*/
+
         double m_projectileEnergy;                  /**< The energy of the projectile. */
 
         SampledType m_sampledType;                  /**< BRB */
@@ -89,6 +160,7 @@ class Input {
         double m_targetMass;                        /**< The mass of the target. */
 
         GIDI::Frame m_frame;                        /**< The frame the product data are returned in. */
+        int m_numberOfDBRC_rejections;              /**< For the DBRC upscattering model, this is the number of rejections + 1 per product sample. */
 
         double m_mu;                                /**< The sampled mu = cos( theta ) for the product. */
         double m_phi;                               /**< The sampled phi for the product. */
@@ -106,10 +178,11 @@ class Input {
         int m_delayedNeutronIndex;                  /**< If the product is a delayed neutron, this is its index. */
         double m_delayedNeutronDecayRate;           /**< If the product is a delayed neutron, this is its decay rate. */
 
+        int m_GRIN_intermediateResidual;            /**< For special GRIN product sampling, this is the GNDS intid of the intermediate residual. */
+
         LUPI_HOST_DEVICE Input( bool a_wantVelocity, Upscatter::Model a_upscatterModel );
 
         LUPI_HOST_DEVICE bool wantVelocity( ) const { return( m_wantVelocity ); }                            /**< BRB */
-
 };
 
 /*
@@ -122,8 +195,10 @@ class Product {
     public:
         SampledType m_sampledType;
         bool m_isVelocity;                      /**< If true, m_px_vx, m_py_vy and m_pz_vz are velocities otherwise momenta. */
+        int m_productIntid;                     /**< The intid of the sampled product. */
         int m_productIndex;                     /**< The index of the sampled product. */
         int m_userProductIndex;                 /**< The user particle index of the sampled product. */
+        int m_numberOfDBRC_rejections;          /**< For the DBRC upscattering model, this is the number of rejections + 1 per product sample. */
         double m_productMass;                   /**< The mass of the sampled product. */
         double m_kineticEnergy;                 /**< The kinetic energy of the sampled product. */
         double m_px_vx;                         /**< The velocity or momentum along the x-axis of the sampled product. */
@@ -143,13 +218,11 @@ class ProductHandler {
 
     public:
         LUPI_HOST_DEVICE ProductHandler( ) {}
-        LUPI_HOST_DEVICE virtual ~ProductHandler( ) {}
+        LUPI_HOST_DEVICE ~ProductHandler( ) {}
 
-        LUPI_HOST_DEVICE virtual std::size_t size( ) = 0;
-        LUPI_HOST_DEVICE virtual void push_back( Product &a_product ) = 0;
-        LUPI_HOST_DEVICE virtual void clear( ) = 0;
-        LUPI_HOST_DEVICE void add( double a_projectileEnergy, int a_productIndex, int a_userProductIndex, double a_productMass, Input &a_input, 
-                double (*a_userrng)( void * ), void *a_rngState, bool isPhoton );
+        template <typename RNG, typename PUSHBACK>
+        LUPI_HOST_DEVICE void add( double a_projectileEnergy, int a_productIntid, int a_productIndex, int a_userProductIndex, double a_productMass, Input &a_input, 
+                RNG && a_rng, PUSHBACK && push_back, bool isPhoton );
 };
 
 /*
@@ -171,7 +244,7 @@ class StdVectorProductHandler : public ProductHandler {
         LUPI_HOST_DEVICE StdVectorProductHandler( ) : m_size( 0 ) { }
         LUPI_HOST_DEVICE ~StdVectorProductHandler( ) { }
 
-        LUPI_HOST_DEVICE virtual std::size_t size( ) { return( m_size ); }
+        LUPI_HOST_DEVICE std::size_t size( ) { return( m_size ); }
         LUPI_HOST_DEVICE Product &operator[]( long a_index ) { return( m_products[a_index] ); }
         LUPI_HOST_DEVICE void push_back( Product &a_product ) {
             if( m_size < MCGIDI_CUDACC_numberOfProducts ) {
@@ -192,7 +265,7 @@ class StdVectorProductHandler : public ProductHandler {
         LUPI_HOST_DEVICE StdVectorProductHandler( ) : m_products( ) { }
         LUPI_HOST_DEVICE ~StdVectorProductHandler( ) { }
 
-        LUPI_HOST_DEVICE virtual std::size_t size( ) { return( m_products.size( ) ); }
+        LUPI_HOST_DEVICE std::size_t size( ) { return( m_products.size( ) ); }
         LUPI_HOST_DEVICE Product &operator[]( long a_index ) { return( m_products[a_index] ); }
         LUPI_HOST_DEVICE std::vector<Product> &products( ) { return( m_products ); }
         LUPI_HOST_DEVICE void push_back( Product &a_product ) { m_products.push_back( a_product ); }
@@ -211,15 +284,15 @@ class MCGIDIVectorProductHandler : public ProductHandler {
         Vector<Product> m_products;             /**< The list of products sampled. */
 
     public:
-        LUPI_HOST_DEVICE MCGIDIVectorProductHandler( MCGIDI_VectorSizeType a_size = 20 ) :
+        LUPI_HOST_DEVICE MCGIDIVectorProductHandler( std::size_t a_size = 20 ) :
                 m_products( ) {
 
             m_products.reserve( a_size );
         }
         LUPI_HOST_DEVICE ~MCGIDIVectorProductHandler( ) {}
 
-        LUPI_HOST_DEVICE virtual std::size_t size( ) { return( m_products.size( ) ); }
-        LUPI_HOST_DEVICE Product const &operator[]( MCGIDI_VectorSizeType a_index ) const { return( m_products[a_index] ); }
+        LUPI_HOST_DEVICE std::size_t size( ) { return( m_products.size( ) ); }
+        LUPI_HOST_DEVICE Product const &operator[]( std::size_t a_index ) const { return( m_products[a_index] ); }
         LUPI_HOST_DEVICE Vector<Product> const &products( ) const { return( m_products ); }
         LUPI_HOST_DEVICE void push_back( Product &a_product ) { m_products.push_back( a_product ); }
         LUPI_HOST_DEVICE void clear( ) { m_products.clear( ); }

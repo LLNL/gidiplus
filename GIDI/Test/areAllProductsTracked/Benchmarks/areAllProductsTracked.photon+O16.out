@@ -5,8 +5,12 @@
     sumOfRemainingOutputChannels
     O + photon [coherent]
     O + photon [incoherent]
-    e- + O [photo-electric]
-    O + photon [pair production: electron field]
+    e- + e- + e-_anti + O [pair production: electron field]
+    e- + e-_anti + O [pair production: nuclear field]
+    e- + O{1s1/2}
+    e- + O{2s1/2}
+    e- + O{2p1/2}
+    e- + O{2p3/2}
 
   Tracked particles:
 

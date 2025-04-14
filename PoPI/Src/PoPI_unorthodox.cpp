@@ -23,12 +23,14 @@ namespace PoPI {
  * @param a_parent          [in]    The parent suite that will contain *this*.
  ***********************************************************************************************************/
 
-Unorthodox::Unorthodox( HAPI::Node const &a_node, Database *a_DB, Database *a_parent ) :
+Unorthodox::Unorthodox( HAPI::Node const &a_node, Database *a_DB, LUPI_maybeUnused Database *a_parent ) :
         Particle( a_node, Particle_class::unorthodox, PoPI_unorthodoxChars ) {
 
     if( ID( ) == IDs::FissionProductENDL99120 ) {
+        setHasNucleus( true );
         setIntid( intidHelper( isAnti( ), Particle_class::ENDL_fissionProduct, 99120 ) ); }
     if( ID( ) == IDs::FissionProductENDL99125 ) {
+        setHasNucleus( true );
         setIntid( intidHelper( isAnti( ), Particle_class::ENDL_fissionProduct, 99125 ) );
     }
 

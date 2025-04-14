@@ -4623,6 +4623,7 @@ Reaction thresholds:
         1.9500000000e+01   4.954909e-01   4.909111e+00   4.816827e+01   6.104266e-05
         2.0000000000e+01   4.827837e-01   4.905824e+00   4.753234e+01   6.056273e-05
 
+    # Particle intid = 1020000000
     # Particle index = 10
     # Use particle index = -1
     # Number of gains = 576
@@ -11003,6 +11004,7 @@ Reaction thresholds:
         1.9500000000e+01   4.954934e-01   4.909135e+00   4.816851e+01   6.104460e-05
         2.0000000000e+01   4.828376e-01   4.906371e+00   4.753765e+01   6.056479e-05
 
+    # Particle intid = 1020000000
     # Particle index = 10
     # Use particle index = -1
     # Number of gains = 623
@@ -17625,6 +17627,7 @@ Reaction thresholds:
         1.9875000000e+01   4.859621e-01   4.907267e+00   4.769444e+01   6.070657e-05
         2.0000000000e+01   4.834135e-01   4.912222e+00   4.759434e+01   6.058696e-05
 
+    # Particle intid = 1020000000
     # Particle index = 10
     # Use particle index = -1
     # Number of gains = 724

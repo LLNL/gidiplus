@@ -9,6 +9,7 @@
 
 #include <stdlib.h>
 
+#include <nf_Legendre.h>
 #include "GIDI.hpp"
 #include <HAPI.hpp>
 
@@ -74,9 +75,34 @@ Legendre1d::~Legendre1d( ) {
  * @return                          The value of the function evaluated at *a_x1*.
  ***********************************************************************************************************/
 
-double Legendre1d::evaluate( double a_x1 ) const {
+double Legendre1d::evaluate( LUPI_maybeUnused double a_x1 ) const {
 
     throw Exception( "Legendre1d::evaluate: not implemented." );
+}
+
+/* *********************************************************************************************************//**
+ * This methods returns an XYs1d representation of *this*. The calling function owns the created instance and is responible
+ * for freeing it.
+ *
+ * @param   a_asLinlin          [in]    This argument is not used but retained to make the methods API at same as other asXYs1d functions.
+ * @param   a_accuracy          [in]    The accuracy use to convert the data to lin=lin interpolation if needed. This argument is not needed or used for this cl
+ * @param   a_lowerEps          [in]    This argument is not used but retained to make the methods API at same as other asXYs1d functions.
+ * @param   a_upperEps          [in]    This argument is not used but retained to make the methods API at same as other asXYs1d functions.
+ *
+ * @return                                  A pointer to an  XYs1d instance that must be freed by the calling function.
+ ***********************************************************************************************************/
+
+XYs1d *Legendre1d::asXYs1d( LUPI_maybeUnused bool a_asLinlin, double a_accuracy, LUPI_maybeUnused double a_lowerEps, LUPI_maybeUnused double a_upperEps ) const {
+
+    int size1 = static_cast<int>( m_coefficients.size( ) );
+    nf_Legendre *legendre1 = nf_Legendre_new( nullptr, 0, size1 - 1, const_cast<double *>( m_coefficients.data( ) ) );
+    if( legendre1 == nullptr ) return( nullptr );
+
+    ptwXYPoints *xys = nf_Legendre_to_ptwXY( nullptr, legendre1, a_accuracy, 12, 1 );
+    nf_Legendre_free( legendre1 );
+    if( xys == nullptr ) return( nullptr );
+
+    return( new XYs1d( axes( ), xys ) );
 }
 
 /* *********************************************************************************************************//**

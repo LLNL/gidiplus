@@ -51,6 +51,25 @@ PhysicalQuantity::~PhysicalQuantity( ) {
 }
 
 /* *********************************************************************************************************//**
+ * The assignment operator. This method sets the members of *this* to those of *a_rhs* except for those
+ * not set by base classes.
+ *
+ * @param a_rhs                     [in]    Instance whose member are used to set the members of *this*.
+ ***********************************************************************************************************/
+
+PhysicalQuantity &PhysicalQuantity::operator=( PhysicalQuantity const &a_rhs ) {
+
+    if( this != &a_rhs ) {
+        Form::operator=( a_rhs );
+
+        m_value = a_rhs.value( );
+        m_unit = a_rhs.unit( );
+    }
+
+    return( *this );
+}
+
+/* *********************************************************************************************************//**
  * Fills the argument *a_writeInfo* with the XML lines that represent *this*. Recursively enters each sub-node.
  *
  * @param       a_writeInfo         [in/out]    Instance containing incremental indentation and other information and stores the appended lines.

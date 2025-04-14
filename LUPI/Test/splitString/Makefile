@@ -1,4 +1,4 @@
-SHELL = /bin/ksh
+SHELL = /bin/sh
 
 # <<BEGIN-copyright>>
 # Copyright 2019, Lawrence Livermore National Security, LLC.
@@ -19,4 +19,5 @@ check: $(Executables)
 	./splitString 1 > Outputs/splitString.stripped.out
 	./splitString2 > Outputs/splitString2.out
 	./splitString2 1 > Outputs/splitString2.stripped.out
+	./splitXLinkString > Outputs/splitXLinkString.out
 	-diff -r Benchmarks Outputs > /dev/null; if [ $$? -ne 0 ]; then echo "FAILURE: splitString"; fi

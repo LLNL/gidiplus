@@ -16,7 +16,8 @@ static char const *description = "This program ...";
 
 void main2( int argc, char **argv );
 void printList( char const *prefix, std::vector<std::string> &list );
-bool mapWalkCallBack( GIDI::Map::ProtareBase const *a_protareEntry, std::string const &a_library, void *a_data, int a_level );
+bool mapWalkCallBack( GIDI::Map::ProtareBase const *a_protareEntry, LUPI_maybeUnused std::string const &a_library,
+                LUPI_maybeUnused void *a_data, LUPI_maybeUnused int a_level );
 /*
 =========================================================
 */
@@ -127,7 +128,8 @@ void printList( char const *prefix, std::vector<std::string> &list ) {
 /*
 =========================================================
 */
-bool mapWalkCallBack( GIDI::Map::ProtareBase const *a_protareEntry, std::string const &a_library, void *a_data, int a_level ) {
+bool mapWalkCallBack( GIDI::Map::ProtareBase const *a_protareEntry, LUPI_maybeUnused std::string const &a_library,
+                LUPI_maybeUnused void *a_data, LUPI_maybeUnused int a_level ) {
 
     GIDI::Map::Map const *map = (GIDI::Map::Map const *) a_data;
     std::string path = stripDirectoryBase( a_protareEntry->path( ) );

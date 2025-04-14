@@ -62,7 +62,7 @@ void main2( int argc, char **argv ) {
     iam2.serialize( dataBuffer, LUPI::DataBuffer::Mode::Unpack );
 
     CADI::IsotopicAbundancesByChemicalElement const *isotopicAbundancesByChemicalElement = nullptr;
-    if( printSerialized->counts( ) > 0 ) {
+    if( printSerialized->counts( ) == 0 ) {
         isotopicAbundancesByChemicalElement = iam.findEvaluation( "COGZA2a" ); }
     else {
         isotopicAbundancesByChemicalElement = iam2.findEvaluation( "COGZA2a" );

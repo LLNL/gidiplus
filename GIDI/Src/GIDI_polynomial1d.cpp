@@ -10,9 +10,29 @@
 #include "GIDI.hpp"
 #include <HAPI.hpp>
 
+/* *********************************************************************************************************//**
+ * This is the function callback used by asXYs1d to evalaute *this* at a domain point. This function is for internal use.
+ *
+ * @param       a_smr               [in/out]    
+ * @param       a_xValue            [in]        The x-value to evaluate the polynomial at.
+ * @param       a_yValue            [in]        A pointer to a double that will contained the polynomial evaluated at *a_xValue*.
+ * @param       a_argList           [in]        A pointer to a list of additional arguments needed.
+ *
+ * @return                                      A nfu_status value.
+ ***********************************************************************************************************/
+
+static nfu_status asXYs1d_callback( LUPI_maybeUnused statusMessageReporting *a_smr, double a_xValue, double *a_yValue, void *a_argList ) {
+
+    GIDI::Functions::Polynomial1d *polynomial1d = static_cast<GIDI::Functions::Polynomial1d *>( a_argList );
+
+    *a_yValue = polynomial1d->evaluate( a_xValue );;
+    return( nfu_Okay );
+}
+
 namespace GIDI {
 
 namespace Functions {
+
 
 /*! \class Polynomial1d
  * Class for the GNDS <**polynomial1d**> node.
@@ -123,6 +143,47 @@ void Polynomial1d::mapToXsAndAdd( int a_offset, std::vector<double> const &a_Xs,
         if( *XsIter > m_domainMax ) break;
         a_results[index] += a_scaleFactor * evaluate( *XsIter );
     }
+}
+
+/* *********************************************************************************************************//**
+ * This methods returns an XYs1d representation of *this*. The calling function owns the created instance and is responible
+ * for freeing it.
+ *
+ * @param   a_asLinlin          [in]    This argument is not used but retained to make the methods API at same as other asXYs1d functions.
+ * @param   a_accuracy          [in]    The accuracy use to convert the data to lin=lin interpolation if needed.
+ * @param   a_lowerEps          [in]    This argument is not used but retained to make the methods API at same as other asXYs1d functions.
+ * @param   a_upperEps          [in]    This argument is not used but retained to make the methods API at same as other asXYs1d functions.
+ *
+ * @return                              A pointer to an  XYs1d instance that must be freed by the calling function.
+ ***********************************************************************************************************/
+
+XYs1d *Polynomial1d::asXYs1d( LUPI_maybeUnused bool a_asLinlin, double a_accuracy, LUPI_maybeUnused double a_lowerEps, LUPI_maybeUnused double a_upperEps ) const {
+
+    XYs1d *xys1d = nullptr;
+
+    if( m_coefficients.size( ) < 3 ) {
+        double offset = 0.0, slope = 0.0;
+        if( m_coefficients.size( ) > 0 ) {
+            offset = m_coefficients[0];
+            if( m_coefficients.size( ) == 2 ) slope = m_coefficients[1];
+        }
+
+        std::vector<double> xs( 2 );
+        xs[0] = domainMin( );
+        xs[1] = domainMax( );
+
+        std::vector<double> ys( 2 );
+        ys[0] = slope * xs[0] + offset;
+        ys[1] = slope * xs[1] + offset;
+
+        xys1d = new XYs1d( axes( ), ptwXY_interpolationLinLin, xs, ys ); }
+    else {
+        double xs[2] = { domainMin( ), domainMax( ) };
+        ptwXYPoints *ptwXYPoints1 = ptwXY_createFromFunction( nullptr, 2, xs, asXYs1d_callback, const_cast<Polynomial1d *>( this ), a_accuracy, 1, 12 );
+        if( ptwXYPoints1 != nullptr ) xys1d = new XYs1d( axes( ), ptwXYPoints1 );
+    }
+
+    return( xys1d );
 }
 
 /* *********************************************************************************************************//**

@@ -1,4 +1,4 @@
-/.../GIDI/Test/Data/MG_MC/photo-atomic/photoat-008_O_000.xml
+/.../GIDI/Test/Data/MG_MC/photo-atomic/photoat-008_O_000.new.xml
 /reactionSuite
     /reactionSuite/styles
     /reactionSuite/styles/evaluated[@label='eval']
@@ -83,67 +83,216 @@
     /reactionSuite/reactions/reaction[@label='O + photon [incoherent]']/outputChannel/products/product[@label='O']/distribution/unspecified[@label='eval']
     /reactionSuite/reactions/reaction[@label='O + photon [incoherent]']/outputChannel/products/product[@label='O']/averageProductEnergy
     /reactionSuite/reactions/reaction[@label='O + photon [incoherent]']/outputChannel/products/product[@label='O']/averageProductMomentum
-/reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']
-    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/doubleDifferentialCrossSection
-    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/crossSection
-    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/crossSection/regions1d[@label='eval']
-    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/crossSection/XYs1d[@label='heated_000']
-    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/crossSection/Ys1d[@label='MonteCarlo_000']
-    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/crossSection/gridded1d[@label='MultiGroup_000']
-    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/availableEnergy
-    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/availableEnergy/XYs1d[@label='apd']
-    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/availableEnergy/gridded1d[@label='MultiGroup_000']
-    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/availableMomentum
-    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/availableMomentum/XYs1d[@label='apd']
-    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/availableMomentum/gridded1d[@label='MultiGroup_000']
-    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/outputChannel
-    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/outputChannel/Q
-    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/outputChannel/Q/constant1d[@label='eval']
-    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/outputChannel/Q/gridded1d[@label='MultiGroup_000']
-    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/outputChannel/products
-    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/outputChannel/products/product[@label='e-']
-    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/outputChannel/products/product[@label='e-']/multiplicity
-    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/outputChannel/products/product[@label='e-']/multiplicity/constant1d[@label='eval']
-    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/outputChannel/products/product[@label='e-']/distribution
-    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/outputChannel/products/product[@label='e-']/distribution/unspecified[@label='eval']
-    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/outputChannel/products/product[@label='e-']/averageProductEnergy
-    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/outputChannel/products/product[@label='e-']/averageProductMomentum
-    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/outputChannel/products/product[@label='O']
-    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/outputChannel/products/product[@label='O']/multiplicity
-    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/outputChannel/products/product[@label='O']/multiplicity/constant1d[@label='eval']
-    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/outputChannel/products/product[@label='O']/distribution
-    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/outputChannel/products/product[@label='O']/distribution/unspecified[@label='eval']
-    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/outputChannel/products/product[@label='O']/averageProductEnergy
-    /reactionSuite/reactions/reaction[@label='e- + O [photo-electric]']/outputChannel/products/product[@label='O']/averageProductMomentum
-/reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']
-    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/doubleDifferentialCrossSection
-    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/crossSection
-    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/crossSection/regions1d[@label='eval']
-    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/crossSection/XYs1d[@label='heated_000']
-    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/crossSection/Ys1d[@label='MonteCarlo_000']
-    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/crossSection/gridded1d[@label='MultiGroup_000']
-    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/availableEnergy
-    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/availableEnergy/XYs1d[@label='apd']
-    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/availableEnergy/gridded1d[@label='MultiGroup_000']
-    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/availableMomentum
-    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/availableMomentum/XYs1d[@label='apd']
-    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/availableMomentum/gridded1d[@label='MultiGroup_000']
-    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/outputChannel
-    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/outputChannel/Q
-    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/outputChannel/Q/constant1d[@label='eval']
-    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/outputChannel/Q/gridded1d[@label='MultiGroup_000']
-    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/outputChannel/products
-    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/outputChannel/products/product[@label='photon']
-    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/outputChannel/products/product[@label='photon']/multiplicity
-    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/outputChannel/products/product[@label='photon']/multiplicity/constant1d[@label='eval']
-    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/outputChannel/products/product[@label='photon']/distribution
-    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/outputChannel/products/product[@label='photon']/distribution/unspecified[@label='eval']
-    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/outputChannel/products/product[@label='photon']/averageProductEnergy
-    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/outputChannel/products/product[@label='photon']/averageProductMomentum
-    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/outputChannel/products/product[@label='O']
-    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/outputChannel/products/product[@label='O']/multiplicity
-    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/outputChannel/products/product[@label='O']/multiplicity/constant1d[@label='eval']
-    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/outputChannel/products/product[@label='O']/distribution
-    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/outputChannel/products/product[@label='O']/distribution/unspecified[@label='eval']
-    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/outputChannel/products/product[@label='O']/averageProductEnergy
-    /reactionSuite/reactions/reaction[@label='O + photon [pair production: electron field]']/outputChannel/products/product[@label='O']/averageProductMomentum
+/reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/doubleDifferentialCrossSection
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/crossSection
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/crossSection/XYs1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/crossSection/XYs1d[@label='heated_000']
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/crossSection/Ys1d[@label='MonteCarlo_000']
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/crossSection/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/availableEnergy
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/availableEnergy/XYs1d[@label='apd']
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/availableEnergy/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/availableMomentum
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/availableMomentum/XYs1d[@label='apd']
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/availableMomentum/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/outputChannel
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/outputChannel/Q
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/outputChannel/Q/constant1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/outputChannel/Q/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/outputChannel/products
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/outputChannel/products/product[@label='e-']
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/outputChannel/products/product[@label='e-']/multiplicity
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/outputChannel/products/product[@label='e-']/multiplicity/constant1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/outputChannel/products/product[@label='e-']/distribution
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/outputChannel/products/product[@label='e-']/distribution/unspecified[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/outputChannel/products/product[@label='e-']/averageProductEnergy
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/outputChannel/products/product[@label='e-']/averageProductMomentum
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/outputChannel/products/product[@label='e-__a']
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/outputChannel/products/product[@label='e-__a']/multiplicity
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/outputChannel/products/product[@label='e-__a']/multiplicity/constant1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/outputChannel/products/product[@label='e-__a']/distribution
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/outputChannel/products/product[@label='e-__a']/distribution/unspecified[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/outputChannel/products/product[@label='e-__a']/averageProductEnergy
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/outputChannel/products/product[@label='e-__a']/averageProductMomentum
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/outputChannel/products/product[@label='e-_anti']
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/outputChannel/products/product[@label='e-_anti']/multiplicity
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/outputChannel/products/product[@label='e-_anti']/multiplicity/constant1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/outputChannel/products/product[@label='e-_anti']/distribution
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/outputChannel/products/product[@label='e-_anti']/distribution/unspecified[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/outputChannel/products/product[@label='e-_anti']/averageProductEnergy
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/outputChannel/products/product[@label='e-_anti']/averageProductMomentum
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/outputChannel/products/product[@label='O']
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/outputChannel/products/product[@label='O']/multiplicity
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/outputChannel/products/product[@label='O']/multiplicity/constant1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/outputChannel/products/product[@label='O']/distribution
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/outputChannel/products/product[@label='O']/distribution/unspecified[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/outputChannel/products/product[@label='O']/averageProductEnergy
+    /reactionSuite/reactions/reaction[@label='e- + e- + e-_anti + O [pair production: electron field]']/outputChannel/products/product[@label='O']/averageProductMomentum
+/reactionSuite/reactions/reaction[@label='e- + e-_anti + O [pair production: nuclear field]']
+    /reactionSuite/reactions/reaction[@label='e- + e-_anti + O [pair production: nuclear field]']/doubleDifferentialCrossSection
+    /reactionSuite/reactions/reaction[@label='e- + e-_anti + O [pair production: nuclear field]']/crossSection
+    /reactionSuite/reactions/reaction[@label='e- + e-_anti + O [pair production: nuclear field]']/crossSection/XYs1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + e-_anti + O [pair production: nuclear field]']/crossSection/XYs1d[@label='heated_000']
+    /reactionSuite/reactions/reaction[@label='e- + e-_anti + O [pair production: nuclear field]']/crossSection/Ys1d[@label='MonteCarlo_000']
+    /reactionSuite/reactions/reaction[@label='e- + e-_anti + O [pair production: nuclear field]']/crossSection/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='e- + e-_anti + O [pair production: nuclear field]']/availableEnergy
+    /reactionSuite/reactions/reaction[@label='e- + e-_anti + O [pair production: nuclear field]']/availableEnergy/XYs1d[@label='apd']
+    /reactionSuite/reactions/reaction[@label='e- + e-_anti + O [pair production: nuclear field]']/availableEnergy/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='e- + e-_anti + O [pair production: nuclear field]']/availableMomentum
+    /reactionSuite/reactions/reaction[@label='e- + e-_anti + O [pair production: nuclear field]']/availableMomentum/XYs1d[@label='apd']
+    /reactionSuite/reactions/reaction[@label='e- + e-_anti + O [pair production: nuclear field]']/availableMomentum/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='e- + e-_anti + O [pair production: nuclear field]']/outputChannel
+    /reactionSuite/reactions/reaction[@label='e- + e-_anti + O [pair production: nuclear field]']/outputChannel/Q
+    /reactionSuite/reactions/reaction[@label='e- + e-_anti + O [pair production: nuclear field]']/outputChannel/Q/constant1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + e-_anti + O [pair production: nuclear field]']/outputChannel/Q/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='e- + e-_anti + O [pair production: nuclear field]']/outputChannel/products
+    /reactionSuite/reactions/reaction[@label='e- + e-_anti + O [pair production: nuclear field]']/outputChannel/products/product[@label='e-']
+    /reactionSuite/reactions/reaction[@label='e- + e-_anti + O [pair production: nuclear field]']/outputChannel/products/product[@label='e-']/multiplicity
+    /reactionSuite/reactions/reaction[@label='e- + e-_anti + O [pair production: nuclear field]']/outputChannel/products/product[@label='e-']/multiplicity/constant1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + e-_anti + O [pair production: nuclear field]']/outputChannel/products/product[@label='e-']/distribution
+    /reactionSuite/reactions/reaction[@label='e- + e-_anti + O [pair production: nuclear field]']/outputChannel/products/product[@label='e-']/distribution/unspecified[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + e-_anti + O [pair production: nuclear field]']/outputChannel/products/product[@label='e-']/averageProductEnergy
+    /reactionSuite/reactions/reaction[@label='e- + e-_anti + O [pair production: nuclear field]']/outputChannel/products/product[@label='e-']/averageProductMomentum
+    /reactionSuite/reactions/reaction[@label='e- + e-_anti + O [pair production: nuclear field]']/outputChannel/products/product[@label='e-_anti']
+    /reactionSuite/reactions/reaction[@label='e- + e-_anti + O [pair production: nuclear field]']/outputChannel/products/product[@label='e-_anti']/multiplicity
+    /reactionSuite/reactions/reaction[@label='e- + e-_anti + O [pair production: nuclear field]']/outputChannel/products/product[@label='e-_anti']/multiplicity/constant1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + e-_anti + O [pair production: nuclear field]']/outputChannel/products/product[@label='e-_anti']/distribution
+    /reactionSuite/reactions/reaction[@label='e- + e-_anti + O [pair production: nuclear field]']/outputChannel/products/product[@label='e-_anti']/distribution/unspecified[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + e-_anti + O [pair production: nuclear field]']/outputChannel/products/product[@label='e-_anti']/averageProductEnergy
+    /reactionSuite/reactions/reaction[@label='e- + e-_anti + O [pair production: nuclear field]']/outputChannel/products/product[@label='e-_anti']/averageProductMomentum
+    /reactionSuite/reactions/reaction[@label='e- + e-_anti + O [pair production: nuclear field]']/outputChannel/products/product[@label='O']
+    /reactionSuite/reactions/reaction[@label='e- + e-_anti + O [pair production: nuclear field]']/outputChannel/products/product[@label='O']/multiplicity
+    /reactionSuite/reactions/reaction[@label='e- + e-_anti + O [pair production: nuclear field]']/outputChannel/products/product[@label='O']/multiplicity/constant1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + e-_anti + O [pair production: nuclear field]']/outputChannel/products/product[@label='O']/distribution
+    /reactionSuite/reactions/reaction[@label='e- + e-_anti + O [pair production: nuclear field]']/outputChannel/products/product[@label='O']/distribution/unspecified[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + e-_anti + O [pair production: nuclear field]']/outputChannel/products/product[@label='O']/averageProductEnergy
+    /reactionSuite/reactions/reaction[@label='e- + e-_anti + O [pair production: nuclear field]']/outputChannel/products/product[@label='O']/averageProductMomentum
+/reactionSuite/reactions/reaction[@label='e- + O{1s1/2}']
+    /reactionSuite/reactions/reaction[@label='e- + O{1s1/2}']/doubleDifferentialCrossSection
+    /reactionSuite/reactions/reaction[@label='e- + O{1s1/2}']/crossSection
+    /reactionSuite/reactions/reaction[@label='e- + O{1s1/2}']/crossSection/XYs1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + O{1s1/2}']/crossSection/XYs1d[@label='heated_000']
+    /reactionSuite/reactions/reaction[@label='e- + O{1s1/2}']/crossSection/Ys1d[@label='MonteCarlo_000']
+    /reactionSuite/reactions/reaction[@label='e- + O{1s1/2}']/crossSection/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='e- + O{1s1/2}']/availableEnergy
+    /reactionSuite/reactions/reaction[@label='e- + O{1s1/2}']/availableEnergy/XYs1d[@label='apd']
+    /reactionSuite/reactions/reaction[@label='e- + O{1s1/2}']/availableEnergy/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='e- + O{1s1/2}']/availableMomentum
+    /reactionSuite/reactions/reaction[@label='e- + O{1s1/2}']/availableMomentum/XYs1d[@label='apd']
+    /reactionSuite/reactions/reaction[@label='e- + O{1s1/2}']/availableMomentum/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='e- + O{1s1/2}']/outputChannel
+    /reactionSuite/reactions/reaction[@label='e- + O{1s1/2}']/outputChannel/Q
+    /reactionSuite/reactions/reaction[@label='e- + O{1s1/2}']/outputChannel/Q/constant1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + O{1s1/2}']/outputChannel/Q/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='e- + O{1s1/2}']/outputChannel/products
+    /reactionSuite/reactions/reaction[@label='e- + O{1s1/2}']/outputChannel/products/product[@label='e-']
+    /reactionSuite/reactions/reaction[@label='e- + O{1s1/2}']/outputChannel/products/product[@label='e-']/multiplicity
+    /reactionSuite/reactions/reaction[@label='e- + O{1s1/2}']/outputChannel/products/product[@label='e-']/multiplicity/constant1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + O{1s1/2}']/outputChannel/products/product[@label='e-']/distribution
+    /reactionSuite/reactions/reaction[@label='e- + O{1s1/2}']/outputChannel/products/product[@label='e-']/distribution/unspecified[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + O{1s1/2}']/outputChannel/products/product[@label='e-']/averageProductEnergy
+    /reactionSuite/reactions/reaction[@label='e- + O{1s1/2}']/outputChannel/products/product[@label='e-']/averageProductMomentum
+    /reactionSuite/reactions/reaction[@label='e- + O{1s1/2}']/outputChannel/products/product[@label='O{1s1/2}']
+    /reactionSuite/reactions/reaction[@label='e- + O{1s1/2}']/outputChannel/products/product[@label='O{1s1/2}']/multiplicity
+    /reactionSuite/reactions/reaction[@label='e- + O{1s1/2}']/outputChannel/products/product[@label='O{1s1/2}']/multiplicity/constant1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + O{1s1/2}']/outputChannel/products/product[@label='O{1s1/2}']/distribution
+    /reactionSuite/reactions/reaction[@label='e- + O{1s1/2}']/outputChannel/products/product[@label='O{1s1/2}']/distribution/unspecified[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + O{1s1/2}']/outputChannel/products/product[@label='O{1s1/2}']/averageProductEnergy
+    /reactionSuite/reactions/reaction[@label='e- + O{1s1/2}']/outputChannel/products/product[@label='O{1s1/2}']/averageProductMomentum
+/reactionSuite/reactions/reaction[@label='e- + O{2s1/2}']
+    /reactionSuite/reactions/reaction[@label='e- + O{2s1/2}']/doubleDifferentialCrossSection
+    /reactionSuite/reactions/reaction[@label='e- + O{2s1/2}']/crossSection
+    /reactionSuite/reactions/reaction[@label='e- + O{2s1/2}']/crossSection/XYs1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + O{2s1/2}']/crossSection/XYs1d[@label='heated_000']
+    /reactionSuite/reactions/reaction[@label='e- + O{2s1/2}']/crossSection/Ys1d[@label='MonteCarlo_000']
+    /reactionSuite/reactions/reaction[@label='e- + O{2s1/2}']/crossSection/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='e- + O{2s1/2}']/availableEnergy
+    /reactionSuite/reactions/reaction[@label='e- + O{2s1/2}']/availableEnergy/XYs1d[@label='apd']
+    /reactionSuite/reactions/reaction[@label='e- + O{2s1/2}']/availableEnergy/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='e- + O{2s1/2}']/availableMomentum
+    /reactionSuite/reactions/reaction[@label='e- + O{2s1/2}']/availableMomentum/XYs1d[@label='apd']
+    /reactionSuite/reactions/reaction[@label='e- + O{2s1/2}']/availableMomentum/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='e- + O{2s1/2}']/outputChannel
+    /reactionSuite/reactions/reaction[@label='e- + O{2s1/2}']/outputChannel/Q
+    /reactionSuite/reactions/reaction[@label='e- + O{2s1/2}']/outputChannel/Q/constant1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + O{2s1/2}']/outputChannel/Q/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='e- + O{2s1/2}']/outputChannel/products
+    /reactionSuite/reactions/reaction[@label='e- + O{2s1/2}']/outputChannel/products/product[@label='e-']
+    /reactionSuite/reactions/reaction[@label='e- + O{2s1/2}']/outputChannel/products/product[@label='e-']/multiplicity
+    /reactionSuite/reactions/reaction[@label='e- + O{2s1/2}']/outputChannel/products/product[@label='e-']/multiplicity/constant1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + O{2s1/2}']/outputChannel/products/product[@label='e-']/distribution
+    /reactionSuite/reactions/reaction[@label='e- + O{2s1/2}']/outputChannel/products/product[@label='e-']/distribution/unspecified[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + O{2s1/2}']/outputChannel/products/product[@label='e-']/averageProductEnergy
+    /reactionSuite/reactions/reaction[@label='e- + O{2s1/2}']/outputChannel/products/product[@label='e-']/averageProductMomentum
+    /reactionSuite/reactions/reaction[@label='e- + O{2s1/2}']/outputChannel/products/product[@label='O{2s1/2}']
+    /reactionSuite/reactions/reaction[@label='e- + O{2s1/2}']/outputChannel/products/product[@label='O{2s1/2}']/multiplicity
+    /reactionSuite/reactions/reaction[@label='e- + O{2s1/2}']/outputChannel/products/product[@label='O{2s1/2}']/multiplicity/constant1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + O{2s1/2}']/outputChannel/products/product[@label='O{2s1/2}']/distribution
+    /reactionSuite/reactions/reaction[@label='e- + O{2s1/2}']/outputChannel/products/product[@label='O{2s1/2}']/distribution/unspecified[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + O{2s1/2}']/outputChannel/products/product[@label='O{2s1/2}']/averageProductEnergy
+    /reactionSuite/reactions/reaction[@label='e- + O{2s1/2}']/outputChannel/products/product[@label='O{2s1/2}']/averageProductMomentum
+/reactionSuite/reactions/reaction[@label='e- + O{2p1/2}']
+    /reactionSuite/reactions/reaction[@label='e- + O{2p1/2}']/doubleDifferentialCrossSection
+    /reactionSuite/reactions/reaction[@label='e- + O{2p1/2}']/crossSection
+    /reactionSuite/reactions/reaction[@label='e- + O{2p1/2}']/crossSection/XYs1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + O{2p1/2}']/crossSection/XYs1d[@label='heated_000']
+    /reactionSuite/reactions/reaction[@label='e- + O{2p1/2}']/crossSection/Ys1d[@label='MonteCarlo_000']
+    /reactionSuite/reactions/reaction[@label='e- + O{2p1/2}']/crossSection/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='e- + O{2p1/2}']/availableEnergy
+    /reactionSuite/reactions/reaction[@label='e- + O{2p1/2}']/availableEnergy/XYs1d[@label='apd']
+    /reactionSuite/reactions/reaction[@label='e- + O{2p1/2}']/availableEnergy/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='e- + O{2p1/2}']/availableMomentum
+    /reactionSuite/reactions/reaction[@label='e- + O{2p1/2}']/availableMomentum/XYs1d[@label='apd']
+    /reactionSuite/reactions/reaction[@label='e- + O{2p1/2}']/availableMomentum/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='e- + O{2p1/2}']/outputChannel
+    /reactionSuite/reactions/reaction[@label='e- + O{2p1/2}']/outputChannel/Q
+    /reactionSuite/reactions/reaction[@label='e- + O{2p1/2}']/outputChannel/Q/constant1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + O{2p1/2}']/outputChannel/Q/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='e- + O{2p1/2}']/outputChannel/products
+    /reactionSuite/reactions/reaction[@label='e- + O{2p1/2}']/outputChannel/products/product[@label='e-']
+    /reactionSuite/reactions/reaction[@label='e- + O{2p1/2}']/outputChannel/products/product[@label='e-']/multiplicity
+    /reactionSuite/reactions/reaction[@label='e- + O{2p1/2}']/outputChannel/products/product[@label='e-']/multiplicity/constant1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + O{2p1/2}']/outputChannel/products/product[@label='e-']/distribution
+    /reactionSuite/reactions/reaction[@label='e- + O{2p1/2}']/outputChannel/products/product[@label='e-']/distribution/unspecified[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + O{2p1/2}']/outputChannel/products/product[@label='e-']/averageProductEnergy
+    /reactionSuite/reactions/reaction[@label='e- + O{2p1/2}']/outputChannel/products/product[@label='e-']/averageProductMomentum
+    /reactionSuite/reactions/reaction[@label='e- + O{2p1/2}']/outputChannel/products/product[@label='O{2p1/2}']
+    /reactionSuite/reactions/reaction[@label='e- + O{2p1/2}']/outputChannel/products/product[@label='O{2p1/2}']/multiplicity
+    /reactionSuite/reactions/reaction[@label='e- + O{2p1/2}']/outputChannel/products/product[@label='O{2p1/2}']/multiplicity/constant1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + O{2p1/2}']/outputChannel/products/product[@label='O{2p1/2}']/distribution
+    /reactionSuite/reactions/reaction[@label='e- + O{2p1/2}']/outputChannel/products/product[@label='O{2p1/2}']/distribution/unspecified[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + O{2p1/2}']/outputChannel/products/product[@label='O{2p1/2}']/averageProductEnergy
+    /reactionSuite/reactions/reaction[@label='e- + O{2p1/2}']/outputChannel/products/product[@label='O{2p1/2}']/averageProductMomentum
+/reactionSuite/reactions/reaction[@label='e- + O{2p3/2}']
+    /reactionSuite/reactions/reaction[@label='e- + O{2p3/2}']/doubleDifferentialCrossSection
+    /reactionSuite/reactions/reaction[@label='e- + O{2p3/2}']/crossSection
+    /reactionSuite/reactions/reaction[@label='e- + O{2p3/2}']/crossSection/XYs1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + O{2p3/2}']/crossSection/XYs1d[@label='heated_000']
+    /reactionSuite/reactions/reaction[@label='e- + O{2p3/2}']/crossSection/Ys1d[@label='MonteCarlo_000']
+    /reactionSuite/reactions/reaction[@label='e- + O{2p3/2}']/crossSection/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='e- + O{2p3/2}']/availableEnergy
+    /reactionSuite/reactions/reaction[@label='e- + O{2p3/2}']/availableEnergy/XYs1d[@label='apd']
+    /reactionSuite/reactions/reaction[@label='e- + O{2p3/2}']/availableEnergy/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='e- + O{2p3/2}']/availableMomentum
+    /reactionSuite/reactions/reaction[@label='e- + O{2p3/2}']/availableMomentum/XYs1d[@label='apd']
+    /reactionSuite/reactions/reaction[@label='e- + O{2p3/2}']/availableMomentum/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='e- + O{2p3/2}']/outputChannel
+    /reactionSuite/reactions/reaction[@label='e- + O{2p3/2}']/outputChannel/Q
+    /reactionSuite/reactions/reaction[@label='e- + O{2p3/2}']/outputChannel/Q/constant1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + O{2p3/2}']/outputChannel/Q/gridded1d[@label='MultiGroup_000']
+    /reactionSuite/reactions/reaction[@label='e- + O{2p3/2}']/outputChannel/products
+    /reactionSuite/reactions/reaction[@label='e- + O{2p3/2}']/outputChannel/products/product[@label='e-']
+    /reactionSuite/reactions/reaction[@label='e- + O{2p3/2}']/outputChannel/products/product[@label='e-']/multiplicity
+    /reactionSuite/reactions/reaction[@label='e- + O{2p3/2}']/outputChannel/products/product[@label='e-']/multiplicity/constant1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + O{2p3/2}']/outputChannel/products/product[@label='e-']/distribution
+    /reactionSuite/reactions/reaction[@label='e- + O{2p3/2}']/outputChannel/products/product[@label='e-']/distribution/unspecified[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + O{2p3/2}']/outputChannel/products/product[@label='e-']/averageProductEnergy
+    /reactionSuite/reactions/reaction[@label='e- + O{2p3/2}']/outputChannel/products/product[@label='e-']/averageProductMomentum
+    /reactionSuite/reactions/reaction[@label='e- + O{2p3/2}']/outputChannel/products/product[@label='O{2p3/2}']
+    /reactionSuite/reactions/reaction[@label='e- + O{2p3/2}']/outputChannel/products/product[@label='O{2p3/2}']/multiplicity
+    /reactionSuite/reactions/reaction[@label='e- + O{2p3/2}']/outputChannel/products/product[@label='O{2p3/2}']/multiplicity/constant1d[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + O{2p3/2}']/outputChannel/products/product[@label='O{2p3/2}']/distribution
+    /reactionSuite/reactions/reaction[@label='e- + O{2p3/2}']/outputChannel/products/product[@label='O{2p3/2}']/distribution/unspecified[@label='eval']
+    /reactionSuite/reactions/reaction[@label='e- + O{2p3/2}']/outputChannel/products/product[@label='O{2p3/2}']/averageProductEnergy
+    /reactionSuite/reactions/reaction[@label='e- + O{2p3/2}']/outputChannel/products/product[@label='O{2p3/2}']/averageProductMomentum

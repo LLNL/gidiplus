@@ -23,6 +23,7 @@ void main2( int argc, char **argv );
 void energyLoop( GIDI::Protare *a_protare, PoPI::Database &a_pops, GIDI::Transporting::Particles &a_particles, MCGIDI::DomainHash &a_domainHash, 
                 MCGIDI::Transporting::MC &a_MC, GIDI::Styles::TemperatureInfos a_temperatures, std::set<int> &a_reactionsToExclude,
                 MCGIDI::URR_protareInfos &a_URR_protare_infos, bool a_printPairDiff );
+void checkIntidGain( MCGIDI::Protare *MCProtare, int a_hashIndex, double a_temperature, double a_energy, int a_index, int a_intid );
 /*
 =========================================================
 */
@@ -101,7 +102,7 @@ void main2( int argc, char **argv ) {
     protares[0] = MCProtare;
     MCGIDI::URR_protareInfos URR_protare_infos( protares );
 
-    for( MCGIDI_VectorSizeType i1 = 0; i1 < (MCGIDI_VectorSizeType) MCProtare->numberOfReactions( ); ++i1 ) {
+    for( std::size_t i1 = 0; i1 < MCProtare->numberOfReactions( ); ++i1 ) {
         MCGIDI::Reaction const &reaction = *MCProtare->reaction( i1 );
 
         std::cout << std::setw( 50 ) << std::left << reaction.label( ).c_str( ) << "  threshold = " 
@@ -165,7 +166,21 @@ void energyLoop( GIDI::Protare *a_protare, PoPI::Database &a_pops, GIDI::Transpo
             std::cout << doubleToString2( "    %12.4e", diff );
         }
         std::cout << std::endl;
+        if( a_particles.hasParticle( PoPI::IDs::photon ) ) checkIntidGain( MCProtare, hashIndex, temperature, energy, photonIndex, PoPI::Intids::photon );
     }
 
     delete MCProtare;
+}
+
+/*
+=========================================================
+*/
+void checkIntidGain( MCGIDI::Protare *MCProtare, int a_hashIndex, double a_temperature, double a_energy, int a_index, int a_intid ) {
+
+    double gainIndex = MCProtare->gain( a_hashIndex, a_temperature, a_energy, a_index );
+    double gainIntid = MCProtare->gainViaIntid( a_hashIndex, a_temperature, a_energy, a_intid );
+
+    if( gainIndex != gainIntid )
+        std::cout << "ERROR: gain and gainViaIntid difference (" << gainIndex << " vs " << gainIntid << ") for intid = " << a_intid 
+                << " at energy " << a_energy << std::endl;
 }

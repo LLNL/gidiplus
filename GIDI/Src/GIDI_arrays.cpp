@@ -192,7 +192,7 @@ FullArray Array::constructArray( ) const {
  * @param       a_indent            [in]        The amount to indent *this* node.
  ***********************************************************************************************************/
 
-void Array::toXMLList( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent ) const {
+void Array::toXMLList( LUPI_maybeUnused GUPI::WriteInfo &a_writeInfo, LUPI_maybeUnused std::string const &a_indent ) const {
 
 }
 
@@ -303,7 +303,7 @@ FlattenedArrayData::~FlattenedArrayData( ) {
  * @param a_value       [in]    The value to set each double in the range to.
  ***********************************************************************************************************/
 
-void FlattenedArrayData::setToValueInFlatRange( int a_start, int a_end, double a_value ) {
+void FlattenedArrayData::setToValueInFlatRange( LUPI_maybeUnused int a_start, int a_end, LUPI_maybeUnused double a_value ) {
 
     int size = 1;
     for( auto iter = m_shape.begin( ); iter != m_shape.end( ); ++iter ) size *= *iter;

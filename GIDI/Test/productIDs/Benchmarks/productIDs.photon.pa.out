@@ -1,4 +1,4 @@
-/.../GIDI/Test/Data/MG_MC/photo-atomic/photoat-008_O_000.xml
+/usr/WS1/ndg/Beck6/Git/GIDI+/MCGIDI/Test/photoAtomicDopplerBroadening/photoat-008_O_000.xml
 
 All particle IDs in protare:  photon O16 e-
 
@@ -7,11 +7,19 @@ Transportable particle IDs in protare:  photon
 All particle IDs by reaction:
     O + photon [coherent]:  photon O16
     O + photon [incoherent]:  photon O16
-    e- + O [photo-electric]:  O16 e-
-    O + photon [pair production: electron field]:  photon O16
+    e- + e- + e-_anti + O [pair production: electron field]:  photon O16
+    e- + e-_anti + O [pair production: nuclear field]:  photon O16
+    e- + O{1s1/2}:  O16 e-
+    e- + O{2s1/2}:  O16 e-
+    e- + O{2p1/2}:  O16 e-
+    e- + O{2p3/2}:  O16 e-
 
 Transportable particle IDs by reaction:
     O + photon [coherent]:  photon
     O + photon [incoherent]:  photon
-    e- + O [photo-electric]: 
-    O + photon [pair production: electron field]:  photon
+    e- + e- + e-_anti + O [pair production: electron field]:  photon
+    e- + e-_anti + O [pair production: nuclear field]:  photon
+    e- + O{1s1/2}: 
+    e- + O{2s1/2}: 
+    e- + O{2p1/2}: 
+    e- + O{2p3/2}: 

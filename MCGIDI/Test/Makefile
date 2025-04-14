@@ -1,4 +1,4 @@
-SHELL = /bin/ksh
+SHELL = /bin/sh
 
 # <<BEGIN-copyright>>
 # Copyright 2019, Lawrence Livermore National Security, LLC.
@@ -12,7 +12,7 @@ SHELL = /bin/ksh
 DIRS_nonGPUS = Utilities domainHash crossSection sampleReactions sampleProducts \
 		crossSection_multiGroup sampleReactions_multiGroup sampleProducts_multiGroup deposition_multiGroup \
 		deposition_continuousEnergy productIndices samplePhotoAtomic sampleTerrellPromptNeutronDistribution \
-		excludeReactions TNSL memoryCheck print_multiGroup modifiedCrossSection
+		excludeReactions TNSL memoryCheck print_multiGroup modifiedCrossSection photoAtomicDopplerBroadening
 
 DIRS_GPUS = gpuTest
 

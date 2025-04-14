@@ -33,7 +33,10 @@ Settings::Settings( ParseMode a_parseMode, PhotoMode a_photoMode ) :
         m_photoMode( a_photoMode ),
         m_useSystem_strtod( 0 ),
         m_lazyParsing( true ),
-        m_decayPositronium( true ) {
+        m_decayPositronium( true ),
+        m_usePhotoAtomicIncoherentDoppler( false ),
+        m_fissionResiduals( FissionResiduals::none ),
+        m_GRIN_continuumGammas( false ) {
 
 }
 
@@ -48,7 +51,11 @@ Settings::Settings( Settings const &a_settings ) :
         m_photoMode( a_settings.photoMode( ) ),
         m_useSystem_strtod( a_settings.useSystem_strtod( ) ),
         m_lazyParsing( a_settings.lazyParsing( ) ),
-        m_decayPositronium( a_settings.decayPositronium( ) ) {
+        m_decayPositronium( a_settings.decayPositronium( ) ),
+        m_usePhotoAtomicIncoherentDoppler( a_settings.usePhotoAtomicIncoherentDoppler( ) ),
+        m_fissionResiduals( a_settings.fissionResiduals( ) ),
+        m_GRIN_continuumGammas( false ) {
+
 }
 
 }

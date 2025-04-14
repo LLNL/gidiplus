@@ -63,7 +63,8 @@ static double temp[nParticles];
 static MCGIDI::URR_protareInfos URR_protare_infos;
 
 void main2( int argc, char **argv );
-void updateParticle( MCGIDI::Protare *protare, double energy, MCGIDI::DomainHash &domainHash, ParticleInfo *particle, MCGIDI::Sampling::Product const *product );
+void updateParticle( MCGIDI::Protare *protare, double energy, MCGIDI::DomainHash &domainHash, ParticleInfo *particle, 
+                MCGIDI::Sampling::Product const *product );
 void printBins( FILE *fOut, double time, ParticleInfo *particleInfos, long *bins, double velocityMax );
 void printData( int index, std::string const &timeLabel );
 /*
@@ -208,7 +209,8 @@ void main2( int argc, char **argv ) {
 /*
 ==============================================================================
 */
-void updateParticle( MCGIDI::Protare *protare, double energy, MCGIDI::DomainHash &domainHash, ParticleInfo *particle, MCGIDI::Sampling::Product const *product ) {
+void updateParticle( MCGIDI::Protare *protare, double energy, MCGIDI::DomainHash &domainHash, ParticleInfo *particle, 
+                MCGIDI::Sampling::Product const *product ) {
 
     particle->energy = energy;
     if( product == nullptr ) {

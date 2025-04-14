@@ -1,0 +1,17 @@
+n true false false false false false  0 1 0 
+n_anti true false false false true false  0 1 0 
+p true true true false false false H 1 1 0 
+p_anti true true true false true false H 1 1 0 
+d true true true false false false H 1 2 0 
+h2 true true true false false false H 1 2 0 
+H2 true true false false false false H 1 2 0 
+H true false false true false false H 1 0 0 
+Am242 true true false false false false Am 95 242 0 
+Am242_e2 true true false false false false Am 95 242 2 
+Am242_m2 true true false false false true Am 95 242 2 
+Am true false false true false false Am 95 0 0 
+am242 true true true false false false Am 95 242 0 
+am242_e2 true true true false false false Am 95 242 2 
+am242_m2 true true true false false true Am 95 242 2 
+am true false false true false false Am 95 0 0 
+FissionProductENDL99120 false false false false false false  0 0 0 

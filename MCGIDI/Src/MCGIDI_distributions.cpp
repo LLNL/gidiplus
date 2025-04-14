@@ -7,21 +7,15 @@
 # <<END-copyright>>
 */
 
-#include <math.h>
-
 #include "MCGIDI.hpp"
-
-static const double C0 = 1.0410423479, C1 = 3.9626339162e-4, C2 =-1.8654539193e-3, C3 = 1.0264818153e-4;
-
-static const double Two_sqrtPi = 1.1283791670955125739;                                                       // 2 / Sqrt( Pi ).
 
 namespace MCGIDI {
 
 namespace Distributions {
 
-LUPI_HOST_DEVICE static void kinetics_COMKineticEnergy2LabEnergyAndMomentum( double a_beta, double a_kinetic_com, 
-        double a_m3cc, double a_m4cc, Sampling::Input &a_input );
 LUPI_HOST_DEVICE static double coherentPhotoAtomicScatteringIntegrateSub( int a_n, double a_a, double a_logX, double a_energy1, double a_y1, double a_energy2, double a_y2 );
+static LUPI_HOST Distribution *parseGIDI2( GIDI::Distributions::Distribution const &a_GIDI_distribution, SetupInfo &a_setupInfo, 
+                Transporting::MC const &a_settings );
 
 /*! \class Distribution
  * This class is the base class for all distribution forms.
@@ -78,144 +72,18 @@ LUPI_HOST_DEVICE Distribution::~Distribution( ) {
 }
 
 /* *********************************************************************************************************//**
- * This method samples the outgoing product data for the two outgoing particles in a two-body outgoing channel. 
- * First, is samples *mu*, the cosine of the product's outgoing angle, since this is for two-body interactions, *mu*
- * is in the center-of-mass frame. It then calls kinetics_COMKineticEnergy2LabEnergyAndMomentum.
+ * This method calls the **setModelDBRC_data2* method if the distribution is AngularTwoBody, otherwise it * executes a thrwo.
  *
- * @param a_X                       [in]    The energy of the projectile in the lab frame.
- * @param a_input                   [in]    Sample options requested by user.
- * @param a_userrng                 [in]    A random number generator that takes the state *a_rngState* and returns a double in the range [0.0, 1.0).
- * @param a_rngState                [in]    The current state for the random number generator.
+ * @param a_modelDBRC_data      [in]    The instance storing data needed to treat the DRRC upscatter mode.
  ***********************************************************************************************************/
 
-LUPI_HOST_DEVICE void Distribution::sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), 
-                void *a_rngState ) const {
+LUPI_HOST void Distribution::setModelDBRC_data( Sampling::Upscatter::ModelDBRC_data *a_modelDBRC_data ) {
 
-    switch( type( ) ) {
-    case Distributions::Type::none:
-        break;
-    case Distributions::Type::unspecified:
-        static_cast<Distributions::Unspecified const *>( this )->sample( a_X, a_input, a_userrng, a_rngState );
-        break;
-    case Distributions::Type::angularTwoBody:
-        static_cast<Distributions::AngularTwoBody const *>( this )->sample( a_X, a_input, a_userrng, a_rngState );
-        break;
-    case Distributions::Type::KalbachMann:
-        static_cast<Distributions::KalbachMann const *>( this )->sample( a_X, a_input, a_userrng, a_rngState );
-        break;
-    case Distributions::Type::uncorrelated:
-        static_cast<Distributions::Uncorrelated const *>( this )->sample( a_X, a_input, a_userrng, a_rngState );
-        break;
-    case Distributions::Type::branching3d:
-        static_cast<Distributions::Branching3d const *>( this )->sample( a_X, a_input, a_userrng, a_rngState );
-        break;
-    case Distributions::Type::energyAngularMC:
-        static_cast<Distributions::EnergyAngularMC const *>( this )->sample( a_X, a_input, a_userrng, a_rngState );
-        break;
-    case Distributions::Type::angularEnergyMC:
-        static_cast<Distributions::AngularEnergyMC const *>( this )->sample( a_X, a_input, a_userrng, a_rngState );
-        break;
-    case Distributions::Type::coherentPhotoAtomicScattering:
-        static_cast<Distributions::CoherentPhotoAtomicScattering const *>( this )->sample( a_X, a_input, a_userrng, a_rngState );
-        break;
-    case Distributions::Type::incoherentPhotoAtomicScattering:
-        static_cast<Distributions::IncoherentPhotoAtomicScattering const *>( this )->sample( a_X, a_input, a_userrng, a_rngState );
-        break;
-    case Distributions::Type::incoherentPhotoAtomicScatteringElectron:
-        static_cast<Distributions::IncoherentPhotoAtomicScatteringElectron const *>( this )->sample( a_X, a_input, a_userrng, a_rngState );
-        break;
-    case Distributions::Type::pairProductionGamma:
-        static_cast<Distributions::PairProductionGamma const *>( this )->sample( a_X, a_input, a_userrng, a_rngState );
-        break;
-    case Distributions::Type::coherentElasticTNSL:
-        static_cast<Distributions::CoherentElasticTNSL const *>( this )->sample( a_X, a_input, a_userrng, a_rngState );
-        break;
-    case Distributions::Type::incoherentElasticTNSL:
-        static_cast<Distributions::IncoherentElasticTNSL const *>( this )->sample( a_X, a_input, a_userrng, a_rngState );
-        break;
-    }
+    if( type( ) != Type::angularTwoBody ) throw std::runtime_error( "Setting ModelDBRC_data for non-two body distribution is not allowed." );
+
+    static_cast<AngularTwoBody *>( this )->setModelDBRC_data2( a_modelDBRC_data );
 }
 
-/* *********************************************************************************************************//**
- * Returns the probability for a projectile with energy *a_energy_in* to cause a particle to be emitted 
- * at angle *a_mu_lab* as seen in the lab frame. *a_energy_out* is the sampled outgoing energy.
- *
- * @param a_reaction                [in]    The reaction containing the particle which this distribution describes.
- * @param a_temperature             [in]    The temperature of the material.
- * @param a_energy_in               [in]    The energy of the incident particle.
- * @param a_mu_lab                  [in]    The desired mu in the lab frame for the emitted particle.
- * @param a_userrng                 [in]    A random number generator that takes the state *a_rngState* and returns a double in the range [0.0, 1.0).
- * @param a_rngState                [in]    The current state for the random number generator.
- * @param a_energy_out              [out]   The energy of the emitted outgoing particle.
- *
- * @return                                  The probability of emitting outgoing particle into lab angle *a_mu_lab*.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE double Distribution::angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab, 
-                double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const {
-
-    double probability = 0.0;
-    a_energy_out = 0.0;
-
-    switch( type( ) ) {
-    case Distributions::Type::none:
-        break;
-    case Distributions::Type::unspecified:
-        probability = static_cast<Distributions::Unspecified const *>( this )->angleBiasing( a_reaction, a_temperature, a_energy_in, a_mu_lab,
-                a_userrng, a_rngState, a_energy_out );
-        break;
-    case Distributions::Type::angularTwoBody:
-        probability = static_cast<Distributions::AngularTwoBody const *>( this )->angleBiasing( a_reaction, a_temperature, a_energy_in, a_mu_lab,
-                a_userrng, a_rngState, a_energy_out );
-        break;
-    case Distributions::Type::KalbachMann:
-        probability = static_cast<Distributions::KalbachMann const *>( this )->angleBiasing( a_reaction, a_temperature, a_energy_in, a_mu_lab,
-                a_userrng, a_rngState, a_energy_out );
-        break;
-    case Distributions::Type::uncorrelated:
-        probability = static_cast<Distributions::Uncorrelated const *>( this )->angleBiasing( a_reaction, a_temperature, a_energy_in, a_mu_lab,
-                a_userrng, a_rngState, a_energy_out );
-        break;
-    case Distributions::Type::branching3d:
-        probability = static_cast<Distributions::Branching3d const *>( this )->angleBiasing( a_reaction, a_temperature, a_energy_in, a_mu_lab,
-                a_userrng, a_rngState, a_energy_out );
-        break;
-    case Distributions::Type::energyAngularMC:
-        probability = static_cast<Distributions::EnergyAngularMC const *>( this )->angleBiasing( a_reaction, a_temperature, a_energy_in, a_mu_lab,
-                a_userrng, a_rngState, a_energy_out );
-        break;
-    case Distributions::Type::angularEnergyMC:
-        probability = static_cast<Distributions::AngularEnergyMC const *>( this )->angleBiasing( a_reaction, a_temperature, a_energy_in, a_mu_lab,
-                a_userrng, a_rngState, a_energy_out );
-        break;
-    case Distributions::Type::coherentPhotoAtomicScattering:
-        probability = static_cast<Distributions::CoherentPhotoAtomicScattering const *>( this )->angleBiasing( a_reaction, a_temperature, a_energy_in, a_mu_lab,
-                a_userrng, a_rngState, a_energy_out );
-        break;
-    case Distributions::Type::incoherentPhotoAtomicScattering:
-        probability = static_cast<Distributions::IncoherentPhotoAtomicScattering const *>( this )->angleBiasing( a_reaction, a_temperature, a_energy_in, a_mu_lab,
-                a_userrng, a_rngState, a_energy_out );
-        break;
-    case Distributions::Type::incoherentPhotoAtomicScatteringElectron:
-        probability = static_cast<Distributions::IncoherentPhotoAtomicScatteringElectron const *>( this )->angleBiasing( a_reaction, a_temperature, a_energy_in, a_mu_lab,
-                a_userrng, a_rngState, a_energy_out );
-        break;
-    case Distributions::Type::pairProductionGamma:
-        probability = static_cast<Distributions::PairProductionGamma const *>( this )->angleBiasing( a_reaction, a_temperature, a_energy_in, a_mu_lab,
-                a_userrng, a_rngState, a_energy_out );
-        break;
-    case Distributions::Type::coherentElasticTNSL:
-        probability = static_cast<Distributions::CoherentElasticTNSL const *>( this )->angleBiasing( a_reaction, a_temperature, a_energy_in, a_mu_lab,
-                a_userrng, a_rngState, a_energy_out );
-        break;
-    case Distributions::Type::incoherentElasticTNSL:
-        probability = static_cast<Distributions::IncoherentElasticTNSL const *>( this )->angleBiasing( a_reaction, a_temperature, a_energy_in, a_mu_lab,
-                a_userrng, a_rngState, a_energy_out );
-        break;
-    }
-
-    return( probability );
-}
 
 /* *********************************************************************************************************//**
  * This method serializes *this* for broadcasting as needed for MPI and GPUs. The method can count the number of required
@@ -237,9 +105,9 @@ LUPI_HOST_DEVICE void Distribution::serialize( LUPI::DataBuffer &a_buffer, LUPI:
     m_productFrame = GIDI::Frame::lab;
     if( frame == 1 ) m_productFrame = GIDI::Frame::centerOfMass;
 
-    DATA_MEMBER_FLOAT( m_projectileMass, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_targetMass, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_productMass, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_projectileMass, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_targetMass, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_productMass, a_buffer, a_mode );
 }
 
 /*! \class AngularTwoBody
@@ -255,7 +123,8 @@ LUPI_HOST_DEVICE AngularTwoBody::AngularTwoBody( ) :
         m_Q( 0.0 ),
         m_twoBodyThreshold( 0.0 ),
         m_Upscatter( false ),
-        m_angular( nullptr ) {
+        m_angular( nullptr ),
+        m_modelDBRC_data( nullptr )  {
 
 }
 
@@ -270,9 +139,10 @@ LUPI_HOST AngularTwoBody::AngularTwoBody( GIDI::Distributions::AngularTwoBody co
         m_Q( a_setupInfo.m_Q ),
         m_twoBodyThreshold( a_setupInfo.m_reaction->twoBodyThreshold( ) ),
         m_Upscatter( false ),
-        m_angular( Probabilities::parseProbability2d_d1( a_angularTwoBody.angular( ), &a_setupInfo ) ) {
+        m_angular( Probabilities::parseProbability2d_d1( a_angularTwoBody.angular( ), &a_setupInfo ) ),
+        m_modelDBRC_data( nullptr )  {
 
-    if( a_setupInfo.m_protare.projectileIndex( ) == a_setupInfo.m_protare.neutronIndex( ) ) {
+    if( a_setupInfo.m_protare.projectileIntid( ) == PoPI::Intids::neutron ) {
         m_Upscatter = a_setupInfo.m_reaction->ENDF_MT( ) == 2;
     }
 }
@@ -283,317 +153,7 @@ LUPI_HOST AngularTwoBody::AngularTwoBody( GIDI::Distributions::AngularTwoBody co
 LUPI_HOST_DEVICE AngularTwoBody::~AngularTwoBody( ) {
 
     delete m_angular;
-}
-
-/* *********************************************************************************************************//**
- * This method samples the outgoing product data for the two outgoing particles in a two-body outgoing channel. 
- * First, is samples *mu*, the cosine of the product's outgoing angle, since this is for two-body interactions, *mu*
- * is in the center-of-mass frame. It then calls kinetics_COMKineticEnergy2LabEnergyAndMomentum.
- *
- * @param a_X                       [in]    The energy of the projectile in the lab frame.
- * @param a_input                   [in]    Sample options requested by user.
- * @param a_userrng                 [in]    A random number generator that takes the state *a_rngState* and returns a double in the range [0.0, 1.0).
- * @param a_rngState                [in]    The current state for the random number generator.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE void AngularTwoBody::sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const {
-
-    double initialMass = projectileMass( ) + targetMass( ), finalMass = productMass( ) + m_residualMass;
-    double beta = sqrt( a_X * ( a_X + 2. * projectileMass( ) ) ) / ( a_X + initialMass );      // beta = v/c.
-    double _x = targetMass( ) * ( a_X - m_twoBodyThreshold ) / ( finalMass * finalMass );
-    double Kp;                          // Kp is the total kinetic energy for m3 and m4 in the COM frame.
-
-    a_input.m_sampledType = Sampling::SampledType::firstTwoBody;
-
-    if( m_Upscatter ) {
-        if( ( a_input.m_upscatterModel == Sampling::Upscatter::Model::B ) || ( a_input.m_upscatterModel == Sampling::Upscatter::Model::BSnLimits ) ) {
-            if( upscatterModelB( a_X, a_input, a_userrng, a_rngState ) ) return;
-        }
-    }
-
-    if( _x < 2e-5 ) {
-        Kp = finalMass * _x * ( 1 - 0.5 * _x * ( 1 - _x ) ); }
-    else {          // This is the relativistic formula derived from E^2 - (pc)^2 is frame independent.
-        Kp = sqrt( finalMass * finalMass + 2 * targetMass( ) * ( a_X - m_twoBodyThreshold ) ) - finalMass;
-    }
-    if( Kp < 0 ) Kp = 0.;           // FIXME There needs to be a better test here.
-
-    a_input.m_mu = m_angular->sample( a_X, a_userrng( a_rngState ), a_userrng, a_rngState );
-    a_input.m_phi = 2. * M_PI * a_userrng( a_rngState );
-    kinetics_COMKineticEnergy2LabEnergyAndMomentum( beta, Kp, productMass( ), m_residualMass, a_input );
-}
-
-/* *********************************************************************************************************//**
- * Returns the probability for a projectile with energy *a_energy_in* to cause a particle to be emitted 
- * at angle *a_mu_lab* as seen in the lab frame. *a_energy_out* is the sampled outgoing energy.
- *
- * @param a_reaction                [in]    The reaction containing the particle which this distribution describes.
- * @param a_temperature             [in]    The temperature of the material.
- * @param a_energy_in               [in]    The energy of the incident particle.
- * @param a_mu_lab                  [in]    The desired mu in the lab frame for the emitted particle.
- * @param a_userrng                 [in]    A random number generator that takes the state *a_rngState* and returns a double in the range [0.0, 1.0).
- * @param a_rngState                [in]    The current state for the random number generator.
- * @param a_energy_out              [out]   The energy of the emitted outgoing particle.
- *
- * @return                                  The probability of emitting outgoing particle into lab angle *a_mu_lab*.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE double AngularTwoBody::angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab, 
-                double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const {
-
-    a_energy_out = 0.0;
-
-    double initialMass = projectileMass( ) + targetMass( ), finalMass = productMass( ) + m_residualMass;
-    double _x = targetMass( ) * ( a_energy_in - m_twoBodyThreshold ) / ( finalMass * finalMass );
-    double Kp;                      // Total kinetic energy of products in the center-of-mass.
-
-    if( _x < 2e-5 ) {
-        Kp = finalMass * _x * ( 1 - 0.5 * _x * ( 1 - _x ) ); }
-    else {          // This is the relativistic formula derived from E^2 - (pc)^2 which is frame independent (i.e., an invariant).
-        Kp = sqrt( finalMass * finalMass + 2.0 * targetMass( ) * ( a_energy_in - m_twoBodyThreshold ) ) - finalMass;
-    }
-    if( Kp < 0 ) Kp = 0.;           // FIXME There needs to be a better test here.
-
-    double energy_product_com = 0.5 * Kp * ( Kp + 2.0 * m_residualMass ) / ( Kp + productMass( ) + m_residualMass );
-    double productBeta = MCGIDI_particleBeta( productMass( ), energy_product_com );
-    double boostBeta = sqrt( a_energy_in * ( a_energy_in + 2. * projectileMass( ) ) ) / ( a_energy_in + initialMass );      // beta = v/c.
-    double muPlus, JacobianPlus, muMinus, JacobianMinus;
-
-    int numberOfMus = muCOM_From_muLab( a_mu_lab, boostBeta, productBeta, muPlus, JacobianPlus, muMinus, JacobianMinus );
-
-    if( numberOfMus == 0 ) return( 0.0 );
-
-    double probability = JacobianPlus * m_angular->evaluate( a_energy_in, muPlus );
-
-    if( numberOfMus == 2 ) {
-        double probabilityMinus = JacobianMinus * m_angular->evaluate( a_energy_in, muMinus );
-        probability += probabilityMinus;
-        if( probabilityMinus > a_userrng( a_rngState ) * probability ) {
-            muPlus = muMinus;
-        }
-    }
-
-    double productBeta2 = productBeta * productBeta;
-    double productBetaLab2 = productBeta2 + boostBeta * boostBeta * ( 1.0 - productBeta2 * ( 1.0 - muPlus * muPlus ) ) + 2.0 * muPlus * productBeta * boostBeta;
-    productBetaLab2 /= 1.0 - muPlus * productBeta * boostBeta;
-    a_energy_out = particleKineticEnergyFromBeta2( productMass( ), productBetaLab2 );
-
-    return( probability );
-}
-
-/* *********************************************************************************************************//**
- * This function calculates the products outgoing data (i.e., energy, velocity/momentum) for the two products of
- * a two-body interaction give the cosine of the first product's outgoing angle.
- *
- * @param a_beta                    [in]    The velocity/speedOflight of the com frame relative to the lab frame.
- * @param a_kinetic_com             [in]    Total kinetic energy (K1 + K2) in the COM frame.
- * @param a_m3cc                    [in]    The mass of the first product.
- * @param a_m4cc                    [in]    The mass of the second product.
- * @param a_input                   [in]    Sample options requested by user and where the products' outgoing data are returned.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE static void kinetics_COMKineticEnergy2LabEnergyAndMomentum( double a_beta, double a_kinetic_com, 
-        double a_m3cc, double a_m4cc, Sampling::Input &a_input ) {
-/*
-    Relativity:
-        E = K + m, E^2 = K^2 + 2 K m + m^2, E^2 - m^2 = p^2 = K^2 + 2 K m
-    
-         pc          p     v
-        ---- = v,   --- = --- = beta = b
-         E           E     c
-
-           K ( K + 2 m )
-    b^2 = ---------------
-            ( K + m )^2
-*/
-    double x, v_p, p, pp3, pp4, px3, py3, pz3, pz4, pz, p_perp2, E3, E4, gamma, m3cc2 = a_m3cc * a_m3cc, m4cc2 = a_m4cc * a_m4cc;
-
-    p = sqrt( a_kinetic_com * ( a_kinetic_com + 2. * a_m3cc ) * ( a_kinetic_com + 2. * a_m4cc )  * 
-            ( a_kinetic_com + 2. * ( a_m3cc + a_m4cc ) ) ) / ( 2. * ( a_kinetic_com + a_m3cc + a_m4cc ) );
-    py3 = p * sqrt( 1 - a_input.m_mu * a_input.m_mu );
-    px3 = py3 * cos( a_input.m_phi );
-    py3 *= sin( a_input.m_phi );
-    pz = p * a_input.m_mu;
-    if( 1 ) {                           // FIXME Assuming the answer is wanted in the lab frame for now.
-        a_input.m_frame = GIDI::Frame::lab;
-        E3 = sqrt( p * p + m3cc2 );
-        E4 = sqrt( p * p + m4cc2 );
-        gamma = sqrt( 1. / ( 1. - a_beta * a_beta ) );
-        pz3 = gamma * (  pz + a_beta * E3 );
-        pz4 = gamma * ( -pz + a_beta * E4 ); }
-    else {                              // COM frame.
-        a_input.m_frame = GIDI::Frame::centerOfMass;
-        pz3 = pz;
-        pz4 = -pz;
-    }
-
-    p_perp2 = px3 * px3 + py3 * py3;
-
-    a_input.m_px_vx1 = px3;
-    a_input.m_py_vy1 = py3;
-    a_input.m_pz_vz1 = pz3;
-    pp3 = p_perp2 + pz3 * pz3;
-    x = ( a_m3cc > 0 ) ? pp3 / ( 2 * m3cc2 ) : 1.;
-    if( x < 1e-5 ) {
-        a_input.m_energyOut1 = a_m3cc * x  * ( 1 - 0.5 * x * ( 1 - x ) ); }
-    else {
-        a_input.m_energyOut1 = sqrt( m3cc2 + pp3 ) - a_m3cc;
-    }
-    a_input.m_px_vx2 = -px3;
-    a_input.m_py_vy2 = -py3;
-    a_input.m_pz_vz2 = pz4;
-    pp4 = p_perp2 + pz4 * pz4;
-    x = ( a_m4cc > 0 ) ? pp4 / ( 2 * m4cc2 ) : 1.;
-    if( x < 1e-5 ) {
-        a_input.m_energyOut2 = a_m4cc * x  * ( 1 - 0.5 * x * ( 1 - x ) ); }
-    else {
-        a_input.m_energyOut2 = sqrt( m4cc2 + pp4 ) - a_m4cc;
-    }
-
-    if( a_input.wantVelocity( ) ) {
-        v_p = MCGIDI_speedOfLight_cm_sec / sqrt( pp3 + m3cc2 );
-        a_input.m_px_vx1 *= v_p;
-        a_input.m_py_vy1 *= v_p;
-        a_input.m_pz_vz1 *= v_p;
-
-        v_p = MCGIDI_speedOfLight_cm_sec / sqrt( pp4 + m4cc2 );
-        a_input.m_px_vx2 *= v_p;
-        a_input.m_py_vy2 *= v_p;
-        a_input.m_pz_vz2 *= v_p;
-    }
-}
-
-/* *********************************************************************************************************//**
- * This method samples a targets velocity for elastic upscattering for upscatter model B and then calculates the outgoing
- * product data for the projectile and target.
- *
- * @param a_kineticLab              [in]    The kinetic energy of the projectile in the lab frame.
- * @param a_input                   [in]    Sample options requested by user.
- * @param a_userrng                 [in]    A random number generator that takes the state *a_rngState* and returns a double in the range [0.0, 1.0).
- * @param a_rngState                [in]    The current state for the random number generator.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE bool AngularTwoBody::upscatterModelB( double a_kineticLab, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const {
-
-    double neutronMass = projectileMass( );                             // Mass are in incident energy unit / c**2.
-    double _targetMass = targetMass( );
-    double temperature = 1e-3 * a_input.m_temperature;                  // Assumes m_temperature is in keV/K.
-    double kineticLabMax = 1e4 * temperature;
-
-    if( a_input.m_upscatterModel == Sampling::Upscatter::Model::BSnLimits ) {
-        double kineticLabMax200 = 200.0 * temperature;
-
-        kineticLabMax = 1e3 * temperature * neutronMass / _targetMass;
-        if( kineticLabMax < kineticLabMax200 ) kineticLabMax = kineticLabMax200;
-        if( a_kineticLab >= 0.1 ) kineticLabMax = 0.9 * a_kineticLab; }
-    else {
-        if( kineticLabMax > 1e-2 ) {
-            kineticLabMax = 1e-2;
-            if( kineticLabMax < 100.0 * temperature ) {
-                kineticLabMax = 100.0 * temperature;
-                if( kineticLabMax > 10.0 ) kineticLabMax = 10.0;        // Assumes energy is in MeV.
-            }
-        }
-    }
-
-    if( a_kineticLab > kineticLabMax ) return( false );                   // Only for low neutron energy.
-
-    a_input.m_frame = GIDI::Frame::lab;
-
-    double muProjectileTarget, relativeBeta, targetBeta;
-    double targetThermalBeta = MCGIDI_particleBeta( _targetMass, temperature );
-    double neutronBeta = MCGIDI_particleBeta( neutronMass, a_kineticLab );
-
-    do {
-        int MethodP1orP2 = 0;         /* Assume P2 */
-        if( a_userrng( a_rngState ) * ( neutronBeta + Two_sqrtPi * targetThermalBeta ) < neutronBeta ) MethodP1orP2 = 1;
-        muProjectileTarget = 1.0 - 2.0 * a_userrng( a_rngState );
-        if( MethodP1orP2 == 0 ) {                                       // x Exp( -x ) term.
-            targetBeta = targetThermalBeta * sqrt( -log( ( 1.0 - a_userrng( a_rngState ) ) * ( 1.0 - a_userrng( a_rngState ) ) ) ); }
-        else {                                                          // x^2 Exp( -x^2 ) term.
-            double x1;
-            do {
-                x1 = a_userrng( a_rngState );
-                x1 = sqrt( -log( ( 1.0 - a_userrng( a_rngState ) ) * ( 1.0 - x1 * x1 ) ) );
-                x1 = x1 / ( ( ( C3 * x1 + C2 ) * x1 + C1 ) * x1 + C0 );
-            } while( x1 > 4.0 );
-            targetBeta = targetThermalBeta * x1;
-        }
-        relativeBeta = sqrt( targetBeta * targetBeta + neutronBeta * neutronBeta - 2 * muProjectileTarget * targetBeta * neutronBeta );
-    } while( relativeBeta < ( targetBeta + neutronBeta ) * a_userrng( a_rngState ) );
-
-    double m1_12 = neutronMass / ( neutronMass + _targetMass );
-    double m2_12 = _targetMass / ( neutronMass + _targetMass );
-
-    double cosRelative = 0.0;                                           // Cosine of angle between projectile velocity and relative velocity.
-    if( relativeBeta != 0.0 ) cosRelative = ( neutronBeta - muProjectileTarget * targetBeta ) / relativeBeta;
-    if( cosRelative > 1.0 ) {
-            cosRelative = 1.0; }
-    else if( cosRelative < -1.0 ) {
-            cosRelative = -1.0;
-    }
-    double sinRelative = sqrt( 1.0 - cosRelative * cosRelative );       // Sine of angle between projectile velocity and relative velocity.
-
-    double betaNeutronOut = m2_12 * relativeBeta; 
-    double kineticEnergyRelative = particleKineticEnergy( neutronMass, betaNeutronOut );
-    double muCOM = m_angular->sample( kineticEnergyRelative, a_userrng( a_rngState ), a_userrng, a_rngState );
-    double phiCOM = 2.0 * M_PI * a_userrng( a_rngState );
-    double SCcom = sqrt( 1.0 - muCOM * muCOM );
-    double SScom = SCcom * sin( phiCOM );
-    SCcom *= cos( phiCOM );
-
-    a_input.m_pz_vz1 = betaNeutronOut * ( muCOM * cosRelative - SCcom * sinRelative );
-    a_input.m_px_vx1 = betaNeutronOut * ( muCOM * sinRelative + SCcom * cosRelative );
-    a_input.m_py_vy1 = betaNeutronOut * SScom;
-
-    double massRatio = -neutronMass / _targetMass;
-    a_input.m_pz_vz2 = massRatio * a_input.m_pz_vz1;
-    a_input.m_px_vx2 = massRatio * a_input.m_px_vx1;
-    a_input.m_py_vy2 = massRatio * a_input.m_py_vy1;
-
-    double vCOMz = m1_12 * neutronBeta + m2_12 * muProjectileTarget * targetBeta;                   // Boost from center-of-mass to lab frame.
-    double vCOMx = m2_12 * sqrt( 1.0 - muProjectileTarget * muProjectileTarget ) * targetBeta;
-    a_input.m_pz_vz1 += vCOMz;
-    a_input.m_px_vx1 += vCOMx;
-    a_input.m_pz_vz2 += vCOMz;
-    a_input.m_px_vx2 += vCOMx;
-
-    double vx2_vy2 = a_input.m_px_vx1 * a_input.m_px_vx1 + a_input.m_py_vy1 * a_input.m_py_vy1;
-    double v2 = a_input.m_pz_vz1 * a_input.m_pz_vz1 + vx2_vy2;
-    a_input.m_mu = 0.0;
-    if( v2 != 0.0 ) a_input.m_mu = a_input.m_pz_vz1 / sqrt( v2 );
-    a_input.m_phi = atan2( a_input.m_py_vy1, a_input.m_px_vx1 );
-
-    a_input.m_energyOut1 = particleKineticEnergyFromBeta2( neutronMass, v2 );
-    a_input.m_energyOut2 = particleKineticEnergyFromBeta2( _targetMass, a_input.m_px_vx2 * a_input.m_px_vx2 + a_input.m_py_vy2 * a_input.m_py_vy2 + a_input.m_pz_vz2 * a_input.m_pz_vz2 );
-
-    a_input.m_px_vx1 *= MCGIDI_speedOfLight_cm_sec;
-    a_input.m_py_vy1 *= MCGIDI_speedOfLight_cm_sec;
-    a_input.m_pz_vz1 *= MCGIDI_speedOfLight_cm_sec;
-
-    a_input.m_px_vx2 *= MCGIDI_speedOfLight_cm_sec;
-    a_input.m_py_vy2 *= MCGIDI_speedOfLight_cm_sec;
-    a_input.m_pz_vz2 *= MCGIDI_speedOfLight_cm_sec;
-
-    if( !a_input.wantVelocity( ) ) {                // Return momenta.
-        a_input.m_px_vx1 *= neutronMass;            // Non-relativistic.
-        a_input.m_py_vy1 *= neutronMass;
-        a_input.m_pz_vz1 *= neutronMass;
-
-        a_input.m_px_vx2 *= _targetMass;
-        a_input.m_py_vy2 *= _targetMass;
-        a_input.m_pz_vz2 *= _targetMass;
-    }
-
-    double phi = 2.0 * M_PI * a_userrng( a_rngState );
-    double sine = sin( phi );
-    double cosine = cos( phi );
-
-    double saved = a_input.m_px_vx1;
-    a_input.m_px_vx1 = cosine * a_input.m_px_vx1 - sine   * a_input.m_py_vy1;
-    a_input.m_py_vy1 = sine   * saved            + cosine * a_input.m_py_vy1;
-
-    return( true );
+    delete m_modelDBRC_data;
 }
 
 /* *********************************************************************************************************//**
@@ -607,12 +167,25 @@ LUPI_HOST_DEVICE bool AngularTwoBody::upscatterModelB( double a_kineticLab, Samp
 LUPI_HOST_DEVICE void AngularTwoBody::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
     Distribution::serialize( a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_residualMass, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_Q, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_twoBodyThreshold, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_residualMass, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_Q, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_twoBodyThreshold, a_buffer, a_mode );
     DATA_MEMBER_INT( m_Upscatter, a_buffer, a_mode );
 
     m_angular = serializeProbability2d_d1( a_buffer, a_mode, m_angular );
+    m_modelDBRC_data = serializeModelDBRC_data( a_buffer, a_mode, m_modelDBRC_data );
+}
+
+/* *********************************************************************************************************//**
+ * This method sets *this* *m_modelDBRC_data* to *a_modelDBRC_data*. It also deletes the current *m_modelDBRC_data* member.
+ *
+ * @param a_modelDBRC_data      [in]    The instance storing data needed to treat the DRRC upscatter mode.
+ ***********************************************************************************************************/
+
+LUPI_HOST void AngularTwoBody::setModelDBRC_data2( Sampling::Upscatter::ModelDBRC_data *a_modelDBRC_data ) {
+
+    delete m_modelDBRC_data;
+    m_modelDBRC_data = a_modelDBRC_data;
 }
 
 /*! \class Uncorrelated
@@ -649,78 +222,6 @@ LUPI_HOST_DEVICE Uncorrelated::~Uncorrelated( ) {
 
     delete m_angular;
     delete m_energy;
-}
-
-/* *********************************************************************************************************//**
- * This method samples the outgoing product data by sampling the outgoing energy E' and mu from the uncorrelated
- * E and mu probabilities. It also samples the outgoing phi uniformly between 0 and 2 pi.
- *
- * @param a_X                       [in]    The energy of the projectile.
- * @param a_input                   [in]    Sample options requested by user.
- * @param a_userrng                 [in]    A random number generator that takes the state *a_rngState* and returns a double in the range [0.0, 1.0).
- * @param a_rngState                [in]    The current state for the random number generator.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE void Uncorrelated::sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const {
-
-    a_input.m_sampledType = Sampling::SampledType::uncorrelatedBody;
-    a_input.m_mu = m_angular->sample( a_X, a_userrng( a_rngState ), a_userrng, a_rngState );
-    a_input.m_energyOut1 = m_energy->sample( a_X, a_userrng( a_rngState ), a_userrng, a_rngState );
-    a_input.m_phi = 2. * M_PI * a_userrng( a_rngState );
-    a_input.m_frame = productFrame( );
-}
-
-/* *********************************************************************************************************//**
- * Returns the probability for a projectile with energy *a_energy_in* to cause a particle to be emitted 
- * at angle *a_mu_lab* as seen in the lab frame. *a_energy_out* is the sampled outgoing energy.
- *
- * @param a_reaction                [in]    The reaction containing the particle which this distribution describes.
- * @param a_temperature             [in]    The temperature of the material.
- * @param a_energy_in               [in]    The energy of the incident particle.
- * @param a_mu_lab                  [in]    The desired mu in the lab frame for the emitted particle.
- * @param a_userrng                 [in]    A random number generator that takes the state *a_rngState* and returns a double in the range [0.0, 1.0).
- * @param a_rngState                [in]    The current state for the random number generator.
- * @param a_energy_out              [in]    The energy of the emitted outgoing particle.
- *
- * @return                                  The probability of emitting outgoing particle into lab angle *a_mu_lab*.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE double Uncorrelated::angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab, 
-                double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const {
-
-    if( productFrame( ) != GIDI::Frame::lab ) {
-        a_energy_out = 0.0;
-
-        double initialMass = projectileMass( ) + targetMass( );
-        double energy_out_com = m_energy->sample( a_energy_in, a_userrng( a_rngState ), a_userrng, a_rngState );
-        double productBeta = MCGIDI_particleBeta( productMass( ), energy_out_com );
-        double boostBeta = sqrt( a_energy_in * ( a_energy_in + 2. * projectileMass( ) ) ) / ( a_energy_in + initialMass );      // beta = v/c.
-
-        double muPlus, JacobianPlus, muMinus, JacobianMinus;
-
-        int numberOfMus = muCOM_From_muLab( a_mu_lab, boostBeta, productBeta, muPlus, JacobianPlus, muMinus, JacobianMinus );
-
-        if( numberOfMus == 0 ) return( 0.0 );
-
-        double probability = JacobianPlus * m_angular->evaluate( a_energy_in, muPlus );
-
-        if( numberOfMus == 2 ) {
-            double probabilityMinus = JacobianMinus * m_angular->evaluate( a_energy_in, muMinus );
-
-            probability += probabilityMinus;
-            if( probabilityMinus > a_userrng( a_rngState ) * probability ) muPlus = muMinus;
-        }
-
-        double productBeta2 = productBeta * productBeta;
-        double productBetaLab2 = productBeta2 + boostBeta * boostBeta * ( 1.0 - productBeta2 * ( 1.0 - muPlus * muPlus ) ) + 2.0 * muPlus * productBeta * boostBeta;
-        productBetaLab2 /= 1.0 - muPlus * productBeta * boostBeta;
-        a_energy_out = particleKineticEnergyFromBeta2( productMass( ), productBetaLab2 );
-
-        return( probability );
-    }
-
-    a_energy_out = m_energy->sample( a_energy_in, a_userrng( a_rngState ), a_userrng, a_rngState );
-    return( m_angular->evaluate( a_energy_in, a_mu_lab ) );
 }
 
 /* *********************************************************************************************************//**
@@ -778,41 +279,6 @@ LUPI_HOST_DEVICE Branching3d::~Branching3d( ) {
 
 }
 
-/* *********************************************************************************************************//**
- * This method samples the outgoing branching photons.
- *
- * @param a_X                       [in]    The energy of the projectile in the lab frame.
- * @param a_input                   [in]    Sample options requested by user.
- * @param a_userrng                 [in]    A random number generator that takes the state *a_rngState* and returns a double in the range [0.0, 1.0).
- * @param a_rngState                [in]    The current state for the random number generator.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE void Branching3d::sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const {
-
-}
-
-/* *********************************************************************************************************//**
- * Returns the probability for a projectile with energy *a_energy_in* to cause a particle to be emitted 
- * at angle *a_mu_lab* as seen in the lab frame. *a_energy_out* is the sampled outgoing energy.
- *
- * @param a_reaction                [in]    The reaction containing the particle which this distribution describes.
- * @param a_temperature             [in]    The temperature of the material.
- * @param a_energy_in               [in]    The energy of the incident particle.
- * @param a_mu_lab                  [in]    The desired mu in the lab frame for the emitted particle.
- * @param a_userrng                 [in]    A random number generator that takes the state *a_rngState* and returns a double in the range [0.0, 1.0).
- * @param a_rngState                [in]    The current state for the random number generator.
- * @param a_energy_out              [in]    The energy of the emitted outgoing particle.
- *
- * @return                                  The probability of emitting outgoing particle into lab angle *a_mu_lab*.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE double Branching3d::angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab,
-                double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const {
-
-    double probability = 0.0;
-
-    return( probability );
-}
 
 /* *********************************************************************************************************//**
  * This method serializes *this* for broadcasting as needed for MPI and GPUs. The method can count the number of required
@@ -867,82 +333,6 @@ LUPI_HOST_DEVICE EnergyAngularMC::~EnergyAngularMC( ) {
 }
 
 /* *********************************************************************************************************//**
- * This method samples the outgoing product data by sampling the outgoing energy E' from the probability P(E'|E) and then samples mu from 
- * the probability P(mu|E,E'). It also samples the outgoing phi uniformly between 0 and 2 pi.
- *
- * @param a_X                       [in]    The energy of the projectile.
- * @param a_input                   [in]    Sample options requested by user.
- * @param a_userrng                 [in]    A random number generator that takes the state *a_rngState* and returns a double in the range [0.0, 1.0).
- * @param a_rngState                [in]    The current state for the random number generator.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE void EnergyAngularMC::sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const {
-
-    double energyOut_1, energyOut_2;
-
-    a_input.m_sampledType = Sampling::SampledType::uncorrelatedBody;
-    a_input.m_energyOut1 = m_energy->sample2dOf3d( a_X, a_userrng( a_rngState ), a_userrng, a_rngState, &energyOut_1, &energyOut_2 );
-    a_input.m_mu = m_angularGivenEnergy->sample( a_X, energyOut_1, energyOut_2, a_userrng( a_rngState ), a_userrng, a_rngState );
-    a_input.m_phi = 2. * M_PI * a_userrng( a_rngState );
-    a_input.m_frame = productFrame( );
-}
-
-/* *********************************************************************************************************//**
- * Returns the probability for a projectile with energy *a_energy_in* to cause a particle to be emitted 
- * at angle *a_mu_lab* as seen in the lab frame. *a_energy_out* is the sampled outgoing energy.
- *
- * @param a_reaction                [in]    The reaction containing the particle which this distribution describes.
- * @param a_temperature             [in]    The temperature of the material.
- * @param a_energy_in               [in]    The energy of the incident particle.
- * @param a_mu_lab                  [in]    The desired mu in the lab frame for the emitted particle.
- * @param a_userrng                 [in]    A random number generator that takes the state *a_rngState* and returns a double in the range [0.0, 1.0).
- * @param a_rngState                [in]    The current state for the random number generator.
- * @param a_energy_out              [in]    The energy of the emitted outgoing particle.
- *
- * @return                                  The probability of emitting outgoing particle into lab angle *a_mu_lab*.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE double EnergyAngularMC::angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab, 
-                double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const {
-
-    double probability = 0.0;
-
-    if( productFrame( ) == GIDI::Frame::centerOfMass ) {
-        a_energy_out = m_energy->sample( a_energy_in, a_userrng( a_rngState ), a_userrng, a_rngState );
-
-        double initialMass = projectileMass( ) + targetMass( );
-        double energy_out_com = m_energy->sample( a_energy_in, a_userrng( a_rngState ), a_userrng, a_rngState );
-        double productBeta = MCGIDI_particleBeta( productMass( ), energy_out_com );
-        double boostBeta = sqrt( a_energy_in * ( a_energy_in + 2. * projectileMass( ) ) ) / ( a_energy_in + initialMass );      // beta = v/c.
-
-        double muPlus, JacobianPlus, muMinus, JacobianMinus;
-
-        int numberOfMus = muCOM_From_muLab( a_mu_lab, boostBeta, productBeta, muPlus, JacobianPlus, muMinus, JacobianMinus );
-
-        if( numberOfMus == 0 ) return( 0.0 );
-
-        probability = JacobianPlus * m_angularGivenEnergy->evaluate( a_energy_in, energy_out_com, muPlus );
-
-        if( numberOfMus == 2 ) {
-            double probabilityMinus = JacobianMinus * m_angularGivenEnergy->evaluate( a_energy_in, energy_out_com, muMinus );
-
-            probability += probabilityMinus;
-            if( probabilityMinus > a_userrng( a_rngState ) * probability ) muPlus = muMinus;
-        }
-
-        double productBeta2 = productBeta * productBeta;
-        double productBetaLab2 = productBeta2 + boostBeta * boostBeta * ( 1.0 - productBeta2 * ( 1.0 - muPlus * muPlus ) ) + 2.0 * muPlus * productBeta * boostBeta;
-        productBetaLab2 /= 1.0 - muPlus * productBeta * boostBeta;
-        a_energy_out = particleKineticEnergyFromBeta2( productMass( ), productBetaLab2 ); }
-    else {
-        a_energy_out = m_energy->sample( a_energy_in, a_userrng( a_rngState ), a_userrng, a_rngState );
-        probability =  m_angularGivenEnergy->evaluate( a_energy_in, a_energy_out, a_mu_lab );
-    }
-
-    return( probability );
-}
-
-/* *********************************************************************************************************//**
  * This method serializes *this* for broadcasting as needed for MPI and GPUs. The method can count the number of required
  * bytes, pack *this* or unpack *this* depending on *a_mode*.
  *
@@ -993,51 +383,6 @@ LUPI_HOST_DEVICE AngularEnergyMC::~AngularEnergyMC( ) {
 
     delete m_angular;
     delete m_energyGivenAngular;
-}
-
-/* *********************************************************************************************************//**
- * This method samples the outgoing product data by sampling the outgoing mu from the probability P(mu|E) and then samples E' from 
- * the probability P(E'|E,mu). It also samples the outgoing phi uniformly between 0 and 2 pi.
- *
- * @param a_X                       [in]    The energy of the projectile.
- * @param a_input                   [in]    Sample options requested by user.
- * @param a_userrng                 [in]    A random number generator that takes the state *a_rngState* and returns a double in the range [0.0, 1.0).
- * @param a_rngState                [in]    The current state for the random number generator.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE void AngularEnergyMC::sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const {
-
-    double mu_1, mu_2;
-
-    a_input.m_sampledType = Sampling::SampledType::uncorrelatedBody;
-    a_input.m_mu = m_angular->sample2dOf3d( a_X, a_userrng( a_rngState ), a_userrng, a_rngState, &mu_1, &mu_2 );
-    a_input.m_energyOut1 = m_energyGivenAngular->sample( a_X, mu_1, mu_2, a_userrng( a_rngState ), a_userrng, a_rngState );
-    a_input.m_phi = 2. * M_PI * a_userrng( a_rngState );
-    a_input.m_frame = productFrame( );
-}
-
-/* *********************************************************************************************************//**
- * Returns the probability for a projectile with energy *a_energy_in* to cause a particle to be emitted 
- * at angle *a_mu_lab* as seen in the lab frame. *a_energy_out* is the sampled outgoing energy.
- *
- * @param a_reaction                [in]    The reaction containing the particle which this distribution describes.
- * @param a_temperature             [in]    The temperature of the material.
- * @param a_energy_in               [in]    The energy of the incident particle.
- * @param a_mu_lab                  [in]    The desired mu in the lab frame for the emitted particle.
- * @param a_userrng                 [in]    A random number generator that takes the state *a_rngState* and returns a double in the range [0.0, 1.0).
- * @param a_rngState                [in]    The current state for the random number generator.
- * @param a_energy_out              [in]    The energy of the emitted outgoing particle.
- *
- * @return                                  The probability of emitting outgoing particle into lab angle *a_mu_lab*.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE double AngularEnergyMC::angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab, 
-                double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const {
-
-    if( productFrame( ) != GIDI::Frame::lab ) LUPI_THROW( "AngularEnergyMC::angleBiasing: center-of-mass not supported." );
-
-    a_energy_out = m_energyGivenAngular->sample( a_energy_in, a_mu_lab, a_mu_lab, a_userrng( a_rngState), a_userrng, a_rngState );
-    return( m_angular->evaluate( a_energy_in, a_mu_lab ) );
 }
 
 /* *********************************************************************************************************//**
@@ -1098,103 +443,6 @@ LUPI_HOST_DEVICE KalbachMann::~KalbachMann( ) {
 }
 
 /* *********************************************************************************************************//**
- * This method samples the outgoing product data using the Kalbach-Mann formalism.
- *
- * @param a_X                       [in]    The energy of the projectile.
- * @param a_input                   [in]    Sample options requested by user.
- * @param a_userrng                 [in]    A random number generator that takes the state *a_rngState* and returns a double in the range [0.0, 1.0).
- * @param a_rngState                [in]    The current state for the random number generator.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE void KalbachMann::sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const {
-
-    a_input.m_sampledType = Sampling::SampledType::uncorrelatedBody;
-    a_input.m_energyOut1 = m_f->sample( a_X, a_userrng( a_rngState ), a_userrng, a_rngState );
-    double rValue = m_r->evaluate( a_X, a_input.m_energyOut1 );
-    double aValue = m_a->evaluate( a_X, a_input.m_energyOut1 );
-
-        // In the following: Cosh[ a mu ] + r Sinh[ a mu ] = ( 1 - r ) Cosh[ a mu ] + r ( Cosh[ a mu ] + Sinh[ a mu ] ).
-    if( a_userrng( a_rngState ) >= rValue ) { // Sample the '( 1 - r ) Cosh[ a mu ]' term.
-        double T = ( 2. * a_userrng( a_rngState ) - 1. ) * sinh( aValue );
-
-        a_input.m_mu = log( T + sqrt( T * T + 1. ) ) / aValue; }
-    else {                                                                  // Sample the 'r ( Cosh[ a mu ] + Sinh[ a mu ] )' term.
-        double rng1 = a_userrng( a_rngState ), exp_a = exp( aValue );
-
-        a_input.m_mu = log( rng1 * exp_a + ( 1. - rng1 ) / exp_a ) / aValue;
-    }
-    if( a_input.m_mu < -1 ) a_input.m_mu = -1;
-    if( a_input.m_mu >  1 ) a_input.m_mu = 1;
-
-    a_input.m_phi = 2. * M_PI * a_userrng( a_rngState );
-    a_input.m_frame = productFrame( );
-}
-
-/* *********************************************************************************************************//**
- * Returns the probability for a projectile with energy *a_energy_in* to cause a particle to be emitted 
- * at angle *a_mu_lab* as seen in the lab frame. *a_energy_out* is the sampled outgoing energy.
- *
- * @param a_reaction                [in]    The reaction containing the particle which this distribution describes.
- * @param a_temperature             [in]    The temperature of the material.
- * @param a_energy_in               [in]    The energy of the incident particle.
- * @param a_mu_lab                  [in]    The desired mu in the lab frame for the emitted particle.
- * @param a_userrng                 [in]    A random number generator that takes the state *a_rngState* and returns a double in the range [0.0, 1.0).
- * @param a_rngState                [in]    The current state for the random number generator.
- * @param a_energy_out              [in]    The energy of the emitted outgoing particle.
- *
- * @return                                  The probability of emitting outgoing particle into lab angle *a_mu_lab*.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE double KalbachMann::angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab, 
-                double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const {
-
-    a_energy_out = 0.0;
-
-    double initialMass = projectileMass( ) + targetMass( );
-    double energy_out_com = m_f->sample( a_energy_in, a_userrng( a_rngState ), a_userrng, a_rngState );
-    double productBeta = MCGIDI_particleBeta( productMass( ), energy_out_com );
-    double boostBeta = sqrt( a_energy_in * ( a_energy_in + 2. * projectileMass( ) ) ) / ( a_energy_in + initialMass );      // beta = v/c.
-
-    double muPlus, JacobianPlus, muMinus, JacobianMinus;
-
-    int numberOfMus = muCOM_From_muLab( a_mu_lab, boostBeta, productBeta, muPlus, JacobianPlus, muMinus, JacobianMinus );
-
-    if( numberOfMus == 0 ) return( 0.0 );
-
-    double rAtEnergyEnergyPrime = m_r->evaluate( a_energy_in, energy_out_com );
-    double aAtEnergyEnergyPrime = m_a->evaluate( a_energy_in, energy_out_com );
-    double aMu = aAtEnergyEnergyPrime * muPlus;
-
-    double probability = 0.5 * JacobianPlus;
-    if( productMass( ) == 0.0 ) {
-        probability *= 1.0 - rAtEnergyEnergyPrime + rAtEnergyEnergyPrime * aAtEnergyEnergyPrime * exp( aMu ) / sinh( aAtEnergyEnergyPrime ); }
-    else {
-        probability *= aAtEnergyEnergyPrime * ( cosh( aMu ) + rAtEnergyEnergyPrime * cosh( aMu ) ) / sinh( aAtEnergyEnergyPrime );
-    }
-
-    if( numberOfMus == 2 ) {
-        aMu = aAtEnergyEnergyPrime * muMinus;
-
-        double probabilityMinus = 0.5 * JacobianMinus;
-        if( productMass( ) == 0.0 ) {
-            probabilityMinus *= 1.0 - rAtEnergyEnergyPrime + rAtEnergyEnergyPrime * aAtEnergyEnergyPrime * exp( aMu ) / sinh( aAtEnergyEnergyPrime ); }
-        else {
-            probabilityMinus *= aAtEnergyEnergyPrime * ( cosh( aMu ) + rAtEnergyEnergyPrime * cosh( aMu ) ) / sinh( aAtEnergyEnergyPrime );
-        }
-        probability += probabilityMinus;
-
-        if( probabilityMinus > a_userrng( a_rngState ) * probability ) muPlus = muMinus;
-    }
-
-    double productBeta2 = productBeta * productBeta;
-    double productBetaLab2 = productBeta2 + boostBeta * boostBeta * ( 1.0 - productBeta2 * ( 1.0 - muPlus * muPlus ) ) + 2.0 * muPlus * productBeta * boostBeta;
-    productBetaLab2 /= 1.0 - muPlus * productBeta * boostBeta;
-    a_energy_out = particleKineticEnergyFromBeta2( productMass( ), productBetaLab2 );
-
-    return( probability );
-}
-
-/* *********************************************************************************************************//**
  * This method evaluates the Kalbach-Mann formalism at the projectile energy a_energy, and outgoing product energy a_energyOut and a_mu.
  *
  * @param a_energy                  [in]    The energy of the projectile in the lab frame.
@@ -1223,8 +471,8 @@ LUPI_HOST_DEVICE double KalbachMann::evaluate( double a_energy, double a_energyO
 LUPI_HOST_DEVICE void KalbachMann::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
 
     Distribution::serialize( a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_energyToMeVFactor, a_buffer, a_mode );
-    DATA_MEMBER_FLOAT( m_eb_massFactor, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_energyToMeVFactor, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_eb_massFactor, a_buffer, a_mode );
 
     m_f = serializeProbability2d_d1( a_buffer, a_mode, m_f );
     m_r = serializeFunction2d( a_buffer, a_mode, m_r );
@@ -1369,7 +617,7 @@ LUPI_HOST CoherentPhotoAtomicScattering::CoherentPhotoAtomicScattering( GIDI::Di
     m_probabilityNorm2_5[0] = 0.0;
     energy1 = m_energies[1];
     y1 = m_formFactor[0];
-    for( MCGIDI_VectorSizeType i1 = 1; i1 < m_probabilityNorm1_1.size( ); ++i1 ) {
+    for( std::size_t i1 = 1; i1 < m_probabilityNorm1_1.size( ); ++i1 ) {
         double energy2 = m_energies[i1];
         double y2 = m_formFactor[i1];
         double logEs = log( energy2 / energy1 );
@@ -1406,7 +654,7 @@ LUPI_HOST_DEVICE CoherentPhotoAtomicScattering::~CoherentPhotoAtomicScattering( 
 LUPI_HOST_DEVICE double CoherentPhotoAtomicScattering::evaluate( double a_energyIn, double a_mu ) const {
 
     double probability;
-    MCGIDI_VectorSizeType lowerIndexEnergy = binarySearchVector( a_energyIn, m_energies );      // FIXME - need to handle case where lowerIndexEnergy = 0 like in evaluateScatteringFactor.
+    int lowerIndexEnergy = binarySearchVector( a_energyIn, m_energies, true );      // FIXME - need to handle case where lowerIndexEnergy = 0 like in evaluateScatteringFactor.
     double _a = m_a[lowerIndexEnergy];
     double _a_2 = _a * _a;
     double X1 = m_energies[lowerIndexEnergy];
@@ -1454,7 +702,7 @@ LUPI_HOST_DEVICE double CoherentPhotoAtomicScattering::evaluate( double a_energy
 LUPI_HOST_DEVICE double CoherentPhotoAtomicScattering::evaluateFormFactor( double a_energyIn, double a_mu ) const {
 
     double X = a_energyIn * sqrt( 0.5 * ( 1 - a_mu ) );
-    MCGIDI_VectorSizeType lowerIndex = binarySearchVector( X, m_energies );
+    int lowerIndex = binarySearchVector( X, m_energies );
 
     if( lowerIndex < 1 ) {
         if( lowerIndex == 0 ) return( m_formFactor[0] );
@@ -1463,121 +711,6 @@ LUPI_HOST_DEVICE double CoherentPhotoAtomicScattering::evaluateFormFactor( doubl
     }
 
     return( m_formFactor[lowerIndex] * pow( X / m_energies[lowerIndex] , m_a[lowerIndex] ) );
-}
-
-/* *********************************************************************************************************//**
- * This method samples the outgoing product data from the coherent photo-atomic scattering law.
- * It also samples the outgoing phi uniformly between 0 and 2 pi.
- *
- * @param a_X                       [in]    The energy of the projectile in the lab frame.
- * @param a_input                   [in]    Sample options requested by user.
- * @param a_userrng                 [in]    A random number generator that takes the state *a_rngState* and returns a double in the range [0.0, 1.0).
- * @param a_rngState                [in]    The current state for the random number generator.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE void CoherentPhotoAtomicScattering::sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const {
-
-    a_input.m_energyOut1 = a_X;
-
-    MCGIDI_VectorSizeType lowerIndex = binarySearchVector( a_X, m_energies );
-
-    if( lowerIndex < 1 ) {
-        do {
-            a_input.m_mu = 1.0 - 2.0 * a_userrng( a_rngState );
-        } while( ( 1.0 + a_input.m_mu * a_input.m_mu ) < 2.0 * a_userrng( a_rngState ) ); }
-    else {
-        double _a = m_a[lowerIndex];
-        double X_i = m_energies[lowerIndex];
-        double formFactor_i = m_formFactor[lowerIndex];
-        double formFactor_X_i = formFactor_i * X_i;
-        double Z = a_X / X_i;
-        double realAnomalousFactor = 0.0;
-        double imaginaryAnomalousFactor = 0.0;
-
-        if( m_anomalousDataPresent ) {
-            realAnomalousFactor = m_realAnomalousFactor->evaluate( a_X );
-            imaginaryAnomalousFactor = m_imaginaryAnomalousFactor->evaluate( a_X );
-        }
-
-        double anomalousFactorSquared = realAnomalousFactor * realAnomalousFactor + imaginaryAnomalousFactor * imaginaryAnomalousFactor;
-        double normalization = m_integratedFormFactorSquared[lowerIndex] + formFactor_X_i * formFactor_X_i * Z_a( Z, 2.0 * _a + 2.0 );
-
-        anomalousFactorSquared = 0.0;
-        if( anomalousFactorSquared != 0.0 ) {
-            double integratedFormFactor_i = m_integratedFormFactor[lowerIndex] + formFactor_X_i * Z_a( Z, _a + 2.0 );
-
-            normalization += 2.0  * integratedFormFactor_i * realAnomalousFactor + 0.5 * anomalousFactorSquared * a_X * a_X;
-        }
-
-        do {
-            double partialIntegral = a_userrng( a_rngState ) * normalization;
-            double X;
-            if( anomalousFactorSquared == 0.0 ) {
-                lowerIndex = binarySearchVector( partialIntegral, m_integratedFormFactorSquared );
-
-                if( lowerIndex == 0 ) {
-                    X = sqrt( 2.0 * partialIntegral ) / m_formFactor[0]; }
-                else {
-                    double remainer = partialIntegral - m_integratedFormFactorSquared[lowerIndex];
-                    double epsilon = 2.0 * m_a[lowerIndex] + 2.0;
-
-                    X_i = m_energies[lowerIndex];
-                    formFactor_i = m_formFactor[lowerIndex];
-                    formFactor_X_i = formFactor_i * X_i;
-
-                    remainer /= formFactor_X_i * formFactor_X_i;
-                    if( fabs( epsilon ) < 1e-6 ) {
-                        X = X_i * exp( remainer ); }
-                    else {
-                        X = X_i * pow( 1.0 + epsilon * remainer, 1.0 / epsilon );
-                    }
-                } }
-            else {                                  // Currently not implemented.
-                X = 0.5 * a_X;
-            }
-            double X_E = X / a_X;
-            a_input.m_mu = 1.0 - 2.0 * X_E * X_E;
-        } while( ( 1.0 + a_input.m_mu * a_input.m_mu ) < 2.0 * a_userrng( a_rngState ) );
-    }
-
-    a_input.m_phi = 2.0 * M_PI * a_userrng( a_rngState );
-    a_input.m_frame = productFrame( );
-}
-
-/* *********************************************************************************************************//**
- * Returns the probability for a projectile with energy *a_energy_in* to cause a particle to be emitted 
- * at angle *a_mu_lab* as seen in the lab frame. *a_energy_out* is the sampled outgoing energy.
- *
- * @param a_reaction                [in]    The reaction containing the particle which this distribution describes.
- * @param a_temperature             [in]    The temperature of the material.
- * @param a_energy_in               [in]    The energy of the incident particle.
- * @param a_mu_lab                  [in]    The desired mu in the lab frame for the emitted particle.
- * @param a_userrng                 [in]    A random number generator that takes the state *a_rngState* and returns a double in the range [0.0, 1.0).
- * @param a_rngState                [in]    The current state for the random number generator.
- * @param a_energy_out              [in]    The energy of the emitted outgoing particle.
- *
- * @return                                  The probability of emitting outgoing particle into lab angle *a_mu_lab*.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE double CoherentPhotoAtomicScattering::angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab, 
-                double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const {
-
-    a_energy_out = a_energy_in;
-
-    URR_protareInfos URR_protareInfos1;
-    double sigma = a_reaction->protareSingle( )->reactionCrossSection( a_reaction->reactionIndex( ), URR_protareInfos1, 0.0, a_energy_in );
-    double formFactor = evaluateFormFactor( a_energy_in, a_mu_lab );
-    double imaginaryAnomalousFactor = 0.0;
-
-    if( m_anomalousDataPresent ) {
-        formFactor += m_realAnomalousFactor->evaluate( a_energy_in );
-        imaginaryAnomalousFactor = m_imaginaryAnomalousFactor->evaluate( a_energy_in );
-    }
-
-    double probability = M_PI * MCGIDI_classicalElectronRadius * MCGIDI_classicalElectronRadius * ( 1.0 + a_mu_lab * a_mu_lab )
-                        * ( formFactor * formFactor + imaginaryAnomalousFactor * imaginaryAnomalousFactor ) / sigma;
-
-    return( probability );
 }
 
 /* *********************************************************************************************************//**
@@ -1805,7 +938,7 @@ LUPI_HOST_DEVICE double IncoherentPhotoAtomicScattering::evaluateKleinNishina( d
 
 LUPI_HOST_DEVICE double IncoherentPhotoAtomicScattering::evaluateScatteringFactor( double a_energyIn ) const {
 
-    MCGIDI_VectorSizeType lowerIndex = binarySearchVector( a_energyIn, m_energies );
+    int lowerIndex = binarySearchVector( a_energyIn, m_energies );
 
     if( lowerIndex < 1 ) {
         if( lowerIndex == -1 ) return( m_scatteringFactor.back( ) );
@@ -1813,73 +946,6 @@ LUPI_HOST_DEVICE double IncoherentPhotoAtomicScattering::evaluateScatteringFacto
     }
 
     return( m_scatteringFactor[lowerIndex] * pow( a_energyIn / m_energies[lowerIndex], m_a[lowerIndex] ) );
-}
-
-/* *********************************************************************************************************//**
- * This method samples the outgoing product data by sampling the outgoing energy E' from the probability P(E'|E) and then samples mu from 
- * the probability P(mu|E,E'). It also samples the outgoing phi uniformly between 0 and 2 pi.
- *
- * @param a_X                       [in]    The energy of the projectile.
- * @param a_input                   [in]    Sample options requested by user.
- * @param a_userrng                 [in]    A random number generator that takes the state *a_rngState* and returns a double in the range [0.0, 1.0).
- * @param a_rngState                [in]    The current state for the random number generator.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE void IncoherentPhotoAtomicScattering::sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const {
-
-    double k1 = a_X / PoPI_electronMass_MeV_c2;
-    double energyOut, mu, scatteringFactor;
-
-    if( a_X >= m_energies.back( ) ) {
-        MCGIDI_sampleKleinNishina( k1, a_userrng, a_rngState, &energyOut, &mu ); }
-    else {
-        double scatteringFactorMax = evaluateScatteringFactor( a_X );
-        do {
-            MCGIDI_sampleKleinNishina( k1, a_userrng, a_rngState, &energyOut, &mu );
-            scatteringFactor = evaluateScatteringFactor( a_X * sqrt( 0.5 * ( 1.0 - mu ) ) );
-        } while( scatteringFactor < a_userrng( a_rngState ) * scatteringFactorMax );
-    }
-
-    a_input.m_sampledType = Sampling::SampledType::uncorrelatedBody;
-    a_input.m_energyOut1 = energyOut * PoPI_electronMass_MeV_c2;
-    a_input.m_mu = mu;
-    a_input.m_phi = 2.0 * M_PI * a_userrng( a_rngState );
-    a_input.m_frame = productFrame( );
-}
-
-/* *********************************************************************************************************//**
- * Returns the probability for a projectile with energy *a_energy_in* to cause a particle to be emitted 
- * at angle *a_mu_lab* as seen in the lab frame. *a_energy_out* is the sampled outgoing energy.
- *
- * @param a_reaction                [in]    The reaction containing the particle which this distribution describes.
- * @param a_temperature             [in]    The temperature of the material.
- * @param a_energy_in               [in]    The energy of the incident particle.
- * @param a_mu_lab                  [in]    The desired mu in the lab frame for the emitted particle.
- * @param a_userrng                 [in]    A random number generator that takes the state *a_rngState* and returns a double in the range [0.0, 1.0).
- * @param a_rngState                [in]    The current state for the random number generator.
- * @param a_energy_out              [in]    The energy of the emitted outgoing particle.
- *
- * @return                                  The probability of emitting outgoing particle into lab angle *a_mu_lab*.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE double IncoherentPhotoAtomicScattering::angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab, 
-                double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const {
-
-    URR_protareInfos URR_protareInfos1;
-    double sigma = a_reaction->protareSingle( )->reactionCrossSection( a_reaction->reactionIndex( ), URR_protareInfos1, 0.0, a_energy_in );
-
-    double norm = M_PI * MCGIDI_classicalElectronRadius * MCGIDI_classicalElectronRadius / sigma;
-
-    double one_minus_mu = 1.0 - a_mu_lab;
-    double k_in = a_energy_in / PoPI_electronMass_MeV_c2;
-    a_energy_out = a_energy_in / ( 1.0 + k_in * one_minus_mu );
-    double k_out = a_energy_out / PoPI_electronMass_MeV_c2;
-
-    double k_ratio = k_out / k_in;
-    double probability = evaluateScatteringFactor( a_energy_in * sqrt( 0.5 * one_minus_mu ) );
-    probability *= k_ratio * k_ratio * ( 1.0 + a_mu_lab * a_mu_lab + k_in * k_out * one_minus_mu * one_minus_mu ) * norm;
-
-    return( probability );
 }
 
 /* *********************************************************************************************************//**
@@ -1897,6 +963,146 @@ LUPI_HOST_DEVICE void IncoherentPhotoAtomicScattering::serialize( LUPI::DataBuff
     DATA_MEMBER_VECTOR_DOUBLE( m_energies, a_buffer, a_mode );
     DATA_MEMBER_VECTOR_DOUBLE( m_scatteringFactor, a_buffer, a_mode );
     DATA_MEMBER_VECTOR_DOUBLE( m_a, a_buffer, a_mode );
+}
+
+/*! \class IncoherentBoundToFreePhotoAtomicScattering
+ * This class represents the distribution for an outgoing photon via incoherent photo-atomic elastic scattering.
+ */
+
+/* *********************************************************************************************************//**
+ * Default constructor used when broadcasting a Protare as needed by MPI or GPUs.
+ ***********************************************************************************************************/
+
+LUPI_HOST_DEVICE IncoherentBoundToFreePhotoAtomicScattering::IncoherentBoundToFreePhotoAtomicScattering( ) {
+
+}
+
+/* *********************************************************************************************************//**
+ * @param a_incoherentBoundToFreePhotoAtomicScattering  [in]    The GIDI::Distributions::IncoherentBoundToFreePhotoAtomicScattering instance whose data is to be used to construct *this*.
+ * @param a_setupInfo                                   [in]    Used internally when constructing a Protare to pass information to other constructors.
+ ***********************************************************************************************************/
+
+LUPI_HOST IncoherentBoundToFreePhotoAtomicScattering::IncoherentBoundToFreePhotoAtomicScattering( 
+                GIDI::Distributions::IncoherentBoundToFreePhotoAtomicScattering const &a_incoherentBoundToFreePhotoAtomicScattering,
+                SetupInfo &a_setupInfo ) :
+        Distribution( Type::incoherentBoundToFreePhotoAtomicScattering, a_incoherentBoundToFreePhotoAtomicScattering, a_setupInfo ) {
+
+    GIDI::ProtareSingle const &GIDI_protare = a_setupInfo.m_GIDI_protare;
+    auto monikers = GIDI_protare.styles( ).findAllOfMoniker( GIDI_MonteCarlo_cdfStyleChars );
+    std::string MonteCarlo_cdf = "";
+    if( monikers.size( ) == 1 ) {
+        MonteCarlo_cdf = monikers[0][0]->label( ); 
+    }
+
+    std::string Compton_href = a_incoherentBoundToFreePhotoAtomicScattering.href( );
+
+    if( Compton_href.find( MonteCarlo_cdf ) != std::string::npos ) {
+        const GUPI::Ancestry *link = a_incoherentBoundToFreePhotoAtomicScattering.findInAncestry( Compton_href );
+        GIDI::DoubleDifferentialCrossSection::IncoherentBoundToFreePhotoAtomicScattering const &dd = *static_cast<GIDI::DoubleDifferentialCrossSection::IncoherentBoundToFreePhotoAtomicScattering const *>( link );
+        GIDI::Functions::Xs_pdf_cdf1d const *xpcCompton;
+        GIDI::Functions::Function1dForm  const *ComptonProfile = dd.ComptonProfile( );
+        xpcCompton = static_cast<GIDI::Functions::Xs_pdf_cdf1d const *>( ComptonProfile );
+
+        std::vector<double> occupationNumbers = xpcCompton->cdf( );
+        std::vector<double> pz_grid = xpcCompton->Xs( );
+        std::size_t dataSize = pz_grid.size( );
+        m_occupationNumber.resize( dataSize );
+        m_pz.resize( dataSize );
+        for( std::size_t index = 0; index < occupationNumbers.size( ); ++index ) {
+            m_occupationNumber[index] = occupationNumbers[index];
+            m_pz[index] = pz_grid[index];
+        }
+
+        m_bindingEnergy = a_setupInfo.m_Q;
+    }
+}
+
+/* *********************************************************************************************************//**
+ ***********************************************************************************************************/
+
+LUPI_HOST_DEVICE IncoherentBoundToFreePhotoAtomicScattering::~IncoherentBoundToFreePhotoAtomicScattering( ) {
+
+}
+
+/* *********************************************************************************************************//**
+ * FIX ME.
+ *
+ * @param a_energyIn                [in]
+ * @param a_mu                      [in]
+ ***********************************************************************************************************/
+
+LUPI_HOST_DEVICE double IncoherentBoundToFreePhotoAtomicScattering::energyRatio( double a_energyIn, double a_mu ) const {
+
+    double relativeEnergy = a_energyIn / PoPI_electronMass_MeV_c2;
+
+    return( 1.0 / ( 1.0 + relativeEnergy * ( 1.0 - a_mu ) ) );
+}
+
+/* *********************************************************************************************************//**
+ * This method evaluates the Klein-Nishina. FIX ME. This should be a function as it does not use member data.
+ *
+ * @param a_energyIn                [in]
+ * @param a_mu                      [in]
+ ***********************************************************************************************************/
+
+LUPI_HOST_DEVICE double IncoherentBoundToFreePhotoAtomicScattering::evaluateKleinNishina( double a_energyIn, double a_mu ) const {
+
+    double relativeEnergy = a_energyIn / PoPI_electronMass_MeV_c2;
+    double _energyRatio = energyRatio( a_energyIn, a_mu );
+    double one_minus_mu = 1.0 - a_mu;
+
+    double norm = ( 1.0 + 2.0 * relativeEnergy );
+    norm = 2.0 * relativeEnergy * ( 2.0 + relativeEnergy * ( 1.0 + relativeEnergy ) * ( 8.0 + relativeEnergy ) ) / ( norm * norm );
+    norm += ( ( relativeEnergy - 2.0 ) * relativeEnergy - 2.0 ) * log( 1.0 + 2.0 * relativeEnergy );
+    norm /= relativeEnergy * relativeEnergy * relativeEnergy;
+
+    return( _energyRatio * _energyRatio * ( _energyRatio + a_mu * a_mu + relativeEnergy * one_minus_mu * one_minus_mu ) / norm );
+}
+
+
+/* *********************************************************************************************************//**
+ * This method evaluates the occupation number cdf.
+ *
+ * @param a_energyIn                [in]
+ * @param a_mu                      [in]
+ ***********************************************************************************************************/
+
+LUPI_HOST_DEVICE double IncoherentBoundToFreePhotoAtomicScattering::evaluateOccupationNumber( double a_energyIn, double a_mu ) const {
+
+    const double alpha_in = a_energyIn / PoPI_electronMass_MeV_c2;
+    //const double mec = 2.7309245307378233e-22; // m_e * c in SI units
+    const double alpha_binding = -m_bindingEnergy/PoPI_electronMass_MeV_c2;  // BE [MeV] / 0.511 [MeV]
+    const double pzmax = ( -alpha_binding + alpha_in*(alpha_in - alpha_binding)*(1-a_mu) )/( sqrt( 2*alpha_in*(alpha_in-alpha_binding)*(1-a_mu) + alpha_binding*alpha_binding ) ); // *mec
+
+    int lowerIndex = binarySearchVector( pzmax, m_pz );
+    const int size1 = m_occupationNumber.size();
+
+    if( lowerIndex == -1 || lowerIndex == (size1 -1)){
+         return( m_occupationNumber.back( ) );
+    }
+    if( lowerIndex == -2 ){
+        return( m_occupationNumber[0] );
+    }
+
+    return(m_occupationNumber[lowerIndex] + (pzmax-m_pz[lowerIndex])*(m_occupationNumber[lowerIndex+1]-m_occupationNumber[lowerIndex])/(m_pz[lowerIndex+1]-m_pz[lowerIndex]) );
+
+}
+
+/* *********************************************************************************************************//**
+ * This method serializes *this* for broadcasting as needed for MPI and GPUs. The method can count the number of required
+ * bytes, pack *this* or unpack *this* depending on *a_mode*.
+ *
+ * @param a_buffer              [in]    The buffer to read or write data to depending on *a_mode*.
+ * @param a_mode                [in]    Specifies the action of this method.
+ ***********************************************************************************************************/
+
+LUPI_HOST_DEVICE void IncoherentBoundToFreePhotoAtomicScattering::serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode ) {
+
+    Distribution::serialize( a_buffer, a_mode );
+
+    DATA_MEMBER_VECTOR_DOUBLE( m_pz, a_buffer, a_mode );
+    DATA_MEMBER_VECTOR_DOUBLE( m_occupationNumber, a_buffer, a_mode );
+
 }
 
 /*
@@ -1934,54 +1140,6 @@ LUPI_HOST IncoherentPhotoAtomicScatteringElectron::IncoherentPhotoAtomicScatteri
 
 LUPI_HOST_DEVICE IncoherentPhotoAtomicScatteringElectron::~IncoherentPhotoAtomicScatteringElectron( ) {
 
-}
-
-/* *********************************************************************************************************//**
- * This method returns the outgoing electron energy and angle given that the photon when out at an angle of *a_input.m_mu*.
- * Ergo, this method must be called directly after the photon has been sampled.
- *
- * @param a_energy                  [in]    The energy of the projectile.
- * @param a_input                   [in]    Sample options requested by user.
- * @param a_userrng                 [in]    A random number generator that takes the state *a_rngState* and returns a double in the range [0.0, 1.0).
- * @param a_rngState                [in]    The current state for the random number generator.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE void IncoherentPhotoAtomicScatteringElectron::sample( double a_energy, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const {
-
-    double halfTheta = 0.5 * acos( a_input.m_mu );
-    double cot_psi = ( 1.0 + a_energy / PoPI_electronMass_MeV_c2 ) * tan( halfTheta );
-    double psi = atan( 1.0 / cot_psi );
-
-    double deltaE_photon = a_energy - a_input.m_energyOut1;
-    double electronMomentum2 = deltaE_photon * ( deltaE_photon + 2.0 * PoPI_electronMass_MeV_c2 );  // Square of the electron outlgoing momentum.
-
-    a_input.m_energyOut1 = electronMomentum2 / ( sqrt( electronMomentum2 + PoPI_electronMass_MeV_c2 * PoPI_electronMass_MeV_c2 ) + PoPI_electronMass_MeV_c2 );
-    a_input.m_mu = cos( psi );
-    a_input.m_phi = 2.0 * M_PI * a_userrng( a_rngState );
-    a_input.m_frame = productFrame( );
-}
-
-/* *********************************************************************************************************//**
- * Returns the probability for a projectile with energy *a_energy_in* causing a particle to be emitted
- * at angle *a_mu_lab* as seen in the lab frame. *a_energy_out* is the sampled outgoing energy.
- * Currently, this method only returns 0.0 for the probability and outgoing energy.
- *
- * @param a_reaction                [in]    The reaction containing the particle which this distribution describes.
- * @param a_temperature             [in]    The temperature of the material.
- * @param a_energy_in               [in]    The energy of the incident particle.
- * @param a_mu_lab                  [in]    The desired mu in the lab frame for the emitted particle.
- * @param a_userrng                 [in]    A random number generator that takes the state *a_rngState* and returns a double in the range [0.0, 1.0).
- * @param a_rngState                [in]    The current state for the random number generator.
- * @param a_energy_out              [in]    The energy of the emitted outgoing particle.
- *
- * @return                                  The probability of emitting outgoing particle into lab angle *a_mu_lab*.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE double IncoherentPhotoAtomicScatteringElectron::angleBiasing( Reaction const *a_reaction, double a_temperature, 
-                double a_energy_in, double a_mu_lab, double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const {
-
-    a_energy_out = 0;
-    return( 0.0 );
 }
 
 /* *********************************************************************************************************//**
@@ -2033,53 +1191,6 @@ LUPI_HOST_DEVICE PairProductionGamma::~PairProductionGamma( ) {
 
 }
 
-/* *********************************************************************************************************//**
- * This method samples the outgoing photon by assigning the electron rest mass energy as the photon's energy and,
- * if m_firstSampled is true, randomly picking mu and phi. If m_firstSampled is false, the previous sampled particle
- * that filled in a_input must be the other sampled photon, then, the mu and phi for the second-sampled photon is such that 
- * it is back-to-back with the other photon.
- *
- * @param a_X                       [in]    The energy of the projectile.
- * @param a_input                   [in]    Sample options requested by user.
- * @param a_userrng                 [in]    A random number generator that takes the state *a_rngState* and returns a double in the range [0.0, 1.0).
- * @param a_rngState                [in]    The current state for the random number generator.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE void PairProductionGamma::sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const {
-
-    if( m_firstSampled ) {
-        a_input.m_mu = 1.0 - 2.0 * a_userrng( a_rngState );
-        a_input.m_phi = M_PI * a_userrng( a_rngState ); }
-    else {
-        a_input.m_mu *= -1.0;
-        a_input.m_phi += M_PI;
-    }
-    a_input.m_sampledType = Sampling::SampledType::uncorrelatedBody;
-    a_input.m_energyOut1 = PoPI_electronMass_MeV_c2;
-    a_input.m_frame = productFrame( );
-}
-
-/* *********************************************************************************************************//**
- * Returns the probability for a projectile with energy *a_energy_in* to cause a particle to be emitted 
- * at angle *a_mu_lab* as seen in the lab frame. *a_energy_out* is the sampled outgoing energy.
- *
- * @param a_reaction                [in]    The reaction containing the particle which this distribution describes.
- * @param a_temperature             [in]    The temperature of the material.
- * @param a_energy_in               [in]    The energy of the incident particle.
- * @param a_mu_lab                  [in]    The desired mu in the lab frame for the emitted particle.
- * @param a_userrng                 [in]    A random number generator that takes the state *a_rngState* and returns a double in the range [0.0, 1.0).
- * @param a_rngState                [in]    The current state for the random number generator.
- * @param a_energy_out              [in]    The energy of the emitted outgoing particle.
- *
- * @return                                  The probability of emitting outgoing particle into lab angle *a_mu_lab*.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE double PairProductionGamma::angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab, 
-                double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const {
-
-    a_energy_out = PoPI_electronMass_MeV_c2;
-    return( 1.0 );                          // 1.0 as there are two photons.
-}
 
 /* *********************************************************************************************************//**
  * This method serializes *this* for broadcasting as needed for MPI and GPUs. The method can count the number of required
@@ -2143,77 +1254,6 @@ LUPI_HOST CoherentElasticTNSL::CoherentElasticTNSL( GIDI::DoubleDifferentialCros
     GIDI::Array::FullArray fullArray = gridded2d->array( ).constructArray( );
     m_S_table.resize( fullArray.size( ) );
     for( std::size_t index = 0; index < fullArray.m_flattenedValues.size( ); ++index ) m_S_table[index] = fullArray.m_flattenedValues[index];
-}
-
-/* *********************************************************************************************************//**
- * This method samples the outgoing neutron data for coherent elastic TSNL from the Debye/Waller function.
- *
- * @param a_energy                  [in]    The energy of the projectile.
- * @param a_input                   [in]    Sample options requested by user.
- * @param a_userrng                 [in]    A random number generator that takes the state *a_rngState* and returns a double in the range [0.0, 1.0).
- * @param a_rngState                [in]    The current state for the random number generator.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE void CoherentElasticTNSL::sample( double a_energy, Sampling::Input &a_input,
-                double (*a_userrng)( void * ), void *a_rngState ) const {
-
-    if( a_energy <= m_energies[0] ) {
-        a_input.m_mu = 1.0; }
-    else {
-        double temperature = 1e-3 * a_input.m_temperature;                  // Assumes m_temperature is in keV/K.
-        if( temperature < m_temperatures[0] ) temperature = m_temperatures[0];
-        if( temperature > m_temperatures.back( ) ) temperature = m_temperatures.back( );
-        MCGIDI_VectorSizeType temperatureIndex = MCGIDI::binarySearchVector( temperature, m_temperatures, true );
-        double const *pointer1 = &m_S_table[temperatureIndex * m_energies.size( )];
-
-        double const *pointer2 = pointer1;
-        double fractionFirstTemperature = 1.0;
-        if( temperatureIndex != ( m_temperatures.size( ) - 1 ) ) {
-            fractionFirstTemperature = ( m_temperatures[temperatureIndex+1] - temperature ) / ( m_temperatures[temperatureIndex+1] -  m_temperatures[temperatureIndex] );
-            pointer2 += m_energies.size( );
-        }
-        double fractionSecondTemperature = 1.0 - fractionFirstTemperature;
-
-        MCGIDI_VectorSizeType energyIndexMax = MCGIDI::binarySearchVector( a_energy, m_energies, true );
-        if( a_energy == m_energies[energyIndexMax] ) --energyIndexMax;
-
-        double randomTotal = a_userrng( a_rngState ) * ( fractionFirstTemperature * pointer1[energyIndexMax] + fractionSecondTemperature * pointer2[energyIndexMax] );
-        MCGIDI_VectorSizeType energyIndex = 0;
-        for( ; energyIndex < energyIndexMax; ++energyIndex ) {
-            if( randomTotal <= fractionFirstTemperature * pointer1[energyIndex] + fractionSecondTemperature * pointer2[energyIndex] ) break;
-        }
-        a_input.m_mu = 1.0 - 2.0 * m_energies[energyIndex] / a_energy;
-    }
-
-    a_input.m_sampledType = Sampling::SampledType::uncorrelatedBody;
-    a_input.m_energyOut1 = a_energy;
-    a_input.m_phi = 2.0 * M_PI * a_userrng( a_rngState );
-}
-
-/* *********************************************************************************************************//**
- * Returns the probability for a projectile with energy *a_energy_in* to cause a particle to be emitted
- * at angle *a_mu_lab* as seen in the lab frame. *a_energy_out* is the sampled outgoing energy.
- *
- * @param a_reaction                [in]    The reaction containing the particle which this distribution describes.
- * @param a_temperature             [in]    The temperature of the material.
- * @param a_energy_in               [in]    The energy of the incident particle.
- * @param a_mu_lab                  [in]    The desired mu in the lab frame for the emitted particle.
- * @param a_userrng                 [in]    A random number generator that takes the state *a_rngState* and returns a double in the range [0.0, 1.0).
- * @param a_rngState                [in]    The current state for the random number generator.
- * @param a_energy_out              [in]    The energy of the emitted outgoing particle.
- *
- * @return                                  The probability of emitting outgoing particle into lab angle *a_mu_lab*.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE double CoherentElasticTNSL::angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab,
-                double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const {
-
-//    double temperature = 1e-3 * a_temperature;                          // Assumes a_temperature is in keV/K.
-    double probability = 0.0;
-
-    a_energy_out = a_energy_in;
-
-    return( probability );
 }
 
 /* *********************************************************************************************************//**
@@ -2314,66 +1354,6 @@ LUPI_HOST IncoherentElasticTNSL::IncoherentElasticTNSL( GIDI::DoubleDifferential
 }
 
 /* *********************************************************************************************************//**
- * This method samples the outgoing neutron data for incoherent elastic TSNL from the Debye/Waller function.
- *
- * @param a_energy                  [in]    The energy of the projectile.
- * @param a_input                   [in]    Sample options requested by user.
- * @param a_userrng                 [in]    A random number generator that takes the state *a_rngState* and returns a double in the range [0.0, 1.0).
- * @param a_rngState                [in]    The current state for the random number generator.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE void IncoherentElasticTNSL::sample( double a_energy, Sampling::Input &a_input, 
-                double (*a_userrng)( void * ), void *a_rngState ) const {
-
-    double temperature = 1e-3 * a_input.m_temperature / m_temperatureToMeV_K;                  // Assumes m_temperature is in keV/K.
-    double W_prime = m_DebyeWallerIntegral->evaluate( temperature );
-    double twoEW = 2 * a_energy * W_prime;
-    double expOfTwice_twoEW = exp( -2 * twoEW );
-    double sampled_cdf = a_userrng( a_rngState );
-
-    if( sampled_cdf > ( 1 - 1e-5 ) ) {
-        double Variable = ( 1.0 - sampled_cdf ) * ( 1.0 - expOfTwice_twoEW );
-        a_input.m_mu = 1.0 - Variable * ( 1.0 + 0.5 * Variable ) / twoEW; }
-    else if( sampled_cdf < expOfTwice_twoEW ) {
-        a_input.m_mu = -1.0 + log( sampled_cdf / expOfTwice_twoEW * ( 1.0 - expOfTwice_twoEW ) + 1.0 ) / twoEW; }
-    else {
-        a_input.m_mu = 1.0 + log( expOfTwice_twoEW + sampled_cdf * ( 1.0 - expOfTwice_twoEW ) ) / twoEW;
-    }
-
-    a_input.m_sampledType = Sampling::SampledType::uncorrelatedBody;
-    a_input.m_energyOut1 = a_energy;
-    a_input.m_phi = 2.0 * M_PI * a_userrng( a_rngState );
-}
-
-/* *********************************************************************************************************//**
- * Returns the probability for a projectile with energy *a_energy_in* to cause a particle to be emitted
- * at angle *a_mu_lab* as seen in the lab frame. *a_energy_out* is the sampled outgoing energy.
- *
- * @param a_reaction                [in]    The reaction containing the particle which this distribution describes.
- * @param a_temperature             [in]    The temperature of the material.
- * @param a_energy_in               [in]    The energy of the incident particle.
- * @param a_mu_lab                  [in]    The desired mu in the lab frame for the emitted particle.
- * @param a_userrng                 [in]    A random number generator that takes the state *a_rngState* and returns a double in the range [0.0, 1.0).
- * @param a_rngState                [in]    The current state for the random number generator.
- * @param a_energy_out              [in]    The energy of the emitted outgoing particle.
- *
- * @return                                  The probability of emitting outgoing particle into lab angle *a_mu_lab*.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE double IncoherentElasticTNSL::angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab,
-                double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const {
-
-    double temperature = 1e-3 * a_temperature / m_temperatureToMeV_K;                          // Assumes a_temperature is in keV/K.
-    double W_prime = m_DebyeWallerIntegral->evaluate( temperature );
-    double twoEW = 2 * a_energy_in * W_prime;
-    double probability = exp( -twoEW * ( 1.0 - a_mu_lab ) ) * twoEW / ( 1.0 - exp( -2 * twoEW ) );
-
-    a_energy_out = a_energy_in;
-
-    return( probability );
-}
-
-/* *********************************************************************************************************//**
  * This method serializes *this* for broadcasting as needed for MPI and GPUs. The method can count the number of required
  * bytes, pack *this* or unpack *this* depending on *a_mode*.
  *
@@ -2385,7 +1365,7 @@ LUPI_HOST_DEVICE void IncoherentElasticTNSL::serialize( LUPI::DataBuffer &a_buff
 
     Distribution::serialize( a_buffer, a_mode );
 
-    DATA_MEMBER_FLOAT( m_temperatureToMeV_K, a_buffer, a_mode );
+    DATA_MEMBER_DOUBLE( m_temperatureToMeV_K, a_buffer, a_mode );
     m_DebyeWallerIntegral = serializeFunction1d_d1( a_buffer, a_mode, m_DebyeWallerIntegral );
 }
 
@@ -2415,47 +1395,6 @@ LUPI_HOST_DEVICE Unspecified::~Unspecified( ) {
 }
 
 /* *********************************************************************************************************//**
- * The method sets all outgoing product data to 0.0 and set the sampledType to Sampling::unspecified.
- *
- * @param a_X                       [in]    The energy of the projectile.
- * @param a_input                   [in]    Sample options requested by user.
- * @param a_userrng                 [in]    A random number generator that takes the state *a_rngState* and returns a double in the range [0.0, 1.0).
- * @param a_rngState                [in]    The current state for the random number generator.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE void Unspecified::sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const {
-
-    a_input.m_sampledType = Sampling::SampledType::unspecified;
-    a_input.m_energyOut1 = 0.;
-    a_input.m_mu = 0.;
-    a_input.m_phi = 0.;
-    a_input.m_frame = productFrame( );
-}
-
-/* *********************************************************************************************************//**
- * Returns the probability for a projectile with energy *a_energy_in* to cause a particle to be emitted 
- * at angle *a_mu_lab* as seen in the lab frame. *a_energy_out* is the sampled outgoing energy. This one should never
- * be called. If called, returns 0.0 for a probability.
- *
- * @param a_reaction                [in]    The reaction containing the particle which this distribution describes.
- * @param a_temperature             [in]    Specifies the temperature of the material.
- * @param a_energy_in               [in]    The energy of the incident particle.
- * @param a_mu_lab                  [in]    The desired mu in the lab frame for the emitted particle.
- * @param a_userrng                 [in]    A random number generator that takes the state *a_rngState* and returns a double in the range [0.0, 1.0).
- * @param a_rngState                [in]    The current state for the random number generator.
- * @param a_energy_out              [in]    The energy of the emitted outgoing particle.
- *
- * @return                                  The probability of emitting outgoing particle into lab angle *a_mu_lab*.
- ***********************************************************************************************************/
-
-LUPI_HOST_DEVICE double Unspecified::angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab, 
-                double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const {
-
-    a_energy_out = 0.0;
-    return( 0.0 );
-}
-
-/* *********************************************************************************************************//**
  * This method serializes *this* for broadcasting as needed for MPI and GPUs. The method can count the number of required
  * bytes, pack *this* or unpack *this* depending on *a_mode*.
  *
@@ -2479,7 +1418,7 @@ LUPI_HOST_DEVICE void Unspecified::serialize( LUPI::DataBuffer &a_buffer, LUPI::
 
 LUPI_HOST Distribution *parseGIDI( GIDI::Suite const &a_distribution, SetupInfo &a_setupInfo, Transporting::MC const &a_settings ) {
 
-    if( a_setupInfo.m_protare.projectileIndex( ) == a_setupInfo.m_protare.neutronIndex( ) ) {
+    if( a_setupInfo.m_protare.projectileIntid( ) == PoPI::Intids::neutron ) {
         if( a_settings.wantRawTNSL_distributionSampling( ) ) {
             if( a_setupInfo.m_reaction->doubleDifferentialCrossSection( ).size( ) > 0 ) {
                 GIDI::Form const *form = a_setupInfo.m_reaction->doubleDifferentialCrossSection( ).get<GIDI::Form>( 0 );
@@ -2500,41 +1439,65 @@ LUPI_HOST Distribution *parseGIDI( GIDI::Suite const &a_distribution, SetupInfo 
     std::string const *label = a_settings.styles( )->findLabelInLineage( a_distribution, a_setupInfo.m_distributionLabel );
     GIDI::Distributions::Distribution const &GIDI_distribution = *a_distribution.get<GIDI::Distributions::Distribution>( *label );
 
+    return parseGIDI2( GIDI_distribution, a_setupInfo, a_settings );
+}
+
+/* *********************************************************************************************************//**
+ * This function is used to convert the GIDI distribution *a_GIDI_distribution* into an MCGIDI distribution. It was split off of
+ * **parseGIDI** to be able to handle referenced distribution by calling itself.
+ *
+ * @param a_distribution        [in]    The GIDI::Protare whose data is to be used to construct *this*.
+ * @param a_setupInfo           [in]    Used internally when constructing a Protare to pass information to other constructors.
+ * @param a_settings            [in]    Used to pass user options to the *this* to instruct it which data are desired.
+ ***********************************************************************************************************/
+
+static LUPI_HOST Distribution *parseGIDI2( GIDI::Distributions::Distribution const &a_GIDI_distribution, SetupInfo &a_setupInfo, 
+                Transporting::MC const &a_settings ) {
+
     Distribution *distribution = nullptr;
 
-    GIDI::FormType type = GIDI_distribution.type( );
+    GIDI::FormType type = a_GIDI_distribution.type( );
 
     switch( type ) {
     case GIDI::FormType::angularTwoBody :
-        distribution = new AngularTwoBody( static_cast<GIDI::Distributions::AngularTwoBody const &>( GIDI_distribution ), a_setupInfo );
+        distribution = new AngularTwoBody( static_cast<GIDI::Distributions::AngularTwoBody const &>( a_GIDI_distribution ), a_setupInfo );
         break;
     case GIDI::FormType::uncorrelated :
-        distribution = new Uncorrelated( static_cast<GIDI::Distributions::Uncorrelated const &>( GIDI_distribution ), a_setupInfo );
+        distribution = new Uncorrelated( static_cast<GIDI::Distributions::Uncorrelated const &>( a_GIDI_distribution ), a_setupInfo );
         break;
     case GIDI::FormType::KalbachMann :
-        distribution = new KalbachMann( static_cast<GIDI::Distributions::KalbachMann const &>( GIDI_distribution ), a_setupInfo );
+        distribution = new KalbachMann( static_cast<GIDI::Distributions::KalbachMann const &>( a_GIDI_distribution ), a_setupInfo );
         break;
     case GIDI::FormType::energyAngularMC :
-        distribution = new EnergyAngularMC( static_cast<GIDI::Distributions::EnergyAngularMC const &>( GIDI_distribution ), a_setupInfo );
+        distribution = new EnergyAngularMC( static_cast<GIDI::Distributions::EnergyAngularMC const &>( a_GIDI_distribution ), a_setupInfo );
         break;
     case GIDI::FormType::angularEnergyMC :
-        distribution = new AngularEnergyMC( static_cast<GIDI::Distributions::AngularEnergyMC const &>( GIDI_distribution ), a_setupInfo );
+        distribution = new AngularEnergyMC( static_cast<GIDI::Distributions::AngularEnergyMC const &>( a_GIDI_distribution ), a_setupInfo );
         break;
     case GIDI::FormType::coherentPhotonScattering :
-        distribution = new CoherentPhotoAtomicScattering( static_cast<GIDI::Distributions::CoherentPhotoAtomicScattering const &>( GIDI_distribution ), a_setupInfo );
+        distribution = new CoherentPhotoAtomicScattering( static_cast<GIDI::Distributions::CoherentPhotoAtomicScattering const &>( a_GIDI_distribution ), a_setupInfo );
         break;
     case GIDI::FormType::incoherentPhotonScattering :
-        distribution = new IncoherentPhotoAtomicScattering( static_cast<GIDI::Distributions::IncoherentPhotoAtomicScattering const &>( GIDI_distribution ), a_setupInfo );
+        distribution = new IncoherentPhotoAtomicScattering( static_cast<GIDI::Distributions::IncoherentPhotoAtomicScattering const &>( a_GIDI_distribution ), a_setupInfo );
+        break;
+    case GIDI::FormType::incoherentBoundToFreePhotonScattering :
+        distribution = new IncoherentBoundToFreePhotoAtomicScattering( static_cast<GIDI::Distributions::IncoherentBoundToFreePhotoAtomicScattering const &>( a_GIDI_distribution ), a_setupInfo );
         break;
     case GIDI::FormType::branching3d :
-        distribution = new Branching3d( static_cast<GIDI::Distributions::Branching3d const &>( GIDI_distribution ), a_setupInfo );
+        distribution = new Branching3d( static_cast<GIDI::Distributions::Branching3d const &>( a_GIDI_distribution ), a_setupInfo );
         break;
     case GIDI::FormType::unspecified :
-        distribution = new Unspecified( GIDI_distribution, a_setupInfo );
+        distribution = new Unspecified( a_GIDI_distribution, a_setupInfo );
+        break;
+    case GIDI::FormType::reference3d : {
+        GIDI::Distributions::Reference3d const *reference3d = static_cast<GIDI::Distributions::Reference3d const *>( &a_GIDI_distribution );
+        GIDI::Distributions::Distribution const *linkedForm = static_cast<GIDI::Distributions::Distribution const *>( reference3d->findInAncestry( reference3d->href( ) ) );
+        if( linkedForm == nullptr ) 
+            throw std::runtime_error( "MCGIDI::Distributions::parseGIDI: could not find link '" + a_GIDI_distribution.toXLink( ) + "." );
+        distribution = parseGIDI2( *linkedForm, a_setupInfo, a_settings ); }
         break;
     default :
-        std::cout << "distribution = moniker = " << GIDI_distribution.moniker( ) << " label = " << GIDI_distribution.label( ) << std::endl;
-        throw std::runtime_error( "MCGIDI::Distributions::parseGIDI: unsupported distribution" );
+        throw std::runtime_error( "MCGIDI::Distributions::parseGIDI: unsupported distribution: " + a_GIDI_distribution.toXLink( ) + "." );
     }
 
     return( distribution );
@@ -2648,6 +1611,14 @@ LUPI_HOST_DEVICE Distributions::Distribution *serializeDistribution( LUPI::DataB
                  a_distribution = new Distributions::IncoherentPhotoAtomicScattering;
              }
              break;
+        case Distributions::Type::incoherentBoundToFreePhotoAtomicScattering :
+            if( a_buffer.m_placement != nullptr ) {
+                 a_distribution = new(a_buffer.m_placement) Distributions::IncoherentBoundToFreePhotoAtomicScattering;
+                 a_buffer.incrementPlacement( sizeof( Distributions::IncoherentBoundToFreePhotoAtomicScattering ) ); }
+             else {
+                 a_distribution = new Distributions::IncoherentBoundToFreePhotoAtomicScattering;
+             }
+             break;
         case Distributions::Type::pairProductionGamma :
             if( a_buffer.m_placement != nullptr ) {
                  a_distribution = new(a_buffer.m_placement) Distributions::PairProductionGamma;
@@ -2714,6 +1685,9 @@ LUPI_HOST_DEVICE Distributions::Distribution *serializeDistribution( LUPI::DataB
         case Distributions::Type::incoherentPhotoAtomicScattering :
              a_buffer.incrementPlacement( sizeof( Distributions::IncoherentPhotoAtomicScattering ) );
              break;
+        case Distributions::Type::incoherentBoundToFreePhotoAtomicScattering :
+             a_buffer.incrementPlacement( sizeof( Distributions::IncoherentBoundToFreePhotoAtomicScattering ) );
+             break;
         case Distributions::Type::pairProductionGamma :
              a_buffer.incrementPlacement( sizeof( Distributions::PairProductionGamma ) );
              break;
@@ -2758,6 +1732,9 @@ LUPI_HOST_DEVICE Distributions::Distribution *serializeDistribution( LUPI::DataB
          break;
     case Distributions::Type::incoherentPhotoAtomicScattering :
         static_cast<Distributions::IncoherentPhotoAtomicScattering *>( a_distribution )->serialize( a_buffer, a_mode );
+         break;
+    case Distributions::Type::incoherentBoundToFreePhotoAtomicScattering :
+        static_cast<Distributions::IncoherentBoundToFreePhotoAtomicScattering *>( a_distribution )->serialize( a_buffer, a_mode );
          break;
     case Distributions::Type::pairProductionGamma :
         static_cast<Distributions::PairProductionGamma *>( a_distribution )->serialize( a_buffer, a_mode );

@@ -17,7 +17,7 @@ namespace MCGIDI {
 namespace Distributions {
 
 enum class Type { none, unspecified, angularTwoBody, KalbachMann, uncorrelated, branching3d, energyAngularMC, angularEnergyMC, 
-        coherentPhotoAtomicScattering, incoherentPhotoAtomicScattering, incoherentPhotoAtomicScatteringElectron, pairProductionGamma,
+        coherentPhotoAtomicScattering, incoherentPhotoAtomicScattering, incoherentPhotoAtomicScatteringElectron, incoherentBoundToFreePhotoAtomicScattering, pairProductionGamma,
         coherentElasticTNSL, incoherentElasticTNSL };
 
 /*
@@ -47,9 +47,13 @@ class Distribution {
         LUPI_HOST_DEVICE double targetMass( ) const { return( m_targetMass ); }                          /**< Returns the value of the **m_targetMass**. */
         LUPI_HOST_DEVICE double productMass( ) const { return( m_productMass ); }                        /**< Returns the value of the **m_productMass**. */
 
-        LUPI_HOST_DEVICE MCGIDI_VIRTUAL_FUNCTION void sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const MCGIDI_TRUE_VIRTUAL;
+        LUPI_HOST void setModelDBRC_data( Sampling::Upscatter::ModelDBRC_data *a_modelDBRC_data );
+
+        template <typename RNG>
+        LUPI_HOST_DEVICE MCGIDI_VIRTUAL_FUNCTION void sample( double a_X, Sampling::Input &a_input, RNG && a_rng ) const MCGIDI_TRUE_VIRTUAL;
+        template <typename RNG>
         LUPI_HOST_DEVICE MCGIDI_VIRTUAL_FUNCTION double angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab, 
-                double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const MCGIDI_TRUE_VIRTUAL;
+                RNG && a_rng, double &a_energy_out ) const MCGIDI_TRUE_VIRTUAL;
         LUPI_HOST_DEVICE void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode );
 };
 
@@ -61,13 +65,15 @@ class Distribution {
 class AngularTwoBody : public Distribution {
 
     private:
-        double m_residualMass;                                  /**< The mass of the second product (often the  residual). */
-        double m_Q;                                             /**< FIX ME. */
-        double m_twoBodyThreshold;                              /**< This is the T_1 value needed to do two-body kinematics (i.e., in the equation (K_{com,3_4} = m_2 * (K_1 - T_1) / (m_1 + m_2)). */
-        bool m_Upscatter;                                       /**< Set to true if reaction is elastic which is the only reaction upscatter Model B is applied to. */
-        Probabilities::ProbabilityBase2d_d1 *m_angular;
+        double m_residualMass;                                          /**< The mass of the second product (often the  residual). */
+        double m_Q;                                                     /**< FIX ME. */
+        double m_twoBodyThreshold;                                      /**< This is the T_1 value needed to do two-body kinematics (i.e., in the equation (K_{com,3_4} = m_2 * (K_1 - T_1) / (m_1 + m_2)). */
+        bool m_Upscatter;                                               /**< Set to true if reaction is elastic which is the only reaction upscatter Model B is applied to. */
+        Probabilities::ProbabilityBase2d_d1 *m_angular;                 /**< The 2d angular probability. */
+        Sampling::Upscatter::ModelDBRC_data *m_modelDBRC_data;          /**< The cross section and other data needed for neutron elastic upscatter model DBRC. */
 
-        LUPI_HOST_DEVICE bool upscatterModelB( double a_kineticLab, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const ;
+        template <typename RNG>
+        LUPI_HOST_DEVICE bool upscatterModelB( double a_kineticLab, Sampling::Input &a_input, RNG && a_rng ) const ;
 
     public:
         LUPI_HOST_DEVICE AngularTwoBody( );
@@ -77,11 +83,14 @@ class AngularTwoBody : public Distribution {
         LUPI_HOST_DEVICE double residualMass( ) const { return( m_residualMass ); }                      /**< Returns the value of the **m_residualMass**. */
         LUPI_HOST_DEVICE double Q( ) const { return( m_Q ); }                                            /**< Returns the value of the **m_Q**. */
         LUPI_HOST_DEVICE Probabilities::ProbabilityBase2d_d1 *angular( ) const { return( m_angular ); }  /**< Returns the value of the **m_angular**. */
-        LUPI_HOST_DEVICE void sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const ;
+        template <typename RNG>
+        LUPI_HOST_DEVICE void sample( double a_X, Sampling::Input &a_input, RNG && a_rng ) const ;
+        template <typename RNG>
         LUPI_HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab, 
-                double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const ;
+                RNG && a_rng, double &a_energy_out ) const ;
         LUPI_HOST_DEVICE void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode );
         LUPI_HOST_DEVICE bool Upscatter( ) const { return( m_Upscatter ); }                              /**< Returns the value of the **m_Upscatter**. */
+        LUPI_HOST void setModelDBRC_data2( Sampling::Upscatter::ModelDBRC_data *a_modelDBRC_data );
 };
 
 /*
@@ -102,9 +111,11 @@ class Uncorrelated : public Distribution {
 
         LUPI_HOST_DEVICE Probabilities::ProbabilityBase2d_d1 *angular( ) const { return( m_angular ); }  /**< Returns the value of the **m_angular**. */
         LUPI_HOST_DEVICE Probabilities::ProbabilityBase2d *energy( ) const { return( m_energy ); }       /**< Returns the value of the **m_energy**. */
-        LUPI_HOST_DEVICE void sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const ;
+        template <typename RNG>
+        LUPI_HOST_DEVICE void sample( double a_X, Sampling::Input &a_input, RNG && a_rng ) const ;
+        template <typename RNG>
         LUPI_HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab, 
-                double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const ;
+                RNG && a_rng, double &a_energy_out ) const ;
         LUPI_HOST_DEVICE void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode );
 };
 
@@ -123,9 +134,11 @@ class Branching3d : public Distribution {
         LUPI_HOST Branching3d( GIDI::Distributions::Branching3d const &a_branching3d, SetupInfo &a_setupInfo );
         LUPI_HOST_DEVICE ~Branching3d( );
 
-        LUPI_HOST_DEVICE void sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const ;
+        template <typename RNG>
+        LUPI_HOST_DEVICE void sample( double a_X, Sampling::Input &a_input, RNG && a_rng ) const ;
+        template <typename RNG>
         LUPI_HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab,
-                double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const ;
+                RNG && a_rng, double &a_energy_out ) const ;
         LUPI_HOST_DEVICE void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode );
 };
 
@@ -147,9 +160,11 @@ class EnergyAngularMC : public Distribution {
 
         LUPI_HOST_DEVICE Probabilities::ProbabilityBase2d_d1 *energy( ) const { return( m_energy ); }       /**< Returns the value of the **m_energy**. */
         LUPI_HOST_DEVICE Probabilities::ProbabilityBase3d *angularGivenEnergy( ) const { return( m_angularGivenEnergy ); }   /**< Returns the value of the **m_angularGivenEnergy**. */
-        LUPI_HOST_DEVICE void sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const ;
+        template <typename RNG>
+        LUPI_HOST_DEVICE void sample( double a_X, Sampling::Input &a_input, RNG && a_rng ) const ;
+        template <typename RNG>
         LUPI_HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab, 
-                double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const ;
+                RNG && a_rng, double &a_energy_out ) const ;
         LUPI_HOST_DEVICE void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode );
 };
 
@@ -171,9 +186,11 @@ class AngularEnergyMC : public Distribution {
 
         LUPI_HOST_DEVICE Probabilities::ProbabilityBase2d_d1 *angular( ) const { return( m_angular ); }     /**< Returns the value of the **m_angular**. */
         LUPI_HOST_DEVICE Probabilities::ProbabilityBase3d *energyGivenAngular( ) const { return( m_energyGivenAngular ); }   /**< Returns the value of the **m_energyGivenAngular**. */
-        LUPI_HOST_DEVICE void sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const ;
+        template <typename RNG>
+        LUPI_HOST_DEVICE void sample( double a_X, Sampling::Input &a_input, RNG && a_rng ) const ;
+        template <typename RNG>
         LUPI_HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab, 
-                double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const ;
+                RNG && a_rng, double &a_energy_out ) const ;
         LUPI_HOST_DEVICE void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode );
 };
 
@@ -201,9 +218,11 @@ class KalbachMann : public Distribution {
         LUPI_HOST_DEVICE Probabilities::ProbabilityBase2d_d1 *f( ) const { return( m_f ); }      /**< Returns the value of the **m_f**. */
         LUPI_HOST_DEVICE Functions::Function2d *r( ) const { return( m_r ); }                    /**< Returns the value of the **m_r**. */
         LUPI_HOST_DEVICE Functions::Function2d *a( ) const { return( m_a ); }                    /**< Returns the value of the **m_a**. */
-        LUPI_HOST_DEVICE void sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const ;
+        template <typename RNG>
+        LUPI_HOST_DEVICE void sample( double a_X, Sampling::Input &a_input, RNG && a_rng ) const ;
+        template <typename RNG>
         LUPI_HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab, 
-                double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const ;
+                RNG && a_rng, double &a_energy_out ) const ;
         LUPI_HOST_DEVICE void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode );
 
         LUPI_HOST_DEVICE double evaluate( double E_in_lab, double E_out, double mu );
@@ -241,9 +260,11 @@ class CoherentPhotoAtomicScattering : public Distribution {
 
         LUPI_HOST_DEVICE double evaluate( double a_energyIn, double a_mu ) const ;
         LUPI_HOST_DEVICE double evaluateFormFactor( double a_energyIn, double a_mu ) const ;
-        LUPI_HOST_DEVICE void sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const ;
+        template <typename RNG>
+        LUPI_HOST_DEVICE void sample( double a_X, Sampling::Input &a_input, RNG && a_rng ) const ;
+        template <typename RNG>
         LUPI_HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab, 
-                double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const ;
+                RNG && a_rng, double &a_energy_out ) const ;
 
         LUPI_HOST_DEVICE void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode );
 };
@@ -268,13 +289,45 @@ class IncoherentPhotoAtomicScattering : public Distribution {
         LUPI_HOST_DEVICE double energyRatio( double a_energyIn, double a_mu ) const ;
         LUPI_HOST_DEVICE double evaluateKleinNishina( double a_energyIn, double a_mu ) const ;
         LUPI_HOST_DEVICE double evaluateScatteringFactor( double a_X ) const ;
-        LUPI_HOST_DEVICE void sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const ;
+        template <typename RNG>
+        LUPI_HOST_DEVICE void sample( double a_X, Sampling::Input &a_input, RNG && a_rng ) const ;
+        template <typename RNG>
         LUPI_HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab, 
-                double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const ;
+                RNG && a_rng, double &a_energy_out ) const ;
         LUPI_HOST_DEVICE void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode );
 /*
         LUPI_HOST_DEVICE double evaluate( double E_in_lab, double mu );
 */
+};
+
+/*
+=======================================================================
+============== IncoherentBoundToFreePhotoAtomicScattering =============
+=======================================================================
+*/
+class IncoherentBoundToFreePhotoAtomicScattering : public Distribution {
+
+    private:
+        //Vector<double> m_energies;
+        //Vector<double> m_ComptonProfile;
+        Vector<double> m_occupationNumber;
+        //Vector<double> m_a;
+        Vector<double> m_pz;
+        double m_bindingEnergy;
+
+    public:
+        LUPI_HOST_DEVICE IncoherentBoundToFreePhotoAtomicScattering( );
+        LUPI_HOST IncoherentBoundToFreePhotoAtomicScattering( GIDI::Distributions::IncoherentBoundToFreePhotoAtomicScattering const &a_incoherentPhotoAtomicScattering, SetupInfo &a_setupInfo );
+        LUPI_HOST_DEVICE ~IncoherentBoundToFreePhotoAtomicScattering( );
+        LUPI_HOST_DEVICE double energyRatio( double a_energyIn, double a_mu ) const ;
+        LUPI_HOST_DEVICE double evaluateKleinNishina( double a_energyIn, double a_mu ) const ;
+        LUPI_HOST_DEVICE double evaluateOccupationNumber( double a_X, double a_mu ) const;
+        template <typename RNG>
+        LUPI_HOST_DEVICE void sample( double a_X, Sampling::Input &a_input, RNG && a_rng ) const ;
+        template <typename RNG>
+        LUPI_HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab,
+                RNG && a_rng, double &a_energy_out ) const ;
+        LUPI_HOST_DEVICE void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode );
 };
 
 /*
@@ -289,9 +342,11 @@ class IncoherentPhotoAtomicScatteringElectron : public Distribution {
         LUPI_HOST IncoherentPhotoAtomicScatteringElectron( SetupInfo &a_setupInfo );
         LUPI_HOST_DEVICE ~IncoherentPhotoAtomicScatteringElectron( );
 
-        LUPI_HOST_DEVICE void sample( double a_energy, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const ;
+        template <typename RNG>
+        LUPI_HOST_DEVICE void sample( double a_energy, Sampling::Input &a_input, RNG && a_rng ) const ;
+        template <typename RNG>
         LUPI_HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab,
-                double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const ;
+                RNG && a_rng, double &a_energy_out ) const ;
         LUPI_HOST_DEVICE void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode );
 };
 
@@ -310,9 +365,11 @@ class PairProductionGamma : public Distribution {
         LUPI_HOST PairProductionGamma( SetupInfo &a_setupInfo, bool a_firstSampled );
         LUPI_HOST_DEVICE ~PairProductionGamma( );
 
-        LUPI_HOST_DEVICE void sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const ;
+        template <typename RNG>
+        LUPI_HOST_DEVICE void sample( double a_X, Sampling::Input &a_input, RNG && a_rng ) const ;
+        template <typename RNG>
         LUPI_HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab, 
-                double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const ;
+                RNG && a_rng, double &a_energy_out ) const ;
         LUPI_HOST_DEVICE void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode );
 };
 
@@ -335,9 +392,11 @@ class CoherentElasticTNSL : public Distribution {
                 SetupInfo &a_setupInfo );
         LUPI_HOST_DEVICE ~CoherentElasticTNSL( ) {}
 
-        LUPI_HOST_DEVICE void sample( double a_energy, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const ;
+        template <typename RNG>
+        LUPI_HOST_DEVICE void sample( double a_energy, Sampling::Input &a_input, RNG && a_rng ) const ;
+        template <typename RNG>
         LUPI_HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab, 
-                double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const ;
+                RNG && a_rng, double &a_energy_out ) const ;
         LUPI_HOST_DEVICE void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode );
 };
 
@@ -358,9 +417,11 @@ class IncoherentElasticTNSL : public Distribution {
                 SetupInfo &a_setupInfo );
         LUPI_HOST_DEVICE ~IncoherentElasticTNSL( ) {}
 
-        LUPI_HOST_DEVICE void sample( double a_energy, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const ;
+        template <typename RNG>
+        LUPI_HOST_DEVICE void sample( double a_energy, Sampling::Input &a_input, RNG && a_rng ) const ;
+        template <typename RNG>
         LUPI_HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab,
-                double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const ;
+                RNG && a_rng, double &a_energy_out ) const ;
         LUPI_HOST_DEVICE void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode );
 
         Functions::Function1d       *DebyeWallerIntegral( )       { return( m_DebyeWallerIntegral ); }
@@ -379,9 +440,11 @@ class Unspecified : public Distribution {
         LUPI_HOST Unspecified( GIDI::Distributions::Distribution const &a_distribution, SetupInfo &a_setupInfo );
         LUPI_HOST_DEVICE ~Unspecified( );
 
-        LUPI_HOST_DEVICE void sample( double a_X, Sampling::Input &a_input, double (*a_userrng)( void * ), void *a_rngState ) const ;
+        template <typename RNG>
+        LUPI_HOST_DEVICE void sample( double a_X, Sampling::Input &a_input, RNG && a_rng ) const ;
+        template <typename RNG>
         LUPI_HOST_DEVICE double angleBiasing( Reaction const *a_reaction, double a_temperature, double a_energy_in, double a_mu_lab, 
-                double (*a_userrng)( void * ), void *a_rngState, double &a_energy_out ) const ;
+                RNG && a_rng, double &a_energy_out ) const ;
         LUPI_HOST_DEVICE void serialize( LUPI::DataBuffer &a_buffer, LUPI::DataBuffer::Mode a_mode );
 };
 

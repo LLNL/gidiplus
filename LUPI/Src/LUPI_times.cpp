@@ -7,6 +7,8 @@
 # <<END-copyright>>
 */
 
+#ifndef _WIN32
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <libgen.h>
@@ -146,3 +148,5 @@ void Timer::reset( ) {
 }
 
 }               // End of namespace LUPI.
+
+#endif          // End of not _WIN32 defined.

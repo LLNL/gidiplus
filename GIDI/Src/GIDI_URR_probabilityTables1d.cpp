@@ -64,7 +64,7 @@ double URR_probabilityTables1d::domainMax( ) const {
  * @param       a_x1        [in]     The projectile energy to evaluate the URR probability tables at.
  ***********************************************************************************************************/
 
-double URR_probabilityTables1d::evaluate( double a_x1 ) const {
+double URR_probabilityTables1d::evaluate( LUPI_maybeUnused double a_x1 ) const {
 
     return( 0.0 );
 }
@@ -78,7 +78,7 @@ double URR_probabilityTables1d::evaluate( double a_x1 ) const {
  * @param       a_inRegions         [in]        If *true*, *this* is in a Regions2d container.
  ***********************************************************************************************************/
 
-void URR_probabilityTables1d::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent, bool a_embedded, bool a_inRegions ) const {
+void URR_probabilityTables1d::toXMLList_func( GUPI::WriteInfo &a_writeInfo, std::string const &a_indent, LUPI_maybeUnused bool a_embedded, LUPI_maybeUnused bool a_inRegions ) const {
 
     std::string indent2 = a_writeInfo.incrementalIndent( a_indent );
     std::string attributes;

@@ -1,4 +1,4 @@
-SHELL = /bin/ksh
+SHELL = /bin/sh
 
 # <<BEGIN-copyright>>
 # Copyright 2019, Lawrence Livermore National Security, LLC.
@@ -28,7 +28,7 @@ local_LDFLAGS = $(subst -x cu,,$(local_LDFLAGS_tmp))
 # local_LDFLAGS =  $(LDFLAGS) $(LIB_PATHS) -L$(GIDI_PATH)/Test/Utilities -L$(MCGIDI_PATH)/Test/Utilities
 
 LIBS =  -lGIDI_testUtilities -lMCGIDI_testUtilities $(MCGIDI_PATH)/Src/libMCGIDI.a -lGIDI -lPoPI -lHAPI -lLUPI -lGUPI -lRISI \
-        -lnumericalfunctions -lstatusMessageReporting -lpugixml -lexpat -lm $(HDF5_LIBS)
+        -lnumericalfunctions -lstatusMessageReporting -lpugixml -lexpat -lm -lz -ldl $(HDF5_LIBS)
 
 default: $(Executables)
 

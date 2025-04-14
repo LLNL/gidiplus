@@ -29,6 +29,23 @@ class Bins {
         double m_underFlowWeights;
         double m_overFlowWeights;
         std::vector<double> m_weightedBins;
+        double m_averageValue;
+
+        void merge( Bins const &a_bins ) {
+
+            if( ( m_bins.size( ) != a_bins.m_bins.size( ) ) || ( m_logDomainStep != a_bins.m_logDomainStep ) 
+                    || ( m_domainMin != a_bins.m_domainMin ) || ( m_domainMax != a_bins.m_domainMax ) )
+                throw LUPI::Exception( "Error from Bins::combine: Bins do not have same parameters and cannot be combined." );
+
+            m_underFlows += a_bins.m_underFlows;
+            m_overFlows += a_bins.m_overFlows;
+            m_underFlowWeights += a_bins.m_underFlowWeights;
+            m_overFlowWeights += a_bins.m_overFlowWeights;
+            for( std::size_t i1 = 0; i1 < m_bins.size( ); ++i1 ) {
+                m_bins[i1] += a_bins.m_bins[i1];
+                m_weightedBins[i1] += a_bins.m_weightedBins[i1];
+            }
+        }
 
         void setDomain( double a_domainMin, double a_domainMax ) {
 
@@ -46,7 +63,8 @@ class Bins {
                 m_bins( a_numberOfBins, 0 ),
                 m_underFlowWeights( 0.0 ),
                 m_overFlowWeights( 0.0 ),
-                m_weightedBins( a_numberOfBins, 0.0 ) {
+                m_weightedBins( a_numberOfBins, 0.0 ),
+                m_averageValue( 0.0 ) {
 
             setDomain( a_domainMin, a_domainMax );
         }
@@ -61,9 +79,11 @@ class Bins {
                 m_bins[i1] = 0;
                 m_weightedBins[i1] = 0.0;
             }
+
+            m_averageValue = 0.0;
         }
 
-        void accrue( double a_value, double a_weight = 1.0 ) {
+        long accrue( double a_value, double a_weight = 1.0 ) {
 
             long index;
 
@@ -85,6 +105,10 @@ class Bins {
                 ++m_bins[index];
                 m_weightedBins[index] += a_weight;
             }
+
+            m_averageValue += a_value;
+
+            return( index );
         }
 
         long total( bool a_includeOutOfBounds ) {
@@ -128,7 +152,35 @@ class Bins {
             return( mean_x / _total );
         }
 
-        void print( FILE *a_fOut, char const *a_label, bool a_includeWeights = false ) {
+        double averageValue( ) {
+
+            double averageValue = 0.0;
+            long counts = total( true );
+            if( counts > 0 ) averageValue = m_averageValue / counts;
+
+            return( averageValue );
+        }
+
+        std::vector<double> edges() {
+
+            std::vector<double> edges;
+            edges.resize( m_bins.size() + 1 );
+            edges[0] = m_domainMin;
+
+            for( std::size_t i1 = 1; i1 <  edges.size( ); ++i1 ) {
+                if( m_logDomainStep ) {
+                    edges[i1] = m_domainMin * exp( m_logDomainFraction * i1 );
+                }
+                else {
+                    edges[i1] = i1 / ( (double) m_bins.size( ) ) * m_domainWidth + m_domainMin;
+                }
+            }
+            edges.back( ) = m_domainMax;
+
+            return edges;
+        }
+
+        void print( FILE *a_fOut, char const *a_label, bool a_includeWeights = false, bool a_histogram = false ) {
 
             long _total = total( false );
             double weightedTotal = totalWeights( false );
@@ -141,6 +193,7 @@ class Bins {
             fprintf( a_fOut, "# number of Bins = %lu\n", m_bins.size( ) );
             fprintf( a_fOut, "# domain min = %g\n", m_domainMin );
             fprintf( a_fOut, "# domain max = %g\n", m_domainMax );
+            fprintf( a_fOut, "# Average value = %g\n", averageValue( ) );
             if( a_includeWeights ) {
                 fprintf( a_fOut, "# total weight = %15.7e\n", weightedTotal );
                 fprintf( a_fOut, "# underflow weight = %15.7e\n", m_underFlowWeights );
@@ -150,25 +203,56 @@ class Bins {
             if( a_includeWeights ) fprintf( a_fOut, "       weighted pdf       weights       weighted fraction" );
             fprintf( a_fOut, "\n" );
 
+            double offset = a_histogram ? 0.0 : 0.5;
             if( _total == 0 ) _total = 1;
             if( weightedTotal == 0.0 ) weightedTotal = 1.0;
             double norm = m_domainWidth / ( m_bins.size( ) + 1 );
+            double priorPdf = 0.0, priorFraction = 0.0, priorWeightedPdf = 0.0, priorWeights = 0.0, priorWeightedFraction = 0.0;
+            long priorCount = 0;
             for( std::size_t i1 = 0; i1 <  m_bins.size( ); ++i1 ) {
                 double x1;
-                double partial = m_bins[i1] / (double) _total;
 
                 if( m_logDomainStep ) {
-                    x1 = m_domainMin * exp( m_logDomainFraction * ( i1 + 0.5 ) );
+                    x1 = m_domainMin * exp( m_logDomainFraction * ( i1 + offset ) );
                     norm = x1 * ( exp( m_logDomainFraction ) - 1 ); }
                 else {
-                    x1 = ( i1 + 0.5 ) / ( (double) m_bins.size( ) ) * m_domainWidth + m_domainMin;
+                    x1 = ( i1 + offset ) / ( (double) m_bins.size( ) ) * m_domainWidth + m_domainMin;
                 }
 
-                fprintf( a_fOut, "%23.15e  %15.7e  %8ld  %15.7e", x1, partial / norm, m_bins[i1], partial );
-                if( a_includeWeights ) {
-                    partial = m_weightedBins[i1] / weightedTotal;
+                if( a_histogram ) {
+                    fprintf( a_fOut, "%23.15e  %15.7e  %8ld  %15.7e", x1, priorPdf, priorCount, priorFraction );
+                    if( a_includeWeights ) {
+                        fprintf( a_fOut, "  %15.7e  %15.7e  %15.7e",  priorWeightedPdf, priorWeights, priorWeightedFraction );
+                    }
+                    fprintf( a_fOut, "\n" );
+                }
 
-                    fprintf( a_fOut, "  %15.7e  %15.7e  %15.7e",  partial / norm, m_weightedBins[i1], partial );
+                priorCount = m_bins[i1];
+                priorFraction = m_bins[i1] / (double) _total;
+                priorPdf = priorFraction / norm;
+                fprintf( a_fOut, "%23.15e  %15.7e  %8ld  %15.7e", x1, priorPdf, priorCount, priorFraction );
+
+                if( a_includeWeights ) {
+                    priorWeights = m_weightedBins[i1];
+                    priorWeightedFraction = m_weightedBins[i1] / weightedTotal;
+                    priorWeightedPdf = priorWeightedFraction / norm;
+
+                    fprintf( a_fOut, "  %15.7e  %15.7e  %15.7e",  priorWeightedPdf, priorWeights, priorWeightedFraction );
+                }
+                fprintf( a_fOut, "\n" );
+            }
+
+            if( a_histogram ) {
+                fprintf( a_fOut, "%23.15e  %15.7e  %8ld  %15.7e", m_domainMax, priorPdf, priorCount, priorFraction );
+                if( a_includeWeights ) {
+                    fprintf( a_fOut, "  %15.7e  %15.7e  %15.7e",  priorWeightedPdf, priorWeights, priorWeightedFraction );
+                }
+                fprintf( a_fOut, "\n" );
+
+                long zero = 0;
+                fprintf( a_fOut, "%23.15e  %15.7e  %8ld  %15.7e", m_domainMax, 0.0, zero, 0.0 );
+                if( a_includeWeights ) {
+                    fprintf( a_fOut, "  %15.7e  %15.7e  %15.7e",  0.0, 0.0, 0.0 );
                 }
                 fprintf( a_fOut, "\n" );
             }

@@ -68,7 +68,10 @@ Vector::Vector( Vector const &a_vector ) :
 
 Vector &Vector::operator=( Vector const &a_rhs ) {
 
-    m_vector = a_rhs.m_vector;
+    if( this != &a_rhs ) {
+        m_vector = a_rhs.m_vector;
+    }
+
     return( *this );
 }
 /*

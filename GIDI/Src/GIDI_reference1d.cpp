@@ -70,7 +70,7 @@ double Reference1d::domainMax( ) const {
  ***********************************************************************************************************/
 
 
-double Reference1d::evaluate( double a_x1 ) const {
+double Reference1d::evaluate( LUPI_maybeUnused double a_x1 ) const {
 
     throw Exception( "Reference1d::evaluate: not implemented" );
 }

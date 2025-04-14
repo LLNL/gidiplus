@@ -26,6 +26,11 @@ void printUsage( );
 */
 int main( int argc, char **argv ) {
 
+    if (argc < 2) {
+        std::cerr << "Usage: toXML <filename>" << std::endl;
+	exit( EXIT_FAILURE );
+    }
+
     PoPI::Database pops( argv[1] );
     GIDI::Construction::Settings construction( GIDI::Construction::ParseMode::all, GIDI::Construction::PhotoMode::nuclearAndAtomic );
     std::vector<std::string> libraries;

@@ -49,7 +49,7 @@ Protare::~Protare( ) {
  * @param a_pops                        [in]    A PoPs Database instance used to get particle indices and possibly other particle information.
  * @param a_internalPoPs                [in]    The internal PoPI::Database instance used to get particle indices and possibly other particle information.
  * @param a_targetRequiredInGlobalPoPs  [in]    If *true*, the target is required to be in **a_pops**.
- * @param a_requiredInPoPs              [in]    If *true*, no particle is required to be in **a_pops**.
+ * @param a_requiredInPoPs              [in]    If *true*, particle is required to be in **a_pops**.
  ***********************************************************************************************************/
 
 void Protare::initialize( HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI::Database const &a_pops, PoPI::Database const &a_internalPoPs,
@@ -81,7 +81,7 @@ void Protare::initialize( HAPI::Node const &a_node, SetupInfo &a_setupInfo, PoPI
  * @param       a_crossSectionSum           [in]    The cross section to correct.
  ***********************************************************************************************************/
 
-void Protare::TNSL_crossSectionSumCorrection( std::string const &a_label, Functions::XYs1d &a_crossSectionSum ) {
+void Protare::TNSL_crossSectionSumCorrection( LUPI_maybeUnused std::string const &a_label, LUPI_maybeUnused Functions::XYs1d &a_crossSectionSum ) {
 
 }
 
@@ -95,7 +95,7 @@ void Protare::TNSL_crossSectionSumCorrection( std::string const &a_label, Functi
  * @param       a_crossSectionSum           [in]    The cross section to correct.
  ***********************************************************************************************************/
 
-void Protare::TNSL_crossSectionSumCorrection( std::string const &a_label, Functions::Ys1d &a_crossSectionSum ) {
+void Protare::TNSL_crossSectionSumCorrection( LUPI_maybeUnused std::string const &a_label, LUPI_maybeUnused Functions::Ys1d &a_crossSectionSum ) {
 
 }
 
@@ -110,7 +110,7 @@ void Protare::TNSL_crossSectionSumCorrection( std::string const &a_label, Functi
  * @param       a_crossSectionSum           [in]    The cross section to correct.
  ***********************************************************************************************************/
 
-void Protare::TNSL_crossSectionSumCorrection( std::string const &a_label, Vector &a_crossSectionSum ) {
+void Protare::TNSL_crossSectionSumCorrection( LUPI_maybeUnused std::string const &a_label, LUPI_maybeUnused Vector &a_crossSectionSum ) {
 
 }
 
@@ -164,7 +164,8 @@ ProtareSingle::ProtareSingle( PoPI::Database const &a_pops, std::string const &a
         m_projectileFrame( Frame::lab ),
         m_decayPositronium( false ),
         m_thresholdFactor( 0.0 ),
-        m_nuclearPlusCoulombInterferenceOnlyReaction( nullptr ) {
+        m_nuclearPlusCoulombInterferenceOnlyReaction( nullptr ),
+        m_pointwiseAverageProductEnergy( GIDI_averageEnergyChars, GIDI_labelChars ) {
 
     setMoniker( GIDI_topLevelChars );
     initialize( );
@@ -198,9 +199,9 @@ ProtareSingle::ProtareSingle( Construction::Settings const &a_construction, std:
         m_libraries( a_libraries ),
         m_interaction( a_interaction ),
         m_fileName( a_fileName ),
-        m_realFileName( realPath( a_fileName ) ),
+        m_realFileName( LUPI::FileInfo::realPath( a_fileName ) ),
         m_decayPositronium( a_construction.decayPositronium( ) ),
-        m_nuclearPlusCoulombInterferenceOnlyReaction( nullptr ) {
+        m_pointwiseAverageProductEnergy( GIDI_averageEnergyChars, GIDI_labelChars ) {
 
 #ifdef HAPI_USE_PUGIXML
     if( a_fileType == GIDI::FileType::XML ) {
@@ -242,14 +243,14 @@ ProtareSingle::ProtareSingle( Construction::Settings const &a_construction, std:
 
 ProtareSingle::ProtareSingle( Construction::Settings const &a_construction, HAPI::Node const &a_node, PoPI::Database const &a_pops,
                 ParticleSubstitution const &a_particleSubstitution, std::vector<std::string> const &a_libraries, 
-                std::string const &a_interaction, bool a_targetRequiredInGlobalPoPs, bool a_requiredInPoPs ) :
+                LUPI_maybeUnused std::string const &a_interaction, bool a_targetRequiredInGlobalPoPs, bool a_requiredInPoPs ) :
         Protare( ),
         m_doc( nullptr ),
         m_dataManager( nullptr ),
         m_numberOfLazyParsingHelperForms( 0 ),
         m_numberOfLazyParsingHelperFormsReplaced( 0 ),
         m_libraries( a_libraries ),
-        m_nuclearPlusCoulombInterferenceOnlyReaction( nullptr ) {
+        m_pointwiseAverageProductEnergy( GIDI_averageEnergyChars, GIDI_labelChars ) {
 
     SetupInfo setupInfo( this );
     ParticleSubstitution particleSubstitution( a_particleSubstitution );
@@ -295,6 +296,12 @@ void ProtareSingle::initialize( ) {
 
     m_ACE_URR_probabilityTables.setAncestor( this );
     m_ACE_URR_probabilityTables.setMoniker( GIDI_ACE_URR_probabilityTablesChars );
+
+    m_photoAtomicIncoherentDoppler.setAncestor( this );
+    m_photoAtomicIncoherentDoppler.setMoniker( GIDI_LLNL_photoAtomicIncoherentDoppler_Chars );
+
+    m_pointwiseAverageProductEnergy.setAncestor( this );
+    m_GRIN_continuumGammas = nullptr;
 }
 
 /* *********************************************************************************************************//**
@@ -324,6 +331,9 @@ void ProtareSingle::initialize( Construction::Settings const &a_construction, HA
         a_setupInfo.m_particleSubstitution->insert( { (*alias)->pid( ), ParticleInfo( (*alias)->ID( ), a_pops, a_pops, true ) } );
     }
 
+    m_interaction = a_node.attribute_as_string( GIDI_interactionChars );
+    if( m_interaction == GIDI_MapInteractionTNSLChars ) a_targetRequiredInGlobalPoPs = false;
+
     Protare::initialize( a_node, a_setupInfo, a_pops, m_internalPoPs, a_targetRequiredInGlobalPoPs, a_requiredInPoPs );
     initialize( );
 
@@ -339,7 +349,24 @@ void ProtareSingle::initialize( Construction::Settings const &a_construction, HA
     }
     m_isPhotoAtomic = ( m_interaction == GIDI_MapInteractionAtomicChars ) && ( PoPI::IDs::photon == projectile( ).ID( ) );
 
-    m_internalPoPs.calculateNuclideGammaBranchStateInfos( m_nuclideGammaBranchStateInfos );
+    PoPI::Database const *GRIN_pops = nullptr;
+    HAPI::Node const &applicationData = a_node.child( GIDI_applicationDataChars );
+    std::vector<std::string> extraGammaBranchStates;
+    for( HAPI::Node child1 = applicationData.first_child( ); !child1.empty( ); child1.to_next_sibling( ) ) {
+        std::string nodeName( child1.name( ) );
+        if( nodeName == GIDI_institutionChars ) {
+            std::string label = child1.attribute_as_string( GIDI_labelChars );
+            if( label == GIDI_LLNL_GRIN_continuumGammas ) {
+                HAPI::Node child2 = child1.child( GIDI_GRIN_continuumGammasChars );
+                if( a_construction.GRIN_continuumGammas( ) ) {
+                    m_GRIN_continuumGammas = new GRIN::GRIN_continuumGammas( a_construction, child2, a_setupInfo, a_pops, m_internalPoPs, *this, &m_styles );
+                    GRIN_pops = &(m_GRIN_continuumGammas->pops( ));
+                    extraGammaBranchStates.push_back( m_GRIN_continuumGammas->captureResidualId( ) );
+                }
+            }
+        }
+    }
+    m_internalPoPs.calculateNuclideGammaBranchStateInfos( m_nuclideGammaBranchStateInfos, GRIN_pops, extraGammaBranchStates );
 
     m_isTNSL_ProtareSingle = false;
     if( m_interaction == GIDI_TNSLChars ) m_interaction = GIDI_MapInteractionTNSLChars;
@@ -385,7 +412,6 @@ void ProtareSingle::initialize( Construction::Settings const &a_construction, HA
         }
     }
 
-    HAPI::Node const &applicationData = a_node.child( GIDI_applicationDataChars );
     for( HAPI::Node child1 = applicationData.first_child( ); !child1.empty( ); child1.to_next_sibling( ) ) {
         std::string nodeName( child1.name( ) );
 
@@ -398,6 +424,26 @@ void ProtareSingle::initialize( Construction::Settings const &a_construction, HA
                         a_setupInfo.m_isENDL_C_9 = true;
                         m_nuclearPlusCoulombInterferenceOnlyReaction = new Reaction( a_construction, reactionNode, a_setupInfo, a_pops, m_internalPoPs, *this, &m_styles );
                         a_setupInfo.m_isENDL_C_9 = false;
+                        bool dropC_9 = false;
+                        auto &crossSectionSuite = m_nuclearPlusCoulombInterferenceOnlyReaction->crossSection( );
+                        for( auto crossSectionIter = crossSectionSuite.begin( ); crossSectionIter != crossSectionSuite.end( ); ++crossSectionIter ) {
+                            auto iter = crossSectionSuite.checkLazyParsingHelperFormIterator( crossSectionIter );
+                            if( (*iter)->type( ) == FormType::XYs1d ) {
+                                Functions::XYs1d *xys1d = static_cast<Functions::XYs1d *>( *iter );
+                                auto ys = xys1d->ys( );
+                                for( auto yIter = ys.begin( ); yIter != ys.end( ); ++yIter ) {
+                                    if( *yIter < 0.0 ) {
+                                        dropC_9 = true;
+                                        break;
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                        if( dropC_9 ) {
+                            delete m_nuclearPlusCoulombInterferenceOnlyReaction;
+                            m_nuclearPlusCoulombInterferenceOnlyReaction = nullptr;
+                        }
                     }
                 } }
             else if( label == GIDI_LLNL_multiGroupReactions_Chars ) {
@@ -405,10 +451,32 @@ void ProtareSingle::initialize( Construction::Settings const &a_construction, HA
                 m_multiGroupSummedReaction = new Reaction( a_construction, child2, a_setupInfo, a_pops, m_internalPoPs, *this, &m_styles ); }
             else if( label == GIDI_LLNL_multiGroupDelayedNeutrons_Chars ) {
                 HAPI::Node child2 = child1.child( GIDI_outputChannelChars );
-                m_multiGroupSummedDelayedNeutrons = new OutputChannel( a_construction, child2, a_setupInfo, a_pops, m_internalPoPs, &m_styles, true ); }
+                m_multiGroupSummedDelayedNeutrons = new OutputChannel( a_construction, child2, a_setupInfo, a_pops, m_internalPoPs, &m_styles, true, false ); }
             else if( label == GIDI_LLNL_URR_probability_tables_Chars ) {
                 m_ACE_URR_probabilityTables.parse( a_construction, child1.child( GIDI_ACE_URR_probabilityTablesChars ), a_setupInfo, a_pops, 
-                        m_internalPoPs, parseACE_URR_probabilityTables, &m_styles );
+                        m_internalPoPs, parseACE_URR_probabilityTables, &m_styles ); }
+            else if( label == GIDI_LLNL_photoAtomicIncoherentDoppler_Chars ) {
+                HAPI::Node child2 = child1.child( GIDI_reactionsChars );
+                m_photoAtomicIncoherentDoppler.parse( a_construction, child2, a_setupInfo, a_pops, m_internalPoPs, parseReaction, &m_styles );
+                if( a_construction.usePhotoAtomicIncoherentDoppler( ) && m_photoAtomicIncoherentDoppler.size( ) > 0 ) {
+                                                                                        // Add the consistent doppler broadened incoherent reactions to the list.
+                    while( m_photoAtomicIncoherentDoppler.size( ) > 0 ) {
+                        Reaction *photoAtomicIncoherentDopplerReaction = m_photoAtomicIncoherentDoppler.pop<Reaction>( 0 );
+                        m_reactions.add( photoAtomicIncoherentDopplerReaction );
+                    }
+                    for( std::size_t i1 = 0; i1 < m_reactions.size( ); ++i1 ) {         // Set standard incoherent reaction to inactive
+                        Reaction *reaction1 = m_reactions.get<Reaction>( i1 );
+                        if( reaction1->ENDF_MT( ) == 504 ) {
+                            reaction1->setActive(false);
+                        }
+                    }
+                }
+            }
+            else if( label == GIDI_LLNL_pointwiseAverageProductEnergies ) {
+                m_pointwiseAverageProductEnergy.parse( a_construction, child1.child( GIDI_averageEnergyChars ), a_setupInfo, a_pops, 
+                        m_internalPoPs, parseAverageEnergySuite, &m_styles ); }
+            else if( label == GIDI_LLNL_GRIN_continuumGammas ) {        // Already parsed above.
+                continue;
             } }
         else {
             std::cout << "parseStylesSuite: Ignoring unsupported style = '" << nodeName << "'." << std::endl;
@@ -525,6 +593,19 @@ ProtareSingle const *ProtareSingle::protare( std::size_t a_index ) const {
 
     if( a_index != 0 ) return( nullptr );
     return( this );
+}
+
+/* *********************************************************************************************************//**
+ * Returns the intid for the requested particle or -1 if the particle is not in *this* PoPs database.
+ *
+ * @param a_id                 [in]    The GNDS PoPs id for particle whose intd is requested.
+ *
+ * @return                             C++ int for the requested particle or -1 if particle is not in PoPs.
+ ******************************************************************/
+
+int ProtareSingle::intid( std::string const &a_id ) const {
+
+    return( m_internalPoPs.intid( a_id ) );
 }
 
 /* *********************************************************************************************************//**
@@ -686,8 +767,9 @@ Reaction const *ProtareSingle::reaction( std::size_t a_index, Transporting::MG c
 }
 
 /* *********************************************************************************************************//**
- * Returns the multi-group boundaries for the requested label and product.
+ * The method returns the number of reactions of *this* that have been deactivated.
  *
+ * @return              The number of deactivated reaction of *this*.
  ***********************************************************************************************************/
 
 std::size_t ProtareSingle::numberOfInactiveReactions( ) const {
@@ -704,6 +786,30 @@ std::size_t ProtareSingle::numberOfInactiveReactions( ) const {
 }
 
 /* *********************************************************************************************************//**
+ * Re-indexs the reactions in the reactions, orphanProducts and fissionComponents suites.
+ *
+ ***********************************************************************************************************/
+
+void ProtareSingle::updateReactionIndices( int a_offset ) const {
+
+    for( std::size_t i1 = 0; i1 < m_reactions.size( ); ++i1 ) {
+        Reaction const *reaction1 = m_reactions.get<Reaction>( i1 + a_offset );
+
+        reaction1->setReactionIndex( i1 );
+    }
+    for( std::size_t i1 = 0; i1 < m_orphanProducts.size( ); ++i1 ) {
+        Reaction const *reaction1 = m_orphanProducts.get<Reaction>( i1 );
+    
+        reaction1->setReactionIndex( i1 );
+    }
+    for( std::size_t i1 = 0; i1 < m_orphanProducts.size( ); ++i1 ) {
+        Reaction const *reaction1 = m_orphanProducts.get<Reaction>( i1 );
+    
+        reaction1->setReactionIndex( i1 );
+    }
+}
+
+/* *********************************************************************************************************//**
  * Returns the multi-group boundaries for the requested label and product.
  *
  * @param a_settings        [in]    Specifies the requested label.
@@ -713,7 +819,7 @@ std::size_t ProtareSingle::numberOfInactiveReactions( ) const {
  * @return                          List of multi-group boundaries.
  ***********************************************************************************************************/
 
-std::vector<double> ProtareSingle::groupBoundaries( Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
+std::vector<double> ProtareSingle::groupBoundaries( LUPI_maybeUnused Transporting::MG const &a_settings, Styles::TemperatureInfo const &a_temperatureInfo, std::string const &a_productID ) const {
 
     Styles::HeatedMultiGroup const *heatedMultiGroupStyle1 = m_styles.get<Styles::HeatedMultiGroup>( a_temperatureInfo.heatedMultiGroup( ) );
 
@@ -730,7 +836,7 @@ std::vector<double> ProtareSingle::groupBoundaries( Transporting::MG const &a_se
  * @return                          List of inverse speeds.
  ***********************************************************************************************************/
 
-Vector ProtareSingle::multiGroupInverseSpeed( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
+Vector ProtareSingle::multiGroupInverseSpeed( LUPI_maybeUnused LUPI::StatusMessageReporting &a_smr, LUPI_maybeUnused Transporting::MG const &a_settings, 
                 Styles::TemperatureInfo const &a_temperatureInfo ) const {
 
     Styles::HeatedMultiGroup const *heatedMultiGroupStyle1 = m_styles.get<Styles::HeatedMultiGroup>( a_temperatureInfo.heatedMultiGroup( ) );
@@ -896,7 +1002,7 @@ Vector ProtareSingle::multiGroupMultiplicity( LUPI::StatusMessageReporting &a_sm
  ***********************************************************************************************************/
 
 Vector ProtareSingle::multiGroupFissionNeutronMultiplicity( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
-                Styles::TemperatureInfo const &a_temperatureInfo, ExcludeReactionsSet const &a_reactionsToExclude ) const {
+                Styles::TemperatureInfo const &a_temperatureInfo, LUPI_maybeUnused ExcludeReactionsSet const &a_reactionsToExclude ) const {
 
     Vector vector( 0 );
 
@@ -922,7 +1028,7 @@ Vector ProtareSingle::multiGroupFissionNeutronMultiplicity( LUPI::StatusMessageR
  ***********************************************************************************************************/
 
 Vector ProtareSingle::multiGroupFissionGammaMultiplicity( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
-                Styles::TemperatureInfo const &a_temperatureInfo, ExcludeReactionsSet const &a_reactionsToExclude ) const {
+                Styles::TemperatureInfo const &a_temperatureInfo, LUPI_maybeUnused ExcludeReactionsSet const &a_reactionsToExclude ) const {
 
     Vector vector( 0 );
 
@@ -950,7 +1056,7 @@ Vector ProtareSingle::multiGroupFissionGammaMultiplicity( LUPI::StatusMessageRep
  ***********************************************************************************************************/
 
 Vector ProtareSingle::multiGroupQ( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
-                Styles::TemperatureInfo const &a_temperatureInfo, bool a_final, bool a_effectivePhotoAtomic,
+                Styles::TemperatureInfo const &a_temperatureInfo, bool a_final, LUPI_maybeUnused bool a_effectivePhotoAtomic,
                 ExcludeReactionsSet const &a_reactionsToExclude ) const {
 
     Vector vector( 0 );
@@ -1030,7 +1136,7 @@ Matrix ProtareSingle::multiGroupProductMatrix( LUPI::StatusMessageReporting &a_s
 
 Matrix ProtareSingle::multiGroupFissionMatrix( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
                 Styles::TemperatureInfo const &a_temperatureInfo, Transporting::Particles const &a_particles, int a_order,
-                ExcludeReactionsSet const &a_reactionsToExclude ) const {
+                LUPI_maybeUnused ExcludeReactionsSet const &a_reactionsToExclude ) const {
 
     Matrix matrix( 0, 0 );
 
@@ -1062,7 +1168,7 @@ Matrix ProtareSingle::multiGroupFissionMatrix( LUPI::StatusMessageReporting &a_s
 
 Vector ProtareSingle::multiGroupTransportCorrection( LUPI::StatusMessageReporting &a_smr, Transporting::MG const &a_settings, 
                 Styles::TemperatureInfo const &a_temperatureInfo, Transporting::Particles const &a_particles, int a_order, 
-                TransportCorrectionType a_transportCorrectionType, double a_temperature, ExcludeReactionsSet const &a_reactionsToExclude ) const {
+                TransportCorrectionType a_transportCorrectionType, double a_temperature, LUPI_maybeUnused ExcludeReactionsSet const &a_reactionsToExclude ) const {
 
     if( a_transportCorrectionType == TransportCorrectionType::None ) return( Vector( 0 ) );
 
@@ -1192,6 +1298,12 @@ Vector ProtareSingle::multiGroupDepositionEnergy( LUPI::StatusMessageReporting &
             Reaction const *reaction1 = reactionToMultiGroup( a_settings, i1, a_reactionsToExclude );
 
             if( reaction1 != nullptr ) vector += reaction1->multiGroupDepositionEnergy( a_smr, a_settings, a_temperatureInfo, a_particles );
+        }
+        for( std::size_t i1 = 0; i1 < m_orphanProducts.size( ); ++i1 ) {
+            Reaction const *reaction1 = m_orphanProducts.get<Reaction>( i1 );
+
+            if( !reaction1->active( ) ) continue;
+            vector += reaction1->multiGroupDepositionEnergy( a_smr, a_settings, a_temperatureInfo, a_particles );
         } }
     else {
         std::map<std::string, Transporting::Particle> const &products( a_particles.particles( ) );

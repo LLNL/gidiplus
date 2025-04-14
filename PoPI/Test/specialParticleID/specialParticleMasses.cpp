@@ -38,7 +38,7 @@ int main( int argc, char **argv ) {
 /*
 =========================================================
 */
-void main2( int argc, char **argv ) {
+void main2( LUPI_maybeUnused int argc, LUPI_maybeUnused char **argv ) {
 
     std::cerr << "    " << LUPI::FileInfo::basenameWithoutExtension( __FILE__ ) << std::endl;
 
@@ -72,8 +72,7 @@ void massesFor( PoPI::Database const &a_database, std::string const &a_id ) {
 void massFor( PoPI::Database const &a_database, std::string const &a_id, PoPI::SpecialParticleID_mode a_mode ) {
 
     std::string id = PoPI::specialParticleID( a_mode, a_id.c_str( ) );
-    PoPI::IDBase const &particle = a_database.idBase( id );
-    double mass = particle.massValue2( a_database, "amu" );
+    double mass = a_database.massValue( id, "amu" );
 
     printf( "    %-8s %20.12e\n", id.c_str( ), mass );
 }

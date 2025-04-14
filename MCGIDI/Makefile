@@ -1,4 +1,4 @@
-SHELL = /bin/ksh
+SHELL = /bin/sh
 
 # <<BEGIN-copyright>>
 # Copyright 2019, Lawrence Livermore National Security, LLC.
@@ -18,7 +18,8 @@ default: include lib
 	cd Test; $(MAKE) default
 
 all: default
-	$(MAKE) bin speeds
+	$(MAKE) bin
+	$(MAKE) speeds
 
 include:
 	cd include; $(MAKE)
