@@ -33,7 +33,7 @@ jobs:
     - name: Run check
       run: |
         cd GIDI/Test
-        curl -L -o Data.tar.gz https://github.com/LLNL/gidiplus/releases/download/v3.25.7/testData_3.25.7.tar.gz
+        curl -L -o Data.tar.gz https://github.com/LLNL/gidiplus/releases/download/v3.33.0/testData_3.33.0.tar.gz
         tar -xf Data.tar.gz
         cd -
         make -s -j check CXX=${{ matrix.compiler.cpp }} CC=${{ matrix.compiler.cc }} CXXFLAGS="$cppflags"
